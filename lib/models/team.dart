@@ -1,0 +1,51 @@
+import 'package:flutter/material.dart';
+
+/// یه تیم توی یه سناریو (مثلاً «سرکوب» یا «شهروند»).
+/// این مدل، معادل TeamDef توی نسخه‌ی قبلی (Kotlin/Compose) اپه.
+class GameTeam {
+  final String id;
+  final String name;
+  final Color color;
+  final String description;
+
+  const GameTeam({
+    required this.id,
+    required this.name,
+    required this.color,
+    this.description = '',
+  });
+}
+
+/// تیم‌های سناریوی «سرکوب» — طبق درخواست، فعلاً فقط تیم‌ها ساخته شدن؛
+/// نقش‌ها بعداً یکی‌یکی اضافه می‌شن.
+class SarkoobTeams {
+  static const suppression = GameTeam(
+    id: 'team_sorkoob',
+    name: 'سرکوب',
+    color: Color(0xFFB71C1C),
+    description: 'نیروهای سرکوب‌گر حکومتی؛ هدفشون حذف مخفیانه‌ی مخالفان.',
+  );
+
+  static const citizen = GameTeam(
+    id: 'team_citizen',
+    name: 'شهروند',
+    color: Color(0xFF1976D2),
+    description: 'مردم عادی و فعالان مدنی؛ هدفشون شناسایی و حذف سرکوب‌گرهاست.',
+  );
+
+  static const mossad = GameTeam(
+    id: 'team_mossad',
+    name: 'موساد',
+    color: Color(0xFF546E7A),
+    description: 'عامل نفوذی خارجی با اهداف و اقدامات مستقل خودش.',
+  );
+
+  static const mek = GameTeam(
+    id: 'team_mek',
+    name: 'مجاهدین خلق',
+    color: Color(0xFFF9A825),
+    description: 'گروه اپوزیسیون مسلح با اهداف و اقدامات مستقل خودش.',
+  );
+
+  static const List<GameTeam> all = [suppression, citizen, mossad, mek];
+}
