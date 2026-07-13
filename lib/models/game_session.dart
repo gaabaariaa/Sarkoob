@@ -22,14 +22,13 @@ class GameSettings {
 }
 
 /// بازیکنِ همین جلسه‌ی بازی (نه لیست دائمی).
-/// isSorkoobTeam / isModiri فعلاً موقتی و دستی‌ان، تا وقتی موتور
-/// تقسیم نقش واقعی ساخته بشه.
+/// teamId فعلاً موقتی و دستی‌ست، تا وقتی موتور تقسیم نقش واقعی ساخته بشه.
 class SessionPlayer {
   final int id;
   final String name;
   bool isAlive;
   int recordCount; // «سابقه»
-  bool isSorkoobTeam;
+  String teamId; // یکی از شناسه‌های GameTeam (team_sorkoob / team_citizen / ...)
   bool isModiri;
   int votes;
   bool challengeUsedToday;
@@ -38,12 +37,14 @@ class SessionPlayer {
   SessionPlayer({
     required this.id,
     required this.name,
+    required this.teamId,
     this.isAlive = true,
     this.recordCount = 0,
-    this.isSorkoobTeam = false,
     this.isModiri = false,
     this.votes = 0,
     this.challengeUsedToday = false,
     this.hasSpokenThisRound = false,
   });
+
+  bool get isSorkoobTeam => teamId == 'team_sorkoob';
 }
