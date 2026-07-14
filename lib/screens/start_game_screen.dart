@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/game_session.dart';
+import '../models/role.dart';
 import '../models/team.dart';
 import '../theme/app_theme.dart';
 import 'game_flow_screen.dart';
@@ -8,7 +9,8 @@ class _DraftPlayer {
   String name;
   String teamId;
   bool isModiri;
-  _DraftPlayer(this.name, {this.teamId = 'team_citizen', this.isModiri = false});
+  String? roleId;
+  _DraftPlayer(this.name, {this.teamId = 'team_citizen', this.isModiri = false, this.roleId});
 }
 
 class StartGameScreen extends StatefulWidget {
@@ -87,6 +89,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
     if (_includeMek && _countInTeam(SarkoobTeams.mek.id) == 0) {
       return 'تیم مجاهدین خلق رو انتخاب کردی ولی هیچ بازیکنی بهش اختصاص ندادی';
     }
+    final hasValiFaghih =
+        _draftPlayers.any((p) => p.roleId == SarkoobRoles.valiFaghih.id);
+    if (!hasValiFaghih) {
+      return 'باید یه نفر از تیم سرکوب رو به‌عنوان «ولی‌فقیه» مشخص کنی';
+    }
     return null;
   }
 
@@ -136,14 +143,21 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
   void _startGame() {
     final players = <SessionPlayer>[];
+    final totalPlayers = _draftPlayers.length;
+    final slaughterCharges = (totalPlayers / 6).floor().clamp(1, 999);
+
     for (var i = 0; i < _draftPlayers.length; i++) {
       final d = _draftPlayers[i];
+      final isValiFaghih = d.roleId == SarkoobRoles.valiFaghih.id;
       players.add(
         SessionPlayer(
           id: i + 1,
           name: d.name,
           teamId: d.teamId,
           isModiri: d.isModiri,
+          roleId: d.roleId,
+          hasArmor: isValiFaghih,
+          slaughterChargesRemaining: isValiFaghih ? slaughterCharges : null,
         ),
       );
     }
@@ -252,7 +266,10 @@ class _StartGameScreenState extends State<StartGameScreen> {
                           .toList(),
                       onChanged: (value) => setState(() {
                         d.teamId = value ?? d.teamId;
-                        if (!isSorkoob) d.isModiri = false;
+                        if (!isSorkoob) {
+                          d.isModiri = false;
+                          d.roleId = null;
+                        }
                       }),
                     ),
                     const SizedBox(width: 6),
@@ -268,6 +285,20 @@ class _StartGameScreenState extends State<StartGameScreen> {
                               })
                           : null,
                     ),
+                    const Text('ولی‌فقیه', style: TextStyle(color: Colors.white60, fontSize: 12)),
+                    Checkbox(
+                      value: d.roleId == SarkoobRoles.valiFaghih.id,
+                      onChanged: isSorkoob
+                          ? (v) => setState(() {
+                                for (final other in _draftPlayers) {
+                                  if (other.roleId == SarkoobRoles.valiFaghih.id) {
+                                    other.roleId = null;
+                                  }
+                                }
+                                d.roleId = (v ?? false) ? SarkoobRoles.valiFaghih.id : null;
+                              })
+                          : null,
+                    ),
                     IconButton(
                       icon: const Icon(Icons.delete, color: AppColors.bloodRedLight),
                       onPressed: () => _removePlayer(index),
@@ -279,9 +310,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
           }),
           const SizedBox(height: 4),
           const Text(
-            'نکته‌ی موقت: چون هنوز موتور تقسیم نقش واقعی ساخته نشده، فعلاً خودت '
-            'دستی تیم و مدیری بودنِ هرکس رو مشخص کن. حتماً یادت باشه بعداً که '
-            'نقش‌ها اضافه شدن، وجود «ولی‌فقیه» توی تیم سرکوب رو هم باید بسنجیم.',
+            'نکته‌ی موقت: چون بقیه‌ی نقش‌ها هنوز اضافه نشدن، فعلاً فقط ولی‌فقیه '
+            'واقعیه (باید مشخص بشه) و «مدیری» صرفاً یه پرچم موقته تا نقش '
+            'واقعی‌ش رو هم اضافه کنیم.',
             style: TextStyle(color: Colors.white54, fontSize: 12),
           ),
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../controllers/game_flow_controller.dart';
 import '../models/game_session.dart';
+import '../models/role.dart';
 import '../theme/app_theme.dart';
 import '../widgets/countdown_timer_widget.dart';
 
@@ -362,28 +363,197 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   // ---------- شب (بعد از معارفه) ----------
 
   Widget _buildNightPlaceholder() {
+    if (controller.lastNightSummary != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.nightlight_round, size: 48, color: AppColors.gold),
+            const SizedBox(height: 16),
+            Text(
+              controller.lastNightSummary!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () => controller.moveToDay(controller.roundNumber + 1),
+              child: Text('ادامه به روز ${controller.roundNumber + 1}'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final leader = controller.valiFaghihPlayer;
+    if (leader == null || !leader.isAlive) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'ولی‌فقیه در بازی نیست یا حذف شده؛ این شب اقدامی ثبت نمی‌شه.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white70),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: controller.finishNight,
+              child: const Text('پایان شب'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (!controller.nightActionTaken) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text('شب ${controller.roundNumber}', style: AppTheme.headingFont(size: 24)),
+          const SizedBox(height: 4),
+          const Text(
+            'تیم سرکوب بیدار می‌شه و باهم مشورت می‌کنن؛ تصمیم نهایی با ولی‌فقیه‌ست.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white60),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.gps_fixed),
+            label: const Text('شات (حذف تیمی)'),
+            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+            onPressed: () => _showShootPicker(leader),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.content_cut),
+            label: Text(
+              'سلاخی (${leader.slaughterChargesRemaining ?? 0} باقیمانده)',
+            ),
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size.fromHeight(50),
+              backgroundColor: AppColors.bloodRedLight,
+            ),
+            onPressed: (leader.slaughterChargesRemaining ?? 0) > 0
+                ? () => _showSlaughterPicker(leader)
+                : null,
+          ),
+        ],
+      );
+    }
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.nightlight_round, size: 48, color: AppColors.gold),
-          const SizedBox(height: 16),
-          Text(
-            'شب ${controller.roundNumber}',
-            style: AppTheme.headingFont(size: 24),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'منطق این شب بعد از تعریفِ نقش‌ها تکمیل می‌شه.',
-            style: TextStyle(color: Colors.white60),
-          ),
-          const SizedBox(height: 24),
+          if (controller.slaughterResultMessage != null) ...[
+            Text(
+              controller.slaughterResultMessage!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+            ),
+            const SizedBox(height: 20),
+          ] else
+            const Text('تصمیمِ امشب ثبت شد.', style: TextStyle(color: Colors.white70)),
           ElevatedButton(
-            onPressed: () => controller.moveToDay(controller.roundNumber + 1),
-            child: Text('ادامه به روز ${controller.roundNumber + 1} (موقت)'),
+            onPressed: controller.finishNight,
+            child: const Text('پایان شب'),
           ),
         ],
       ),
+    );
+  }
+
+  void _showShootPicker(SessionPlayer leader) {
+    final targets = controller.alivePlayers.where((p) => p.id != leader.id).toList();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceDark,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text('شات روی کی؟', style: TextStyle(color: AppColors.goldLight)),
+            ),
+            ...targets.map(
+              (p) => ListTile(
+                title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                onTap: () {
+                  controller.leaderShoot(p.id);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSlaughterPicker(SessionPlayer leader) {
+    final targets = controller.alivePlayers.where((p) => p.id != leader.id).toList();
+    SessionPlayer? selectedTarget;
+    String? selectedRoleId;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceDark,
+      isScrollControlled: true,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('سلاخی: هدف + حدسِ نقش', style: TextStyle(color: AppColors.goldLight)),
+                    const SizedBox(height: 12),
+                    DropdownButton<SessionPlayer>(
+                      hint: const Text('انتخاب هدف', style: TextStyle(color: Colors.white70)),
+                      dropdownColor: AppColors.surfaceDark,
+                      value: selectedTarget,
+                      items: targets
+                          .map((p) => DropdownMenuItem(
+                                value: p,
+                                child: Text(p.name, style: const TextStyle(color: Colors.white)),
+                              ))
+                          .toList(),
+                      onChanged: (v) => setSheetState(() => selectedTarget = v),
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButton<String>(
+                      hint: const Text('حدسِ نقش', style: TextStyle(color: Colors.white70)),
+                      dropdownColor: AppColors.surfaceDark,
+                      value: selectedRoleId,
+                      items: SarkoobRoles.all
+                          .map((r) => DropdownMenuItem(
+                                value: r.id,
+                                child: Text(r.name, style: const TextStyle(color: Colors.white)),
+                              ))
+                          .toList(),
+                      onChanged: (v) => setSheetState(() => selectedRoleId = v),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: (selectedTarget != null && selectedRoleId != null)
+                          ? () {
+                              controller.leaderSlaughter(selectedTarget!.id, selectedRoleId!);
+                              Navigator.of(context).pop();
+                            }
+                          : null,
+                      child: const Text('تایید سلاخی'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

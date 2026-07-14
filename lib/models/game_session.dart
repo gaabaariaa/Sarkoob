@@ -34,6 +34,12 @@ class SessionPlayer {
   bool challengeUsedToday;
   bool hasSpokenThisRound;
 
+  // ---- مربوط به نقش (فعلاً فقط ولی‌فقیه از این‌ها استفاده می‌کنه) ----
+  String? roleId;
+  bool hasArmor;
+  int? slaughterChargesRemaining;
+  bool eliminatedBySlaughter; // برای اینکه بعداً حتی ستوده هم نتونه برش گردونه
+
   SessionPlayer({
     required this.id,
     required this.name,
@@ -44,6 +50,10 @@ class SessionPlayer {
     this.votes = 0,
     this.challengeUsedToday = false,
     this.hasSpokenThisRound = false,
+    this.roleId,
+    this.hasArmor = false,
+    this.slaughterChargesRemaining,
+    this.eliminatedBySlaughter = false,
   });
 
   bool get isSorkoobTeam => teamId == 'team_sorkoob';

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/game_session.dart';
+import '../models/role.dart';
 
 /// نتیجه‌ی نهاییِ حل‌وفصل یه دور رأی‌گیری/دفاعیه.
 class VoteResolution {
@@ -271,6 +272,86 @@ class GameFlowController extends ChangeNotifier {
   void moveToNight(int nightNumber) {
     phase = GamePhaseType.night;
     roundNumber = nightNumber;
+    _pendingHits.clear();
+    _savedPlayerId = null;
+    _nightActionTaken = false;
+    slaughterResultMessage = null;
+    lastNightSummary = null;
+    notifyListeners();
+  }
+
+  // ---------- شب: تصمیمِ رهبر تیم سرکوب (شات یا سلاخی) ----------
+
+  final Map<int, int> _pendingHits = {}; // targetId -> تعداد ضربه‌ی وارده
+  int? _savedPlayerId; // فعلاً هیچ نقشی ست‌ش نمی‌کنه؛ برای دکتر در آینده آماده‌ست
+  bool _nightActionTaken = false;
+  String? slaughterResultMessage;
+  String? lastNightSummary;
+
+  bool get nightActionTaken => _nightActionTaken;
+
+  SessionPlayer? get valiFaghihPlayer {
+    for (final p in players) {
+      if (p.roleId == SarkoobRoles.valiFaghih.id) return p;
+    }
+    return null;
+  }
+
+  /// تصمیم «شات»: یه هدف رو برای حذفِ تیمی نشون می‌کنه (ممکنه با ضربه‌های
+  /// دیگه‌ای که بعداً نقش‌های دیگه اضافه می‌کنن جمع بشه).
+  void leaderShoot(int targetId) {
+    _pendingHits[targetId] = (_pendingHits[targetId] ?? 0) + 1;
+    _nightActionTaken = true;
+    notifyListeners();
+  }
+
+  /// تصمیم «سلاخی»: حدسِ نقشِ یه بازیکن. اگه درست باشه، مستقیم (بدون
+  /// امکان نجات) حذف می‌شه؛ اگه غلط باشه، یه ظرفیتِ سلاخی مصرف می‌شه.
+  void leaderSlaughter(int targetId, String guessedRoleId) {
+    final leader = valiFaghihPlayer;
+    if (leader == null) return;
+    final target = playerById(targetId);
+    final correct = target.roleId == guessedRoleId;
+    if (correct) {
+      target.isAlive = false;
+      target.eliminatedBySlaughter = true;
+      slaughterResultMessage = '«${target.name}» با سلاخی از بازی خارج شد.';
+    } else {
+      if ((leader.slaughterChargesRemaining ?? 0) > 0) {
+        leader.slaughterChargesRemaining = leader.slaughterChargesRemaining! - 1;
+      }
+      slaughterResultMessage = 'حدس درست نبود؛ یک ظرفیتِ سلاخی مصرف شد.';
+    }
+    _nightActionTaken = true;
+    notifyListeners();
+  }
+
+  /// پایانِ شب: همه‌ی ضربه‌های واردشده رو با نجات/زره حل‌وفصل می‌کنه.
+  void finishNight() {
+    final messages = <String>[];
+    _pendingHits.forEach((targetId, hitCount) {
+      final target = playerById(targetId);
+      if (!target.isAlive) return;
+      var remaining = hitCount;
+      if (_savedPlayerId == targetId && remaining > 0) {
+        remaining -= 1;
+      }
+      if (remaining <= 0) return;
+      if (target.hasArmor) {
+        target.hasArmor = false;
+        remaining -= 1;
+      }
+      if (remaining > 0) {
+        target.isAlive = false;
+        messages.add('«${target.name}» شبِ گذشته حذف شد.');
+      } else {
+        messages.add('«${target.name}» زره‌اش رو از دست داد، ولی زنده موند.');
+      }
+    });
+    if (slaughterResultMessage != null) messages.insert(0, slaughterResultMessage!);
+    lastNightSummary = messages.isEmpty ? 'دیشب کسی حذف نشد.' : messages.join('\n');
+    _pendingHits.clear();
+    _savedPlayerId = null;
     notifyListeners();
   }
 }
