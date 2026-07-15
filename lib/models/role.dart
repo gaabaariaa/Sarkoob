@@ -38,7 +38,7 @@ class GameRole {
 
 /// کتابخونه‌ی نقش‌های سناریوی سرکوب — نقش‌ها یکی‌یکی این‌جا اضافه می‌شن.
 class SarkoobRoles {
-  static const valiFaghih = GameRole(
+  static final valiFaghih = GameRole(
     id: 'role_vali_faghih',
     name: 'ولی فقیه',
     teamId: SarkoobTeams.suppression.id,
@@ -56,7 +56,7 @@ class SarkoobRoles {
     canSlaughter: true,
   );
 
-  static const List<GameRole> all = [valiFaghih];
+  static final List<GameRole> all = [valiFaghih];
 
   static GameRole? byId(String id) {
     for (final r in all) {
