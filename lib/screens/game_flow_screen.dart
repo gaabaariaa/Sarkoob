@@ -438,6 +438,18 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 ? () => _showSlaughterPicker(leader)
                 : null,
           ),
+          if (controller.canUseNegotiate) ...[
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.handshake),
+              label: const Text('مذاکره (اغفال شهروند خاکستری)'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+                backgroundColor: AppColors.goldDark,
+              ),
+              onPressed: () => _showNegotiatePicker(),
+            ),
+          ],
         ],
       );
     }
@@ -449,6 +461,13 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           if (controller.slaughterResultMessage != null) ...[
             Text(
               controller.slaughterResultMessage!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+            ),
+            const SizedBox(height: 20),
+          ] else if (controller.negotiateResultMessage != null) ...[
+            Text(
+              controller.negotiateResultMessage!,
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.white, fontSize: 16),
             ),
@@ -482,6 +501,40 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 title: Text(p.name, style: const TextStyle(color: Colors.white)),
                 onTap: () {
                   controller.leaderShoot(p.id);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showNegotiatePicker() {
+    final minister = controller.foreignMinisterPlayer;
+    final targets = controller.alivePlayers
+        .where((p) => minister == null || p.id != minister.id)
+        .toList();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceDark,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text(
+                'با کی می‌خوان مذاکره کنن؟',
+                style: TextStyle(color: AppColors.goldLight),
+              ),
+            ),
+            ...targets.map(
+              (p) => ListTile(
+                title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                onTap: () {
+                  controller.leaderNegotiate(p.id);
                   Navigator.of(context).pop();
                 },
               ),

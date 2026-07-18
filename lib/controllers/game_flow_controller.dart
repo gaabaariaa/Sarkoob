@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/game_session.dart';
 import '../models/role.dart';
+import '../models/team.dart';
 
 /// نتیجه‌ی نهاییِ حل‌وفصل یه دور رأی‌گیری/دفاعیه.
 class VoteResolution {
@@ -276,6 +277,7 @@ class GameFlowController extends ChangeNotifier {
     _savedPlayerId = null;
     _nightActionTaken = false;
     slaughterResultMessage = null;
+    negotiateResultMessage = null;
     lastNightSummary = null;
     notifyListeners();
   }
@@ -295,6 +297,52 @@ class GameFlowController extends ChangeNotifier {
       if (p.roleId == SarkoobRoles.valiFaghih.id) return p;
     }
     return null;
+  }
+
+  SessionPlayer? get foreignMinisterPlayer {
+    for (final p in players) {
+      if (p.roleId == SarkoobRoles.foreignMinister.id) return p;
+    }
+    return null;
+  }
+
+  /// آیا حداقل یه عضوِ تیم سرکوب تا الان از بازی خارج شده؟
+  /// (شرطِ فعال‌شدنِ قابلیتِ اغفال/مذاکره)
+  bool get sorkoobHasLostMember => players.any(
+        (p) => p.teamId == SarkoobTeams.suppression.id && !p.isAlive,
+      );
+
+  /// شهروندهای «خاکستری»: زنده، عضو تیم شهروند، و بدون نقشِ خاص.
+  List<SessionPlayer> get grayCitizens => players
+      .where((p) =>
+          p.isAlive && p.teamId == SarkoobTeams.citizen.id && p.roleId == null)
+      .toList();
+
+  bool get canUseNegotiate {
+    final minister = foreignMinisterPlayer;
+    if (minister == null || !minister.isAlive) return false;
+    if (!sorkoobHasLostMember) return false;
+    if (grayCitizens.isEmpty) return false;
+    return true;
+  }
+
+  String? negotiateResultMessage;
+
+  /// تصمیمِ «مذاکره»: اگه هدف شهروندِ خاکستری باشه موفقه و به تیم سرکوب
+  /// (به‌عنوان «سرکوبگر») می‌پیونده؛ وگرنه مذاکره شکست می‌خوره.
+  void leaderNegotiate(int targetId) {
+    final target = playerById(targetId);
+    final isGrayCitizen =
+        target.teamId == SarkoobTeams.citizen.id && target.roleId == null;
+    if (isGrayCitizen) {
+      target.teamId = SarkoobTeams.suppression.id;
+      target.roleId = SarkoobRoles.suppressor.id;
+      negotiateResultMessage = 'مذاکره با موفقیت صورت گرفت.';
+    } else {
+      negotiateResultMessage = 'مذاکره با شکست مواجه شد.';
+    }
+    _nightActionTaken = true;
+    notifyListeners();
   }
 
   /// تصمیم «شات»: یه هدف رو برای حذفِ تیمی نشون می‌کنه (ممکنه با ضربه‌های
@@ -349,6 +397,7 @@ class GameFlowController extends ChangeNotifier {
       }
     });
     if (slaughterResultMessage != null) messages.insert(0, slaughterResultMessage!);
+    if (negotiateResultMessage != null) messages.insert(0, negotiateResultMessage!);
     lastNightSummary = messages.isEmpty ? 'دیشب کسی حذف نشد.' : messages.join('\n');
     _pendingHits.clear();
     _savedPlayerId = null;

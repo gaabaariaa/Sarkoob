@@ -138,24 +138,29 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final totalPlayers = _draftPlayers.length;
     final slaughterCharges = (totalPlayers / 6).floor().clamp(1, 999);
 
-    // انتخابِ تصادفیِ «ولی‌فقیه» از بین اعضای تیم سرکوب — کاملاً با خودِ برنامه.
+    // انتخابِ تصادفیِ «ولی‌فقیه» و «وزیر امور خارجه» از بین اعضای تیم سرکوب —
+    // کاملاً با خودِ برنامه، هر کدوم به یه بازیکنِ متفاوت.
     final sorkoobIndices = <int>[
       for (var i = 0; i < _draftPlayers.length; i++)
         if (_draftPlayers[i].teamId == SarkoobTeams.suppression.id) i,
     ];
     sorkoobIndices.shuffle();
-    final valiFaghihIndex = sorkoobIndices.isNotEmpty ? sorkoobIndices.first : null;
+    final valiFaghihIndex = sorkoobIndices.isNotEmpty ? sorkoobIndices[0] : null;
+    final foreignMinisterIndex = sorkoobIndices.length > 1 ? sorkoobIndices[1] : null;
 
     final players = <SessionPlayer>[];
     for (var i = 0; i < _draftPlayers.length; i++) {
       final d = _draftPlayers[i];
       final isValiFaghih = i == valiFaghihIndex;
+      final isForeignMinister = i == foreignMinisterIndex;
       players.add(
         SessionPlayer(
           id: i + 1,
           name: d.name,
           teamId: d.teamId,
-          roleId: isValiFaghih ? SarkoobRoles.valiFaghih.id : null,
+          roleId: isValiFaghih
+              ? SarkoobRoles.valiFaghih.id
+              : (isForeignMinister ? SarkoobRoles.foreignMinister.id : null),
           hasArmor: isValiFaghih,
           slaughterChargesRemaining: isValiFaghih ? slaughterCharges : null,
         ),

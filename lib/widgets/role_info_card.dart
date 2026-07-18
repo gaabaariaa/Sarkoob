@@ -36,15 +36,28 @@ class RoleInfoCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: Image.asset(
-              role.imageAsset,
-              fit: BoxFit.cover,
-              height: 260,
+          if (role.imageAsset != null)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Image.asset(
+                role.imageAsset!,
+                fit: BoxFit.cover,
+                height: 260,
+                width: double.infinity,
+              ),
+            )
+          else
+            Container(
+              height: 180,
               width: double.infinity,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceCard,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: team.color.withOpacity(0.5)),
+              ),
+              child: Icon(Icons.badge, size: 64, color: team.color),
             ),
-          ),
           const SizedBox(height: 14),
           OrnateFrame(
             child: Container(

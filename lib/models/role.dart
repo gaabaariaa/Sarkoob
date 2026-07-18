@@ -15,24 +15,32 @@ class GameRole {
   final String name;
   final String teamId;
   final String description;
-  final String imageAsset;
+
+  /// بعضی نقش‌ها (مثل «سرکوبگر»ی که از مذاکره به‌وجود میاد) کارت اختصاصی
+  /// ندارن؛ برای همین این فیلد nullable ـه.
+  final String? imageAsset;
+
   final NightActionKind nightAction;
 
-  // ---- فیلدهای مخصوص ولی‌فقیه (بعداً برای نقش‌های دیگه هم مشابهش اضافه می‌شه) ----
+  // ---- فیلدهای مخصوص ولی‌فقیه ----
   final bool alwaysShowsInnocent; // استعلامش همیشه منفیه
   final bool hasNightArmor; // زره در شب
   final bool canSlaughter; // قابلیت سلاخی داره؟
+
+  // ---- فیلدِ مخصوص وزیر امور خارجه ----
+  final bool canNegotiate; // قابلیت اغفال/مذاکره داره؟
 
   const GameRole({
     required this.id,
     required this.name,
     required this.teamId,
     required this.description,
-    required this.imageAsset,
+    this.imageAsset,
     this.nightAction = NightActionKind.none,
     this.alwaysShowsInnocent = false,
     this.hasNightArmor = false,
     this.canSlaughter = false,
+    this.canNegotiate = false,
   });
 }
 
@@ -56,7 +64,34 @@ class SarkoobRoles {
     canSlaughter: true,
   );
 
-  static final List<GameRole> all = [valiFaghih];
+  static final foreignMinister = GameRole(
+    id: 'role_foreign_minister',
+    name: 'وزیر امور خارجه',
+    teamId: SarkoobTeams.suppression.id,
+    imageAsset: 'assets/roles/zarif.jpg',
+    description:
+        'پس از بیرون رفتنِ یکی از اعضای تیم سرکوب از بازی، فعال می‌شه. از اون '
+        'به بعد، تیم سرکوب می‌تونه به‌جای شاتِ شبانه، از قابلیتِ «اغفال» '
+        'استفاده کنه: یک شهروندِ خاکستری (بدون نقشِ خاص) رو انتخاب می‌کنن تا '
+        'به تیم سرکوب اضافه بشه. اگه به‌جاش یه شهروندِ نقش‌دار یا عضوِ یه تیمِ '
+        'مستقل رو انتخاب کنن، مذاکره شکست می‌خوره و اون شب فرصت از دست میره. '
+        'مذاکره و تصمیمِ ولی‌فقیه (شات/سلاخی) در یک شب، فقط یکیشون قابل‌استفاده‌ست.',
+    canNegotiate: true,
+  );
+
+  /// نقشی که یه شهروندِ خاکستری، بعد از مذاکره‌ی موفق، بهش تبدیل می‌شه.
+  /// قابلیتِ خاصی نداره؛ فقط رسماً عضوِ تیم سرکوب می‌شه.
+  static final suppressor = GameRole(
+    id: 'role_suppressor',
+    name: 'سرکوبگر',
+    teamId: SarkoobTeams.suppression.id,
+    description:
+        'یه عضوِ ساده‌ی تیم سرکوبه؛ قابلیتِ خاصی نداره. معمولاً یا از اول '
+        'همین نقش رو داشته، یا با موفقیتِ مذاکره‌ی وزیر امور خارجه، از یه '
+        'شهروندِ خاکستری تبدیل شده به این نقش.',
+  );
+
+  static final List<GameRole> all = [valiFaghih, foreignMinister, suppressor];
 
   static GameRole? byId(String id) {
     for (final r in all) {
