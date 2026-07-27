@@ -2,10 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-/// یه تایمر شمارش معکوس با دکمه‌ی شروع/توقف/ریست.
-/// مهم: هروقت می‌خواید تایمر برای یه گوینده‌ی جدید از نو شروع بشه،
-/// یه `key` متفاوت (مثلاً ValueKey(speakerId)) بهش بدید تا فلاتر
-/// خودش state رو کامل از نو بسازه.
+/// یه تایمر شمارش معکوس با دکمه‌ی شروع/توقف/ریست. با تغییرِ `key` از
+/// بیرون (مثلاً ValueKey(speakerId))، کاملاً از نو ساخته می‌شه.
 class CountdownTimerWidget extends StatefulWidget {
   final int totalSeconds;
   final VoidCallback? onFinished;
@@ -35,12 +33,9 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
     if (_running) return;
     setState(() => _running = true);
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_remaining <= 1) {
+      if (_remaining <= 0) {
         timer.cancel();
-        setState(() {
-          _remaining = 0;
-          _running = false;
-        });
+        setState(() => _running = false);
         widget.onFinished?.call();
         return;
       }
@@ -71,19 +66,18 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
   Widget build(BuildContext context) {
     final minutes = (_remaining ~/ 60).toString().padLeft(2, '0');
     final seconds = (_remaining % 60).toString().padLeft(2, '0');
-    final isFinished = _remaining == 0;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           '$minutes:$seconds',
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 40,
             fontWeight: FontWeight.bold,
-            color: isFinished ? AppColors.bloodRedLight : AppColors.goldLight,
+            color: AppColors.goldLight,
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -92,7 +86,10 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
               child: Text(_running ? 'توقف' : 'شروع'),
             ),
             const SizedBox(width: 8),
-            OutlinedButton(onPressed: _reset, child: const Text('ریست')),
+            OutlinedButton(
+              onPressed: _reset,
+              child: const Text('ریست'),
+            ),
           ],
         ),
       ],

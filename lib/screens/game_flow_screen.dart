@@ -4,6 +4,7 @@ import '../models/game_session.dart';
 import '../models/role.dart';
 import '../theme/app_theme.dart';
 import '../widgets/countdown_timer_widget.dart';
+import '../widgets/role_card.dart';
 
 class GameFlowScreen extends StatefulWidget {
   final List<SessionPlayer> players;
@@ -69,7 +70,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         if (controller.isSpeakingRoundDone) return _buildStartVoteButton();
         return _buildSpeakingPhase(isIntro: false);
       case GamePhaseType.night:
-        return _buildNightPlaceholder();
+        return _buildNightPhase();
     }
   }
 
@@ -83,71 +84,74 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       return isIntro ? _buildStartIntroNightButton() : _buildStartVoteButton();
     }
 
-    return Column(
-      children: [
-        if (isIntro)
-          const Text(
-            'هر بازیکن به ترتیب، خودش رو معرفی می‌کنه.',
-            style: TextStyle(color: Colors.white60),
-          ),
-        const SizedBox(height: 16),
-        if (isChallenge)
-          Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.bloodRed.withOpacity(0.4),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.bloodRedLight),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          if (!isIntro && controller.activeExecutionWord != null) _buildExecutionWordBanner(),
+          if (isIntro)
+            const Text(
+              'هر بازیکن به ترتیب، خودش رو معرفی می‌کنه.',
+              style: TextStyle(color: Colors.white60),
             ),
-            child: const Text(
-              '⚡ این یه چالشه؛ بعدش نوبتِ عادی ادامه پیدا می‌کنه.',
-              style: TextStyle(color: Colors.white),
+          const SizedBox(height: 16),
+          if (isChallenge)
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.bloodRed.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.bloodRedLight),
+              ),
+              child: const Text(
+                '⚡ این یه چالشه؛ بعدش نوبتِ عادی ادامه پیدا می‌کنه.',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
+          Text(
+            speaker.name,
+            style: AppTheme.headingFont(size: 30),
           ),
-        Text(
-          speaker.name,
-          style: AppTheme.headingFont(size: 30),
-        ),
-        const SizedBox(height: 16),
-        CountdownTimerWidget(
-          key: ValueKey('${speaker.id}-$isChallenge'),
-          totalSeconds: controller.currentTurnSeconds,
-          onFinished: () {
-            if (isChallenge) {
-              controller.finishChallenge();
-            } else {
-              controller.advanceSpeaker();
-            }
-          },
-        ),
-        const SizedBox(height: 24),
-        ElevatedButton(
-          onPressed: () {
-            if (isChallenge) {
-              controller.finishChallenge();
-            } else {
-              controller.advanceSpeaker();
-            }
-          },
-          child: Text(isChallenge ? 'پایان چالش' : 'نفر بعدی'),
-        ),
-        if (!isIntro && !isChallenge) ...[
-          const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: controller.challengeEligiblePlayers.isEmpty
-                ? null
-                : () => _showChallengePicker(),
-            icon: const Icon(Icons.bolt),
-            label: const Text('چالش گرفتن یه بازیکن دیگه'),
+          const SizedBox(height: 16),
+          CountdownTimerWidget(
+            key: ValueKey('${speaker.id}-$isChallenge'),
+            totalSeconds: controller.currentTurnSeconds,
+            onFinished: () {
+              if (isChallenge) {
+                controller.finishChallenge();
+              } else {
+                controller.advanceSpeaker();
+              }
+            },
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () {
+              if (isChallenge) {
+                controller.finishChallenge();
+              } else {
+                controller.advanceSpeaker();
+              }
+            },
+            child: Text(isChallenge ? 'پایان چالش' : 'نفر بعدی'),
+          ),
+          if (!isIntro && !isChallenge) ...[
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: controller.challengeEligiblePlayers.isEmpty
+                  ? null
+                  : () => _showChallengePicker(),
+              icon: const Icon(Icons.bolt),
+              label: const Text('چالش گرفتن یه بازیکن دیگه'),
+            ),
+          ],
+          const SizedBox(height: 16),
+          Text(
+            'ترتیب باقی‌مانده: ${controller.alivePlayers.where((p) => !p.hasSpokenThisRound).length} نفر',
+            style: const TextStyle(color: Colors.white38, fontSize: 12),
           ),
         ],
-        const Spacer(),
-        Text(
-          'ترتیب باقی‌مانده: ${controller.alivePlayers.where((p) => !p.hasSpokenThisRound).length} نفر',
-          style: const TextStyle(color: Colors.white38, fontSize: 12),
-        ),
-      ],
+      ),
     );
   }
 
@@ -186,6 +190,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          if (controller.activeExecutionWord != null) ...[
+            _buildExecutionWordBanner(),
+            const SizedBox(height: 12),
+          ],
           const Text('همه صحبت کردن.', style: TextStyle(color: Colors.white70)),
           const SizedBox(height: 16),
           ElevatedButton(
@@ -209,6 +217,61 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             child: const Text('ادامه به شب معارفه'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildExecutionWordBanner() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.bloodRed.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.bloodRedLight),
+      ),
+      child: Column(
+        children: [
+          Text(
+            '⚖️ حکم اعدام صادر شده؛ کلمه‌ی ممنوع: «${controller.activeExecutionWord}»',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton(
+            onPressed: _showForbiddenWordPicker,
+            child: const Text('یکی این کلمه رو گفت!'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showForbiddenWordPicker() {
+    final targets = controller.alivePlayers;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceDark,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text('کی این کلمه رو گفت؟', style: TextStyle(color: AppColors.goldLight)),
+            ),
+            ...targets.map(
+              (p) => ListTile(
+                title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                onTap: () {
+                  controller.executePlayerForForbiddenWord(p.id);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -362,7 +425,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   // ---------- شب (بعد از معارفه) ----------
 
-  Widget _buildNightPlaceholder() {
+  Widget _buildNightPhase() {
     if (controller.lastNightSummary != null) {
       return Center(
         child: Column(
@@ -385,30 +448,42 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       );
     }
 
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          _buildLeaderDecisionSection(),
+          if (controller.canIssueExecutionOrder) ...[
+            const SizedBox(height: 24),
+            const Divider(color: AppColors.gold),
+            const SizedBox(height: 8),
+            _buildJudiciarySection(),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLeaderDecisionSection() {
     final leader = controller.valiFaghihPlayer;
     if (leader == null || !leader.isAlive) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'ولی‌فقیه در بازی نیست یا حذف شده؛ این شب اقدامی ثبت نمی‌شه.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white70),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: controller.finishNight,
-              child: const Text('پایان شب'),
-            ),
-          ],
-        ),
+      return Column(
+        children: [
+          const Text(
+            'ولی‌فقیه در بازی نیست یا حذف شده؛ این شب اقدامی ثبت نمی‌شه.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white70),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: controller.finishNight,
+            child: const Text('پایان شب'),
+          ),
+        ],
       );
     }
 
     if (!controller.nightActionTaken) {
       return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text('شب ${controller.roundNumber}', style: AppTheme.headingFont(size: 24)),
           const SizedBox(height: 4),
@@ -427,9 +502,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           const SizedBox(height: 12),
           ElevatedButton.icon(
             icon: const Icon(Icons.content_cut),
-            label: Text(
-              'سلاخی (${leader.slaughterChargesRemaining ?? 0} باقیمانده)',
-            ),
+            label: Text('سلاخی (${leader.slaughterChargesRemaining ?? 0} باقیمانده)'),
             style: ElevatedButton.styleFrom(
               minimumSize: const Size.fromHeight(50),
               backgroundColor: AppColors.bloodRedLight,
@@ -454,29 +527,75 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       );
     }
 
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (controller.slaughterResultMessage != null) ...[
-            Text(
-              controller.slaughterResultMessage!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white, fontSize: 16),
-            ),
-            const SizedBox(height: 20),
-          ] else if (controller.negotiateResultMessage != null) ...[
-            Text(
-              controller.negotiateResultMessage!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white, fontSize: 16),
-            ),
-            const SizedBox(height: 20),
-          ] else
-            const Text('تصمیمِ امشب ثبت شد.', style: TextStyle(color: Colors.white70)),
+    return Column(
+      children: [
+        if (controller.slaughterResultMessage != null) ...[
+          Text(
+            controller.slaughterResultMessage!,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white, fontSize: 16),
+          ),
+          const SizedBox(height: 20),
+        ] else if (controller.negotiateResultMessage != null) ...[
+          Text(
+            controller.negotiateResultMessage!,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white, fontSize: 16),
+          ),
+          const SizedBox(height: 20),
+        ] else
+          const Text('تصمیمِ امشب ثبت شد.', style: TextStyle(color: Colors.white70)),
+        ElevatedButton(
+          onPressed: controller.finishNight,
+          child: const Text('پایان شب'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildJudiciarySection() {
+    return Column(
+      children: [
+        const Text(
+          'رئیس قوه قضاییه می‌تونه (فقط یک‌بار در کل بازی) حکم اعدام صادر کنه:',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.gavel),
+          label: const Text('صدور حکم اعدام'),
+          onPressed: _showExecutionWordDialog,
+        ),
+      ],
+    );
+  }
+
+  void _showExecutionWordDialog() {
+    final wordController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.surfaceDark,
+        title: const Text('کلمه‌ی حکم اعدام', style: TextStyle(color: AppColors.goldLight)),
+        content: TextField(
+          controller: wordController,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(hintText: 'کلمه رو وارد کن'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('انصراف'),
+          ),
           ElevatedButton(
-            onPressed: controller.finishNight,
-            child: const Text('پایان شب'),
+            onPressed: () {
+              if (wordController.text.trim().isNotEmpty) {
+                controller.issueExecutionOrder(wordController.text);
+                Navigator.of(dialogContext).pop();
+              }
+            },
+            child: const Text('ثبت'),
           ),
         ],
       ),
@@ -513,9 +632,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   void _showNegotiatePicker() {
     final minister = controller.foreignMinisterPlayer;
-    final targets = controller.alivePlayers
-        .where((p) => minister == null || p.id != minister.id)
-        .toList();
+    final targets =
+        controller.alivePlayers.where((p) => minister == null || p.id != minister.id).toList();
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surfaceDark,
@@ -525,10 +643,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           children: [
             const Padding(
               padding: EdgeInsets.all(12),
-              child: Text(
-                'با کی می‌خوان مذاکره کنن؟',
-                style: TextStyle(color: AppColors.goldLight),
-              ),
+              child: Text('با کی می‌خوان مذاکره کنن؟', style: TextStyle(color: AppColors.goldLight)),
             ),
             ...targets.map(
               (p) => ListTile(

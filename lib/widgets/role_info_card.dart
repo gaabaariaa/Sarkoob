@@ -4,8 +4,8 @@ import '../models/team.dart';
 import '../theme/app_theme.dart';
 import 'ornate_frame.dart';
 
-/// کارت نمایش کامل یه نقش — همون حس‌وحالِ کارتی که طراحی شده:
-/// نوار عنوانِ تیم بالا، عکس نقش وسط، نوار اسمِ نقش پایینش، توضیح زیرش.
+/// کارت نمایش کامل یه نقش — نوار عنوانِ تیم بالا، عکس نقش (اگه باشه) وسط،
+/// نوار اسمِ نقش پایینش، توضیح زیرش.
 class RoleInfoCard extends StatelessWidget {
   final GameRole role;
   final GameTeam team;

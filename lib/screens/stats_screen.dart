@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
 /// این صفحه فعلاً فقط «طراحی ظاهری» آماره؛ داده‌هاش نمونه (mock) هستن.
-/// وقتی موتور بازی رو ساختیم، این سه بخش از تاریخچه‌ی واقعی پر می‌شن:
-/// ۱) بهترین/بدترین بازیکنِ آخرین بازی
-/// ۲) جدول رتبه‌بندی کلی (تعداد بازی، برد، درصد برد)
-/// ۳) تاریخچه‌ی کامل هر بازیکن: چه نقش‌هایی داشته و چیکار کرده
 class StatsScreen extends StatelessWidget {
   const StatsScreen({super.key});
 
@@ -16,7 +12,7 @@ class StatsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _SectionTitle('بهترین و بدترین بازیکنِ آخرین بازی'),
+          Text('بهترین و بدترین بازیکنِ آخرین بازی', style: AppTheme.headingFont(size: 20)),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -42,11 +38,11 @@ class StatsScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 28),
-          _SectionTitle('جدول رتبه‌بندی'),
+          Text('جدول رتبه‌بندی', style: AppTheme.headingFont(size: 20)),
           const SizedBox(height: 10),
           ..._mockLeaderboard.map((row) => _LeaderboardRow(row: row)),
           const SizedBox(height: 28),
-          _SectionTitle('تاریخچه‌ی کامل هر بازیکن'),
+          Text('تاریخچه‌ی کامل هر بازیکن', style: AppTheme.headingFont(size: 20)),
           const SizedBox(height: 4),
           const Text(
             'با زدن روی هر بازیکن، لیست همه‌ی بازی‌هاش، نقش هر بازی، '
@@ -67,10 +63,7 @@ class StatsScreen extends StatelessWidget {
                 iconColor: AppColors.gold,
                 title: Text(
                   row.name,
-                  style: const TextStyle(
-                    color: AppColors.goldLight,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
                   '${row.games} بازی — ${row.wins} برد',
@@ -82,8 +75,8 @@ class StatsScreen extends StatelessWidget {
                     child: Align(
                       alignment: Alignment.centerRight,
                       child: Text(
-                        '(نمونه) بازی ۱: نقش ولی‌فقیه — تیم سرکوب — برنده\n'
-                        '(نمونه) بازی ۲: نقش دکتر — تیم شهروند — بازنده',
+                        'نمونه — بازی ۱: نقش ولی‌فقیه، تیم سرکوب، برنده.\n'
+                        'نمونه — بازی ۲: نقش دکتر، تیم شهروند، بازنده.',
                         style: TextStyle(color: Colors.white70, height: 1.6),
                       ),
                     ),
@@ -110,16 +103,6 @@ const _mockLeaderboard = [
   _MockPlayerRow('سارا', 6, 3),
   _MockPlayerRow('رضا', 7, 2),
 ];
-
-class _SectionTitle extends StatelessWidget {
-  final String text;
-  const _SectionTitle(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(text, style: AppTheme.headingFont(size: 20));
-  }
-}
 
 class _HighlightCard extends StatelessWidget {
   final IconData icon;

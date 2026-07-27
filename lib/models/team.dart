@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 /// یه تیم توی یه سناریو (مثلاً «سرکوب» یا «شهروند»).
-/// این مدل، معادل TeamDef توی نسخه‌ی قبلی (Kotlin/Compose) اپه.
 class GameTeam {
   final String id;
   final String name;
@@ -16,8 +15,7 @@ class GameTeam {
   });
 }
 
-/// تیم‌های سناریوی «سرکوب» — طبق درخواست، فعلاً فقط تیم‌ها ساخته شدن؛
-/// نقش‌ها بعداً یکی‌یکی اضافه می‌شن.
+/// تیم‌های سناریوی «سرکوب».
 class SarkoobTeams {
   static const suppression = GameTeam(
     id: 'team_sorkoob',

@@ -3,42 +3,39 @@ import '../models/game_session.dart';
 import '../models/role.dart';
 import '../models/team.dart';
 
-/// نتیجه‌ی نهاییِ حل‌وفصل یه دور رأی‌گیری/دفاعیه.
+/// نتیجه‌ی نهاییِ حل‌وفصلِ رأی‌گیریِ یه روز.
 class VoteResolution {
   final String message;
-  final int? eliminatedPlayerId;
-
-  const VoteResolution({required this.message, this.eliminatedPlayerId});
+  const VoteResolution(this.message);
 }
 
-/// موتور اصلیِ گرداندن بازی: ترتیب صحبت روزها، چالش، رأی‌گیری و دفاعیه.
-/// منطق فاز شب (به‌جز شب معارفه) عمداً خالیه؛ بعد از تعریف نقش‌ها تکمیل می‌شه.
+/// موتور اصلی «گردانندگی» یه جلسه‌ی بازی: ترتیب صحبت، چالش، رأی‌گیری،
+/// دفاعیه، حذف، و شب (تصمیمِ رهبر سرکوب، مذاکره، حکم اعدام).
 class GameFlowController extends ChangeNotifier {
   final List<SessionPlayer> players;
-  final GameSettings settings;
+  GameSettings settings;
 
   GamePhaseType phase = GamePhaseType.introDay;
-  int roundNumber = 0; // ۰ برای معارفه؛ ۱و۲و... برای روز/شب عادی
-
-  /// ترتیب نوبت صحبت (شناسه‌ی بازیکن‌ها)، بر اساس بازیکن‌های زنده.
-  List<int> _speakingOrder = [];
-  int _speakerPointer = 0;
-
-  VoteResolution? lastResolution;
+  int roundNumber = 0;
 
   GameFlowController({required this.players, required this.settings}) {
     _rebuildSpeakingOrder();
   }
 
-  List<SessionPlayer> get alivePlayers =>
-      players.where((p) => p.isAlive).toList();
-
-  int get aliveCount => players.where((p) => p.isAlive).length;
+  List<SessionPlayer> get alivePlayers => players.where((p) => p.isAlive).toList();
 
   SessionPlayer playerById(int id) => players.firstWhere((p) => p.id == id);
 
+  int get aliveCount => alivePlayers.length;
+  int get majorityThreshold => (aliveCount / 2).ceil();
+
+  // ---------- ترتیب صحبت ----------
+
+  List<int> _speakingOrder = [];
+  int _speakerPointer = 0;
+
   void _rebuildSpeakingOrder() {
-    _speakingOrder = players.where((p) => p.isAlive).map((p) => p.id).toList();
+    _speakingOrder = alivePlayers.map((p) => p.id).toList();
     _speakerPointer = 0;
     for (final p in players) {
       p.hasSpokenThisRound = false;
@@ -46,31 +43,11 @@ class GameFlowController extends ChangeNotifier {
     }
   }
 
-  SessionPlayer? get currentSpeaker {
-    if (_speakerPointer >= _speakingOrder.length) return null;
-    return playerById(_speakingOrder[_speakerPointer]);
-  }
+  SessionPlayer? get currentSpeaker =>
+      _speakerPointer < _speakingOrder.length ? playerById(_speakingOrder[_speakerPointer]) : null;
 
   bool get isSpeakingRoundDone => _speakerPointer >= _speakingOrder.length;
 
-  /// وقتی نوبتِ عادیِ بازیکن فعلی تموم شد (نه چالش)، برو سراغ نفر بعد.
-  void advanceSpeaker() {
-    final speaker = currentSpeaker;
-    if (speaker != null) speaker.hasSpokenThisRound = true;
-    _speakerPointer++;
-    notifyListeners();
-  }
-
-  /// بازیکن‌های واجد شرایط برای گرفتن چالش امروز (زنده، چالشِ امروزشون
-  /// استفاده نشده، و بازیکن فعلی نباشن).
-  List<SessionPlayer> get challengeEligiblePlayers {
-    final currentId = currentSpeaker?.id;
-    return players
-        .where((p) => p.isAlive && !p.challengeUsedToday && p.id != currentId)
-        .toList();
-  }
-
-  /// شناسه‌ی بازیکنی که همین الان (به‌خاطر چالش) داره خارج از نوبت صحبت می‌کنه.
   int? _activeChallengerId;
   int? get activeChallengerId => _activeChallengerId;
 
@@ -87,8 +64,22 @@ class GameFlowController extends ChangeNotifier {
     return settings.speakSeconds;
   }
 
-  /// یه بازیکن چالش می‌گیره و به‌جای صحبتِ الان، خودش صحبت می‌کنه؛
-  /// بعدش نوبتِ بازیکنِ فعلی (که ازش چالش گرفته شده) دست‌نخورده می‌مونه.
+  void advanceSpeaker() {
+    final speaker = currentSpeaker;
+    if (speaker != null) speaker.hasSpokenThisRound = true;
+    _speakerPointer++;
+    notifyListeners();
+  }
+
+  /// بازیکن‌هایی که الان می‌تونن چالش بگیرن (فقط توی روزهای عادی)
+  List<SessionPlayer> get challengeEligiblePlayers {
+    if (phase != GamePhaseType.day) return const [];
+    return alivePlayers
+        .where((p) => !p.challengeUsedToday && p.id != speakerForDisplay?.id)
+        .toList();
+  }
+
+  /// یه بازیکن چالش می‌گیره؛ بعدش نوبتِ عادی دست‌نخورده می‌مونه.
   void useChallenge(int challengerId) {
     final challenger = playerById(challengerId);
     challenger.challengeUsedToday = true;
@@ -96,20 +87,12 @@ class GameFlowController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// وقتی صحبتِ چالش تموم شد، برمی‌گردیم به نوبتِ عادی (دست‌نخورده مونده).
   void finishChallenge() {
     _activeChallengerId = null;
     notifyListeners();
   }
 
   // ---------- انتقال بین فازها ----------
-
-  void startIntroDay() {
-    phase = GamePhaseType.introDay;
-    roundNumber = 0;
-    _rebuildSpeakingOrder();
-    notifyListeners();
-  }
 
   void moveToIntroNight() {
     phase = GamePhaseType.introNight;
@@ -128,38 +111,20 @@ class GameFlowController extends ChangeNotifier {
       p.votes = 0;
     }
     lastResolution = null;
+    if (pendingExecutionWord != null) {
+      activeExecutionWord = pendingExecutionWord;
+      pendingExecutionWord = null;
+    }
     notifyListeners();
   }
 
-  List<int> _defenseCandidateIds = [];
-  int _defensePointer = 0;
-  bool _isSecondRound = false;
-
-  List<SessionPlayer> get defenseCandidates =>
-      _defenseCandidateIds.map(playerById).toList();
-
-  /// آیا الان توی بازه‌ی دفاعیه‌ایم؟ (از لحظه‌ی مشخص شدنِ نفرات دفاعیه تا
-  /// شروعِ رأی‌گیریِ نهایی، شاملِ لحظه‌ای که همه‌ی نفرات صحبت کردن و
-  /// منتظر دکمه‌ی «شروع رأی‌گیری نهایی»ایم.)
-  bool get inDefense =>
-      _defenseCandidateIds.isNotEmpty && !_isSecondRound && lastResolution == null;
-
-  SessionPlayer? get currentDefenseSpeaker {
-    if (_defensePointer >= _defenseCandidateIds.length) return null;
-    return playerById(_defenseCandidateIds[_defensePointer]);
-  }
-
-  bool get isDefenseRoundDone => _defensePointer >= _defenseCandidateIds.length;
-
-  void advanceDefenseSpeaker() {
-    _defensePointer++;
-    notifyListeners();
-  }
+  // ---------- رأی‌گیری دور اول ----------
 
   bool votingStarted = false;
 
   void startVoting() {
     votingStarted = true;
+    activeExecutionWord = null; // پنجره‌ی «کلمه‌ی ممنوع» با شروعِ رأی‌گیری بسته می‌شه
     for (final p in alivePlayers) {
       p.votes = 0;
     }
@@ -177,24 +142,46 @@ class GameFlowController extends ChangeNotifier {
     notifyListeners();
   }
 
+  List<int> _defenseCandidateIds = [];
+  int _defensePointer = 0;
+  bool _isSecondRound = false;
+  VoteResolution? lastResolution;
+
+  List<SessionPlayer> get defenseCandidates => _defenseCandidateIds.map(playerById).toList();
+
+  /// آیا الان توی بازه‌ی دفاعیه‌ایم؟
+  bool get inDefense =>
+      _defenseCandidateIds.isNotEmpty && !_isSecondRound && lastResolution == null;
+
+  bool get isSecondVoteRound => _isSecondRound;
+
   /// بعد از رأی‌گیریِ اول: چه کسانی وارد دفاعیه می‌شن؟
-  /// اگه کسی به آستانه نرسید، لیست خالی برمی‌گرده (یعنی امروز کسی حذف نمی‌شه).
-  List<SessionPlayer> resolveFirstVoteRound() {
-    final threshold = (aliveCount / 2).ceil();
-    final candidates = players
-        .where((p) => p.isAlive && p.votes >= threshold)
+  void resolveFirstVoteRound() {
+    _defenseCandidateIds = alivePlayers
+        .where((p) => p.votes >= majorityThreshold)
+        .map((p) => p.id)
         .toList();
-    _defenseCandidateIds = candidates.map((p) => p.id).toList();
     _defensePointer = 0;
-    _isSecondRound = false;
     if (_defenseCandidateIds.isEmpty) {
-      lastResolution = const VoteResolution(message: 'امروز کسی رأی کافی برای دفاعیه نیاورد.');
+      lastResolution = const VoteResolution('هیچ‌کس رأی کافی نیاورد؛ امروز کسی وارد دفاعیه نشد.');
     }
     notifyListeners();
-    return candidates;
   }
 
-  /// شروع دور دوم رأی‌گیری (فقط بین نفرات دفاعیه‌رفته).
+  // ---------- دفاعیه ----------
+
+  SessionPlayer? get currentDefenseSpeaker {
+    if (_defensePointer >= _defenseCandidateIds.length) return null;
+    return playerById(_defenseCandidateIds[_defensePointer]);
+  }
+
+  bool get isDefenseRoundDone => _defensePointer >= _defenseCandidateIds.length;
+
+  void advanceDefenseSpeaker() {
+    _defensePointer++;
+    notifyListeners();
+  }
+
   void startSecondVoteRound() {
     _isSecondRound = true;
     for (final id in _defenseCandidateIds) {
@@ -203,91 +190,58 @@ class GameFlowController extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool get isSecondVoteRound => _isSecondRound;
-
-  /// حل‌وفصل نهاییِ رأی‌گیریِ دوم طبق قوانین گفته‌شده.
-  VoteResolution resolveSecondVoteRound() {
-    final candidates = defenseCandidates;
-    final threshold = (aliveCount / 2).ceil();
-
-    if (candidates.length == 1) {
-      final only = candidates.first;
-      if (only.votes >= threshold) {
+  void resolveSecondVoteRound() {
+    if (_defenseCandidateIds.length == 1) {
+      final only = playerById(_defenseCandidateIds.first);
+      if (only.votes >= majorityThreshold) {
         only.isAlive = false;
-        lastResolution = VoteResolution(
-          message: '«${only.name}» با رأی کافی حذف شد.',
-          eliminatedPlayerId: only.id,
-        );
+        lastResolution = VoteResolution('«${only.name}» با رأی کافی حذف شد.');
       } else {
-        only.recordCount += 1;
-        lastResolution = VoteResolution(
-          message: '«${only.name}» رأی کافی نیاورد و سابقه‌دار شد.',
-        );
+        only.recordCount++;
+        lastResolution = VoteResolution('«${only.name}» رأی کافی نیاورد و سابقه‌دار شد.');
       }
-      return lastResolution!;
-    }
+    } else if (_defenseCandidateIds.isNotEmpty) {
+      final candidates = _defenseCandidateIds.map(playerById).toList();
+      final maxVotes = candidates.map((p) => p.votes).reduce((a, b) => a > b ? a : b);
+      final topByVotes = candidates.where((p) => p.votes == maxVotes).toList();
 
-    final maxVotes = candidates.map((p) => p.votes).reduce((a, b) => a > b ? a : b);
-    final topByVotes = candidates.where((p) => p.votes == maxVotes).toList();
-
-    if (topByVotes.length == 1) {
-      final eliminated = topByVotes.first;
-      eliminated.isAlive = false;
-      for (final p in candidates) {
-        if (p.id != eliminated.id) p.recordCount += 1;
+      SessionPlayer? eliminated;
+      if (topByVotes.length == 1) {
+        eliminated = topByVotes.first;
+      } else {
+        final maxRecord = topByVotes.map((p) => p.recordCount).reduce((a, b) => a > b ? a : b);
+        final topByRecord = topByVotes.where((p) => p.recordCount == maxRecord).toList();
+        if (topByRecord.length == 1) {
+          eliminated = topByRecord.first;
+        }
       }
-      lastResolution = VoteResolution(
-        message: '«${eliminated.name}» با بیشترین رأی حذف شد.',
-        eliminatedPlayerId: eliminated.id,
-      );
-      return lastResolution!;
-    }
 
-    // رأی‌ها برابره؛ سراغ سابقه می‌ریم
-    final maxRecord = topByVotes.map((p) => p.recordCount).reduce((a, b) => a > b ? a : b);
-    final topByRecord = topByVotes.where((p) => p.recordCount == maxRecord).toList();
-
-    if (topByRecord.length == 1) {
-      final eliminated = topByRecord.first;
-      eliminated.isAlive = false;
-      for (final p in candidates) {
-        if (p.id != eliminated.id) p.recordCount += 1;
+      if (eliminated != null) {
+        final eliminatedId = eliminated.id;
+        eliminated.isAlive = false;
+        for (final p in candidates) {
+          if (p.id != eliminatedId) p.recordCount++;
+        }
+        lastResolution = VoteResolution('«${eliminated.name}» حذف شد.');
+      } else {
+        for (final p in candidates) {
+          p.recordCount++;
+        }
+        lastResolution = const VoteResolution('رأی و سابقه‌ی نفرات دفاعیه برابر بود؛ امروز کسی حذف نشد.');
       }
-      lastResolution = VoteResolution(
-        message: '«${eliminated.name}» به‌خاطر سابقه‌ی بیشتر حذف شد.',
-        eliminatedPlayerId: eliminated.id,
-      );
-      return lastResolution!;
     }
 
-    // سابقه‌ها هم برابره؛ هیچ‌کس حذف نمی‌شه
-    for (final p in candidates) {
-      p.recordCount += 1;
-    }
-    lastResolution = const VoteResolution(
-      message: 'رأی و سابقه‌ی نفرات دفاعیه برابر بود؛ امروز کسی حذف نشد.',
-    );
-    return lastResolution!;
-  }
-
-  void moveToNight(int nightNumber) {
-    phase = GamePhaseType.night;
-    roundNumber = nightNumber;
-    _pendingHits.clear();
-    _savedPlayerId = null;
-    _nightActionTaken = false;
-    slaughterResultMessage = null;
-    negotiateResultMessage = null;
-    lastNightSummary = null;
+    _isSecondRound = false;
     notifyListeners();
   }
 
-  // ---------- شب: تصمیمِ رهبر تیم سرکوب (شات یا سلاخی) ----------
+  // ---------- شب: تصمیمِ رهبر تیم سرکوب (شات / سلاخی / مذاکره) ----------
 
   final Map<int, int> _pendingHits = {}; // targetId -> تعداد ضربه‌ی وارده
   int? _savedPlayerId; // فعلاً هیچ نقشی ست‌ش نمی‌کنه؛ برای دکتر در آینده آماده‌ست
   bool _nightActionTaken = false;
   String? slaughterResultMessage;
+  String? negotiateResultMessage;
   String? lastNightSummary;
 
   bool get nightActionTaken => _nightActionTaken;
@@ -307,15 +261,12 @@ class GameFlowController extends ChangeNotifier {
   }
 
   /// آیا حداقل یه عضوِ تیم سرکوب تا الان از بازی خارج شده؟
-  /// (شرطِ فعال‌شدنِ قابلیتِ اغفال/مذاکره)
-  bool get sorkoobHasLostMember => players.any(
-        (p) => p.teamId == SarkoobTeams.suppression.id && !p.isAlive,
-      );
+  bool get sorkoobHasLostMember =>
+      players.any((p) => p.teamId == SarkoobTeams.suppression.id && !p.isAlive);
 
   /// شهروندهای «خاکستری»: زنده، عضو تیم شهروند، و بدون نقشِ خاص.
   List<SessionPlayer> get grayCitizens => players
-      .where((p) =>
-          p.isAlive && p.teamId == SarkoobTeams.citizen.id && p.roleId == null)
+      .where((p) => p.isAlive && p.teamId == SarkoobTeams.citizen.id && p.roleId == null)
       .toList();
 
   bool get canUseNegotiate {
@@ -326,14 +277,9 @@ class GameFlowController extends ChangeNotifier {
     return true;
   }
 
-  String? negotiateResultMessage;
-
-  /// تصمیمِ «مذاکره»: اگه هدف شهروندِ خاکستری باشه موفقه و به تیم سرکوب
-  /// (به‌عنوان «سرکوبگر») می‌پیونده؛ وگرنه مذاکره شکست می‌خوره.
   void leaderNegotiate(int targetId) {
     final target = playerById(targetId);
-    final isGrayCitizen =
-        target.teamId == SarkoobTeams.citizen.id && target.roleId == null;
+    final isGrayCitizen = target.teamId == SarkoobTeams.citizen.id && target.roleId == null;
     if (isGrayCitizen) {
       target.teamId = SarkoobTeams.suppression.id;
       target.roleId = SarkoobRoles.suppressor.id;
@@ -345,16 +291,12 @@ class GameFlowController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// تصمیم «شات»: یه هدف رو برای حذفِ تیمی نشون می‌کنه (ممکنه با ضربه‌های
-  /// دیگه‌ای که بعداً نقش‌های دیگه اضافه می‌کنن جمع بشه).
   void leaderShoot(int targetId) {
     _pendingHits[targetId] = (_pendingHits[targetId] ?? 0) + 1;
     _nightActionTaken = true;
     notifyListeners();
   }
 
-  /// تصمیم «سلاخی»: حدسِ نقشِ یه بازیکن. اگه درست باشه، مستقیم (بدون
-  /// امکان نجات) حذف می‌شه؛ اگه غلط باشه، یه ظرفیتِ سلاخی مصرف می‌شه.
   void leaderSlaughter(int targetId, String guessedRoleId) {
     final leader = valiFaghihPlayer;
     if (leader == null) return;
@@ -374,7 +316,61 @@ class GameFlowController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// پایانِ شب: همه‌ی ضربه‌های واردشده رو با نجات/زره حل‌وفصل می‌کنه.
+  // ---------- رئیس قوه قضاییه: حکم اعدام (مستقل از تصمیمِ بالا) ----------
+
+  String? pendingExecutionWord; // کلمه‌ای که شب گفته شده، هنوز اعلام نشده
+  String? activeExecutionWord; // کلمه‌ای که امروز فعاله و گرداننده اعلامش کرده
+
+  SessionPlayer? get judiciaryChiefPlayer {
+    for (final p in players) {
+      if (p.roleId == SarkoobRoles.judiciaryChief.id) return p;
+    }
+    return null;
+  }
+
+  bool get canIssueExecutionOrder {
+    final chief = judiciaryChiefPlayer;
+    return chief != null && chief.isAlive && !chief.executionOrderUsed;
+  }
+
+  void issueExecutionOrder(String word) {
+    final chief = judiciaryChiefPlayer;
+    if (chief == null) return;
+    chief.executionOrderUsed = true;
+    pendingExecutionWord = word.trim();
+    notifyListeners();
+  }
+
+  /// آیا الان «وکیل مردمی» هست که هنوز قابلیتش رو مصرف نکرده؟ این نقش
+  /// هنوز تعریف نشده، پس فعلاً همیشه false برمی‌گرده تا وقتی اضافه بشه.
+  bool get hasUnusedPublicDefender => false; // TODO: وقتی «وکیل مردمی» اضافه شد این رو کامل کن
+
+  void executePlayerForForbiddenWord(int playerId) {
+    final player = playerById(playerId);
+    if (hasUnusedPublicDefender) {
+      player.isAlive = false;
+      player.isHalfAlive = true;
+    } else {
+      player.isAlive = false;
+    }
+    activeExecutionWord = null;
+    notifyListeners();
+  }
+
+  // ---------- پایانِ شب ----------
+
+  void moveToNight(int nightNumber) {
+    phase = GamePhaseType.night;
+    roundNumber = nightNumber;
+    _pendingHits.clear();
+    _savedPlayerId = null;
+    _nightActionTaken = false;
+    slaughterResultMessage = null;
+    negotiateResultMessage = null;
+    lastNightSummary = null;
+    notifyListeners();
+  }
+
   void finishNight() {
     final messages = <String>[];
     _pendingHits.forEach((targetId, hitCount) {

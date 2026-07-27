@@ -72,7 +72,7 @@ class _TeamSection extends StatelessWidget {
               (role) => ListTile(
                 dense: true,
                 title: Text(role.name, style: const TextStyle(color: Colors.white)),
-                trailing: const Icon(Icons.image, color: AppColors.gold, size: 18),
+                trailing: const Icon(Icons.badge, color: AppColors.gold, size: 18),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => _RolePreviewScreen(role: role, team: team),

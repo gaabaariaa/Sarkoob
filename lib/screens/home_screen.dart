@@ -33,8 +33,6 @@ class HomeScreen extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      // TODO: اینجا جای عکس/آرت اختصاصی شماست.
-                      // فعلاً یه آیکون ساده به‌جای عکس گذاشته شده.
                       const Icon(
                         Icons.theater_comedy,
                         size: 80,

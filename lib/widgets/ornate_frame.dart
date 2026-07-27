@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-/// یه قاب تزئینی طلایی با نشان‌های کوچیک لوزی‌شکل در چهار گوشه —
-/// جایگزین ساده‌ی حاشیه‌های تزئینیِ کلاسیک، بدون نیاز به فایل تصویری خاص.
-/// اگه بعداً یه فریم گرافیکی اختصاصی (PNG/SVG) داشتید، همینجا می‌تونیم
-/// جایگزینش کنیم.
+/// یه قاب تزئینی طلایی با نشان‌های کوچیک در چهار گوشه.
 class OrnateFrame extends StatelessWidget {
   final Widget child;
   final double borderRadius;
@@ -53,7 +50,7 @@ class _CornerMark extends StatelessWidget {
   }
 }
 
-/// یه جداکننده‌ی تزئینی: خط--لوزی--خط، برای زیر عنوان‌های اصلی.
+/// یه جداکننده‌ی تزئینی: خط--نشان--خط، برای زیر عنوان‌های اصلی.
 class OrnateDivider extends StatelessWidget {
   final double lineWidth;
 

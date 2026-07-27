@@ -3,8 +3,6 @@ import '../models/team.dart';
 import '../theme/app_theme.dart';
 
 /// کارتی که بازیکن روی اسمش می‌زنه تا (فعلاً) تیمش رو ببینه.
-/// وقتی نقش‌ها رو یکی‌یکی اضافه کردیم، همین کارت جای «تیم» یه
-/// «نقش کامل» (اسم نقش + توضیح + قابلیت‌ها) نشون می‌ده.
 class TeamRevealCard extends StatefulWidget {
   final GameTeam team;
   final String playerName;

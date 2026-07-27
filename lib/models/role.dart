@@ -16,8 +16,8 @@ class GameRole {
   final String teamId;
   final String description;
 
-  /// بعضی نقش‌ها (مثل «سرکوبگر»ی که از مذاکره به‌وجود میاد) کارت اختصاصی
-  /// ندارن؛ برای همین این فیلد nullable ـه.
+  /// فعلاً عکس‌ها موقتاً حذف شدن (برای کم‌کردن حجم)؛ بعداً که همه‌ی
+  /// نقش‌ها آماده شدن، یه‌جا اضافه می‌شن. تا اون‌موقع همیشه null ـه.
   final String? imageAsset;
 
   final NightActionKind nightAction;
@@ -30,6 +30,9 @@ class GameRole {
   // ---- فیلدِ مخصوص وزیر امور خارجه ----
   final bool canNegotiate; // قابلیت اغفال/مذاکره داره؟
 
+  // ---- فیلدِ مخصوص رئیس قوه قضاییه ----
+  final bool canIssueExecutionOrder; // قابلیت صدور حکم اعدام داره؟
+
   const GameRole({
     required this.id,
     required this.name,
@@ -41,6 +44,7 @@ class GameRole {
     this.hasNightArmor = false,
     this.canSlaughter = false,
     this.canNegotiate = false,
+    this.canIssueExecutionOrder = false,
   });
 }
 
@@ -50,7 +54,6 @@ class SarkoobRoles {
     id: 'role_vali_faghih',
     name: 'ولی فقیه',
     teamId: SarkoobTeams.suppression.id,
-    imageAsset: 'assets/roles/vali_faghih.jpg',
     description:
         'رهبر تیم سرکوب و تصمیم‌گیرنده‌ی نهایی. هر شب با تیم سرکوب بیدار می‌شه؛ '
         'بقیه‌ی اعضا نظر می‌دن، ولی فقط اون تصمیم نهایی رو می‌گیره: یا شاتِ '
@@ -68,7 +71,6 @@ class SarkoobRoles {
     id: 'role_foreign_minister',
     name: 'وزیر امور خارجه',
     teamId: SarkoobTeams.suppression.id,
-    imageAsset: 'assets/roles/zarif.jpg',
     description:
         'پس از بیرون رفتنِ یکی از اعضای تیم سرکوب از بازی، فعال می‌شه. از اون '
         'به بعد، تیم سرکوب می‌تونه به‌جای شاتِ شبانه، از قابلیتِ «اغفال» '
@@ -91,7 +93,25 @@ class SarkoobRoles {
         'شهروندِ خاکستری تبدیل شده به این نقش.',
   );
 
-  static final List<GameRole> all = [valiFaghih, foreignMinister, suppressor];
+  static final judiciaryChief = GameRole(
+    id: 'role_judiciary_chief',
+    name: 'رئیس قوه قضاییه',
+    teamId: SarkoobTeams.suppression.id,
+    description:
+        'یک‌بار در طول بازی، مستقل از تصمیمِ ولی‌فقیه، می‌تونه شب یه کلمه رو '
+        'به گرداننده اعلام کنه. فردا صبح گرداننده اعلام می‌کنه که قوه‌ی '
+        'قضاییه حکمِ اعدام صادر کرده و اون کلمه رو به همه می‌گه. اگه همون روز '
+        '(قبل از شروعِ رأی‌گیری) هر بازیکنی اون کلمه رو به زبون بیاره، همون '
+        'لحظه از بازی خارج می‌شه — حتی اگه خودش عضوِ تیم سرکوب باشه.',
+    canIssueExecutionOrder: true,
+  );
+
+  static final List<GameRole> all = [
+    valiFaghih,
+    foreignMinister,
+    suppressor,
+    judiciaryChief,
+  ];
 
   static GameRole? byId(String id) {
     for (final r in all) {

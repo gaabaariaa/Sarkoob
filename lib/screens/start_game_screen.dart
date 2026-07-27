@@ -5,27 +5,16 @@ import '../models/team.dart';
 import '../theme/app_theme.dart';
 import 'role_reveal_screen.dart';
 
-class _DraftPlayer {
-  String name;
-  String teamId;
-  _DraftPlayer(this.name, {this.teamId = 'team_citizen'});
-}
-
-class StartGameScreen extends StatefulWidget {
-  const StartGameScreen({super.key});
-
-  @override
-  State<StartGameScreen> createState() => _StartGameScreenState();
-}
-
 class _StartGameScreenState extends State<StartGameScreen> {
-  final List<_DraftPlayer> _draftPlayers = [];
+  final List<String> _draftPlayers = [];
   final TextEditingController _nameController = TextEditingController();
   int _speakSeconds = 60;
 
-  // تیم سرکوب و شهروند همیشه اجباری‌ان؛ فقط یکی از دو تیم مستقل، اختیاریه.
   bool _includeMossad = false;
   bool _includeMek = false;
+
+  int _sorkoobCount = 1;
+  int _independentCount = 1;
 
   static const int _minPlayers = 9;
 
@@ -35,23 +24,10 @@ class _StartGameScreenState extends State<StartGameScreen> {
     super.dispose();
   }
 
-  List<GameTeam> get _activeTeams => [
-        SarkoobTeams.suppression,
-        SarkoobTeams.citizen,
-        if (_includeMossad) SarkoobTeams.mossad,
-        if (_includeMek) SarkoobTeams.mek,
-      ];
-
   void _setIndependentTeam({required bool mossad, required bool mek}) {
     setState(() {
       _includeMossad = mossad;
       _includeMek = mek;
-      final validIds = _activeTeams.map((t) => t.id).toSet();
-      for (final p in _draftPlayers) {
-        if (!validIds.contains(p.teamId)) {
-          p.teamId = SarkoobTeams.citizen.id;
-        }
-      }
     });
   }
 
@@ -59,7 +35,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
     setState(() {
-      _draftPlayers.add(_DraftPlayer(name));
+      _draftPlayers.add(name);
       _nameController.clear();
     });
   }
@@ -68,24 +44,26 @@ class _StartGameScreenState extends State<StartGameScreen> {
     setState(() => _draftPlayers.removeAt(index));
   }
 
-  int _countInTeam(String teamId) =>
-      _draftPlayers.where((p) => p.teamId == teamId).length;
+  bool get _includeIndependent => _includeMossad || _includeMek;
+
+  int get _independentTotal => _includeIndependent ? _independentCount : 0;
+
+  int get _citizenCount => _draftPlayers.length - _sorkoobCount - _independentTotal;
 
   String? get _validationError {
-    if (_draftPlayers.length < _minPlayers) {
-      return 'حداقل $_minPlayers بازیکن لازمه (الان ${_draftPlayers.length} نفر)';
+    final total = _draftPlayers.length;
+    if (total < _minPlayers) {
+      return 'حداقل $_minPlayers بازیکن لازمه (الان $total نفر)';
     }
-    if (_countInTeam(SarkoobTeams.suppression.id) == 0) {
-      return 'حداقل یک نفر باید عضو تیم سرکوب باشه';
+    if (_sorkoobCount < 1) {
+      return 'تیم سرکوب باید حداقل ۱ نفر داشته باشه';
     }
-    if (_countInTeam(SarkoobTeams.citizen.id) == 0) {
-      return 'حداقل یک نفر باید عضو تیم مقاومت (شهروند) باشه';
+    if (_includeIndependent && _independentCount < 1) {
+      return 'تیم مستقل انتخاب شده؛ باید حداقل ۱ نفر داشته باشه';
     }
-    if (_includeMossad && _countInTeam(SarkoobTeams.mossad.id) == 0) {
-      return 'تیم موساد رو انتخاب کردی ولی هیچ بازیکنی بهش اختصاص ندادی';
-    }
-    if (_includeMek && _countInTeam(SarkoobTeams.mek.id) == 0) {
-      return 'تیم مجاهدین خلق رو انتخاب کردی ولی هیچ بازیکنی بهش اختصاص ندادی';
+    if (_citizenCount < 1) {
+      return 'با این تعداد، کسی برای تیم مقاومت (شهروند) نمی‌مونه؛ '
+          'تعداد سرکوب/تیم مستقل رو کم کن';
     }
     return null;
   }
@@ -93,8 +71,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   bool get _isPowerUnbalanced {
     final total = _draftPlayers.length;
     if (total == 0) return false;
-    final citizenCount = _countInTeam(SarkoobTeams.citizen.id);
-    return citizenCount < (total * 2 / 3);
+    return _citizenCount < (total * 2 / 3);
   }
 
   Future<void> _onStartPressed() async {
@@ -135,37 +112,60 @@ class _StartGameScreenState extends State<StartGameScreen> {
   }
 
   void _startGame() {
-    final totalPlayers = _draftPlayers.length;
-    final slaughterCharges = (totalPlayers / 6).floor().clamp(1, 999);
+    final total = _draftPlayers.length;
+    final order = List<int>.generate(total, (i) => i)..shuffle();
 
-    // انتخابِ تصادفیِ «ولی‌فقیه» و «وزیر امور خارجه» از بین اعضای تیم سرکوب —
-    // کاملاً با خودِ برنامه، هر کدوم به یه بازیکنِ متفاوت.
-    final sorkoobIndices = <int>[
-      for (var i = 0; i < _draftPlayers.length; i++)
-        if (_draftPlayers[i].teamId == SarkoobTeams.suppression.id) i,
-    ];
-    sorkoobIndices.shuffle();
-    final valiFaghihIndex = sorkoobIndices.isNotEmpty ? sorkoobIndices[0] : null;
-    final foreignMinisterIndex = sorkoobIndices.length > 1 ? sorkoobIndices[1] : null;
+    final independentTeamId =
+        _includeMossad ? SarkoobTeams.mossad.id : (_includeMek ? SarkoobTeams.mek.id : null);
+
+    final sorkoobSet = order.take(_sorkoobCount).toSet();
+    final independentSet = _includeIndependent
+        ? order.skip(_sorkoobCount).take(_independentCount).toSet()
+        : <int>{};
+
+    final sorkoobShuffled = sorkoobSet.toList()..shuffle();
+    final valiFaghihIndex = sorkoobShuffled.isNotEmpty ? sorkoobShuffled[0] : null;
+    final foreignMinisterIndex = sorkoobShuffled.length > 1 ? sorkoobShuffled[1] : null;
+    final judiciaryChiefIndex = sorkoobShuffled.length > 2 ? sorkoobShuffled[2] : null;
+
+    final slaughterCharges = (total / 6).floor().clamp(1, 999);
 
     final players = <SessionPlayer>[];
-    for (var i = 0; i < _draftPlayers.length; i++) {
-      final d = _draftPlayers[i];
+    for (var i = 0; i < total; i++) {
+      final String teamId;
+      if (sorkoobSet.contains(i)) {
+        teamId = SarkoobTeams.suppression.id;
+      } else if (independentSet.contains(i)) {
+        teamId = independentTeamId!;
+      } else {
+        teamId = SarkoobTeams.citizen.id;
+      }
+
       final isValiFaghih = i == valiFaghihIndex;
       final isForeignMinister = i == foreignMinisterIndex;
+      final isJudiciaryChief = i == judiciaryChiefIndex;
+
+      String? roleId;
+      if (isValiFaghih) {
+        roleId = SarkoobRoles.valiFaghih.id;
+      } else if (isForeignMinister) {
+        roleId = SarkoobRoles.foreignMinister.id;
+      } else if (isJudiciaryChief) {
+        roleId = SarkoobRoles.judiciaryChief.id;
+      }
+
       players.add(
         SessionPlayer(
           id: i + 1,
-          name: d.name,
-          teamId: d.teamId,
-          roleId: isValiFaghih
-              ? SarkoobRoles.valiFaghih.id
-              : (isForeignMinister ? SarkoobRoles.foreignMinister.id : null),
+          name: _draftPlayers[i],
+          teamId: teamId,
+          roleId: roleId,
           hasArmor: isValiFaghih,
           slaughterChargesRemaining: isValiFaghih ? slaughterCharges : null,
         ),
       );
     }
+
     final settings = GameSettings(speakSeconds: _speakSeconds);
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
@@ -178,47 +178,13 @@ class _StartGameScreenState extends State<StartGameScreen> {
   Widget build(BuildContext context) {
     final introSeconds = (_speakSeconds / 2).round();
     final error = _validationError;
+    final total = _draftPlayers.length;
 
     return Scaffold(
       appBar: AppBar(title: const Text('شروع بازی')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text('تیم‌های بازی', style: AppTheme.headingFont(size: 20)),
-          const SizedBox(height: 4),
-          const Text(
-            'سرکوب و مقاومت (شهروند) همیشه تو بازی‌ان. حداکثر یکی از دو تیم '
-            'مستقل رو هم می‌تونی اضافه کنی.',
-            style: TextStyle(color: Colors.white60, fontSize: 12),
-          ),
-          const SizedBox(height: 10),
-          _lockedTeamChip(SarkoobTeams.suppression),
-          const SizedBox(height: 6),
-          _lockedTeamChip(SarkoobTeams.citizen),
-          const SizedBox(height: 10),
-          RadioListTile<String>(
-            value: 'none',
-            groupValue: _includeMossad ? 'mossad' : (_includeMek ? 'mek' : 'none'),
-            onChanged: (_) => _setIndependentTeam(mossad: false, mek: false),
-            activeColor: AppColors.gold,
-            title: const Text('بدون تیم مستقل', style: TextStyle(color: Colors.white)),
-          ),
-          RadioListTile<String>(
-            value: 'mossad',
-            groupValue: _includeMossad ? 'mossad' : (_includeMek ? 'mek' : 'none'),
-            onChanged: (_) => _setIndependentTeam(mossad: true, mek: false),
-            activeColor: SarkoobTeams.mossad.color,
-            title: Text(SarkoobTeams.mossad.name, style: const TextStyle(color: Colors.white)),
-          ),
-          RadioListTile<String>(
-            value: 'mek',
-            groupValue: _includeMossad ? 'mossad' : (_includeMek ? 'mek' : 'none'),
-            onChanged: (_) => _setIndependentTeam(mossad: false, mek: true),
-            activeColor: SarkoobTeams.mek.color,
-            title: Text(SarkoobTeams.mek.name, style: const TextStyle(color: Colors.white)),
-          ),
-
-          const SizedBox(height: 20),
           Text('بازیکن‌ها', style: AppTheme.headingFont(size: 20)),
           const SizedBox(height: 10),
           Row(
@@ -241,7 +207,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
           const SizedBox(height: 12),
           ..._draftPlayers.asMap().entries.map((entry) {
             final index = entry.key;
-            final d = entry.value;
+            final name = entry.value;
             return Card(
               color: AppColors.surfaceCard,
               margin: const EdgeInsets.only(bottom: 8),
@@ -249,44 +215,87 @@ class _StartGameScreenState extends State<StartGameScreen> {
                 borderRadius: BorderRadius.circular(10),
                 side: BorderSide(color: AppColors.gold.withOpacity(0.3)),
               ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(d.name, style: const TextStyle(color: Colors.white)),
-                    ),
-                    DropdownButton<String>(
-                      value: d.teamId,
-                      dropdownColor: AppColors.surfaceDark,
-                      underline: const SizedBox.shrink(),
-                      items: _activeTeams
-                          .map(
-                            (t) => DropdownMenuItem(
-                              value: t.id,
-                              child: Text(t.name, style: TextStyle(color: t.color)),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) => setState(() {
-                        d.teamId = value ?? d.teamId;
-                      }),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: AppColors.bloodRedLight),
-                      onPressed: () => _removePlayer(index),
-                    ),
-                  ],
+              child: ListTile(
+                title: Text(name, style: const TextStyle(color: Colors.white)),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete, color: AppColors.bloodRedLight),
+                  onPressed: () => _removePlayer(index),
                 ),
               ),
             );
           }),
+
+          const SizedBox(height: 24),
+          Text('تیم‌های بازی', style: AppTheme.headingFont(size: 20)),
           const SizedBox(height: 4),
           const Text(
-            'نقش‌ها (فعلاً فقط ولی‌فقیه) بین اعضای هر تیم کاملاً به‌صورت '
-            'تصادفی توسط خودِ برنامه تقسیم می‌شن؛ لازم نیست خودت مشخص کنی '
-            'چه کسی چه نقشی می‌گیره.',
+            'فقط تعداد نفراتِ هر تیم رو مشخص کن؛ خودِ برنامه تصادفی '
+            'می‌کنه کدوم بازیکن عضو کدوم تیمه.',
+            style: TextStyle(color: Colors.white60, fontSize: 12),
+          ),
+          const SizedBox(height: 12),
+
+          _teamCountRow(
+            team: SarkoobTeams.suppression,
+            count: _sorkoobCount,
+            onDecrease: () => setState(() {
+              if (_sorkoobCount > 1) _sorkoobCount--;
+            }),
+            onIncrease: () => setState(() => _sorkoobCount++),
+          ),
+
+          const SizedBox(height: 8),
+          RadioListTile<String>(
+            value: 'none',
+            groupValue: _includeMossad ? 'mossad' : (_includeMek ? 'mek' : 'none'),
+            onChanged: (_) => _setIndependentTeam(mossad: false, mek: false),
+            activeColor: AppColors.gold,
+            title: const Text('بدون تیم مستقل', style: TextStyle(color: Colors.white)),
+          ),
+          RadioListTile<String>(
+            value: 'mossad',
+            groupValue: _includeMossad ? 'mossad' : (_includeMek ? 'mek' : 'none'),
+            onChanged: (_) => _setIndependentTeam(mossad: true, mek: false),
+            activeColor: SarkoobTeams.mossad.color,
+            title: Text(SarkoobTeams.mossad.name, style: const TextStyle(color: Colors.white)),
+          ),
+          RadioListTile<String>(
+            value: 'mek',
+            groupValue: _includeMossad ? 'mossad' : (_includeMek ? 'mek' : 'none'),
+            onChanged: (_) => _setIndependentTeam(mossad: false, mek: true),
+            activeColor: SarkoobTeams.mek.color,
+            title: Text(SarkoobTeams.mek.name, style: const TextStyle(color: Colors.white)),
+          ),
+          if (_includeIndependent)
+            _teamCountRow(
+              team: _includeMossad ? SarkoobTeams.mossad : SarkoobTeams.mek,
+              count: _independentCount,
+              onDecrease: () => setState(() {
+                if (_independentCount > 1) _independentCount--;
+              }),
+              onIncrease: () => setState(() => _independentCount++),
+            ),
+
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              CircleAvatar(radius: 10, backgroundColor: SarkoobTeams.citizen.color),
+              const SizedBox(width: 10),
+              Text(
+                '${SarkoobTeams.citizen.name} (خودکار): ${_citizenCount < 0 ? 0 : _citizenCount} نفر',
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          Text(
+            'از مجموع $total بازیکن',
+            style: const TextStyle(color: Colors.white38, fontSize: 12),
+          ),
+
+          const SizedBox(height: 12),
+          const Text(
+            'نقش‌ها (ولی‌فقیه، وزیر امور خارجه، رئیس قوه قضاییه، ...) بین '
+            'اعضای هر تیم کاملاً تصادفی توسط خودِ برنامه تقسیم می‌شن.',
             style: TextStyle(color: Colors.white54, fontSize: 12),
           ),
 
@@ -335,15 +344,33 @@ class _StartGameScreenState extends State<StartGameScreen> {
     );
   }
 
-  Widget _lockedTeamChip(GameTeam team) {
+  Widget _teamCountRow({
+    required GameTeam team,
+    required int count,
+    required VoidCallback onDecrease,
+    required VoidCallback onIncrease,
+  }) {
     return Row(
       children: [
         CircleAvatar(radius: 10, backgroundColor: team.color),
         const SizedBox(width: 10),
-        Text(team.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        const SizedBox(width: 8),
-        const Text('(اجباری)', style: TextStyle(color: Colors.white38, fontSize: 12)),
+        Expanded(
+          child: Text(
+            team.name,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+        ),
+        IconButton(icon: const Icon(Icons.remove, color: AppColors.gold), onPressed: onDecrease),
+        Text('$count', style: const TextStyle(color: AppColors.goldLight, fontSize: 16)),
+        IconButton(icon: const Icon(Icons.add, color: AppColors.gold), onPressed: onIncrease),
       ],
     );
   }
+}
+
+class StartGameScreen extends StatefulWidget {
+  const StartGameScreen({super.key});
+
+  @override
+  State<StartGameScreen> createState() => _StartGameScreenState();
 }
