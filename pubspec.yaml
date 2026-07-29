@@ -21,3 +21,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/roles/
+
+dependency_overrides:
+  jni: ^1.0.2
