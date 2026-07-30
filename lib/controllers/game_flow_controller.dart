@@ -353,7 +353,9 @@ class GameFlowController extends ChangeNotifier {
     } else {
       player.isAlive = false;
     }
-    activeExecutionWord = null;
+    // توجه: activeExecutionWord اینجا reset نمی‌شه — کلمه تا شروعِ رأی‌گیریِ
+    // همون روز فعال می‌مونه (طبق قانون: هرکی بگتش، هر چندتا نفر که باشن،
+    // حذف می‌شه). بستنِ پنجره فقط تو startVoting() انجام می‌شه.
     notifyListeners();
   }
 
