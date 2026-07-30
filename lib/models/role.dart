@@ -33,6 +33,9 @@ class GameRole {
   // ---- فیلدِ مخصوص رئیس قوه قضاییه ----
   final bool canIssueExecutionOrder; // قابلیت صدور حکم اعدام داره؟
 
+  // ---- فیلدِ مخصوص دکتر ----
+  final bool canHeal; // قابلیتِ نجاتِ شبانه داره؟
+
   const GameRole({
     required this.id,
     required this.name,
@@ -45,6 +48,7 @@ class GameRole {
     this.canSlaughter = false,
     this.canNegotiate = false,
     this.canIssueExecutionOrder = false,
+    this.canHeal = false,
   });
 }
 
@@ -106,11 +110,30 @@ class SarkoobRoles {
     canIssueExecutionOrder: true,
   );
 
+  static final doctor = GameRole(
+    id: 'role_doctor',
+    name: 'دکتر',
+    teamId: SarkoobTeams.citizen.id,
+    description:
+        'هر شب می‌تونه یک یا چند بازیکن رو در برابر شاتِ شبِ تیم سرکوب نجات '
+        'بده. ظرفیتِ هر شب به تعدادِ بازیکنانِ زنده‌ی همون‌موقع وابسته‌ست و هر '
+        'شب از نو حساب می‌شه: تا ۱۱ نفر یک نجات، ۱۲ تا ۱۷ نفر دو نجات، ۱۸ تا '
+        '۲۳ نفر سه نجات، و به همین ترتیب هر ۶ نفر یکی بیشتر. اگه هدفِ '
+        'نجات‌داده‌شده هم‌زمان چند ضربه بخوره، نجات فقط جلوی یکی از ضربه‌ها '
+        'رو می‌گیره، نه همه‌شون. می‌تونه هر بازیکنی رو نجات بده — حتی عضوِ '
+        'تیم سرکوب یا یه تیمِ مستقل — و اونم از همون ضربه یا از حذف‌شدن '
+        'توسطِ تیمِ رقیب در امان می‌مونه. در طولِ کلِ بازی فقط می‌تونه خودش '
+        'رو تعدادِ محدودی نجات بده (پیش‌فرض ۲ بار؛ پیش از شروعِ بازی '
+        'قابل‌تغییره).',
+    canHeal: true,
+  );
+
   static final List<GameRole> all = [
     valiFaghih,
     foreignMinister,
     suppressor,
     judiciaryChief,
+    doctor,
   ];
 
   static GameRole? byId(String id) {

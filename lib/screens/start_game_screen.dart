@@ -9,6 +9,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   final List<String> _draftPlayers = [];
   final TextEditingController _nameController = TextEditingController();
   int _speakSeconds = 60;
+  int _doctorMaxSelfSaves = 2;
 
   bool _includeMossad = false;
   bool _includeMek = false;
@@ -128,6 +129,12 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final foreignMinisterIndex = sorkoobShuffled.length > 1 ? sorkoobShuffled[1] : null;
     final judiciaryChiefIndex = sorkoobShuffled.length > 2 ? sorkoobShuffled[2] : null;
 
+    final citizenShuffled = order
+        .where((i) => !sorkoobSet.contains(i) && !independentSet.contains(i))
+        .toList()
+      ..shuffle();
+    final doctorIndex = citizenShuffled.isNotEmpty ? citizenShuffled[0] : null;
+
     final slaughterCharges = (total / 6).floor().clamp(1, 999);
 
     final players = <SessionPlayer>[];
@@ -144,6 +151,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
       final isValiFaghih = i == valiFaghihIndex;
       final isForeignMinister = i == foreignMinisterIndex;
       final isJudiciaryChief = i == judiciaryChiefIndex;
+      final isDoctor = i == doctorIndex;
 
       String? roleId;
       if (isValiFaghih) {
@@ -152,6 +160,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
         roleId = SarkoobRoles.foreignMinister.id;
       } else if (isJudiciaryChief) {
         roleId = SarkoobRoles.judiciaryChief.id;
+      } else if (isDoctor) {
+        roleId = SarkoobRoles.doctor.id;
       }
 
       players.add(
@@ -166,7 +176,10 @@ class _StartGameScreenState extends State<StartGameScreen> {
       );
     }
 
-    final settings = GameSettings(speakSeconds: _speakSeconds);
+    final settings = GameSettings(
+      speakSeconds: _speakSeconds,
+      doctorMaxSelfSaves: _doctorMaxSelfSaves,
+    );
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (_) => RoleRevealScreen(players: players, settings: settings),
@@ -323,6 +336,33 @@ class _StartGameScreenState extends State<StartGameScreen> {
           Text(
             'زمان معارفه و زمان چالش خودکار میشه: $introSeconds ثانیه (نصف زمان صحبت)',
             style: const TextStyle(color: Colors.white60, fontSize: 13),
+          ),
+
+          const SizedBox(height: 24),
+          Text('نجاتِ خودِ دکتر', style: AppTheme.headingFont(size: 20)),
+          const SizedBox(height: 4),
+          const Text(
+            'دکتر در طولِ کلِ بازی حداکثر چندبار می‌تونه خودش رو نجات بده؟',
+            style: TextStyle(color: Colors.white60, fontSize: 12),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.remove, color: AppColors.gold),
+                onPressed: () => setState(() {
+                  if (_doctorMaxSelfSaves > 0) _doctorMaxSelfSaves--;
+                }),
+              ),
+              Text(
+                '$_doctorMaxSelfSaves بار',
+                style: const TextStyle(color: AppColors.goldLight, fontSize: 18),
+              ),
+              IconButton(
+                icon: const Icon(Icons.add, color: AppColors.gold),
+                onPressed: () => setState(() => _doctorMaxSelfSaves++),
+              ),
+            ],
           ),
 
           const SizedBox(height: 24),

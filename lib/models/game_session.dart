@@ -11,13 +11,19 @@ enum GamePhaseType {
 class GameSettings {
   final int speakSeconds;
 
-  const GameSettings({this.speakSeconds = 60});
+  /// چندبار در کلِ بازی دکتر می‌تونه خودش رو نجات بده (پیش‌فرض ۲).
+  final int doctorMaxSelfSaves;
+
+  const GameSettings({this.speakSeconds = 60, this.doctorMaxSelfSaves = 2});
 
   int get introSeconds => (speakSeconds / 2).round();
   int get challengeSeconds => (speakSeconds / 2).round();
 
-  GameSettings copyWith({int? speakSeconds}) {
-    return GameSettings(speakSeconds: speakSeconds ?? this.speakSeconds);
+  GameSettings copyWith({int? speakSeconds, int? doctorMaxSelfSaves}) {
+    return GameSettings(
+      speakSeconds: speakSeconds ?? this.speakSeconds,
+      doctorMaxSelfSaves: doctorMaxSelfSaves ?? this.doctorMaxSelfSaves,
+    );
   }
 }
 
@@ -44,6 +50,9 @@ class SessionPlayer {
   bool executionOrderUsed; // آیا قابلیتِ یک‌بارمصرفش رو مصرف کرده؟
   bool isHalfAlive; // نیمه‌جان: تا وقتی «وکیل مردمی» نجاتش بده، شب‌ها بیدار نمی‌شه
 
+  // ---- مربوط به دکتر ----
+  int selfSavesUsed; // چندبار تا الان خودش رو نجات داده (سقفش تو GameSettings ـه)
+
   SessionPlayer({
     required this.id,
     required this.name,
@@ -60,6 +69,7 @@ class SessionPlayer {
     this.eliminatedBySlaughter = false,
     this.executionOrderUsed = false,
     this.isHalfAlive = false,
+    this.selfSavesUsed = 0,
   });
 
   bool get isSorkoobTeam => teamId == 'team_sorkoob';

@@ -238,7 +238,8 @@ class GameFlowController extends ChangeNotifier {
   // ---------- شب: تصمیمِ رهبر تیم سرکوب (شات / سلاخی / مذاکره) ----------
 
   final Map<int, int> _pendingHits = {}; // targetId -> تعداد ضربه‌ی وارده
-  int? _savedPlayerId; // فعلاً هیچ نقشی ست‌ش نمی‌کنه؛ برای دکتر در آینده آماده‌ست
+  final Set<int> _savedPlayerIds = {}; // بازیکنانی که دکتر امشب نجات‌شون داده
+  int _doctorSavesUsedTonight = 0;
   bool _nightActionTaken = false;
   String? slaughterResultMessage;
   String? negotiateResultMessage;
@@ -345,6 +346,64 @@ class GameFlowController extends ChangeNotifier {
   /// هنوز تعریف نشده، پس فعلاً همیشه false برمی‌گرده تا وقتی اضافه بشه.
   bool get hasUnusedPublicDefender => false; // TODO: وقتی «وکیل مردمی» اضافه شد این رو کامل کن
 
+  // ---------- دکتر: نجاتِ شبانه (مستقل از تصمیمِ رهبر و حکمِ اعدام) ----------
+
+  SessionPlayer? get doctorPlayer {
+    for (final p in players) {
+      if (p.roleId == SarkoobRoles.doctor.id) return p;
+    }
+    return null;
+  }
+
+  /// ظرفیتِ نجاتِ امشب: وابسته به تعدادِ زنده‌ی *همین الان*، پس هر شب و با
+  /// هر مرگی، دوباره محاسبه می‌شه (طبق قانون: هر ۶ نفر یه نجاتِ بیشتر).
+  int get doctorNightlyCapacity {
+    final capacity = aliveCount ~/ 6;
+    return capacity < 1 ? 1 : capacity;
+  }
+
+  List<SessionPlayer> get savedPlayersTonight => _savedPlayerIds.map(playerById).toList();
+
+  bool get canDoctorSaveTonight {
+    final doc = doctorPlayer;
+    if (doc == null || !doc.isAlive) return false;
+    return _doctorSavesUsedTonight < doctorNightlyCapacity;
+  }
+
+  /// آیا انتخابِ این هدفِ خاص الان مجازه؟ (اگه هدف خودِ دکتره، سقفِ
+  /// نجاتِ‌خود در کلِ بازی رو هم چک می‌کنه)
+  bool canDoctorSaveTarget(int targetId) {
+    if (!canDoctorSaveTonight) return false;
+    if (_savedPlayerIds.contains(targetId)) return false;
+    final doc = doctorPlayer;
+    if (doc != null && targetId == doc.id) {
+      return doc.selfSavesUsed < settings.doctorMaxSelfSaves;
+    }
+    return true;
+  }
+
+  void doctorSave(int targetId) {
+    if (!canDoctorSaveTarget(targetId)) return;
+    final doc = doctorPlayer;
+    if (doc != null && targetId == doc.id) {
+      doc.selfSavesUsed++;
+    }
+    _savedPlayerIds.add(targetId);
+    _doctorSavesUsedTonight++;
+    notifyListeners();
+  }
+
+  /// برای وقتی گرداننده اشتباهی انتخاب کرده و می‌خواد برگردونه.
+  void undoDoctorSave(int targetId) {
+    if (!_savedPlayerIds.remove(targetId)) return;
+    _doctorSavesUsedTonight--;
+    final doc = doctorPlayer;
+    if (doc != null && targetId == doc.id && doc.selfSavesUsed > 0) {
+      doc.selfSavesUsed--;
+    }
+    notifyListeners();
+  }
+
   void executePlayerForForbiddenWord(int playerId) {
     final player = playerById(playerId);
     if (hasUnusedPublicDefender) {
@@ -365,7 +424,8 @@ class GameFlowController extends ChangeNotifier {
     phase = GamePhaseType.night;
     roundNumber = nightNumber;
     _pendingHits.clear();
-    _savedPlayerId = null;
+    _savedPlayerIds.clear();
+    _doctorSavesUsedTonight = 0;
     _nightActionTaken = false;
     slaughterResultMessage = null;
     negotiateResultMessage = null;
@@ -379,8 +439,8 @@ class GameFlowController extends ChangeNotifier {
       final target = playerById(targetId);
       if (!target.isAlive) return;
       var remaining = hitCount;
-      if (_savedPlayerId == targetId && remaining > 0) {
-        remaining -= 1;
+      if (_savedPlayerIds.contains(targetId) && remaining > 0) {
+        remaining -= 1; // نجاتِ دکتر فقط جلوی یکی از ضربه‌ها رو می‌گیره
       }
       if (remaining <= 0) return;
       if (target.hasArmor) {
@@ -398,7 +458,7 @@ class GameFlowController extends ChangeNotifier {
     if (negotiateResultMessage != null) messages.insert(0, negotiateResultMessage!);
     lastNightSummary = messages.isEmpty ? 'دیشب کسی حذف نشد.' : messages.join('\n');
     _pendingHits.clear();
-    _savedPlayerId = null;
+    _savedPlayerIds.clear();
     notifyListeners();
   }
 }

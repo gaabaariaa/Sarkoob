@@ -458,6 +458,12 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             const SizedBox(height: 8),
             _buildJudiciarySection(),
           ],
+          if (controller.doctorPlayer != null && controller.doctorPlayer!.isAlive) ...[
+            const SizedBox(height: 24),
+            const Divider(color: AppColors.gold),
+            const SizedBox(height: 8),
+            _buildDoctorSection(),
+          ],
         ],
       ),
     );
@@ -598,6 +604,87 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             child: const Text('ثبت'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDoctorSection() {
+    final doc = controller.doctorPlayer!;
+    final saved = controller.savedPlayersTonight;
+    return Column(
+      children: [
+        Text(
+          'دکتر امشب می‌تونه ${controller.doctorNightlyCapacity} نفر رو در برابر '
+          'شاتِ شبِ سرکوب نجات بده (${saved.length} از ${controller.doctorNightlyCapacity} استفاده شده).',
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'نجاتِ خودش: ${doc.selfSavesUsed} از ${widget.settings.doctorMaxSelfSaves} بار در کلِ بازی',
+          style: const TextStyle(color: Colors.white38, fontSize: 12),
+        ),
+        const SizedBox(height: 10),
+        if (saved.isNotEmpty)
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.center,
+            children: saved
+                .map(
+                  (p) => Chip(
+                    label: Text(p.name),
+                    backgroundColor: AppColors.surfaceCard,
+                    labelStyle: const TextStyle(color: Colors.white),
+                    deleteIconColor: AppColors.bloodRedLight,
+                    onDeleted: () => controller.undoDoctorSave(p.id),
+                  ),
+                )
+                .toList(),
+          ),
+        const SizedBox(height: 10),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.healing),
+          label: const Text('نجاتِ یه بازیکنِ دیگه'),
+          onPressed: controller.canDoctorSaveTonight ? () => _showDoctorSavePicker(doc) : null,
+        ),
+      ],
+    );
+  }
+
+  void _showDoctorSavePicker(SessionPlayer doc) {
+    final targets =
+        controller.alivePlayers.where((p) => controller.canDoctorSaveTarget(p.id)).toList();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceDark,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text('امشب کی رو نجات بده؟', style: TextStyle(color: AppColors.goldLight)),
+            ),
+            if (targets.isEmpty)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 16),
+                child: Text('کسی برای نجات باقی نمونده.', style: TextStyle(color: Colors.white38)),
+              ),
+            ...targets.map(
+              (p) => ListTile(
+                title: Text(
+                  p.id == doc.id ? '${p.name} (خودش)' : p.name,
+                  style: const TextStyle(color: Colors.white),
+                ),
+                onTap: () {
+                  controller.doctorSave(p.id);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
