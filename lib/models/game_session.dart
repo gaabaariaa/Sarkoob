@@ -53,6 +53,10 @@ class SessionPlayer {
   // ---- مربوط به دکتر ----
   int selfSavesUsed; // چندبار تا الان خودش رو نجات داده (سقفش تو GameSettings ـه)
 
+  // ---- مربوط به مبارزِ انقلابی ----
+  int? revolutionaryChargesRemaining; // سهمیه‌ی مشترکِ اعدامِ انقلابی/سلاخی
+  bool canStillSlaughter; // بعدِ یه حدسِ غلط، برای همیشه false می‌شه
+
   SessionPlayer({
     required this.id,
     required this.name,
@@ -70,6 +74,8 @@ class SessionPlayer {
     this.executionOrderUsed = false,
     this.isHalfAlive = false,
     this.selfSavesUsed = 0,
+    this.revolutionaryChargesRemaining,
+    this.canStillSlaughter = true,
   });
 
   bool get isSorkoobTeam => teamId == 'team_sorkoob';

@@ -134,8 +134,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
         .toList()
       ..shuffle();
     final doctorIndex = citizenShuffled.isNotEmpty ? citizenShuffled[0] : null;
+    final hackerIndex = citizenShuffled.length > 1 ? citizenShuffled[1] : null;
+    final revolutionaryIndex = citizenShuffled.length > 2 ? citizenShuffled[2] : null;
 
     final slaughterCharges = (total / 6).floor().clamp(1, 999);
+    final revolutionaryCharges = (sorkoobSet.length - 1).clamp(0, 999);
 
     final players = <SessionPlayer>[];
     for (var i = 0; i < total; i++) {
@@ -152,6 +155,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
       final isForeignMinister = i == foreignMinisterIndex;
       final isJudiciaryChief = i == judiciaryChiefIndex;
       final isDoctor = i == doctorIndex;
+      final isHacker = i == hackerIndex;
+      final isRevolutionary = i == revolutionaryIndex;
 
       String? roleId;
       if (isValiFaghih) {
@@ -162,6 +167,10 @@ class _StartGameScreenState extends State<StartGameScreen> {
         roleId = SarkoobRoles.judiciaryChief.id;
       } else if (isDoctor) {
         roleId = SarkoobRoles.doctor.id;
+      } else if (isHacker) {
+        roleId = SarkoobRoles.hacker.id;
+      } else if (isRevolutionary) {
+        roleId = SarkoobRoles.revolutionaryFighter.id;
       }
 
       players.add(
@@ -172,6 +181,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
           roleId: roleId,
           hasArmor: isValiFaghih,
           slaughterChargesRemaining: isValiFaghih ? slaughterCharges : null,
+          revolutionaryChargesRemaining: isRevolutionary ? revolutionaryCharges : null,
         ),
       );
     }

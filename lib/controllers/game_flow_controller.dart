@@ -418,6 +418,120 @@ class GameFlowController extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ---------- هکر: استعلامِ شبانه (مستقل از بقیه‌ی نقش‌ها) ----------
+
+  SessionPlayer? get hackerPlayer {
+    for (final p in players) {
+      if (p.roleId == SarkoobRoles.hacker.id) return p;
+    }
+    return null;
+  }
+
+  bool _hackerUsedTonight = false;
+  InvestigationResult? lastInvestigationResult;
+  String? lastInvestigationTargetName;
+
+  bool get canHackerInvestigateTonight {
+    final hacker = hackerPlayer;
+    return hacker != null && hacker.isAlive && !_hackerUsedTonight;
+  }
+
+  /// نتیجه‌ی واقعیِ استعلام روی یه هدفِ خاص، طبقِ قوانینِ سناریو:
+  /// همه‌ی اعضای واقعیِ سرکوب لایک می‌گیرن، به‌جز نقش‌هایی که همیشه بی‌گناه
+  /// نشون داده می‌شن (ولی‌فقیه) یا چند شبِ اول هنوز جزوِ سرکوب دیده
+  /// نمی‌شن (مثلِ سلبریتی حکومتی، وقتی اضافه بشه). بقیه (شهروند، تیم‌های
+  /// مستقل) همیشه دیس‌لایک می‌گیرن.
+  InvestigationResult investigationResultFor(int targetId) {
+    final target = playerById(targetId);
+    final role = target.roleId != null ? SarkoobRoles.byId(target.roleId!) : null;
+    final isSorkoobTeam = target.teamId == SarkoobTeams.suppression.id;
+
+    if (!isSorkoobTeam) return InvestigationResult.dislike;
+    if (role != null && role.alwaysShowsInnocent) return InvestigationResult.dislike;
+    if (role != null &&
+        role.investigationHiddenUntilNight > 0 &&
+        roundNumber <= role.investigationHiddenUntilNight) {
+      return InvestigationResult.dislike;
+    }
+    return InvestigationResult.like;
+  }
+
+  void hackerInvestigate(int targetId) {
+    if (!canHackerInvestigateTonight) return;
+    lastInvestigationResult = investigationResultFor(targetId);
+    lastInvestigationTargetName = playerById(targetId).name;
+    _hackerUsedTonight = true;
+    notifyListeners();
+  }
+
+  // ---------- مبارزِ انقلابی: اعدامِ انقلابی/سلاخی (مستقل از بقیه) ----------
+
+  SessionPlayer? get revolutionaryFighterPlayer {
+    for (final p in players) {
+      if (p.roleId == SarkoobRoles.revolutionaryFighter.id) return p;
+    }
+    return null;
+  }
+
+  bool _revolutionaryActedTonight = false;
+  String? revolutionaryResultMessage;
+
+  bool get canRevolutionaryActTonight {
+    final fighter = revolutionaryFighterPlayer;
+    if (fighter == null || !fighter.isAlive) return false;
+    if (_revolutionaryActedTonight) return false;
+    return (fighter.revolutionaryChargesRemaining ?? 0) > 0;
+  }
+
+  /// اعدامِ انقلابی: نتیجه به تیمِ هدف بستگی داره — عضوِ سرکوب مثلِ شاتِ
+  /// شبانه یه ضربه می‌خوره (زره/نجاتِ دکتر طبقِ قانونِ خودشون اثر می‌ذارن)،
+  /// عضوِ تیمِ مستقل بی‌اثره، و عضوِ تیمِ شهروند باعثِ حذفِ خودِ مبارز می‌شه.
+  void revolutionaryExecute(int targetId) {
+    final fighter = revolutionaryFighterPlayer;
+    if (!canRevolutionaryActTonight || fighter == null) return;
+    final target = playerById(targetId);
+
+    fighter.revolutionaryChargesRemaining = (fighter.revolutionaryChargesRemaining ?? 0) - 1;
+    _revolutionaryActedTonight = true;
+
+    if (target.teamId == SarkoobTeams.suppression.id) {
+      _pendingHits[targetId] = (_pendingHits[targetId] ?? 0) + 1;
+      revolutionaryResultMessage =
+          'اعدامِ انقلابیِ «${fighter.name}» روی «${target.name}» ثبت شد؛ نتیجه‌ی نهایی صبح مشخص می‌شه.';
+    } else if (target.teamId == SarkoobTeams.citizen.id) {
+      fighter.isAlive = false;
+      revolutionaryResultMessage =
+          'هدفِ «${fighter.name}» عضوِ تیمِ شهروند بود! خودِ مبارزِ انقلابی همون‌لحظه از بازی خارج شد.';
+    } else {
+      revolutionaryResultMessage = 'هدفِ «${fighter.name}» عضوِ یه تیمِ مستقل بود؛ هیچ اتفاقی نیفتاد.';
+    }
+    notifyListeners();
+  }
+
+  /// سلاخی: درست حدس‌زدن = حذفِ فوری و غیرقابل‌برگشت (نه دکتر نه وکیل
+  /// مردمی نمی‌تونن جلوشو بگیرن). غلط حدس‌زدن = فقط قابلیتِ سلاخی برای
+  /// همیشه از دست می‌ره (اعدامِ انقلابی هنوز باقیه).
+  void revolutionarySlaughter(int targetId, String guessedRoleId) {
+    final fighter = revolutionaryFighterPlayer;
+    if (!canRevolutionaryActTonight || fighter == null || !fighter.canStillSlaughter) return;
+    final target = playerById(targetId);
+    final correct = target.roleId == guessedRoleId;
+
+    fighter.revolutionaryChargesRemaining = (fighter.revolutionaryChargesRemaining ?? 0) - 1;
+    _revolutionaryActedTonight = true;
+
+    if (correct) {
+      target.isAlive = false;
+      target.eliminatedBySlaughter = true;
+      revolutionaryResultMessage = '«${target.name}» با سلاخیِ مبارزِ انقلابی از بازی خارج شد.';
+    } else {
+      fighter.canStillSlaughter = false;
+      revolutionaryResultMessage =
+          'حدسِ «${fighter.name}» غلط بود؛ دیگه هرگز نمی‌تونه سلاخی کنه.';
+    }
+    notifyListeners();
+  }
+
   // ---------- پایانِ شب ----------
 
   void moveToNight(int nightNumber) {
@@ -426,6 +540,11 @@ class GameFlowController extends ChangeNotifier {
     _pendingHits.clear();
     _savedPlayerIds.clear();
     _doctorSavesUsedTonight = 0;
+    _hackerUsedTonight = false;
+    lastInvestigationResult = null;
+    lastInvestigationTargetName = null;
+    _revolutionaryActedTonight = false;
+    revolutionaryResultMessage = null;
     _nightActionTaken = false;
     slaughterResultMessage = null;
     negotiateResultMessage = null;
@@ -456,6 +575,7 @@ class GameFlowController extends ChangeNotifier {
     });
     if (slaughterResultMessage != null) messages.insert(0, slaughterResultMessage!);
     if (negotiateResultMessage != null) messages.insert(0, negotiateResultMessage!);
+    if (revolutionaryResultMessage != null) messages.insert(0, revolutionaryResultMessage!);
     lastNightSummary = messages.isEmpty ? 'دیشب کسی حذف نشد.' : messages.join('\n');
     _pendingHits.clear();
     _savedPlayerIds.clear();
