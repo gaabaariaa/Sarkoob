@@ -136,6 +136,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final doctorIndex = citizenShuffled.isNotEmpty ? citizenShuffled[0] : null;
     final hackerIndex = citizenShuffled.length > 1 ? citizenShuffled[1] : null;
     final revolutionaryIndex = citizenShuffled.length > 2 ? citizenShuffled[2] : null;
+    final lawyerIndex = citizenShuffled.length > 3 ? citizenShuffled[3] : null;
 
     final slaughterCharges = (total / 6).floor().clamp(1, 999);
     final revolutionaryCharges = (sorkoobSet.length - 1).clamp(0, 999);
@@ -157,6 +158,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
       final isDoctor = i == doctorIndex;
       final isHacker = i == hackerIndex;
       final isRevolutionary = i == revolutionaryIndex;
+      final isLawyer = i == lawyerIndex;
 
       String? roleId;
       if (isValiFaghih) {
@@ -171,6 +173,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
         roleId = SarkoobRoles.hacker.id;
       } else if (isRevolutionary) {
         roleId = SarkoobRoles.revolutionaryFighter.id;
+      } else if (isLawyer) {
+        roleId = SarkoobRoles.lawyer.id;
       }
 
       players.add(

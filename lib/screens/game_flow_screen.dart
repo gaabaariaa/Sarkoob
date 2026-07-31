@@ -477,6 +477,12 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             const SizedBox(height: 8),
             _buildRevolutionarySection(),
           ],
+          if (controller.lawyerPlayer != null && !controller.lawyerPlayer!.revivalUsed) ...[
+            const SizedBox(height: 24),
+            const Divider(color: AppColors.gold),
+            const SizedBox(height: 8),
+            _buildLawyerSection(),
+          ],
         ],
       ),
     );
@@ -895,6 +901,62 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           },
         );
       },
+    );
+  }
+
+  Widget _buildLawyerSection() {
+    final lawyer = controller.lawyerPlayer!;
+    final halfAlive = controller.halfAlivePlayers;
+    return Column(
+      children: [
+        Text(
+          lawyer.isAlive
+              ? 'وکیل هنوز قابلیتِ یک‌بارمصرفِ جان‌بخشیش رو مصرف نکرده.'
+              : 'وکیل («${lawyer.name}») خودش الان نیمه‌جانه یا حذف شده و نمی‌تونه فعلاً از این قابلیت استفاده کنه.',
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 8),
+        if (halfAlive.isEmpty)
+          const Text(
+            'فعلاً هیچ بازیکنِ نیمه‌جانی برای برگردوندن نیست.',
+            style: TextStyle(color: Colors.white38, fontSize: 12),
+          )
+        else
+          OutlinedButton.icon(
+            icon: const Icon(Icons.favorite),
+            label: const Text('برگردوندنِ یه بازیکنِ نیمه‌جان'),
+            onPressed: controller.canLawyerReviveTonight ? _showLawyerRevivePicker : null,
+          ),
+      ],
+    );
+  }
+
+  void _showLawyerRevivePicker() {
+    final targets = controller.halfAlivePlayers;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceDark,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text('کی به بازی برگرده؟', style: TextStyle(color: AppColors.goldLight)),
+            ),
+            ...targets.map(
+              (p) => ListTile(
+                title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                onTap: () {
+                  controller.lawyerRevive(p.id);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

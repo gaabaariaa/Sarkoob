@@ -46,6 +46,9 @@ class GameRole {
   // ---- فیلدِ مخصوص مبارزِ انقلابی ----
   final bool canRevolutionaryAct; // قابلیتِ اعدامِ انقلابی/سلاخی داره؟
 
+  // ---- فیلدِ مخصوص وکیل ----
+  final bool canRevive; // قابلیتِ جان‌بخشیِ یک‌بارمصرف داره؟
+
   /// فیلدِ عمومی (نه مخصوصِ یه نقشِ خاص): برای نقش‌هایی مثلِ «سلبریتی
   /// حکومتی» که عضوِ واقعیِ سرکوب‌ان ولی چند شبِ اول در استعلامِ هکر
   /// بی‌گناه نشون داده می‌شن. ۰ یعنی از همون شبِ اول واقعی و دقیق نشون
@@ -68,6 +71,7 @@ class GameRole {
     this.canHeal = false,
     this.canInvestigate = false,
     this.canRevolutionaryAct = false,
+    this.canRevive = false,
     this.investigationHiddenUntilNight = 0,
   });
 }
@@ -184,6 +188,23 @@ class SarkoobRoles {
     canRevolutionaryAct: true,
   );
 
+  static final lawyer = GameRole(
+    id: 'role_lawyer',
+    name: 'وکیل',
+    teamId: SarkoobTeams.citizen.id,
+    description:
+        'فقط یک‌بار در کلِ بازی، شبانه می‌تونه یکی از بازیکنانِ حذف‌شده رو '
+        'به بازی برگردونه — حتی اگه عضوِ تیمِ سرکوب باشه. تا وقتی این '
+        'قابلیت استفاده نشده، هر حذفِ عادی (شات، اعدامِ انقلابی، رأی‌گیری، '
+        'کلمه‌ی ممنوع) به‌جای حذفِ کامل، بازیکن رو «نیمه‌جان» نگه می‌داره: '
+        'بازم شب‌ها مثلِ قبل چشم می‌بنده ولی روزها حقِ حرف‌زدن یا رأی‌دادن '
+        'نداره. صبحِ روزی که وکیل انتخابش کنه، گرداننده اعلام می‌کنه که '
+        'برگشته، و بقیه‌ی نیمه‌جان‌ها همون‌لحظه به‌طورِ کامل و برای‌همیشه حذف '
+        'می‌شن. سلاخی از این قانون مستثناست: بازیکنِ سلاخی‌شده هیچ‌وقت، حتی '
+        'توسطِ وکیل هم، برنمی‌گرده.',
+    canRevive: true,
+  );
+
   static final List<GameRole> all = [
     valiFaghih,
     foreignMinister,
@@ -192,6 +213,7 @@ class SarkoobRoles {
     doctor,
     hacker,
     revolutionaryFighter,
+    lawyer,
   ];
 
   static GameRole? byId(String id) {

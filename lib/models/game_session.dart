@@ -57,6 +57,9 @@ class SessionPlayer {
   int? revolutionaryChargesRemaining; // سهمیه‌ی مشترکِ اعدامِ انقلابی/سلاخی
   bool canStillSlaughter; // بعدِ یه حدسِ غلط، برای همیشه false می‌شه
 
+  // ---- مربوط به وکیل ----
+  bool revivalUsed; // آیا قابلیتِ یک‌بارمصرفِ جان‌بخشی رو مصرف کرده؟
+
   SessionPlayer({
     required this.id,
     required this.name,
@@ -76,6 +79,7 @@ class SessionPlayer {
     this.selfSavesUsed = 0,
     this.revolutionaryChargesRemaining,
     this.canStillSlaughter = true,
+    this.revivalUsed = false,
   });
 
   bool get isSorkoobTeam => teamId == 'team_sorkoob';

@@ -194,7 +194,7 @@ class GameFlowController extends ChangeNotifier {
     if (_defenseCandidateIds.length == 1) {
       final only = playerById(_defenseCandidateIds.first);
       if (only.votes >= majorityThreshold) {
-        only.isAlive = false;
+        _eliminatePlayer(only);
         lastResolution = VoteResolution('«${only.name}» با رأی کافی حذف شد.');
       } else {
         only.recordCount++;
@@ -218,7 +218,7 @@ class GameFlowController extends ChangeNotifier {
 
       if (eliminated != null) {
         final eliminatedId = eliminated.id;
-        eliminated.isAlive = false;
+        _eliminatePlayer(eliminated);
         for (final p in candidates) {
           if (p.id != eliminatedId) p.recordCount++;
         }
@@ -342,9 +342,64 @@ class GameFlowController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// آیا الان «وکیل مردمی» هست که هنوز قابلیتش رو مصرف نکرده؟ این نقش
-  /// هنوز تعریف نشده، پس فعلاً همیشه false برمی‌گرده تا وقتی اضافه بشه.
-  bool get hasUnusedPublicDefender => false; // TODO: وقتی «وکیل مردمی» اضافه شد این رو کامل کن
+  // ---------- وکیل: جان‌بخشیِ یک‌بارمصرف (مستقل از بقیه) ----------
+
+  SessionPlayer? get lawyerPlayer {
+    for (final p in players) {
+      if (p.roleId == SarkoobRoles.lawyer.id) return p;
+    }
+    return null;
+  }
+
+  /// آیا الان یه «وکیل»ِ استفاده‌نشده تو بازیه؟ (چه خودش الان زنده باشه چه
+  /// نباشه — نکته‌ی مهم: اگه خودِ وکیل قبل از استفاده از قابلیتش حذف بشه،
+  /// دیگه هیچ‌وقت کسی نمی‌تونه از این قابلیت استفاده کنه، پس نیمه‌جان‌ها
+  /// برای همیشه در همون حالت می‌مونن.) تا وقتی جوابش مثبته، بازیکنانِ
+  /// حذف‌شده (به‌جز سلاخی‌شده‌ها که مستقیم و برای‌همیشه حذف می‌شن) به‌جای
+  /// حذفِ کامل، نیمه‌جان می‌مونن.
+  bool get hasUnusedPublicDefender {
+    final lawyer = lawyerPlayer;
+    return lawyer != null && !lawyer.revivalUsed;
+  }
+
+  bool get canLawyerReviveTonight {
+    final lawyer = lawyerPlayer;
+    return lawyer != null && lawyer.isAlive && !lawyer.revivalUsed;
+  }
+
+  List<SessionPlayer> get halfAlivePlayers =>
+      players.where((p) => !p.isAlive && p.isHalfAlive).toList();
+
+  /// وکیل یکی از بازیکنانِ نیمه‌جان رو کامل به بازی برمی‌گردونه (حتی اگه
+  /// عضوِ تیمِ سرکوب باشه)؛ بقیه‌ی نیمه‌جان‌ها همون‌لحظه به‌طورِ کامل و
+  /// برای‌همیشه حذف می‌شن، و قابلیتِ وکیل برای بقیه‌ی بازی مصرف‌شده حساب می‌شه.
+  void lawyerRevive(int targetId) {
+    final lawyer = lawyerPlayer;
+    if (!canLawyerReviveTonight || lawyer == null) return;
+    final target = playerById(targetId);
+    if (!target.isHalfAlive) return;
+
+    final othersHalfAlive = players.where((p) => p.isHalfAlive && p.id != targetId).toList();
+
+    target.isAlive = true;
+    target.isHalfAlive = false;
+
+    for (final p in othersHalfAlive) {
+      p.isHalfAlive = false; // حذفِ کامل و نهایی
+    }
+
+    lawyer.revivalUsed = true;
+    notifyListeners();
+  }
+
+  /// نقطه‌ی مشترکِ همه‌ی حذف‌های «معمولی» (شات، اعدامِ انقلابی، رأی‌گیری،
+  /// کلمه‌ی ممنوع): اگه وکیل هنوز قابلیتش رو مصرف نکرده، به‌جای حذفِ
+  /// کامل، بازیکن نیمه‌جان می‌مونه. سلاخی از این تابع استفاده نمی‌کنه —
+  /// همیشه مستقیم و بدون واسطه حذف می‌شه.
+  void _eliminatePlayer(SessionPlayer player) {
+    player.isAlive = false;
+    player.isHalfAlive = hasUnusedPublicDefender;
+  }
 
   // ---------- دکتر: نجاتِ شبانه (مستقل از تصمیمِ رهبر و حکمِ اعدام) ----------
 
@@ -406,12 +461,7 @@ class GameFlowController extends ChangeNotifier {
 
   void executePlayerForForbiddenWord(int playerId) {
     final player = playerById(playerId);
-    if (hasUnusedPublicDefender) {
-      player.isAlive = false;
-      player.isHalfAlive = true;
-    } else {
-      player.isAlive = false;
-    }
+    _eliminatePlayer(player);
     // توجه: activeExecutionWord اینجا reset نمی‌شه — کلمه تا شروعِ رأی‌گیریِ
     // همون روز فعال می‌مونه (طبق قانون: هرکی بگتش، هر چندتا نفر که باشن،
     // حذف می‌شه). بستنِ پنجره فقط تو startVoting() انجام می‌شه.
@@ -499,7 +549,7 @@ class GameFlowController extends ChangeNotifier {
       revolutionaryResultMessage =
           'اعدامِ انقلابیِ «${fighter.name}» روی «${target.name}» ثبت شد؛ نتیجه‌ی نهایی صبح مشخص می‌شه.';
     } else if (target.teamId == SarkoobTeams.citizen.id) {
-      fighter.isAlive = false;
+      _eliminatePlayer(fighter);
       revolutionaryResultMessage =
           'هدفِ «${fighter.name}» عضوِ تیمِ شهروند بود! خودِ مبارزِ انقلابی همون‌لحظه از بازی خارج شد.';
     } else {
@@ -567,7 +617,7 @@ class GameFlowController extends ChangeNotifier {
         remaining -= 1;
       }
       if (remaining > 0) {
-        target.isAlive = false;
+        _eliminatePlayer(target);
         messages.add('«${target.name}» شبِ گذشته حذف شد.');
       } else {
         messages.add('«${target.name}» زره‌اش رو از دست داد، ولی زنده موند.');
