@@ -601,22 +601,25 @@ class GameFlowController extends ChangeNotifier {
 
   /// آیا این مرحله اصلاً امشب معنی داره؟ (نقش وجود داره و زنده‌ست، وگرنه
   /// رد می‌شه بدون این‌که اصلاً نشون داده بشه)
+  /// آیا این مرحله باید تو ترتیبِ شب بیاد؟ نکته‌ی مهم: مرده‌بودنِ صاحبِ
+  /// نقش دلیلِ کافی برای ردکردنِ مرحله نیست — اگه هکر/دکتر/مبارز مرده
+  /// باشن هم بازم باید صداشون بزنیم (فقط دکمه‌هاشون غیرفعاله)، وگرنه
+  /// حذف‌شدنِ خودِ مرحله از ترتیبِ شب لو می‌ده که اون نقش مرده. فقط وکیل
+  /// استثناست: وقتی قابلیتش رو علنی مصرف کرد (یکی رو برگردوند)، همه از
+  /// قبل فهمیدن، پس دیگه لازم نیست تو ترتیب بیاد.
   bool _isNightStepApplicable(NightStepKind step) {
     switch (step) {
       case NightStepKind.sorkoobTeam:
         return true;
       case NightStepKind.hacker:
-        final h = hackerPlayer;
-        return h != null && h.isAlive;
+        return hackerPlayer != null;
       case NightStepKind.doctor:
-        final d = doctorPlayer;
-        return d != null && d.isAlive;
+        return doctorPlayer != null;
       case NightStepKind.revolutionary:
-        final r = revolutionaryFighterPlayer;
-        return r != null && r.isAlive;
+        return revolutionaryFighterPlayer != null;
       case NightStepKind.lawyer:
         final l = lawyerPlayer;
-        return l != null && l.isAlive && !l.revivalUsed;
+        return l != null && !l.revivalUsed;
       case NightStepKind.done:
         return true;
     }

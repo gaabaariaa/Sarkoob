@@ -15,23 +15,20 @@ class _StartGameScreenState extends State<StartGameScreen> {
   bool _includeMek = false;
   final Set<int> _independentMemberIndices = {};
 
-  // نقش‌های تک‌نفره: roleId -> اندیسِ بازیکنِ انتخاب‌شده (یا null اگه هنوز
-  // انتخاب نشده/غیرفعاله). ولی‌فقیه همیشه تویِ این مپه و اجباریه؛ بقیه
-  // اختیاری‌ان و فقط وقتی تو _optionalRolesEnabled باشن نشون داده می‌شن.
-  final Map<String, int?> _roleAssignment = {
-    SarkoobRoles.valiFaghih.id: null,
-    SarkoobRoles.foreignMinister.id: null,
-    SarkoobRoles.judiciaryChief.id: null,
-    SarkoobRoles.doctor.id: null,
-    SarkoobRoles.hacker.id: null,
-    SarkoobRoles.revolutionaryFighter.id: null,
-    SarkoobRoles.lawyer.id: null,
-  };
-  final Set<String> _optionalRolesEnabled = {};
+  // کدوم بازیکن‌ها عضوِ تیمِ سرکوب‌ان (هم رهبر/نقش‌دارها هم سرکوبگرهای
+  // ساده). خودِ برنامه موقعِ شروعِ بازی تصادفی تصمیم می‌گیره کدوم‌شون
+  // کدوم نقشِ فعال رو می‌گیره.
+  final Set<int> _sorkoobMemberIndices = {};
 
-  // بازیکنانی که نقشِ خاصی ندارن ولی صراحتاً عضوِ تیمِ سرکوب (سرکوبگرِ
-  // ساده) مشخص شدن. بقیه‌ی باقی‌مونده‌ها خودکار شهروندِ ساده حساب می‌شن.
-  final Set<int> _plainSorkoobIndices = {};
+  // کدوم نقش‌های اختیاری تو این بازی فعالن؛ ولی‌فقیه همیشه اجباری و
+  // فعاله. تخصیصِ این نقش‌ها به بازیکنِ خاص کاملاً خودکار و تصادفیه —
+  // اینجا فقط انتخاب می‌شه که کدوم نقش‌ها اصلاً تو بازی باشن.
+  bool _includeForeignMinister = false;
+  bool _includeJudiciaryChief = false;
+  bool _includeDoctor = false;
+  bool _includeHacker = false;
+  bool _includeRevolutionary = false;
+  bool _includeLawyer = false;
 
   static const int _minPlayers = 9;
 
@@ -58,12 +55,6 @@ class _StartGameScreenState extends State<StartGameScreen> {
     });
   }
 
-  int? _shiftIndex(int? value, int removedIndex) {
-    if (value == null) return null;
-    if (value == removedIndex) return null;
-    return value > removedIndex ? value - 1 : value;
-  }
-
   Set<int> _shiftSet(Set<int> set, int removedIndex) {
     return set.where((i) => i != removedIndex).map((i) => i > removedIndex ? i - 1 : i).toSet();
   }
@@ -71,74 +62,41 @@ class _StartGameScreenState extends State<StartGameScreen> {
   void _removePlayer(int index) {
     setState(() {
       _draftPlayers.removeAt(index);
-      _roleAssignment.updateAll((_, value) => _shiftIndex(value, index));
       _independentMemberIndices
         ..clear()
         ..addAll(_shiftSet(_independentMemberIndices, index));
-      _plainSorkoobIndices
+      _sorkoobMemberIndices
         ..clear()
-        ..addAll(_shiftSet(_plainSorkoobIndices, index));
+        ..addAll(_shiftSet(_sorkoobMemberIndices, index));
     });
   }
 
   bool get _includeIndependent => _includeMossad || _includeMek;
 
-  // ---- گروه‌های نقشِ تک‌نفره، برای شمارش و ولیدیشن ----
-  List<String> get _sorkoobRoleIdsList => [
-        SarkoobRoles.foreignMinister.id,
-        SarkoobRoles.judiciaryChief.id,
-      ];
-
-  Set<int> get _sorkoobRoleIndices {
-    final result = <int>{};
-    final vf = _roleAssignment[SarkoobRoles.valiFaghih.id];
-    if (vf != null) result.add(vf);
-    for (final id in _sorkoobRoleIdsList) {
-      final v = _roleAssignment[id];
-      if (v != null) result.add(v);
-    }
-    return result;
-  }
-
-  int get _sorkoobTotalCount => _sorkoobRoleIndices.length + _plainSorkoobIndices.length;
-
   int get _citizenCount {
     final total = _draftPlayers.length;
-    final result = total - _sorkoobTotalCount - _independentMemberIndices.length;
+    final result = total - _sorkoobMemberIndices.length - _independentMemberIndices.length;
     return result < 0 ? 0 : result;
   }
 
-  /// همه‌ی اندیس‌هایی که همین الان یه جایگاهِ مشخص دارن (نقش، سرکوبگرِ
-  /// ساده، یا عضوِ تیمِ مستقل) — برای فیلترکردنِ گزینه‌های قابل‌انتخاب.
-  Set<int> get _assignedIndices {
-    final result = <int>{..._independentMemberIndices, ..._plainSorkoobIndices};
-    for (final v in _roleAssignment.values) {
-      if (v != null) result.add(v);
-    }
-    return result;
-  }
+  int get _sorkoobRoleSlotsEnabled =>
+      1 + (_includeForeignMinister ? 1 : 0) + (_includeJudiciaryChief ? 1 : 0);
 
-  List<int> _availableIndicesFor(String roleId) {
-    final assigned = _assignedIndices;
-    final current = _roleAssignment[roleId];
-    return List<int>.generate(_draftPlayers.length, (i) => i)
-        .where((i) => !assigned.contains(i) || i == current)
-        .toList();
-  }
+  int get _citizenRoleSlotsEnabled =>
+      (_includeDoctor ? 1 : 0) +
+      (_includeHacker ? 1 : 0) +
+      (_includeRevolutionary ? 1 : 0) +
+      (_includeLawyer ? 1 : 0);
 
-  String? _labelFor(int index) {
-    for (final entry in _roleAssignment.entries) {
-      if (entry.value == index) {
-        return SarkoobRoles.all.firstWhere((r) => r.id == entry.key).name;
-      }
-    }
+  /// یه بازیکن نمی‌تونه هم‌زمان عضوِ سرکوب و عضوِ تیمِ مستقل باشه.
+  Set<int> get _assignedTeamIndices => {..._sorkoobMemberIndices, ..._independentMemberIndices};
+
+  String _teamLabelFor(int index) {
+    if (_sorkoobMemberIndices.contains(index)) return SarkoobTeams.suppression.name;
     if (_independentMemberIndices.contains(index)) {
       return _includeMossad ? SarkoobTeams.mossad.name : SarkoobTeams.mek.name;
     }
-    if (_plainSorkoobIndices.contains(index)) {
-      return 'سرکوبگر (بدون نقش خاص)';
-    }
-    return 'شهروند (ساده)';
+    return SarkoobTeams.citizen.name;
   }
 
   String? get _validationError {
@@ -146,21 +104,21 @@ class _StartGameScreenState extends State<StartGameScreen> {
     if (total < _minPlayers) {
       return 'حداقل $_minPlayers بازیکن لازمه (الان $total نفر)';
     }
-    if (_roleAssignment[SarkoobRoles.valiFaghih.id] == null) {
-      return 'باید دقیقاً یه نفر رو به‌عنوانِ ولی‌فقیه انتخاب کنی';
+    if (_sorkoobMemberIndices.isEmpty) {
+      return 'تیم سرکوب باید حداقل ۱ نفر داشته باشه (حداقل خودِ ولی‌فقیه)';
     }
-    for (final roleId in _optionalRolesEnabled) {
-      if (_roleAssignment[roleId] == null) {
-        final role = SarkoobRoles.all.firstWhere((r) => r.id == roleId);
-        return 'نقشِ «${role.name}» فعاله ولی هنوز بازیکنی براش انتخاب نکردی';
-      }
+    if (_sorkoobRoleSlotsEnabled > _sorkoobMemberIndices.length) {
+      return 'با این تعداد عضوِ سرکوب، همه‌ی نقش‌های فعال‌شده‌ی این تیم جا نمی‌شن';
+    }
+    if (_citizenRoleSlotsEnabled > _citizenCount) {
+      return 'با این تعداد شهروند، همه‌ی نقش‌های فعال‌شده‌ی این تیم جا نمی‌شن';
     }
     if (_includeIndependent && _independentMemberIndices.isEmpty) {
       return 'تیم مستقل انتخاب شده؛ باید حداقل ۱ نفر عضوش باشه';
     }
     if (_citizenCount < 1) {
       return 'با این انتخاب‌ها، کسی برای تیم شهروند نمی‌مونه؛ '
-          'نقش/تیمِ بعضی بازیکن‌ها رو عوض کن';
+          'تعدادِ اعضای سرکوب/تیمِ مستقل رو کم کن';
     }
     return null;
   }
@@ -213,18 +171,38 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final independentTeamId =
         _includeMossad ? SarkoobTeams.mossad.id : (_includeMek ? SarkoobTeams.mek.id : null);
 
-    final valiFaghihIndex = _roleAssignment[SarkoobRoles.valiFaghih.id];
-    final revolutionaryIndex = _roleAssignment[SarkoobRoles.revolutionaryFighter.id];
+    final sorkoobShuffled = _sorkoobMemberIndices.toList()..shuffle();
+    final valiFaghihIndex = sorkoobShuffled.isNotEmpty ? sorkoobShuffled[0] : null;
+    final foreignMinisterIndex =
+        (_includeForeignMinister && sorkoobShuffled.length > 1) ? sorkoobShuffled[1] : null;
+    final judiciaryChiefIndex =
+        (_includeJudiciaryChief && sorkoobShuffled.length > 2) ? sorkoobShuffled[2] : null;
+
+    final citizenShuffled = List<int>.generate(total, (i) => i)
+        .where(
+          (i) => !_sorkoobMemberIndices.contains(i) && !_independentMemberIndices.contains(i),
+        )
+        .toList()
+      ..shuffle();
+
+    var citizenCursor = 0;
+    int? nextCitizenIndex(bool enabled) {
+      if (!enabled || citizenCursor >= citizenShuffled.length) return null;
+      return citizenShuffled[citizenCursor++];
+    }
+
+    final doctorIndex = nextCitizenIndex(_includeDoctor);
+    final hackerIndex = nextCitizenIndex(_includeHacker);
+    final revolutionaryIndex = nextCitizenIndex(_includeRevolutionary);
+    final lawyerIndex = nextCitizenIndex(_includeLawyer);
 
     final slaughterCharges = (total / 6).floor().clamp(1, 999);
-    final revolutionaryCharges = (_sorkoobTotalCount - 1).clamp(0, 999);
-
-    final sorkoobIndices = _sorkoobRoleIndices;
+    final revolutionaryCharges = (_sorkoobMemberIndices.length - 1).clamp(0, 999);
 
     final players = <SessionPlayer>[];
     for (var i = 0; i < total; i++) {
       final String teamId;
-      if (sorkoobIndices.contains(i) || _plainSorkoobIndices.contains(i)) {
+      if (_sorkoobMemberIndices.contains(i)) {
         teamId = SarkoobTeams.suppression.id;
       } else if (_independentMemberIndices.contains(i)) {
         teamId = independentTeamId!;
@@ -235,17 +213,17 @@ class _StartGameScreenState extends State<StartGameScreen> {
       String? roleId;
       if (i == valiFaghihIndex) {
         roleId = SarkoobRoles.valiFaghih.id;
-      } else if (i == _roleAssignment[SarkoobRoles.foreignMinister.id]) {
+      } else if (i == foreignMinisterIndex) {
         roleId = SarkoobRoles.foreignMinister.id;
-      } else if (i == _roleAssignment[SarkoobRoles.judiciaryChief.id]) {
+      } else if (i == judiciaryChiefIndex) {
         roleId = SarkoobRoles.judiciaryChief.id;
-      } else if (i == _roleAssignment[SarkoobRoles.doctor.id]) {
+      } else if (i == doctorIndex) {
         roleId = SarkoobRoles.doctor.id;
-      } else if (i == _roleAssignment[SarkoobRoles.hacker.id]) {
+      } else if (i == hackerIndex) {
         roleId = SarkoobRoles.hacker.id;
       } else if (i == revolutionaryIndex) {
         roleId = SarkoobRoles.revolutionaryFighter.id;
-      } else if (i == _roleAssignment[SarkoobRoles.lawyer.id]) {
+      } else if (i == lawyerIndex) {
         roleId = SarkoobRoles.lawyer.id;
       }
 
@@ -317,7 +295,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
               child: ListTile(
                 title: Text(name, style: const TextStyle(color: Colors.white)),
                 subtitle: Text(
-                  _labelFor(index) ?? '',
+                  _teamLabelFor(index),
                   style: const TextStyle(color: AppColors.goldLight, fontSize: 12),
                 ),
                 trailing: IconButton(
@@ -372,36 +350,71 @@ class _StartGameScreenState extends State<StartGameScreen> {
             ),
 
           const SizedBox(height: 24),
-          Text('نقش‌های تیم سرکوب', style: AppTheme.headingFont(size: 20)),
-          const SizedBox(height: 8),
-          _roleRow(SarkoobRoles.valiFaghih, required: true),
-          _roleRow(SarkoobRoles.foreignMinister, required: false),
-          _roleRow(SarkoobRoles.judiciaryChief, required: false),
+          Text('تیم سرکوب', style: AppTheme.headingFont(size: 20)),
+          const SizedBox(height: 4),
+          const Text(
+            'کدوم بازیکن‌ها عضوِ این تیمن (چه نقش‌دار چه سرکوبگرِ ساده)؛ '
+            'خودِ برنامه بینِ همین‌ها تصادفی تصمیم می‌گیره کی ولی‌فقیه/وزیر/'
+            'رئیس‌قضاییه بشه.',
+            style: TextStyle(color: Colors.white60, fontSize: 12),
+          ),
           const SizedBox(height: 8),
           _multiSelectChecklist(
-            title: 'کدوم بازیکن‌های باقی‌مونده هم عضوِ تیم سرکوب‌ان (بدون نقشِ خاص)؟',
-            selected: _plainSorkoobIndices,
+            title: 'اعضای تیم سرکوب:',
+            selected: _sorkoobMemberIndices,
             onToggle: (i, checked) => setState(() {
               if (checked) {
-                _plainSorkoobIndices.add(i);
+                _sorkoobMemberIndices.add(i);
               } else {
-                _plainSorkoobIndices.remove(i);
+                _sorkoobMemberIndices.remove(i);
               }
             }),
           ),
+          const SizedBox(height: 12),
+          const Text(
+            'این بازی کدوم نقش‌های سرکوب رو داشته باشه؟ (ولی‌فقیه همیشه هست)',
+            style: TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          _roleToggle(
+            role: SarkoobRoles.foreignMinister,
+            value: _includeForeignMinister,
+            onChanged: (v) => setState(() => _includeForeignMinister = v),
+          ),
+          _roleToggle(
+            role: SarkoobRoles.judiciaryChief,
+            value: _includeJudiciaryChief,
+            onChanged: (v) => setState(() => _includeJudiciaryChief = v),
+          ),
 
           const SizedBox(height: 24),
-          Text('نقش‌های تیم شهروند', style: AppTheme.headingFont(size: 20)),
-          const SizedBox(height: 8),
-          _roleRow(SarkoobRoles.doctor, required: false),
-          _roleRow(SarkoobRoles.hacker, required: false),
-          _roleRow(SarkoobRoles.revolutionaryFighter, required: false),
-          _roleRow(SarkoobRoles.lawyer, required: false),
-          const SizedBox(height: 8),
+          Text('تیم شهروند', style: AppTheme.headingFont(size: 20)),
+          const SizedBox(height: 4),
           Text(
-            'بقیه‌ی بازیکنانِ باقی‌مونده خودکار شهروندِ ساده حساب می‌شن: '
-            '$_citizenCount نفر از مجموع $total',
-            style: const TextStyle(color: Colors.white54, fontSize: 12),
+            'بقیه‌ی بازیکنانی که بالا انتخاب نکردی، خودکار شهروند حساب '
+            'می‌شن: $_citizenCount نفر از مجموع $total. این بازی کدوم '
+            'نقش‌های شهروندی رو داشته باشه؟ تخصیصِ اینا هم کاملاً تصادفیه.',
+            style: const TextStyle(color: Colors.white60, fontSize: 12),
+          ),
+          const SizedBox(height: 8),
+          _roleToggle(
+            role: SarkoobRoles.doctor,
+            value: _includeDoctor,
+            onChanged: (v) => setState(() => _includeDoctor = v),
+          ),
+          _roleToggle(
+            role: SarkoobRoles.hacker,
+            value: _includeHacker,
+            onChanged: (v) => setState(() => _includeHacker = v),
+          ),
+          _roleToggle(
+            role: SarkoobRoles.revolutionaryFighter,
+            value: _includeRevolutionary,
+            onChanged: (v) => setState(() => _includeRevolutionary = v),
+          ),
+          _roleToggle(
+            role: SarkoobRoles.lawyer,
+            value: _includeLawyer,
+            onChanged: (v) => setState(() => _includeLawyer = v),
           ),
 
           const SizedBox(height: 28),
@@ -476,65 +489,17 @@ class _StartGameScreenState extends State<StartGameScreen> {
     );
   }
 
-  Widget _roleRow(GameRole role, {required bool required}) {
-    final enabled = required || _optionalRolesEnabled.contains(role.id);
-    final assignedIndex = _roleAssignment[role.id];
-    final options = _availableIndicesFor(role.id);
-
-    return Card(
-      color: AppColors.surfaceCard,
-      margin: const EdgeInsets.only(bottom: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-        side: BorderSide(color: AppColors.gold.withOpacity(0.25)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    required ? '${role.name} (اجباری)' : role.name,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                if (!required)
-                  Switch(
-                    value: enabled,
-                    activeColor: AppColors.gold,
-                    onChanged: (v) => setState(() {
-                      if (v) {
-                        _optionalRolesEnabled.add(role.id);
-                      } else {
-                        _optionalRolesEnabled.remove(role.id);
-                        _roleAssignment[role.id] = null;
-                      }
-                    }),
-                  ),
-              ],
-            ),
-            if (enabled)
-              DropdownButton<int>(
-                isExpanded: true,
-                dropdownColor: AppColors.surfaceDark,
-                hint: const Text('انتخابِ بازیکن', style: TextStyle(color: Colors.white38)),
-                value: assignedIndex,
-                items: options
-                    .map(
-                      (i) => DropdownMenuItem(
-                        value: i,
-                        child: Text(_draftPlayers[i], style: const TextStyle(color: Colors.white)),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (v) => setState(() => _roleAssignment[role.id] = v),
-              ),
-          ],
-        ),
-      ),
+  Widget _roleToggle({
+    required GameRole role,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return SwitchListTile(
+      value: value,
+      onChanged: (v) => onChanged(v),
+      activeColor: AppColors.gold,
+      title: Text(role.name, style: const TextStyle(color: Colors.white)),
+      dense: true,
     );
   }
 
@@ -543,7 +508,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     required Set<int> selected,
     required void Function(int index, bool checked) onToggle,
   }) {
-    final assigned = _assignedIndices;
+    final assigned = _assignedTeamIndices;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
