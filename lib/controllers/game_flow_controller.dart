@@ -9,6 +9,10 @@ class VoteResolution {
   const VoteResolution(this.message);
 }
 
+/// ترتیبِ «بیدارشدنِ» شب: اول تیمِ سرکوب باهم، بعد هر نقشِ خاصِ شهروندی
+/// جداگونه و به‌ترتیب، و در آخر جمع‌بندیِ شب.
+enum NightStepKind { sorkoobTeam, hacker, doctor, revolutionary, lawyer, done }
+
 /// موتور اصلی «گردانندگی» یه جلسه‌ی بازی: ترتیب صحبت، چالش، رأی‌گیری،
 /// دفاعیه، حذف، و شب (تصمیمِ رهبر سرکوب، مذاکره، حکم اعدام).
 class GameFlowController extends ChangeNotifier {
@@ -582,11 +586,68 @@ class GameFlowController extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ---------- ترتیبِ بیدارشدنِ شب ----------
+
+  static const List<NightStepKind> _nightStepOrder = [
+    NightStepKind.sorkoobTeam,
+    NightStepKind.hacker,
+    NightStepKind.doctor,
+    NightStepKind.revolutionary,
+    NightStepKind.lawyer,
+    NightStepKind.done,
+  ];
+
+  NightStepKind currentNightStep = NightStepKind.sorkoobTeam;
+
+  /// آیا این مرحله اصلاً امشب معنی داره؟ (نقش وجود داره و زنده‌ست، وگرنه
+  /// رد می‌شه بدون این‌که اصلاً نشون داده بشه)
+  bool _isNightStepApplicable(NightStepKind step) {
+    switch (step) {
+      case NightStepKind.sorkoobTeam:
+        return true;
+      case NightStepKind.hacker:
+        final h = hackerPlayer;
+        return h != null && h.isAlive;
+      case NightStepKind.doctor:
+        final d = doctorPlayer;
+        return d != null && d.isAlive;
+      case NightStepKind.revolutionary:
+        final r = revolutionaryFighterPlayer;
+        return r != null && r.isAlive;
+      case NightStepKind.lawyer:
+        final l = lawyerPlayer;
+        return l != null && l.isAlive && !l.revivalUsed;
+      case NightStepKind.done:
+        return true;
+    }
+  }
+
+  /// آیا الان می‌شه از مرحله‌ی «تیمِ سرکوب» جلوتر رفت؟ اگه ولی‌فقیه زنده‌ست،
+  /// باید حتماً تصمیمش رو گرفته باشه (شات/سلاخی/مذاکره)؛ اگه زنده نیست،
+  /// همیشه می‌شه رد شد (مذاکره اختیاریه).
+  bool get canAdvancePastSorkoobTeamStep {
+    final leader = valiFaghihPlayer;
+    final leaderAlive = leader != null && leader.isAlive;
+    if (!leaderAlive) return true;
+    return _nightActionTaken;
+  }
+
+  void advanceNightStep() {
+    var idx = _nightStepOrder.indexOf(currentNightStep) + 1;
+    if (idx >= _nightStepOrder.length) return; // از قبل تهِ لیست بودیم
+    while (idx < _nightStepOrder.length - 1 && !_isNightStepApplicable(_nightStepOrder[idx])) {
+      idx++;
+    }
+    currentNightStep = _nightStepOrder[idx];
+    notifyListeners();
+  }
+
   // ---------- پایانِ شب ----------
 
   void moveToNight(int nightNumber) {
     phase = GamePhaseType.night;
     roundNumber = nightNumber;
+    currentNightStep = NightStepKind.sorkoobTeam;
     _pendingHits.clear();
     _savedPlayerIds.clear();
     _doctorSavesUsedTonight = 0;

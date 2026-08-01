@@ -448,9 +448,68 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       );
     }
 
+    switch (controller.currentNightStep) {
+      case NightStepKind.sorkoobTeam:
+        return _buildSorkoobTeamStep();
+      case NightStepKind.hacker:
+        return _buildRoleNightStep(
+          wakeLabel: 'هکر بیدار بشه',
+          sleepLabel: 'هکر چشمش رو ببنده',
+          body: _buildHackerSection(),
+        );
+      case NightStepKind.doctor:
+        return _buildRoleNightStep(
+          wakeLabel: 'دکتر بیدار بشه',
+          sleepLabel: 'دکتر چشمش رو ببنده',
+          body: _buildDoctorSection(),
+        );
+      case NightStepKind.revolutionary:
+        return _buildRoleNightStep(
+          wakeLabel: 'مبارز انقلابی بیدار بشه',
+          sleepLabel: 'مبارز انقلابی چشمش رو ببنده',
+          body: _buildRevolutionarySection(),
+        );
+      case NightStepKind.lawyer:
+        return _buildRoleNightStep(
+          wakeLabel: 'وکیل بیدار بشه',
+          sleepLabel: 'وکیل چشمش رو ببنده',
+          body: _buildLawyerSection(),
+        );
+      case NightStepKind.done:
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'همه‌ی نقش‌ها اقدامِ امشب‌شون رو انجام دادن.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white70),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: controller.finishNight,
+                child: const Text('پایان شب'),
+              ),
+            ],
+          ),
+        );
+    }
+  }
+
+  /// مرحله‌ی مشترکِ «تیمِ سرکوب بیدار می‌شه»: تصمیمِ ولی‌فقیه + مذاکره‌ی وزیر
+  /// امور خارجه + حکمِ اعدامِ رئیس قوه قضاییه، چون هر سه عضوِ همین تیم‌ان.
+  Widget _buildSorkoobTeamStep() {
     return SingleChildScrollView(
       child: Column(
         children: [
+          Text('شب ${controller.roundNumber}', style: AppTheme.headingFont(size: 24)),
+          const SizedBox(height: 8),
+          const Text(
+            '🔴 اعضای تیم سرکوب بیدار بشن',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
           _buildLeaderDecisionSection(),
           if (controller.canIssueExecutionOrder) ...[
             const SizedBox(height: 24),
@@ -458,31 +517,39 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             const SizedBox(height: 8),
             _buildJudiciarySection(),
           ],
-          if (controller.doctorPlayer != null && controller.doctorPlayer!.isAlive) ...[
-            const SizedBox(height: 24),
-            const Divider(color: AppColors.gold),
-            const SizedBox(height: 8),
-            _buildDoctorSection(),
-          ],
-          if (controller.hackerPlayer != null && controller.hackerPlayer!.isAlive) ...[
-            const SizedBox(height: 24),
-            const Divider(color: AppColors.gold),
-            const SizedBox(height: 8),
-            _buildHackerSection(),
-          ],
-          if (controller.revolutionaryFighterPlayer != null &&
-              controller.revolutionaryFighterPlayer!.isAlive) ...[
-            const SizedBox(height: 24),
-            const Divider(color: AppColors.gold),
-            const SizedBox(height: 8),
-            _buildRevolutionarySection(),
-          ],
-          if (controller.lawyerPlayer != null && !controller.lawyerPlayer!.revivalUsed) ...[
-            const SizedBox(height: 24),
-            const Divider(color: AppColors.gold),
-            const SizedBox(height: 8),
-            _buildLawyerSection(),
-          ],
+          const SizedBox(height: 32),
+          ElevatedButton(
+            onPressed: controller.canAdvancePastSorkoobTeamStep ? controller.advanceNightStep : null,
+            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+            child: const Text('🌑 اعضای تیم سرکوب چشم‌هاشون رو ببندن'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// مرحله‌ی مشترکِ هر نقشِ خاصِ شهروندی که تنها و جداگونه بیدار می‌شه.
+  Widget _buildRoleNightStep({
+    required String wakeLabel,
+    required String sleepLabel,
+    required Widget body,
+  }) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Text(
+            '🔓 $wakeLabel',
+            textAlign: TextAlign.center,
+            style: AppTheme.headingFont(size: 22),
+          ),
+          const SizedBox(height: 16),
+          body,
+          const SizedBox(height: 32),
+          ElevatedButton(
+            onPressed: controller.advanceNightStep,
+            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+            child: Text('🌑 $sleepLabel'),
+          ),
         ],
       ),
     );
@@ -495,8 +562,6 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     if (!controller.nightActionTaken) {
       return Column(
         children: [
-          Text('شب ${controller.roundNumber}', style: AppTheme.headingFont(size: 24)),
-          const SizedBox(height: 4),
           Text(
             leaderAlive
                 ? 'تیم سرکوب بیدار می‌شه و باهم مشورت می‌کنن؛ تصمیم نهایی با ولی‌فقیه‌ست.'
@@ -540,39 +605,26 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               onPressed: () => _showNegotiatePicker(),
             ),
           ],
-          if (!leaderAlive) ...[
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: controller.finishNight,
-              child: const Text('پایان شب'),
-            ),
-          ],
         ],
       );
     }
 
     return Column(
       children: [
-        if (controller.slaughterResultMessage != null) ...[
+        if (controller.slaughterResultMessage != null)
           Text(
             controller.slaughterResultMessage!,
             textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.white, fontSize: 16),
-          ),
-          const SizedBox(height: 20),
-        ] else if (controller.negotiateResultMessage != null) ...[
+          )
+        else if (controller.negotiateResultMessage != null)
           Text(
             controller.negotiateResultMessage!,
             textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.white, fontSize: 16),
-          ),
-          const SizedBox(height: 20),
-        ] else
+          )
+        else
           const Text('تصمیمِ امشب ثبت شد.', style: TextStyle(color: Colors.white70)),
-        ElevatedButton(
-          onPressed: controller.finishNight,
-          child: const Text('پایان شب'),
-        ),
       ],
     );
   }
