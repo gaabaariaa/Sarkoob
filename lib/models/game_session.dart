@@ -60,6 +60,9 @@ class SessionPlayer {
   // ---- مربوط به وکیل ----
   bool revivalUsed; // آیا قابلیتِ یک‌بارمصرفِ جان‌بخشی رو مصرف کرده؟
 
+  // ---- مربوط به رپر معترض ----
+  bool isActiveResistanceMember; // عضوِ فعالِ تیمِ مقاومتِ رپر معترضه؟
+
   SessionPlayer({
     required this.id,
     required this.name,
@@ -80,6 +83,7 @@ class SessionPlayer {
     this.revolutionaryChargesRemaining,
     this.canStillSlaughter = true,
     this.revivalUsed = false,
+    this.isActiveResistanceMember = false,
   });
 
   bool get isSorkoobTeam => teamId == 'team_sorkoob';

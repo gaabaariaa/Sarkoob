@@ -25,10 +25,13 @@ class _StartGameScreenState extends State<StartGameScreen> {
   // اینجا فقط انتخاب می‌شه که کدوم نقش‌ها اصلاً تو بازی باشن.
   bool _includeForeignMinister = false;
   bool _includeJudiciaryChief = false;
+  bool _includeCelebrity = false;
   bool _includeDoctor = false;
   bool _includeHacker = false;
   bool _includeRevolutionary = false;
   bool _includeLawyer = false;
+  bool _includeZhina = false;
+  bool _includeRapper = false;
 
   static const int _minPlayers = 9;
 
@@ -80,13 +83,18 @@ class _StartGameScreenState extends State<StartGameScreen> {
   }
 
   int get _sorkoobRoleSlotsEnabled =>
-      1 + (_includeForeignMinister ? 1 : 0) + (_includeJudiciaryChief ? 1 : 0);
+      1 +
+      (_includeForeignMinister ? 1 : 0) +
+      (_includeJudiciaryChief ? 1 : 0) +
+      (_includeCelebrity ? 1 : 0);
 
   int get _citizenRoleSlotsEnabled =>
       (_includeDoctor ? 1 : 0) +
       (_includeHacker ? 1 : 0) +
       (_includeRevolutionary ? 1 : 0) +
-      (_includeLawyer ? 1 : 0);
+      (_includeLawyer ? 1 : 0) +
+      (_includeZhina ? 1 : 0) +
+      (_includeRapper ? 1 : 0);
 
   /// یه بازیکن نمی‌تونه هم‌زمان عضوِ سرکوب و عضوِ تیمِ مستقل باشه.
   Set<int> get _assignedTeamIndices => {..._sorkoobMemberIndices, ..._independentMemberIndices};
@@ -173,10 +181,16 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
     final sorkoobShuffled = _sorkoobMemberIndices.toList()..shuffle();
     final valiFaghihIndex = sorkoobShuffled.isNotEmpty ? sorkoobShuffled[0] : null;
-    final foreignMinisterIndex =
-        (_includeForeignMinister && sorkoobShuffled.length > 1) ? sorkoobShuffled[1] : null;
-    final judiciaryChiefIndex =
-        (_includeJudiciaryChief && sorkoobShuffled.length > 2) ? sorkoobShuffled[2] : null;
+
+    var sorkoobCursor = 1; // اندیسِ ۰ همیشه ولی‌فقیه‌ست
+    int? nextSorkoobIndex(bool enabled) {
+      if (!enabled || sorkoobCursor >= sorkoobShuffled.length) return null;
+      return sorkoobShuffled[sorkoobCursor++];
+    }
+
+    final foreignMinisterIndex = nextSorkoobIndex(_includeForeignMinister);
+    final judiciaryChiefIndex = nextSorkoobIndex(_includeJudiciaryChief);
+    final celebrityIndex = nextSorkoobIndex(_includeCelebrity);
 
     final citizenShuffled = List<int>.generate(total, (i) => i)
         .where(
@@ -195,6 +209,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final hackerIndex = nextCitizenIndex(_includeHacker);
     final revolutionaryIndex = nextCitizenIndex(_includeRevolutionary);
     final lawyerIndex = nextCitizenIndex(_includeLawyer);
+    final zhinaIndex = nextCitizenIndex(_includeZhina);
+    final rapperIndex = nextCitizenIndex(_includeRapper);
 
     final slaughterCharges = (total / 6).floor().clamp(1, 999);
     final revolutionaryCharges = (_sorkoobMemberIndices.length - 1).clamp(0, 999);
@@ -217,6 +233,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
         roleId = SarkoobRoles.foreignMinister.id;
       } else if (i == judiciaryChiefIndex) {
         roleId = SarkoobRoles.judiciaryChief.id;
+      } else if (i == celebrityIndex) {
+        roleId = SarkoobRoles.governmentCelebrity.id;
       } else if (i == doctorIndex) {
         roleId = SarkoobRoles.doctor.id;
       } else if (i == hackerIndex) {
@@ -225,6 +243,10 @@ class _StartGameScreenState extends State<StartGameScreen> {
         roleId = SarkoobRoles.revolutionaryFighter.id;
       } else if (i == lawyerIndex) {
         roleId = SarkoobRoles.lawyer.id;
+      } else if (i == zhinaIndex) {
+        roleId = SarkoobRoles.zhina.id;
+      } else if (i == rapperIndex) {
+        roleId = SarkoobRoles.rapper.id;
       }
 
       players.add(
@@ -385,6 +407,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
             value: _includeJudiciaryChief,
             onChanged: (v) => setState(() => _includeJudiciaryChief = v),
           ),
+          _roleToggle(
+            role: SarkoobRoles.governmentCelebrity,
+            value: _includeCelebrity,
+            onChanged: (v) => setState(() => _includeCelebrity = v),
+          ),
 
           const SizedBox(height: 24),
           Text('تیم شهروند', style: AppTheme.headingFont(size: 20)),
@@ -415,6 +442,16 @@ class _StartGameScreenState extends State<StartGameScreen> {
             role: SarkoobRoles.lawyer,
             value: _includeLawyer,
             onChanged: (v) => setState(() => _includeLawyer = v),
+          ),
+          _roleToggle(
+            role: SarkoobRoles.zhina,
+            value: _includeZhina,
+            onChanged: (v) => setState(() => _includeZhina = v),
+          ),
+          _roleToggle(
+            role: SarkoobRoles.rapper,
+            value: _includeRapper,
+            onChanged: (v) => setState(() => _includeRapper = v),
           ),
 
           const SizedBox(height: 28),

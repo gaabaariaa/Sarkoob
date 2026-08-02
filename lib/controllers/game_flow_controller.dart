@@ -11,7 +11,7 @@ class VoteResolution {
 
 /// ترتیبِ «بیدارشدنِ» شب: اول تیمِ سرکوب باهم، بعد هر نقشِ خاصِ شهروندی
 /// جداگونه و به‌ترتیب، و در آخر جمع‌بندیِ شب.
-enum NightStepKind { sorkoobTeam, hacker, doctor, revolutionary, lawyer, done }
+enum NightStepKind { sorkoobTeam, rapper, hacker, doctor, revolutionary, lawyer, done }
 
 /// موتور اصلی «گردانندگی» یه جلسه‌ی بازی: ترتیب صحبت، چالش، رأی‌گیری،
 /// دفاعیه، حذف، و شب (تصمیمِ رهبر سرکوب، مذاکره، حکم اعدام).
@@ -249,6 +249,12 @@ class GameFlowController extends ChangeNotifier {
   String? negotiateResultMessage;
   String? lastNightSummary;
 
+  /// ژینا: اگه دیشب حذف شده باشه، این true می‌شه و امشب مصرفش می‌کنیم.
+  bool sorkoobDisabledNextNight = false;
+
+  /// همینِ امشب، تیمِ سرکوب هیچ قابلیتی نداره (چون ژینا دیشب حذف شد).
+  bool sorkoobDisabledTonight = false;
+
   bool get nightActionTaken => _nightActionTaken;
 
   SessionPlayer? get valiFaghihPlayer {
@@ -275,6 +281,7 @@ class GameFlowController extends ChangeNotifier {
       .toList();
 
   bool get canUseNegotiate {
+    if (sorkoobDisabledTonight) return false;
     final minister = foreignMinisterPlayer;
     if (minister == null || !minister.isAlive) return false;
     if (!sorkoobHasLostMember) return false;
@@ -283,6 +290,7 @@ class GameFlowController extends ChangeNotifier {
   }
 
   void leaderNegotiate(int targetId) {
+    if (sorkoobDisabledTonight) return;
     final target = playerById(targetId);
     final isGrayCitizen = target.teamId == SarkoobTeams.citizen.id && target.roleId == null;
     if (isGrayCitizen) {
@@ -297,12 +305,14 @@ class GameFlowController extends ChangeNotifier {
   }
 
   void leaderShoot(int targetId) {
+    if (sorkoobDisabledTonight) return;
     _pendingHits[targetId] = (_pendingHits[targetId] ?? 0) + 1;
     _nightActionTaken = true;
     notifyListeners();
   }
 
   void leaderSlaughter(int targetId, String guessedRoleId) {
+    if (sorkoobDisabledTonight) return;
     final leader = valiFaghihPlayer;
     if (leader == null) return;
     final target = playerById(targetId);
@@ -310,6 +320,7 @@ class GameFlowController extends ChangeNotifier {
     if (correct) {
       target.isAlive = false;
       target.eliminatedBySlaughter = true;
+      _checkZhinaTrigger(target);
       slaughterResultMessage = '«${target.name}» با سلاخی از بازی خارج شد.';
     } else {
       if ((leader.slaughterChargesRemaining ?? 0) > 0) {
@@ -334,11 +345,13 @@ class GameFlowController extends ChangeNotifier {
   }
 
   bool get canIssueExecutionOrder {
+    if (sorkoobDisabledTonight) return false;
     final chief = judiciaryChiefPlayer;
     return chief != null && chief.isAlive && !chief.executionOrderUsed;
   }
 
   void issueExecutionOrder(String word) {
+    if (sorkoobDisabledTonight) return;
     final chief = judiciaryChiefPlayer;
     if (chief == null) return;
     chief.executionOrderUsed = true;
@@ -403,6 +416,65 @@ class GameFlowController extends ChangeNotifier {
   void _eliminatePlayer(SessionPlayer player) {
     player.isAlive = false;
     player.isHalfAlive = hasUnusedPublicDefender;
+    _checkZhinaTrigger(player);
+  }
+
+  /// اگه بازیکنِ حذف‌شده خودِ ژینا باشه، شبِ بعد تیمِ سرکوب هیچ قابلیتی
+  /// نداره. سلاخی هم چون یه‌جور «حذف»ه، همین چک رو صدا می‌زنه، فقط جدا
+  /// از _eliminatePlayer چون سلاخی مستقیم isAlive رو خودش ست می‌کنه.
+  void _checkZhinaTrigger(SessionPlayer player) {
+    if (player.roleId == SarkoobRoles.zhina.id) {
+      sorkoobDisabledNextNight = true;
+    }
+  }
+
+  // ---------- رپر معترض: عضوگیریِ شبانه برای مقاومت (مستقل از بقیه) ----------
+
+  SessionPlayer? get rapperPlayer {
+    for (final p in players) {
+      if (p.roleId == SarkoobRoles.rapper.id) return p;
+    }
+    return null;
+  }
+
+  List<SessionPlayer> get activeResistanceMembers =>
+      players.where((p) => p.isActiveResistanceMember).toList();
+
+  bool _rapperActedTonight = false;
+  String? rapperResultMessage;
+
+  bool get canRapperActTonight {
+    final rapper = rapperPlayer;
+    return rapper != null && rapper.isAlive && !_rapperActedTonight;
+  }
+
+  /// نتیجه بر اساسِ تیم/نقشِ واقعیِ هدفه: شهروندِ ساده = عضوگیریِ موفق؛
+  /// نقشی که هنوز طبقِ قانونِ «دیرهنگام‌بودنِ افشا»ش فعال نشده (مثلِ
+  /// سلبریتی حکومتی تو دو شبِ اول) = عضوگیریِ موفق ولی به‌عنوانِ جاسوس؛
+  /// در غیرِاین‌صورت (سرکوبِ فعال یا تیمِ مستقل) = خودِ رپر حذف می‌شه.
+  void rapperRecruit(int targetId) {
+    final rapper = rapperPlayer;
+    if (!canRapperActTonight || rapper == null) return;
+    final target = playerById(targetId);
+    final targetRole = target.roleId != null ? SarkoobRoles.byId(target.roleId!) : null;
+    final isSleeperStillHidden = targetRole != null &&
+        targetRole.investigationHiddenUntilNight > 0 &&
+        roundNumber <= targetRole.investigationHiddenUntilNight;
+
+    _rapperActedTonight = true;
+
+    if (target.teamId == SarkoobTeams.citizen.id) {
+      target.isActiveResistanceMember = true;
+      rapperResultMessage = '«${target.name}» به تیمِ مقاومتِ فعال پیوست.';
+    } else if (isSleeperStillHidden) {
+      target.isActiveResistanceMember = true;
+      rapperResultMessage =
+          '«${target.name}» (که هنوز به‌عنوانِ سرکوب فعال نشده) به‌عنوانِ جاسوسِ سرکوب وارد مقاومت شد.';
+    } else {
+      _eliminatePlayer(rapper);
+      rapperResultMessage = 'انتخاب اشتباه بود! خودِ «${rapper.name}» همون‌لحظه حذف شد.';
+    }
+    notifyListeners();
   }
 
   // ---------- دکتر: نجاتِ شبانه (مستقل از تصمیمِ رهبر و حکمِ اعدام) ----------
@@ -577,6 +649,7 @@ class GameFlowController extends ChangeNotifier {
     if (correct) {
       target.isAlive = false;
       target.eliminatedBySlaughter = true;
+      _checkZhinaTrigger(target);
       revolutionaryResultMessage = '«${target.name}» با سلاخیِ مبارزِ انقلابی از بازی خارج شد.';
     } else {
       fighter.canStillSlaughter = false;
@@ -590,6 +663,7 @@ class GameFlowController extends ChangeNotifier {
 
   static const List<NightStepKind> _nightStepOrder = [
     NightStepKind.sorkoobTeam,
+    NightStepKind.rapper,
     NightStepKind.hacker,
     NightStepKind.doctor,
     NightStepKind.revolutionary,
@@ -611,6 +685,8 @@ class GameFlowController extends ChangeNotifier {
     switch (step) {
       case NightStepKind.sorkoobTeam:
         return true;
+      case NightStepKind.rapper:
+        return rapperPlayer != null;
       case NightStepKind.hacker:
         return hackerPlayer != null;
       case NightStepKind.doctor:
@@ -629,6 +705,7 @@ class GameFlowController extends ChangeNotifier {
   /// باید حتماً تصمیمش رو گرفته باشه (شات/سلاخی/مذاکره)؛ اگه زنده نیست،
   /// همیشه می‌شه رد شد (مذاکره اختیاریه).
   bool get canAdvancePastSorkoobTeamStep {
+    if (sorkoobDisabledTonight) return true;
     final leader = valiFaghihPlayer;
     final leaderAlive = leader != null && leader.isAlive;
     if (!leaderAlive) return true;
@@ -659,6 +736,10 @@ class GameFlowController extends ChangeNotifier {
     lastInvestigationTargetName = null;
     _revolutionaryActedTonight = false;
     revolutionaryResultMessage = null;
+    _rapperActedTonight = false;
+    rapperResultMessage = null;
+    sorkoobDisabledTonight = sorkoobDisabledNextNight;
+    sorkoobDisabledNextNight = false;
     _nightActionTaken = false;
     slaughterResultMessage = null;
     negotiateResultMessage = null;

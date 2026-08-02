@@ -451,6 +451,12 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     switch (controller.currentNightStep) {
       case NightStepKind.sorkoobTeam:
         return _buildSorkoobTeamStep();
+      case NightStepKind.rapper:
+        return _buildRoleNightStep(
+          wakeLabel: 'رپر معترض بیدار بشه',
+          sleepLabel: 'رپر معترض چشمش رو ببنده',
+          body: _buildRapperSection(),
+        );
       case NightStepKind.hacker:
         return _buildRoleNightStep(
           wakeLabel: 'هکر بیدار بشه',
@@ -510,12 +516,24 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             style: TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          _buildLeaderDecisionSection(),
-          if (controller.canIssueExecutionOrder) ...[
-            const SizedBox(height: 24),
-            const Divider(color: AppColors.gold),
-            const SizedBox(height: 8),
-            _buildJudiciarySection(),
+          if (controller.sorkoobDisabledTonight)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                'امشب (به‌خاطرِ حذف‌شدنِ ژینا دیشب) تیمِ سرکوب هیچ قابلیتی '
+                'نداره — فقط برو به مرحله‌ی بعد.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white54),
+              ),
+            )
+          else ...[
+            _buildLeaderDecisionSection(),
+            if (controller.canIssueExecutionOrder) ...[
+              const SizedBox(height: 24),
+              const Divider(color: AppColors.gold),
+              const SizedBox(height: 8),
+              _buildJudiciarySection(),
+            ],
           ],
           const SizedBox(height: 32),
           ElevatedButton(
@@ -551,6 +569,71 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             child: Text('🌑 $sleepLabel'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildRapperSection() {
+    final rapper = controller.rapperPlayer!;
+    final result = controller.rapperResultMessage;
+    final resistance = controller.activeResistanceMembers;
+    return Column(
+      children: [
+        const Text(
+          'رپر معترض می‌تونه امشب یه نفر رو برای عضوگیری تو مقاومت انتخاب کنه:',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 8),
+        if (result != null) ...[
+          Text(
+            result,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          if (resistance.isNotEmpty)
+            Text(
+              'حالا بگو: اعضای مقاومتِ فعال (${resistance.map((p) => p.name).join('، ')}) بیدار بشن '
+              'تا وضعیتِ جدید رو ببینن.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white54, fontSize: 12),
+            ),
+          const SizedBox(height: 8),
+        ],
+        OutlinedButton.icon(
+          icon: const Icon(Icons.groups),
+          label: const Text('انتخابِ یه بازیکن'),
+          onPressed: controller.canRapperActTonight ? () => _showRapperPicker(rapper) : null,
+        ),
+      ],
+    );
+  }
+
+  void _showRapperPicker(SessionPlayer rapper) {
+    final targets = controller.alivePlayers.where((p) => p.id != rapper.id).toList();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceDark,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text('کی رو برای مقاومت انتخاب کنه؟', style: TextStyle(color: AppColors.goldLight)),
+            ),
+            ...targets.map(
+              (p) => ListTile(
+                title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                onTap: () {
+                  controller.rapperRecruit(p.id);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

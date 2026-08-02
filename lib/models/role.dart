@@ -49,6 +49,12 @@ class GameRole {
   // ---- فیلدِ مخصوص وکیل ----
   final bool canRevive; // قابلیتِ جان‌بخشیِ یک‌بارمصرف داره؟
 
+  // ---- فیلدِ مخصوص رپر معترض ----
+  final bool canRecruitResistance; // قابلیتِ عضوگیریِ شبانه برای مقاومت داره؟
+
+  // ---- فیلدِ مخصوص ژینا ----
+  final bool disablesSorkoobNextNightOnDeath; // با حذف‌شدنش، شبِ بعد سرکوب قابلیتی نداره
+
   /// فیلدِ عمومی (نه مخصوصِ یه نقشِ خاص): برای نقش‌هایی مثلِ «سلبریتی
   /// حکومتی» که عضوِ واقعیِ سرکوب‌ان ولی چند شبِ اول در استعلامِ هکر
   /// بی‌گناه نشون داده می‌شن. ۰ یعنی از همون شبِ اول واقعی و دقیق نشون
@@ -72,6 +78,8 @@ class GameRole {
     this.canInvestigate = false,
     this.canRevolutionaryAct = false,
     this.canRevive = false,
+    this.canRecruitResistance = false,
+    this.disablesSorkoobNextNightOnDeath = false,
     this.investigationHiddenUntilNight = 0,
   });
 }
@@ -205,6 +213,52 @@ class SarkoobRoles {
     canRevive: true,
   );
 
+  static final rapper = GameRole(
+    id: 'role_rapper',
+    name: 'رپر معترض',
+    teamId: SarkoobTeams.citizen.id,
+    description:
+        'هر شب اول از همه بیدار می‌شه و نامِ یه بازیکن رو به گرداننده اعلام '
+        'می‌کنه تا بسنجه عضوِ شهروندِ قابل‌اعتماده یا نه. اگه هدف واقعاً '
+        'شهروندِ ساده باشه، به تیمِ «مقاومتِ فعال»ِ خودش می‌پیونده و از این '
+        'به بعد شب‌ها با رپر معترض بیدار می‌شه و بقیه‌ی اعضای مقاومت رو '
+        'می‌شناسه. اگه هدف عضوِ سرکوب یا تیمِ مستقل باشه، خودِ رپر معترض '
+        'همون‌لحظه حذف می‌شه. اگه هدف «سلبریتی حکومتی» باشه و هنوز (طبقِ '
+        'همون قانونِ دیرهنگام‌بودنِ افشا) به‌عنوانِ سرکوب فعال نشده باشه، '
+        'به‌جای حذف‌شدنِ رپر، سلبریتی به‌عنوانِ جاسوسِ سرکوب وارد مقاومت '
+        'می‌شه — ولی اگه دیگه دورانِ افشاش گذشته باشه، مثلِ یه عضوِ عادیِ '
+        'سرکوب حساب می‌شه و رپر معترض حذف می‌شه.',
+    canRecruitResistance: true,
+  );
+
+  static final zhina = GameRole(
+    id: 'role_zhina',
+    name: 'ژینا',
+    teamId: SarkoobTeams.citizen.id,
+    description:
+        'هیچ‌وقت مستقیم تو ترتیبِ شب بیدار نمی‌شه و کاری عملیاتی نداره. '
+        'ولی اگه از بازی حذف بشه — چه با رأی‌گیری، چه با شلیکِ شب، چه با '
+        'هر جور حذفِ دیگه — شبِ بعدش هیچ‌کدوم از اعضای تیم سرکوب (نه '
+        'ولی‌فقیه، نه وزیر امور خارجه، نه رئیس قوه قضاییه) نمی‌تونن از '
+        'قابلیتِ خودشون استفاده کنن.',
+    disablesSorkoobNextNightOnDeath: true,
+  );
+
+  /// تعریفِ حداقلی، فقط بر اساسِ تعاملش با هکر و رپر معترض؛ اگه خودِ این
+  /// نقش قابلیتِ شبانه‌ی مستقلی هم داره، به‌عنوانِ یه نقشِ جدا توضیح بده.
+  static final governmentCelebrity = GameRole(
+    id: 'role_government_celebrity',
+    name: 'سلبریتی حکومتی',
+    teamId: SarkoobTeams.suppression.id,
+    description:
+        'در شب‌های اول و دوم هنوز به‌عنوانِ عضوِ سرکوب فعالیت نمی‌کنه: '
+        'استعلامِ هکر روش دیس‌لایک نشون می‌ده، و اگه رپر معترض همین دو شبِ '
+        'اول اشتباهی انتخابش کنه، به‌جای حذف‌شدنِ رپر، خودش به‌عنوانِ '
+        'جاسوسِ سرکوب وارد تیمِ مقاومت می‌شه. از شبِ سوم به بعد، دقیقاً '
+        'مثلِ یه عضوِ عادیِ سرکوب حساب می‌شه.',
+    investigationHiddenUntilNight: 2,
+  );
+
   static final List<GameRole> all = [
     valiFaghih,
     foreignMinister,
@@ -214,6 +268,9 @@ class SarkoobRoles {
     hacker,
     revolutionaryFighter,
     lawyer,
+    rapper,
+    zhina,
+    governmentCelebrity,
   ];
 
   static GameRole? byId(String id) {
