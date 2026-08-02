@@ -13,16 +13,16 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
   bool _includeMossad = false;
   bool _includeMek = false;
-  final Set<int> _independentMemberIndices = {};
+  int _independentCount = 1;
 
-  // کدوم بازیکن‌ها عضوِ تیمِ سرکوب‌ان (هم رهبر/نقش‌دارها هم سرکوبگرهای
-  // ساده). خودِ برنامه موقعِ شروعِ بازی تصادفی تصمیم می‌گیره کدوم‌شون
-  // کدوم نقشِ فعال رو می‌گیره.
-  final Set<int> _sorkoobMemberIndices = {};
+  // چندتا از کلِ بازیکن‌ها عضوِ تیمِ سرکوبن. خودِ برنامه موقعِ شروعِ بازی
+  // به همین تعداد، کاملاً تصادفی، از بینِ همه‌ی بازیکن‌ها انتخاب می‌کنه —
+  // نه گرداننده انتخاب می‌کنه کیا، نه کسی پیش‌فرض جایی می‌ره.
+  int _sorkoobCount = 1;
 
   // کدوم نقش‌های اختیاری تو این بازی فعالن؛ ولی‌فقیه همیشه اجباری و
-  // فعاله. تخصیصِ این نقش‌ها به بازیکنِ خاص کاملاً خودکار و تصادفیه —
-  // اینجا فقط انتخاب می‌شه که کدوم نقش‌ها اصلاً تو بازی باشن.
+  // فعاله. این‌که کدوم نقش‌ها اصلاً تو بازی باشن دستیه، ولی این‌که کدوم
+  // بازیکنِ خاص هرکدوم رو بگیره، کاملاً تصادفیه.
   bool _includeForeignMinister = false;
   bool _includeJudiciaryChief = false;
   bool _includeCelebrity = false;
@@ -45,7 +45,6 @@ class _StartGameScreenState extends State<StartGameScreen> {
     setState(() {
       _includeMossad = mossad;
       _includeMek = mek;
-      if (!mossad && !mek) _independentMemberIndices.clear();
     });
   }
 
@@ -58,29 +57,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
     });
   }
 
-  Set<int> _shiftSet(Set<int> set, int removedIndex) {
-    return set.where((i) => i != removedIndex).map((i) => i > removedIndex ? i - 1 : i).toSet();
-  }
-
   void _removePlayer(int index) {
-    setState(() {
-      _draftPlayers.removeAt(index);
-      _independentMemberIndices
-        ..clear()
-        ..addAll(_shiftSet(_independentMemberIndices, index));
-      _sorkoobMemberIndices
-        ..clear()
-        ..addAll(_shiftSet(_sorkoobMemberIndices, index));
-    });
+    setState(() => _draftPlayers.removeAt(index));
   }
 
   bool get _includeIndependent => _includeMossad || _includeMek;
-
-  int get _citizenCount {
-    final total = _draftPlayers.length;
-    final result = total - _sorkoobMemberIndices.length - _independentMemberIndices.length;
-    return result < 0 ? 0 : result;
-  }
 
   int get _sorkoobRoleSlotsEnabled =>
       1 +
@@ -96,15 +77,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
       (_includeZhina ? 1 : 0) +
       (_includeRapper ? 1 : 0);
 
-  /// یه بازیکن نمی‌تونه هم‌زمان عضوِ سرکوب و عضوِ تیمِ مستقل باشه.
-  Set<int> get _assignedTeamIndices => {..._sorkoobMemberIndices, ..._independentMemberIndices};
-
-  String _teamLabelFor(int index) {
-    if (_sorkoobMemberIndices.contains(index)) return SarkoobTeams.suppression.name;
-    if (_independentMemberIndices.contains(index)) {
-      return _includeMossad ? SarkoobTeams.mossad.name : SarkoobTeams.mek.name;
-    }
-    return SarkoobTeams.citizen.name;
+  int get _citizenCount {
+    final total = _draftPlayers.length;
+    final independent = _includeIndependent ? _independentCount : 0;
+    final result = total - _sorkoobCount - independent;
+    return result < 0 ? 0 : result;
   }
 
   String? get _validationError {
@@ -112,21 +89,21 @@ class _StartGameScreenState extends State<StartGameScreen> {
     if (total < _minPlayers) {
       return 'حداقل $_minPlayers بازیکن لازمه (الان $total نفر)';
     }
-    if (_sorkoobMemberIndices.isEmpty) {
-      return 'تیم سرکوب باید حداقل ۱ نفر داشته باشه (حداقل خودِ ولی‌فقیه)';
+    if (_sorkoobCount < 1) {
+      return 'تیم سرکوب باید حداقل ۱ نفر داشته باشه (خودِ ولی‌فقیه)';
     }
-    if (_sorkoobRoleSlotsEnabled > _sorkoobMemberIndices.length) {
+    if (_sorkoobCount < _sorkoobRoleSlotsEnabled) {
       return 'با این تعداد عضوِ سرکوب، همه‌ی نقش‌های فعال‌شده‌ی این تیم جا نمی‌شن';
+    }
+    if (_includeIndependent && _independentCount < 1) {
+      return 'تیم مستقل انتخاب شده؛ باید حداقل ۱ نفر داشته باشه';
+    }
+    final independent = _includeIndependent ? _independentCount : 0;
+    if (_sorkoobCount + independent >= total) {
+      return 'با این اعداد، کسی برای تیم شهروند نمی‌مونه؛ تعدادِ سرکوب/مستقل رو کم کن';
     }
     if (_citizenRoleSlotsEnabled > _citizenCount) {
       return 'با این تعداد شهروند، همه‌ی نقش‌های فعال‌شده‌ی این تیم جا نمی‌شن';
-    }
-    if (_includeIndependent && _independentMemberIndices.isEmpty) {
-      return 'تیم مستقل انتخاب شده؛ باید حداقل ۱ نفر عضوش باشه';
-    }
-    if (_citizenCount < 1) {
-      return 'با این انتخاب‌ها، کسی برای تیم شهروند نمی‌مونه؛ '
-          'تعدادِ اعضای سرکوب/تیمِ مستقل رو کم کن';
     }
     return null;
   }
@@ -178,8 +155,17 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final total = _draftPlayers.length;
     final independentTeamId =
         _includeMossad ? SarkoobTeams.mossad.id : (_includeMek ? SarkoobTeams.mek.id : null);
+    final independentCount = _includeIndependent ? _independentCount : 0;
 
-    final sorkoobShuffled = _sorkoobMemberIndices.toList()..shuffle();
+    // تخصیصِ تیم: کاملاً تصادفی. کلِ بازیکن‌ها رو قاطی می‌کنیم، اولین
+    // $_sorkoobCount نفر سرکوب، بعدی‌ها (اگه تیمِ مستقل فعاله) مستقل، و
+    // بقیه خودکار شهروند.
+    final allShuffled = List<int>.generate(total, (i) => i)..shuffle();
+    final sorkoobIndices = allShuffled.take(_sorkoobCount).toSet();
+    final independentIndices =
+        allShuffled.skip(_sorkoobCount).take(independentCount).toSet();
+
+    final sorkoobShuffled = sorkoobIndices.toList()..shuffle();
     final valiFaghihIndex = sorkoobShuffled.isNotEmpty ? sorkoobShuffled[0] : null;
 
     var sorkoobCursor = 1; // اندیسِ ۰ همیشه ولی‌فقیه‌ست
@@ -193,9 +179,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final celebrityIndex = nextSorkoobIndex(_includeCelebrity);
 
     final citizenShuffled = List<int>.generate(total, (i) => i)
-        .where(
-          (i) => !_sorkoobMemberIndices.contains(i) && !_independentMemberIndices.contains(i),
-        )
+        .where((i) => !sorkoobIndices.contains(i) && !independentIndices.contains(i))
         .toList()
       ..shuffle();
 
@@ -213,14 +197,14 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final rapperIndex = nextCitizenIndex(_includeRapper);
 
     final slaughterCharges = (total / 6).floor().clamp(1, 999);
-    final revolutionaryCharges = (_sorkoobMemberIndices.length - 1).clamp(0, 999);
+    final revolutionaryCharges = (_sorkoobCount - 1).clamp(0, 999);
 
     final players = <SessionPlayer>[];
     for (var i = 0; i < total; i++) {
       final String teamId;
-      if (_sorkoobMemberIndices.contains(i)) {
+      if (sorkoobIndices.contains(i)) {
         teamId = SarkoobTeams.suppression.id;
-      } else if (_independentMemberIndices.contains(i)) {
+      } else if (independentIndices.contains(i)) {
         teamId = independentTeamId!;
       } else {
         teamId = SarkoobTeams.citizen.id;
@@ -316,10 +300,6 @@ class _StartGameScreenState extends State<StartGameScreen> {
               ),
               child: ListTile(
                 title: Text(name, style: const TextStyle(color: Colors.white)),
-                subtitle: Text(
-                  _teamLabelFor(index),
-                  style: const TextStyle(color: AppColors.goldLight, fontSize: 12),
-                ),
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: AppColors.bloodRedLight),
                   onPressed: () => _removePlayer(index),
@@ -358,39 +338,32 @@ class _StartGameScreenState extends State<StartGameScreen> {
             title: Text(SarkoobTeams.mek.name, style: const TextStyle(color: Colors.white)),
           ),
           if (_includeIndependent)
-            _multiSelectChecklist(
-              title:
-                  'کدوم بازیکن‌ها عضوِ ${_includeMossad ? SarkoobTeams.mossad.name : SarkoobTeams.mek.name}ان؟',
-              selected: _independentMemberIndices,
-              onToggle: (i, checked) => setState(() {
-                if (checked) {
-                  _independentMemberIndices.add(i);
-                } else {
-                  _independentMemberIndices.remove(i);
-                }
+            _countStepper(
+              label: 'چند نفر عضوِ ${_includeMossad ? SarkoobTeams.mossad.name : SarkoobTeams.mek.name} باشن؟',
+              value: _independentCount,
+              onDecrement: () => setState(() {
+                if (_independentCount > 1) _independentCount--;
               }),
+              onIncrement: () => setState(() => _independentCount++),
             ),
 
           const SizedBox(height: 24),
           Text('تیم سرکوب', style: AppTheme.headingFont(size: 20)),
           const SizedBox(height: 4),
           const Text(
-            'کدوم بازیکن‌ها عضوِ این تیمن (چه نقش‌دار چه سرکوبگرِ ساده)؛ '
-            'خودِ برنامه بینِ همین‌ها تصادفی تصمیم می‌گیره کی ولی‌فقیه/وزیر/'
-            'رئیس‌قضاییه بشه.',
+            'چند نفر عضوِ این تیم باشن؛ خودِ برنامه موقعِ شروعِ بازی کاملاً '
+            'تصادفی مشخص می‌کنه کیا، و بینِ همون‌ها هم تصادفی تصمیم می‌گیره '
+            'کی ولی‌فقیه/وزیر/رئیس‌قضاییه بشه.',
             style: TextStyle(color: Colors.white60, fontSize: 12),
           ),
           const SizedBox(height: 8),
-          _multiSelectChecklist(
-            title: 'اعضای تیم سرکوب:',
-            selected: _sorkoobMemberIndices,
-            onToggle: (i, checked) => setState(() {
-              if (checked) {
-                _sorkoobMemberIndices.add(i);
-              } else {
-                _sorkoobMemberIndices.remove(i);
-              }
+          _countStepper(
+            label: 'تعدادِ اعضای تیم سرکوب',
+            value: _sorkoobCount,
+            onDecrement: () => setState(() {
+              if (_sorkoobCount > 1) _sorkoobCount--;
             }),
+            onIncrement: () => setState(() => _sorkoobCount++),
           ),
           const SizedBox(height: 12),
           const Text(
@@ -417,9 +390,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
           Text('تیم شهروند', style: AppTheme.headingFont(size: 20)),
           const SizedBox(height: 4),
           Text(
-            'بقیه‌ی بازیکنانی که بالا انتخاب نکردی، خودکار شهروند حساب '
-            'می‌شن: $_citizenCount نفر از مجموع $total. این بازی کدوم '
-            'نقش‌های شهروندی رو داشته باشه؟ تخصیصِ اینا هم کاملاً تصادفیه.',
+            'بقیه‌ی بازیکنانی که تو تیم سرکوب/مستقل نیفتادن، خودکار و '
+            'تصادفی شهروند حساب می‌شن: تقریباً $_citizenCount نفر از مجموع '
+            '$total. این بازی کدوم نقش‌های شهروندی رو داشته باشه؟',
             style: const TextStyle(color: Colors.white60, fontSize: 12),
           ),
           const SizedBox(height: 8),
@@ -526,6 +499,33 @@ class _StartGameScreenState extends State<StartGameScreen> {
     );
   }
 
+  Widget _countStepper({
+    required String label,
+    required int value,
+    required VoidCallback onDecrement,
+    required VoidCallback onIncrement,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+        Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.remove, color: AppColors.gold),
+              onPressed: onDecrement,
+            ),
+            Text('$value نفر', style: const TextStyle(color: AppColors.goldLight, fontSize: 18)),
+            IconButton(
+              icon: const Icon(Icons.add, color: AppColors.gold),
+              onPressed: onIncrement,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget _roleToggle({
     required GameRole role,
     required bool value,
@@ -537,34 +537,6 @@ class _StartGameScreenState extends State<StartGameScreen> {
       activeColor: AppColors.gold,
       title: Text(role.name, style: const TextStyle(color: Colors.white)),
       dense: true,
-    );
-  }
-
-  Widget _multiSelectChecklist({
-    required String title,
-    required Set<int> selected,
-    required void Function(int index, bool checked) onToggle,
-  }) {
-    final assigned = _assignedTeamIndices;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: const TextStyle(color: Colors.white70, fontSize: 13)),
-        ..._draftPlayers.asMap().entries.map((entry) {
-          final i = entry.key;
-          final takenElsewhere = assigned.contains(i) && !selected.contains(i);
-          return CheckboxListTile(
-            dense: true,
-            value: selected.contains(i),
-            onChanged: takenElsewhere ? null : (v) => onToggle(i, v ?? false),
-            activeColor: AppColors.gold,
-            title: Text(
-              entry.value,
-              style: TextStyle(color: takenElsewhere ? Colors.white24 : Colors.white),
-            ),
-          );
-        }),
-      ],
     );
   }
 }
