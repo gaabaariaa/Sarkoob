@@ -87,6 +87,16 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     return SingleChildScrollView(
       child: Column(
         children: [
+          if (!isIntro && controller.gunFireResultMessage != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                controller.gunFireResultMessage!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+              ),
+            ),
+          if (!isIntro && controller.armedPlayers.isNotEmpty) _buildGunBanner(),
           if (!isIntro && controller.activeExecutionWord != null) _buildExecutionWordBanner(),
           if (isIntro)
             const Text(
@@ -190,6 +200,18 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          if (controller.gunFireResultMessage != null) ...[
+            Text(
+              controller.gunFireResultMessage!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+          ],
+          if (controller.armedPlayers.isNotEmpty) ...[
+            _buildGunBanner(),
+            const SizedBox(height: 12),
+          ],
           if (controller.activeExecutionWord != null) ...[
             _buildExecutionWordBanner(),
             const SizedBox(height: 12),
@@ -217,6 +239,114 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             child: const Text('ادامه به شب معارفه'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildGunBanner() {
+    final armed = controller.armedPlayers;
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.bloodRed.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.bloodRedLight),
+      ),
+      child: Column(
+        children: [
+          const Text(
+            '🔫 یکی از بازیکن‌ها الان اسلحه داره و می‌تونه اعلامِ اسلحه کنه',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '(کسایی که اسلحه دارن: ${armed.map((p) => p.name).join('، ')})',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white54, fontSize: 12),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton(
+            onPressed: _showFireGunDialog,
+            child: const Text('اعلامِ اسلحه و شلیک'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showFireGunDialog() {
+    final shooters = controller.armedPlayers;
+    SessionPlayer? selectedShooter;
+    SessionPlayer? selectedTarget;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) {
+          final targets =
+              controller.alivePlayers.where((p) => p.id != selectedShooter?.id).toList();
+          return AlertDialog(
+            backgroundColor: AppColors.surfaceDark,
+            title: const Text('اعلامِ اسلحه', style: TextStyle(color: AppColors.goldLight)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButton<SessionPlayer>(
+                  isExpanded: true,
+                  hint: const Text('کی اعلامِ اسلحه می‌کنه؟', style: TextStyle(color: Colors.white70)),
+                  dropdownColor: AppColors.surfaceDark,
+                  value: selectedShooter,
+                  items: shooters
+                      .map(
+                        (p) => DropdownMenuItem(
+                          value: p,
+                          child: Text(p.name, style: const TextStyle(color: Colors.white)),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (v) => setDialogState(() {
+                    selectedShooter = v;
+                    selectedTarget = null;
+                  }),
+                ),
+                const SizedBox(height: 8),
+                DropdownButton<SessionPlayer>(
+                  isExpanded: true,
+                  hint: const Text('روی کی شلیک کنه؟', style: TextStyle(color: Colors.white70)),
+                  dropdownColor: AppColors.surfaceDark,
+                  value: selectedTarget,
+                  items: targets
+                      .map(
+                        (p) => DropdownMenuItem(
+                          value: p,
+                          child: Text(p.name, style: const TextStyle(color: Colors.white)),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (v) => setDialogState(() => selectedTarget = v),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('انصراف'),
+              ),
+              ElevatedButton(
+                onPressed: (selectedShooter != null && selectedTarget != null)
+                    ? () {
+                        controller.fireGun(selectedShooter!.id, selectedTarget!.id);
+                        Navigator.of(dialogContext).pop();
+                      }
+                    : null,
+                child: const Text('شلیک'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -321,6 +451,14 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           isSecondRound ? 'رأی‌گیری نهایی (فقط بین نفرات دفاعیه)' : 'رأی‌گیری',
           style: AppTheme.headingFont(size: 20),
         ),
+        if (!isSecondRound && controller.gunExplosionSummary != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            controller.gunExplosionSummary!,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.bloodRedLight),
+          ),
+        ],
         const SizedBox(height: 12),
         Expanded(
           child: ListView(
@@ -469,6 +607,12 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           sleepLabel: 'دکتر چشمش رو ببنده',
           body: _buildDoctorSection(),
         );
+      case NightStepKind.rebel:
+        return _buildRoleNightStep(
+          wakeLabel: 'شورشی بیدار بشه',
+          sleepLabel: 'شورشی چشمش رو ببنده',
+          body: _buildRebelSection(),
+        );
       case NightStepKind.revolutionary:
         return _buildRoleNightStep(
           wakeLabel: 'مبارز انقلابی بیدار بشه',
@@ -533,6 +677,12 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               const Divider(color: AppColors.gold),
               const SizedBox(height: 8),
               _buildJudiciarySection(),
+            ],
+            if (controller.interrogatorPlayer != null) ...[
+              const SizedBox(height: 24),
+              const Divider(color: AppColors.gold),
+              const SizedBox(height: 8),
+              _buildInterrogatorSection(),
             ],
           ],
           const SizedBox(height: 32),
@@ -757,6 +907,210 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             child: const Text('ثبت'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildInterrogatorSection() {
+    final interrogator = controller.interrogatorPlayer!;
+    final target = controller.lastInterrogationTargetName;
+    return Column(
+      children: [
+        Text(
+          interrogator.interrogationUsed
+              ? 'بازجو خبرنگار قابلیتِ یک‌بارمصرفِ بازجویی رو مصرف کرده.'
+              : 'بازجو خبرنگار می‌تونه (فقط یک‌بار در کل بازی) یه نفر رو بازجویی کنه:',
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 8),
+        if (target != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              'بازجوییِ انجام‌شده: «$target»'
+              '${controller.lastInterrogationQuestion != null ? ' — سوال: ${controller.lastInterrogationQuestion}' : ''}',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.goldLight),
+            ),
+          ),
+        if (!interrogator.interrogationUsed)
+          OutlinedButton.icon(
+            icon: const Icon(Icons.record_voice_over),
+            label: const Text('بازجوییِ یه بازیکن'),
+            onPressed: controller.canInterrogateTonight ? _showInterrogationDialog : null,
+          ),
+      ],
+    );
+  }
+
+  void _showInterrogationDialog() {
+    final targets = controller.alivePlayers;
+    SessionPlayer? selectedTarget;
+    final questionController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          backgroundColor: AppColors.surfaceDark,
+          title: const Text('بازجویی', style: TextStyle(color: AppColors.goldLight)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButton<SessionPlayer>(
+                isExpanded: true,
+                hint: const Text('انتخابِ هدف', style: TextStyle(color: Colors.white70)),
+                dropdownColor: AppColors.surfaceDark,
+                value: selectedTarget,
+                items: targets
+                    .map(
+                      (p) => DropdownMenuItem(
+                        value: p,
+                        child: Text(p.name, style: const TextStyle(color: Colors.white)),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (v) => setDialogState(() => selectedTarget = v),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: questionController,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  hintText: 'سوال (اختیاری، فقط یادآوریِ خودت)',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('انصراف'),
+            ),
+            ElevatedButton(
+              onPressed: selectedTarget != null
+                  ? () {
+                      controller.interrogate(selectedTarget!.id, question: questionController.text);
+                      Navigator.of(dialogContext).pop();
+                    }
+                  : null,
+              child: const Text('ثبت'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRebelSection() {
+    final rebel = controller.rebelPlayer!;
+    final armed = controller.armedPlayers;
+    return Column(
+      children: [
+        Text(
+          'شورشی می‌تونه امشب به هر تعداد بازیکن اسلحه بده. اسلحه‌ی جنگیِ '
+          'باقیمانده: ${rebel.warGunsRemaining ?? 0} (مشقی نامحدوده).',
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 10),
+        if (armed.isNotEmpty)
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.center,
+            children: armed
+                .map(
+                  (p) => Chip(
+                    label: Text(
+                      '${p.name} (${p.heldGunType == GunType.war ? 'جنگی' : 'مشقی'})',
+                    ),
+                    backgroundColor: AppColors.surfaceCard,
+                    labelStyle: const TextStyle(color: Colors.white),
+                    deleteIconColor: AppColors.bloodRedLight,
+                    onDeleted: () => controller.takeBackGun(p.id),
+                  ),
+                )
+                .toList(),
+          ),
+        const SizedBox(height: 10),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.front_hand),
+          label: const Text('دادنِ اسلحه به یه بازیکن'),
+          onPressed: () => _showGiveGunDialog(rebel),
+        ),
+      ],
+    );
+  }
+
+  void _showGiveGunDialog(SessionPlayer rebel) {
+    final targets = controller.alivePlayers;
+    SessionPlayer? selectedTarget;
+    GunType selectedType = GunType.blank;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          backgroundColor: AppColors.surfaceDark,
+          title: const Text('دادنِ اسلحه', style: TextStyle(color: AppColors.goldLight)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButton<SessionPlayer>(
+                isExpanded: true,
+                hint: const Text('انتخابِ بازیکن', style: TextStyle(color: Colors.white70)),
+                dropdownColor: AppColors.surfaceDark,
+                value: selectedTarget,
+                items: targets
+                    .map(
+                      (p) => DropdownMenuItem(
+                        value: p,
+                        child: Text(p.name, style: const TextStyle(color: Colors.white)),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (v) => setDialogState(() => selectedTarget = v),
+              ),
+              const SizedBox(height: 8),
+              RadioListTile<GunType>(
+                value: GunType.blank,
+                groupValue: selectedType,
+                activeColor: AppColors.gold,
+                onChanged: (v) => setDialogState(() => selectedType = v!),
+                title: const Text('مشقی', style: TextStyle(color: Colors.white)),
+              ),
+              RadioListTile<GunType>(
+                value: GunType.war,
+                groupValue: selectedType,
+                activeColor: AppColors.bloodRedLight,
+                onChanged: (rebel.warGunsRemaining ?? 0) > 0
+                    ? (v) => setDialogState(() => selectedType = v!)
+                    : null,
+                title: Text(
+                  'جنگی (${rebel.warGunsRemaining ?? 0} باقیمانده)',
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('انصراف'),
+            ),
+            ElevatedButton(
+              onPressed: selectedTarget != null
+                  ? () {
+                      controller.giveGun(selectedTarget!.id, selectedType);
+                      Navigator.of(dialogContext).pop();
+                    }
+                  : null,
+              child: const Text('تایید'),
+            ),
+          ],
+        ),
       ),
     );
   }

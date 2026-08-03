@@ -1,3 +1,5 @@
+import 'role.dart';
+
 /// فازهای کلی یه جلسه‌ی بازی.
 enum GamePhaseType {
   introDay, // روز معارفه
@@ -63,6 +65,13 @@ class SessionPlayer {
   // ---- مربوط به رپر معترض ----
   bool isActiveResistanceMember; // عضوِ فعالِ تیمِ مقاومتِ رپر معترضه؟
 
+  // ---- مربوط به شورشی و اسلحه ----
+  GunType? heldGunType; // اسلحه‌ای که همین الان دستشه (null یعنی نداره)
+  int? warGunsRemaining; // فقط رو خودِ شورشی: سهمیه‌ی کلِ اسلحه‌ی جنگی
+
+  // ---- مربوط به بازجو خبرنگار ----
+  bool interrogationUsed; // آیا قابلیتِ یک‌بارمصرفِ بازجویی رو مصرف کرده؟
+
   SessionPlayer({
     required this.id,
     required this.name,
@@ -84,6 +93,9 @@ class SessionPlayer {
     this.canStillSlaughter = true,
     this.revivalUsed = false,
     this.isActiveResistanceMember = false,
+    this.heldGunType,
+    this.warGunsRemaining,
+    this.interrogationUsed = false,
   });
 
   bool get isSorkoobTeam => teamId == 'team_sorkoob';

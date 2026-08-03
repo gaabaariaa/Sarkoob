@@ -32,6 +32,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
   bool _includeLawyer = false;
   bool _includeZhina = false;
   bool _includeRapper = false;
+  bool _includeRebel = false;
+  bool _includeInterrogator = false;
 
   static const int _minPlayers = 9;
 
@@ -67,7 +69,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
       1 +
       (_includeForeignMinister ? 1 : 0) +
       (_includeJudiciaryChief ? 1 : 0) +
-      (_includeCelebrity ? 1 : 0);
+      (_includeCelebrity ? 1 : 0) +
+      (_includeInterrogator ? 1 : 0);
 
   int get _citizenRoleSlotsEnabled =>
       (_includeDoctor ? 1 : 0) +
@@ -75,7 +78,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
       (_includeRevolutionary ? 1 : 0) +
       (_includeLawyer ? 1 : 0) +
       (_includeZhina ? 1 : 0) +
-      (_includeRapper ? 1 : 0);
+      (_includeRapper ? 1 : 0) +
+      (_includeRebel ? 1 : 0);
 
   int get _citizenCount {
     final total = _draftPlayers.length;
@@ -177,6 +181,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final foreignMinisterIndex = nextSorkoobIndex(_includeForeignMinister);
     final judiciaryChiefIndex = nextSorkoobIndex(_includeJudiciaryChief);
     final celebrityIndex = nextSorkoobIndex(_includeCelebrity);
+    final interrogatorIndex = nextSorkoobIndex(_includeInterrogator);
 
     final citizenShuffled = List<int>.generate(total, (i) => i)
         .where((i) => !sorkoobIndices.contains(i) && !independentIndices.contains(i))
@@ -195,9 +200,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final lawyerIndex = nextCitizenIndex(_includeLawyer);
     final zhinaIndex = nextCitizenIndex(_includeZhina);
     final rapperIndex = nextCitizenIndex(_includeRapper);
+    final rebelIndex = nextCitizenIndex(_includeRebel);
 
     final slaughterCharges = (total / 6).floor().clamp(1, 999);
     final revolutionaryCharges = (_sorkoobCount - 1).clamp(0, 999);
+    final warGunCharges = slaughterCharges; // همون فرمولِ «هر ۶ نفر یکی»، رو کلِ بازیکن‌ها
 
     final players = <SessionPlayer>[];
     for (var i = 0; i < total; i++) {
@@ -219,6 +226,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
         roleId = SarkoobRoles.judiciaryChief.id;
       } else if (i == celebrityIndex) {
         roleId = SarkoobRoles.governmentCelebrity.id;
+      } else if (i == interrogatorIndex) {
+        roleId = SarkoobRoles.interrogator.id;
       } else if (i == doctorIndex) {
         roleId = SarkoobRoles.doctor.id;
       } else if (i == hackerIndex) {
@@ -231,6 +240,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
         roleId = SarkoobRoles.zhina.id;
       } else if (i == rapperIndex) {
         roleId = SarkoobRoles.rapper.id;
+      } else if (i == rebelIndex) {
+        roleId = SarkoobRoles.rebel.id;
       }
 
       players.add(
@@ -242,6 +253,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
           hasArmor: i == valiFaghihIndex,
           slaughterChargesRemaining: i == valiFaghihIndex ? slaughterCharges : null,
           revolutionaryChargesRemaining: i == revolutionaryIndex ? revolutionaryCharges : null,
+          warGunsRemaining: i == rebelIndex ? warGunCharges : null,
         ),
       );
     }
@@ -385,6 +397,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
             value: _includeCelebrity,
             onChanged: (v) => setState(() => _includeCelebrity = v),
           ),
+          _roleToggle(
+            role: SarkoobRoles.interrogator,
+            value: _includeInterrogator,
+            onChanged: (v) => setState(() => _includeInterrogator = v),
+          ),
 
           const SizedBox(height: 24),
           Text('تیم شهروند', style: AppTheme.headingFont(size: 20)),
@@ -425,6 +442,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
             role: SarkoobRoles.rapper,
             value: _includeRapper,
             onChanged: (v) => setState(() => _includeRapper = v),
+          ),
+          _roleToggle(
+            role: SarkoobRoles.rebel,
+            value: _includeRebel,
+            onChanged: (v) => setState(() => _includeRebel = v),
           ),
 
           const SizedBox(height: 28),

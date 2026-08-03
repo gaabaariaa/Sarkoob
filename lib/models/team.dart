@@ -46,4 +46,11 @@ class SarkoobTeams {
   );
 
   static const List<GameTeam> all = [suppression, citizen, mossad, mek];
+
+  static GameTeam? byId(String id) {
+    for (final t in all) {
+      if (t.id == id) return t;
+    }
+    return null;
+  }
 }

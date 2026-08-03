@@ -11,7 +11,7 @@ class VoteResolution {
 
 /// ترتیبِ «بیدارشدنِ» شب: اول تیمِ سرکوب باهم، بعد هر نقشِ خاصِ شهروندی
 /// جداگونه و به‌ترتیب، و در آخر جمع‌بندیِ شب.
-enum NightStepKind { sorkoobTeam, rapper, hacker, doctor, revolutionary, lawyer, done }
+enum NightStepKind { sorkoobTeam, rapper, hacker, doctor, rebel, revolutionary, lawyer, done }
 
 /// موتور اصلی «گردانندگی» یه جلسه‌ی بازی: ترتیب صحبت، چالش، رأی‌گیری،
 /// دفاعیه، حذف، و شب (تصمیمِ رهبر سرکوب، مذاکره، حکم اعدام).
@@ -115,6 +115,8 @@ class GameFlowController extends ChangeNotifier {
       p.votes = 0;
     }
     lastResolution = null;
+    gunFireResultMessage = null;
+    gunExplosionSummary = null;
     if (pendingExecutionWord != null) {
       activeExecutionWord = pendingExecutionWord;
       pendingExecutionWord = null;
@@ -127,6 +129,21 @@ class GameFlowController extends ChangeNotifier {
   bool votingStarted = false;
 
   void startVoting() {
+    // اول: اسلحه‌ی جنگیِ استفاده‌نشده منفجر می‌شه و صاحبش حذف می‌شه؛
+    // اسلحه‌ی مشقیِ استفاده‌نشده هم فقط بی‌سروصدا پاک می‌شه.
+    final explosions = <String>[];
+    for (final p in players) {
+      if (!p.isAlive || p.heldGunType == null) continue;
+      if (p.heldGunType == GunType.war) {
+        explosions.add(
+          '«${p.name}» تا شروعِ رأی‌گیری شلیک نکرد؛ اسلحه‌ی جنگی دستِ خودش منفجر شد و از بازی خارج شد.',
+        );
+        _eliminatePlayer(p);
+      }
+      p.heldGunType = null;
+    }
+    gunExplosionSummary = explosions.isEmpty ? null : explosions.join('\n');
+
     votingStarted = true;
     activeExecutionWord = null; // پنجره‌ی «کلمه‌ی ممنوع» با شروعِ رأی‌گیری بسته می‌شه
     for (final p in alivePlayers) {
@@ -359,6 +376,39 @@ class GameFlowController extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ---------- بازجو خبرنگار: بازجوییِ یک‌بارمصرف (بخشی از بیداریِ تیمِ سرکوب) ----------
+
+  SessionPlayer? get interrogatorPlayer {
+    for (final p in players) {
+      if (p.roleId == SarkoobRoles.interrogator.id) return p;
+    }
+    return null;
+  }
+
+  bool get canInterrogateTonight {
+    if (sorkoobDisabledTonight) return false;
+    final interrogator = interrogatorPlayer;
+    return interrogator != null && interrogator.isAlive && !interrogator.interrogationUsed;
+  }
+
+  String? lastInterrogationTargetName;
+  String? lastInterrogationQuestion; // اختیاری، فقط یادآوری برای گرداننده
+
+  /// question اختیاریه، فقط برای این‌که گرداننده یادش بمونه چی پرسیده؛
+  /// خودِ جواب (لایک/دیس‌لایک) با اشاره‌ی دستِ واقعیِ بازیکن مشخص می‌شه،
+  /// نه چیزی که اپ محاسبه کنه.
+  void interrogate(int targetId, {String? question}) {
+    if (!canInterrogateTonight) return;
+    final interrogator = interrogatorPlayer;
+    if (interrogator == null) return;
+    interrogator.interrogationUsed = true;
+    lastInterrogationTargetName = playerById(targetId).name;
+    lastInterrogationQuestion = (question != null && question.trim().isNotEmpty)
+        ? question.trim()
+        : null;
+    notifyListeners();
+  }
+
   // ---------- وکیل: جان‌بخشیِ یک‌بارمصرف (مستقل از بقیه) ----------
 
   SessionPlayer? get lawyerPlayer {
@@ -473,6 +523,66 @@ class GameFlowController extends ChangeNotifier {
     } else {
       _eliminatePlayer(rapper);
       rapperResultMessage = 'انتخاب اشتباه بود! خودِ «${rapper.name}» همون‌لحظه حذف شد.';
+    }
+    notifyListeners();
+  }
+
+  // ---------- شورشی: تقسیمِ اسلحه (شب) و شلیک (روز، مستقل از بقیه) ----------
+
+  SessionPlayer? get rebelPlayer {
+    for (final p in players) {
+      if (p.roleId == SarkoobRoles.rebel.id) return p;
+    }
+    return null;
+  }
+
+  /// یه اسلحه (جنگی یا مشقی) به یه بازیکن می‌ده. جنگی از سهمیه‌ی کلِ
+  /// شورشی کم می‌شه؛ مشقی نامحدوده.
+  void giveGun(int targetId, GunType type) {
+    final rebel = rebelPlayer;
+    if (rebel == null || !rebel.isAlive) return;
+    if (type == GunType.war) {
+      if ((rebel.warGunsRemaining ?? 0) <= 0) return;
+      rebel.warGunsRemaining = rebel.warGunsRemaining! - 1;
+    }
+    playerById(targetId).heldGunType = type;
+    notifyListeners();
+  }
+
+  /// برای وقتی گرداننده اشتباهی اسلحه داده و می‌خواد پسش بگیره.
+  void takeBackGun(int targetId) {
+    final target = playerById(targetId);
+    if (target.heldGunType == GunType.war) {
+      final rebel = rebelPlayer;
+      if (rebel != null) rebel.warGunsRemaining = (rebel.warGunsRemaining ?? 0) + 1;
+    }
+    target.heldGunType = null;
+    notifyListeners();
+  }
+
+  /// بازیکنانی که همین الان اسلحه (هرنوعی) دستشونه و هنوز شلیک نکردن.
+  List<SessionPlayer> get armedPlayers =>
+      players.where((p) => p.isAlive && p.heldGunType != null).toList();
+
+  String? gunFireResultMessage;
+  String? gunExplosionSummary;
+
+  /// اعلامِ اسلحه و شلیک — تویِ روز، تا قبل از شروعِ رأی‌گیری، توسطِ
+  /// خودِ صاحبِ اسلحه (نه لزوماً شورشی).
+  void fireGun(int shooterId, int targetId) {
+    final shooter = playerById(shooterId);
+    if (!shooter.isAlive || shooter.heldGunType == null) return;
+    final type = shooter.heldGunType!;
+    shooter.heldGunType = null;
+    final target = playerById(targetId);
+
+    if (type == GunType.war) {
+      final teamName = SarkoobTeams.byId(target.teamId)?.name ?? target.teamId;
+      _eliminatePlayer(target);
+      gunFireResultMessage =
+          '«${target.name}» با شلیکِ «${shooter.name}» (اسلحه‌ی جنگی) از بازی خارج شد؛ تیمش: $teamName.';
+    } else {
+      gunFireResultMessage = '«${shooter.name}» شلیک کرد ولی اسلحه‌ش مشقی بود؛ هیچ اتفاقی نیفتاد.';
     }
     notifyListeners();
   }
@@ -666,6 +776,7 @@ class GameFlowController extends ChangeNotifier {
     NightStepKind.rapper,
     NightStepKind.hacker,
     NightStepKind.doctor,
+    NightStepKind.rebel,
     NightStepKind.revolutionary,
     NightStepKind.lawyer,
     NightStepKind.done,
@@ -691,6 +802,8 @@ class GameFlowController extends ChangeNotifier {
         return hackerPlayer != null;
       case NightStepKind.doctor:
         return doctorPlayer != null;
+      case NightStepKind.rebel:
+        return rebelPlayer != null;
       case NightStepKind.revolutionary:
         return revolutionaryFighterPlayer != null;
       case NightStepKind.lawyer:

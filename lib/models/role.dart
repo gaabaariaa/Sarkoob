@@ -11,6 +11,10 @@ enum NightActionKind {
 /// سرکوب)، «دیس‌لایک» یعنی منفی (بی‌گناه به‌حساب میاد).
 enum InvestigationResult { like, dislike }
 
+/// نوعِ اسلحه‌ای که شورشی به یه بازیکن می‌ده: جنگی (واقعی، محدود) یا
+/// مشقی (بی‌اثر، نامحدود).
+enum GunType { war, blank }
+
 /// تعریف کامل یه نقش: اسم، تیم، توضیح، عکس کارت، و پرچم‌های قابلیت‌های خاص.
 /// چون نقش‌های این سناریو خیلی به‌هم متفاوت و بسیار جزئی‌ان، به‌جای یه
 /// سیستم «قابلیت عمومی»، فیلدهای اختصاصی روی خودِ نقش تعریف می‌شن.
@@ -55,6 +59,12 @@ class GameRole {
   // ---- فیلدِ مخصوص ژینا ----
   final bool disablesSorkoobNextNightOnDeath; // با حذف‌شدنش، شبِ بعد سرکوب قابلیتی نداره
 
+  // ---- فیلدِ مخصوص شورشی ----
+  final bool canArmPlayers; // قابلیتِ تقسیمِ اسلحه داره؟
+
+  // ---- فیلدِ مخصوص بازجو خبرنگار ----
+  final bool canInterrogate; // قابلیتِ بازجوییِ یک‌بارمصرف داره؟
+
   /// فیلدِ عمومی (نه مخصوصِ یه نقشِ خاص): برای نقش‌هایی مثلِ «سلبریتی
   /// حکومتی» که عضوِ واقعیِ سرکوب‌ان ولی چند شبِ اول در استعلامِ هکر
   /// بی‌گناه نشون داده می‌شن. ۰ یعنی از همون شبِ اول واقعی و دقیق نشون
@@ -80,6 +90,8 @@ class GameRole {
     this.canRevive = false,
     this.canRecruitResistance = false,
     this.disablesSorkoobNextNightOnDeath = false,
+    this.canArmPlayers = false,
+    this.canInterrogate = false,
     this.investigationHiddenUntilNight = 0,
   });
 }
@@ -259,6 +271,36 @@ class SarkoobRoles {
     investigationHiddenUntilNight: 2,
   );
 
+  static final rebel = GameRole(
+    id: 'role_rebel',
+    name: 'شورشی',
+    teamId: SarkoobTeams.citizen.id,
+    description:
+        'یه اسلحه‌ی جنگی (محدود) و اسلحه‌ی مشقی (نامحدود) داره که هر شب '
+        'می‌تونه بینِ هر تعداد بازیکن که بخواد تقسیم کنه. تعدادِ کلِ '
+        'اسلحه‌ی جنگی که در طولِ بازی می‌تونه بده به تعدادِ بازیکن‌ها '
+        'بستگی داره: تا ۱۱ نفر یکی، ۱۲ تا ۱۷ نفر دوتا، ۱۸ تا ۲۳ نفر سه‌تا، '
+        'و به همین ترتیب هر ۶ نفر یکی بیشتر — می‌تونه همه‌ش رو یه‌شبه بده یا '
+        'اصلاً ندونه به کسی. کسی که اسلحه گرفته، فردا تا قبل از شروعِ '
+        'رأی‌گیری می‌تونه اعلامِ اسلحه کنه و شلیک کنه: اگه مشقی بوده، '
+        'هیچ اتفاقی نمی‌افته؛ اگه جنگی بوده، هدف حذف می‌شه و تیمش اعلام '
+        'می‌شه. اگه کسی اسلحه‌ی جنگی داشته باشه و تا شروعِ رأی‌گیری شلیک '
+        'نکنه، اسلحه دستِ خودش منفجر می‌شه و خودش حذف می‌شه.',
+    canArmPlayers: true,
+  );
+
+  static final interrogator = GameRole(
+    id: 'role_interrogator',
+    name: 'بازجو خبرنگار',
+    teamId: SarkoobTeams.suppression.id,
+    description:
+        'فقط یک‌بار در کلِ بازی، شبانه می‌تونه یه نفر رو بازجویی کنه. اون '
+        'فرد با چشمِ بسته باید صادقانه به یه سوال با لایک یا دیس‌لایک '
+        'جواب بده. سوال رو همه‌ی بازیکنا می‌شنون، ولی جوابِ (اشاره‌ی دستِ) '
+        'اون فرد رو فقط اعضای تیمِ سرکوب (که در همون لحظه بیدارن) می‌بینن.',
+    canInterrogate: true,
+  );
+
   static final List<GameRole> all = [
     valiFaghih,
     foreignMinister,
@@ -271,6 +313,8 @@ class SarkoobRoles {
     rapper,
     zhina,
     governmentCelebrity,
+    rebel,
+    interrogator,
   ];
 
   static GameRole? byId(String id) {
