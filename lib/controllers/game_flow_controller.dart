@@ -9,6 +9,13 @@ class VoteResolution {
   const VoteResolution(this.message);
 }
 
+/// یه رکوردِ چالش: کی (giver) به کی (receiver) چالش داده، برای نمایش و ثبت.
+class ChallengeRecord {
+  final int giverId;
+  final int receiverId;
+  const ChallengeRecord(this.giverId, this.receiverId);
+}
+
 /// ترتیبِ «بیدارشدنِ» شب: اول تیمِ سرکوب باهم، بعد هر نقشِ خاصِ شهروندی
 /// جداگونه و به‌ترتیب، و در آخر جمع‌بندیِ شب.
 enum NightStepKind { sorkoobTeam, rapper, hacker, doctor, rebel, revolutionary, lawyer, done }
@@ -33,6 +40,37 @@ class GameFlowController extends ChangeNotifier {
   int get aliveCount => alivePlayers.length;
   int get majorityThreshold => (aliveCount / 2).ceil();
 
+  // ---------- ابزارِ گرداننده: جابه‌جاییِ ترتیب و اخراجِ انضباطی ----------
+  // این دوتا مستقل از فازِ فعلیِ بازی‌ان (هم شب هم روز در دسترسن) و
+  // فقط با آی‌دیِ خودِ بازیکن کار می‌کنن، پس جابه‌جاکردنِ ترتیب هیچ
+  // نقش/رأی/زنده‌بودنی رو به‌هم نمی‌ریزه.
+
+  /// ترتیبِ فهرستِ بازیکنان رو عوض می‌کنه (مثلاً اگه سرِ میز جابه‌جا شدن).
+  /// چون همه‌جای دیگه با id کار می‌شه نه اندیس، این تغییر امن‌ه؛ فقط از
+  /// روزِ بعد رو ترتیبِ نوبتِ صحبت اثر می‌ذاره، وسطِ یه روز/شبِ در جریان
+  /// چیزی رو خراب نمی‌کنه.
+  void reorderPlayers(int oldIndex, int newIndex) {
+    if (newIndex > oldIndex) newIndex -= 1;
+    final player = players.removeAt(oldIndex);
+    players.insert(newIndex, player);
+    notifyListeners();
+  }
+
+  String? disciplinaryExpelMessage;
+
+  /// اخراجِ انضباطیِ گرداننده (افشای نقش، تقلب، و مواردِ مشابه). برگشت‌ناپذیره
+  /// — حتی وکیل نمی‌تونه برش گردونه — و مستقل از فازِ فعلیِ بازیه.
+  void disciplinaryExpel(int targetId, String reason) {
+    final target = playerById(targetId);
+    if (!target.isAlive) return;
+    target.isAlive = false;
+    target.isHalfAlive = false;
+    _checkZhinaTrigger(target);
+    disciplinaryExpelMessage =
+        '«${target.name}» به دلیلِ «$reason» توسطِ گرداننده از بازی اخراج شد.';
+    notifyListeners();
+  }
+
   // ---------- ترتیب صحبت ----------
 
   List<int> _speakingOrder = [];
@@ -41,9 +79,11 @@ class GameFlowController extends ChangeNotifier {
   void _rebuildSpeakingOrder() {
     _speakingOrder = alivePlayers.map((p) => p.id).toList();
     _speakerPointer = 0;
+    _todaysChallenges.clear();
     for (final p in players) {
       p.hasSpokenThisRound = false;
-      p.challengeUsedToday = false;
+      p.challengeReceivedToday = false;
+      p.challengeGivenToday = false;
     }
   }
 
@@ -75,19 +115,36 @@ class GameFlowController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// بازیکن‌هایی که الان می‌تونن چالش بگیرن (فقط توی روزهای عادی)
+  /// بازیکن‌هایی که الان می‌تونن هدفِ چالش باشن (فقط توی روزهای عادی، و
+  /// فقط کسایی که امروز قبلاً چالش نگرفتن).
   List<SessionPlayer> get challengeEligiblePlayers {
     if (phase != GamePhaseType.day) return const [];
     return alivePlayers
-        .where((p) => !p.challengeUsedToday && p.id != speakerForDisplay?.id)
+        .where((p) => !p.challengeReceivedToday && p.id != speakerForDisplay?.id)
         .toList();
   }
 
-  /// یه بازیکن چالش می‌گیره؛ بعدش نوبتِ عادی دست‌نخورده می‌مونه.
-  void useChallenge(int challengerId) {
-    final challenger = playerById(challengerId);
-    challenger.challengeUsedToday = true;
-    _activeChallengerId = challengerId;
+  /// آیا کسی که الان نوبتِ عادیِ صحبتشه، می‌تونه (هنوز) به یکی چالش بده؟
+  /// هر بازیکن توی هر نوبتِ صحبتش فقط یک‌بار می‌تونه چالش بده.
+  bool get canCurrentSpeakerGiveChallenge {
+    final speaker = currentSpeaker;
+    return speaker != null && !speaker.challengeGivenToday;
+  }
+
+  final List<ChallengeRecord> _todaysChallenges = [];
+  List<ChallengeRecord> get todaysChallenges => List.unmodifiable(_todaysChallenges);
+
+  /// یه بازیکن (نوبتِ عادیِ فعلی) به یه بازیکنِ دیگه چالش می‌ده؛ بعدش
+  /// نوبتِ عادی دست‌نخورده می‌مونه. کی‌به‌کی برای نمایش ثبت می‌شه.
+  void useChallenge(int receiverId) {
+    final giver = currentSpeaker;
+    if (giver == null || giver.challengeGivenToday) return;
+    final receiver = playerById(receiverId);
+    if (receiver.challengeReceivedToday) return;
+    giver.challengeGivenToday = true;
+    receiver.challengeReceivedToday = true;
+    _todaysChallenges.add(ChallengeRecord(giver.id, receiverId));
+    _activeChallengerId = receiverId;
     notifyListeners();
   }
 
@@ -500,7 +557,7 @@ class GameFlowController extends ChangeNotifier {
 
   /// نتیجه بر اساسِ تیم/نقشِ واقعیِ هدفه: شهروندِ ساده = عضوگیریِ موفق؛
   /// نقشی که هنوز طبقِ قانونِ «دیرهنگام‌بودنِ افشا»ش فعال نشده (مثلِ
-  /// سلبریتی حکومتی تو دو شبِ اول) = عضوگیریِ موفق ولی به‌عنوانِ جاسوس؛
+  /// پرستوی نظام تو دو شبِ اول) = عضوگیریِ موفق ولی به‌عنوانِ جاسوس؛
   /// در غیرِاین‌صورت (سرکوبِ فعال یا تیمِ مستقل) = خودِ رپر حذف می‌شه.
   void rapperRecruit(int targetId) {
     final rapper = rapperPlayer;
@@ -675,7 +732,7 @@ class GameFlowController extends ChangeNotifier {
   /// نتیجه‌ی واقعیِ استعلام روی یه هدفِ خاص، طبقِ قوانینِ سناریو:
   /// همه‌ی اعضای واقعیِ سرکوب لایک می‌گیرن، به‌جز نقش‌هایی که همیشه بی‌گناه
   /// نشون داده می‌شن (ولی‌فقیه) یا چند شبِ اول هنوز جزوِ سرکوب دیده
-  /// نمی‌شن (مثلِ سلبریتی حکومتی، وقتی اضافه بشه). بقیه (شهروند، تیم‌های
+  /// نمی‌شن (مثلِ پرستوی نظام، وقتی اضافه بشه). بقیه (شهروند، تیم‌های
   /// مستقل) همیشه دیس‌لایک می‌گیرن.
   InvestigationResult investigationResultFor(int targetId) {
     final target = playerById(targetId);
@@ -884,6 +941,7 @@ class GameFlowController extends ChangeNotifier {
     if (slaughterResultMessage != null) messages.insert(0, slaughterResultMessage!);
     if (negotiateResultMessage != null) messages.insert(0, negotiateResultMessage!);
     if (revolutionaryResultMessage != null) messages.insert(0, revolutionaryResultMessage!);
+    if (rapperResultMessage != null) messages.insert(0, rapperResultMessage!);
     lastNightSummary = messages.isEmpty ? 'دیشب کسی حذف نشد.' : messages.join('\n');
     _pendingHits.clear();
     _savedPlayerIds.clear();

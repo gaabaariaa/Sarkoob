@@ -39,7 +39,8 @@ class SessionPlayer {
   String teamId; // یکی از شناسه‌های GameTeam (team_sorkoob / team_citizen / ...)
   bool isModiri;
   int votes;
-  bool challengeUsedToday;
+  bool challengeReceivedToday; // آیا امروز قبلاً هدفِ چالش قرار گرفته؟
+  bool challengeGivenToday; // آیا تو نوبتِ عادیِ امروزش قبلاً به کسی چالش داده؟
   bool hasSpokenThisRound;
 
   // ---- مربوط به نقش (فعلاً فقط ولی‌فقیه از این‌ها استفاده می‌کنه) ----
@@ -80,7 +81,8 @@ class SessionPlayer {
     this.recordCount = 0,
     this.isModiri = false,
     this.votes = 0,
-    this.challengeUsedToday = false,
+    this.challengeReceivedToday = false,
+    this.challengeGivenToday = false,
     this.hasSpokenThisRound = false,
     this.roleId,
     this.hasArmor = false,

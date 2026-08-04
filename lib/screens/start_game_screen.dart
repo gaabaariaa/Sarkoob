@@ -63,6 +63,14 @@ class _StartGameScreenState extends State<StartGameScreen> {
     setState(() => _draftPlayers.removeAt(index));
   }
 
+  void _reorderDraftPlayers(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) newIndex -= 1;
+      final name = _draftPlayers.removeAt(oldIndex);
+      _draftPlayers.insert(newIndex, name);
+    });
+  }
+
   bool get _includeIndependent => _includeMossad || _includeMek;
 
   int get _sorkoobRoleSlotsEnabled =>
@@ -300,25 +308,37 @@ class _StartGameScreenState extends State<StartGameScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          ..._draftPlayers.asMap().entries.map((entry) {
-            final index = entry.key;
-            final name = entry.value;
-            return Card(
-              color: AppColors.surfaceCard,
-              margin: const EdgeInsets.only(bottom: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-                side: BorderSide(color: AppColors.gold.withOpacity(0.3)),
-              ),
-              child: ListTile(
-                title: Text(name, style: const TextStyle(color: Colors.white)),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: AppColors.bloodRedLight),
-                  onPressed: () => _removePlayer(index),
+          const Text(
+            'با نگه‌داشتن و کشیدن، می‌تونی ترتیبِ بازیکن‌ها رو عوض کنی.',
+            style: TextStyle(color: Colors.white38, fontSize: 11),
+          ),
+          const SizedBox(height: 4),
+          ReorderableListView(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            onReorder: _reorderDraftPlayers,
+            children: _draftPlayers.asMap().entries.map((entry) {
+              final index = entry.key;
+              final name = entry.value;
+              return Card(
+                key: ValueKey('draft-player-$index-$name'),
+                color: AppColors.surfaceCard,
+                margin: const EdgeInsets.only(bottom: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  side: BorderSide(color: AppColors.gold.withOpacity(0.3)),
                 ),
-              ),
-            );
-          }),
+                child: ListTile(
+                  leading: const Icon(Icons.drag_handle, color: Colors.white38),
+                  title: Text(name, style: const TextStyle(color: Colors.white)),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete, color: AppColors.bloodRedLight),
+                    onPressed: () => _removePlayer(index),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
 
           const SizedBox(height: 24),
           Text('تیم مستقل', style: AppTheme.headingFont(size: 20)),
@@ -379,9 +399,10 @@ class _StartGameScreenState extends State<StartGameScreen> {
           ),
           const SizedBox(height: 12),
           const Text(
-            'این بازی کدوم نقش‌های سرکوب رو داشته باشه؟ (ولی‌فقیه همیشه هست)',
+            'این بازی کدوم نقش‌های سرکوب رو داشته باشه؟',
             style: TextStyle(color: Colors.white70, fontSize: 13),
           ),
+          _mandatoryRoleRow(SarkoobRoles.valiFaghih),
           _roleToggle(
             role: SarkoobRoles.foreignMinister,
             value: _includeForeignMinister,
@@ -559,6 +580,15 @@ class _StartGameScreenState extends State<StartGameScreen> {
       activeColor: AppColors.gold,
       title: Text(role.name, style: const TextStyle(color: Colors.white)),
       dense: true,
+    );
+  }
+
+  Widget _mandatoryRoleRow(GameRole role) {
+    return ListTile(
+      dense: true,
+      leading: const Icon(Icons.check_circle, color: AppColors.gold),
+      title: Text(role.name, style: const TextStyle(color: Colors.white)),
+      trailing: const Text('همیشه فعال', style: TextStyle(color: Colors.white38, fontSize: 12)),
     );
   }
 }

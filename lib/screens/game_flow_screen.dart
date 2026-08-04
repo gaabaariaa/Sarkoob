@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../controllers/game_flow_controller.dart';
 import '../models/game_session.dart';
 import '../models/role.dart';
+import '../models/team.dart';
 import '../theme/app_theme.dart';
 import '../widgets/countdown_timer_widget.dart';
 import '../widgets/role_card.dart';
@@ -32,7 +33,26 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_titleFor(controller))),
+      appBar: AppBar(
+        title: Text(_titleFor(controller)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.groups),
+            tooltip: 'بازیکنان و نقش‌ها',
+            onPressed: _showRosterDialog,
+          ),
+          IconButton(
+            icon: const Icon(Icons.swap_vert),
+            tooltip: 'جابه‌جاییِ ترتیبِ بازیکنان',
+            onPressed: _showReorderDialog,
+          ),
+          IconButton(
+            icon: const Icon(Icons.gavel),
+            tooltip: 'اخراجِ انضباطی',
+            onPressed: _showDisciplinaryExpelDialog,
+          ),
+        ],
+      ),
       body: ListenableBuilder(
         listenable: controller,
         builder: (context, _) => Padding(
@@ -54,6 +74,163 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       case GamePhaseType.night:
         return 'شب ${c.roundNumber}';
     }
+  }
+
+  /// لیستِ کاملِ همه‌ی بازیکنان با تیم، نقش، و وضعیتِ زنده/نیمه‌جان/حذف —
+  /// همیشه در دسترسِ گرداننده، هم شب هم روز.
+  void _showRosterDialog() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceDark,
+      isScrollControlled: true,
+      builder: (_) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.7,
+        builder: (context, scrollController) => ListView(
+          controller: scrollController,
+          padding: const EdgeInsets.all(16),
+          children: [
+            Text('بازیکنان و نقش‌ها', style: AppTheme.headingFont(size: 20)),
+            const SizedBox(height: 12),
+            ...controller.players.map((p) {
+              final role = p.roleId != null ? SarkoobRoles.byId(p.roleId!) : null;
+              final teamName = SarkoobTeams.byId(p.teamId)?.name ?? p.teamId;
+              final status =
+                  !p.isAlive ? (p.isHalfAlive ? 'نیمه‌جان' : 'حذف‌شده') : 'زنده';
+              return ListTile(
+                dense: true,
+                title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                subtitle: Text(
+                  '$teamName${role != null ? ' — ${role.name}' : ''}',
+                  style: const TextStyle(color: AppColors.goldLight),
+                ),
+                trailing: Text(status, style: const TextStyle(color: Colors.white54)),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// جابه‌جاییِ ترتیبِ بازیکنان (اگه سرِ میز جابه‌جا شدن)؛ فقط ترتیبِ
+  /// نوبتِ صحبتِ روزهای بعد رو عوض می‌کنه، چیزی رو وسطِ کار خراب نمی‌کنه.
+  void _showReorderDialog() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceDark,
+      isScrollControlled: true,
+      builder: (_) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.7,
+        builder: (context, scrollController) => StatefulBuilder(
+          builder: (context, setSheetState) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text('ترتیبِ بازیکنان', style: AppTheme.headingFont(size: 20)),
+              ),
+              const Text(
+                'با نگه‌داشتن و کشیدن جابه‌جا کن.',
+                style: TextStyle(color: Colors.white38, fontSize: 12),
+              ),
+              Expanded(
+                child: ReorderableListView(
+                  scrollController: scrollController,
+                  padding: const EdgeInsets.all(16),
+                  onReorder: (oldIndex, newIndex) {
+                    controller.reorderPlayers(oldIndex, newIndex);
+                    setSheetState(() {});
+                  },
+                  children: controller.players
+                      .map(
+                        (p) => ListTile(
+                          key: ValueKey('reorder-${p.id}'),
+                          leading: const Icon(Icons.drag_handle, color: Colors.white38),
+                          title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// اخراجِ انضباطیِ یه بازیکن توسطِ گرداننده (افشای نقش، تقلب، و مواردِ
+  /// مشابه)؛ هم تو شب هم تو روز در دسترسه و برگشت‌ناپذیره.
+  void _showDisciplinaryExpelDialog() {
+    SessionPlayer? selectedTarget;
+    final reasonController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          backgroundColor: AppColors.surfaceDark,
+          title: const Text('اخراجِ انضباطی', style: TextStyle(color: AppColors.bloodRedLight)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'این کار برگشت‌ناپذیره و مستقل از قوانینِ عادیِ بازیه.',
+                style: TextStyle(color: Colors.white54, fontSize: 12),
+              ),
+              const SizedBox(height: 8),
+              DropdownButton<SessionPlayer>(
+                isExpanded: true,
+                hint: const Text('انتخابِ بازیکن', style: TextStyle(color: Colors.white70)),
+                dropdownColor: AppColors.surfaceDark,
+                value: selectedTarget,
+                items: controller.alivePlayers
+                    .map(
+                      (p) => DropdownMenuItem(
+                        value: p,
+                        child: Text(p.name, style: const TextStyle(color: Colors.white)),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (v) => setDialogState(() => selectedTarget = v),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: reasonController,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(hintText: 'دلیل (مثلاً افشای نقش، تقلب)'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('انصراف'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.bloodRedLight),
+              onPressed: selectedTarget != null
+                  ? () {
+                      final reason = reasonController.text.trim().isEmpty
+                          ? 'نامشخص'
+                          : reasonController.text.trim();
+                      controller.disciplinaryExpel(selectedTarget!.id, reason);
+                      Navigator.of(dialogContext).pop();
+                      if (controller.disciplinaryExpelMessage != null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(controller.disciplinaryExpelMessage!)),
+                        );
+                      }
+                    }
+                  : null,
+              child: const Text('اخراج'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildBody() {
@@ -148,7 +325,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           if (!isIntro && !isChallenge) ...[
             const SizedBox(height: 12),
             OutlinedButton.icon(
-              onPressed: controller.challengeEligiblePlayers.isEmpty
+              onPressed: (controller.challengeEligiblePlayers.isEmpty ||
+                      !controller.canCurrentSpeakerGiveChallenge)
                   ? null
                   : () => _showChallengePicker(),
               icon: const Icon(Icons.bolt),
@@ -160,6 +338,14 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             'ترتیب باقی‌مانده: ${controller.alivePlayers.where((p) => !p.hasSpokenThisRound).length} نفر',
             style: const TextStyle(color: Colors.white38, fontSize: 12),
           ),
+          if (controller.todaysChallenges.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              'چالش‌های امروز:\n${controller.todaysChallenges.map((c) => '${controller.playerById(c.giverId).name} ← چالش داد به → ${controller.playerById(c.receiverId).name}').join('\n')}',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white38, fontSize: 12),
+            ),
+          ],
         ],
       ),
     );
@@ -593,36 +779,42 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         return _buildRoleNightStep(
           wakeLabel: 'رپر معترض بیدار بشه',
           sleepLabel: 'رپر معترض چشمش رو ببنده',
+          playerName: controller.rapperPlayer?.name,
           body: _buildRapperSection(),
         );
       case NightStepKind.hacker:
         return _buildRoleNightStep(
           wakeLabel: 'هکر بیدار بشه',
           sleepLabel: 'هکر چشمش رو ببنده',
+          playerName: controller.hackerPlayer?.name,
           body: _buildHackerSection(),
         );
       case NightStepKind.doctor:
         return _buildRoleNightStep(
           wakeLabel: 'دکتر بیدار بشه',
           sleepLabel: 'دکتر چشمش رو ببنده',
+          playerName: controller.doctorPlayer?.name,
           body: _buildDoctorSection(),
         );
       case NightStepKind.rebel:
         return _buildRoleNightStep(
           wakeLabel: 'شورشی بیدار بشه',
           sleepLabel: 'شورشی چشمش رو ببنده',
+          playerName: controller.rebelPlayer?.name,
           body: _buildRebelSection(),
         );
       case NightStepKind.revolutionary:
         return _buildRoleNightStep(
           wakeLabel: 'مبارز انقلابی بیدار بشه',
           sleepLabel: 'مبارز انقلابی چشمش رو ببنده',
+          playerName: controller.revolutionaryFighterPlayer?.name,
           body: _buildRevolutionarySection(),
         );
       case NightStepKind.lawyer:
         return _buildRoleNightStep(
           wakeLabel: 'وکیل بیدار بشه',
           sleepLabel: 'وکیل چشمش رو ببنده',
+          playerName: controller.lawyerPlayer?.name,
           body: _buildLawyerSection(),
         );
       case NightStepKind.done:
@@ -648,6 +840,32 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   /// مرحله‌ی مشترکِ «تیمِ سرکوب بیدار می‌شه»: تصمیمِ ولی‌فقیه + مذاکره‌ی وزیر
   /// امور خارجه + حکمِ اعدامِ رئیس قوه قضاییه، چون هر سه عضوِ همین تیم‌ان.
+  /// لیستِ اعضای زنده‌ی تیمِ سرکوب به‌همراهِ نقشِ دقیقشون، برای این‌که
+  /// گرداننده مطمئن باشه داره با آدمِ درست حرف می‌زنه.
+  Widget _buildSorkoobRoster() {
+    final members = controller.alivePlayers
+        .where((p) => p.teamId == SarkoobTeams.suppression.id)
+        .toList();
+    if (members.isEmpty) return const SizedBox.shrink();
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: members.map((p) {
+          final role = p.roleId != null ? SarkoobRoles.byId(p.roleId!) : null;
+          return Text(
+            '👤 ${p.name} — ${role?.name ?? 'سرکوبگر (بدون نقشِ خاص)'}',
+            style: const TextStyle(color: Colors.white),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   Widget _buildSorkoobTeamStep() {
     return SingleChildScrollView(
       child: Column(
@@ -659,6 +877,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             textAlign: TextAlign.center,
             style: TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
           ),
+          const SizedBox(height: 8),
+          _buildSorkoobRoster(),
           const SizedBox(height: 16),
           if (controller.sorkoobDisabledTonight)
             const Padding(
@@ -701,6 +921,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     required String wakeLabel,
     required String sleepLabel,
     required Widget body,
+    String? playerName,
   }) {
     return SingleChildScrollView(
       child: Column(
@@ -710,6 +931,21 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             textAlign: TextAlign.center,
             style: AppTheme.headingFont(size: 22),
           ),
+          if (playerName != null) ...[
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceCard,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.gold.withOpacity(0.4)),
+              ),
+              child: Text(
+                '👤 این نقش: $playerName',
+                style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           body,
           const SizedBox(height: 32),
@@ -727,6 +963,11 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final rapper = controller.rapperPlayer!;
     final result = controller.rapperResultMessage;
     final resistance = controller.activeResistanceMembers;
+    // نکته‌ی مهم: اگه انتخابِ رپر معترض غلط بوده باشه، خودش حذف می‌شه —
+    // ولی این نتیجه رو همین‌جا نشون نمی‌دیم، وگرنه معلوم می‌شه که دقیقاً
+    // همین نوبت باعثِ حذفش شده و نقشش لو می‌ره. اون حذف فقط تو جمع‌بندیِ
+    // آخرِ شب (کنارِ بقیه‌ی کشته‌ها) اعلام می‌شه.
+    final showResult = result != null && rapper.isAlive;
     return Column(
       children: [
         const Text(
@@ -735,7 +976,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           style: TextStyle(color: Colors.white70),
         ),
         const SizedBox(height: 8),
-        if (result != null) ...[
+        if (showResult) ...[
           Text(
             result,
             textAlign: TextAlign.center,
@@ -1264,6 +1505,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Widget _buildRevolutionarySection() {
     final fighter = controller.revolutionaryFighterPlayer!;
     final charges = fighter.revolutionaryChargesRemaining ?? 0;
+    final result = controller.revolutionaryResultMessage;
+    // همون منطقِ رپر معترض: اگه انتخابِ اشتباه باعثِ حذفِ خودش شده باشه،
+    // همین‌جا نشونش نمی‌دیم تا نقشش لو نره؛ فقط تو جمع‌بندیِ آخرِ شب میاد.
+    final showResult = result != null && fighter.isAlive;
     return Column(
       children: [
         Text(
@@ -1272,6 +1517,14 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           textAlign: TextAlign.center,
           style: const TextStyle(color: Colors.white70),
         ),
+        if (showResult) ...[
+          const SizedBox(height: 8),
+          Text(
+            result,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+          ),
+        ],
         const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
