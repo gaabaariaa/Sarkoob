@@ -65,6 +65,15 @@ class GameRole {
   // ---- فیلدِ مخصوص بازجو خبرنگار ----
   final bool canInterrogate; // قابلیتِ بازجوییِ یک‌بارمصرف داره؟
 
+  // ---- فیلدِ مخصوص وزیر اطلاعات ----
+  final bool canAskIntelQuestion; // قابلیتِ سؤالِ اطلاعاتی داره؟
+
+  // ---- فیلدِ مخصوص فرمانده نیروی انتظامی ----
+  final bool canDetain; // قابلیتِ بازداشتِ شبانه داره؟
+
+  // ---- فیلدِ مخصوص مزدور لباس شخصی ----
+  final bool canAssassinate; // قابلیتِ ترور داره؟
+
   /// فیلدِ عمومی (نه مخصوصِ یه نقشِ خاص): برای نقش‌هایی مثلِ «سلبریتی
   /// حکومتی» که عضوِ واقعیِ سرکوب‌ان ولی چند شبِ اول در استعلامِ هکر
   /// بی‌گناه نشون داده می‌شن. ۰ یعنی از همون شبِ اول واقعی و دقیق نشون
@@ -92,6 +101,9 @@ class GameRole {
     this.disablesSorkoobNextNightOnDeath = false,
     this.canArmPlayers = false,
     this.canInterrogate = false,
+    this.canAskIntelQuestion = false,
+    this.canDetain = false,
+    this.canAssassinate = false,
     this.investigationHiddenUntilNight = 0,
   });
 }
@@ -301,6 +313,43 @@ class SarkoobRoles {
     canInterrogate: true,
   );
 
+  static final intelligenceMinister = GameRole(
+    id: 'role_intelligence_minister',
+    name: 'وزیر اطلاعات',
+    teamId: SarkoobTeams.suppression.id,
+    description:
+        'هر شب می‌تونه یک سؤالِ اطلاعاتی راجع به «نقش‌دار بودنِ» یک یا چند '
+        'بازیکن بپرسه؛ گرداننده فقط با لایک (همه‌شون نقش دارن) یا دیس‌لایک '
+        '(حداقل یکی‌شون نقشِ خاصی نداره) جواب می‌ده. تعدادِ کلِ این سؤالات '
+        'در طولِ بازی به تعدادِ بازیکن‌ها بستگی داره: تا ۱۱ نفر یکی، ۱۲ تا '
+        '۱۷ نفر دوتا، ۱۸ تا ۲۳ نفر سه‌تا، و به همین ترتیب هر ۶ نفر یکی '
+        'بیشتر؛ فقط یکی از این سهمیه در هر شب قابل‌استفاده‌ست.',
+    canAskIntelQuestion: true,
+  );
+
+  static final policeCommander = GameRole(
+    id: 'role_police_commander',
+    name: 'فرمانده نیروی انتظامی',
+    teamId: SarkoobTeams.suppression.id,
+    description:
+        'هر شب می‌تونه یه بازیکن رو «بازداشت» کنه؛ اون بازیکن همون شب '
+        'نمی‌تونه از قابلیتِ نقشِ خودش استفاده کنه. هر شب قابل‌استفاده‌ست، '
+        'ولی یه بازیکنِ واحد نمی‌تونه دو شبِ پیاپی بازداشت بشه.',
+    canDetain: true,
+  );
+
+  static final mercenary = GameRole(
+    id: 'role_mercenary',
+    name: 'مزدور لباس شخصی',
+    teamId: SarkoobTeams.suppression.id,
+    description:
+        'می‌تونه یا شب (وقتی تیمِ سرکوب بیداره) یا هر لحظه از روز (به‌جز '
+        'حینِ رأی‌گیری) یه بازیکن رو «ترور» کنه؛ اما با این‌کار خودش هم لو '
+        'می‌ره و همون‌لحظه از بازی خارج می‌شه — یعنی این قابلیت در عمل '
+        'فقط یک‌بار در کلِ بازی قابل‌استفاده‌ست.',
+    canAssassinate: true,
+  );
+
   static final List<GameRole> all = [
     valiFaghih,
     foreignMinister,
@@ -315,6 +364,9 @@ class SarkoobRoles {
     governmentCelebrity,
     rebel,
     interrogator,
+    intelligenceMinister,
+    policeCommander,
+    mercenary,
   ];
 
   static GameRole? byId(String id) {

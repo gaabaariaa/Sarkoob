@@ -264,6 +264,15 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     return SingleChildScrollView(
       child: Column(
         children: [
+          if (!isIntro && controller.assassinationResultMessage != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                controller.assassinationResultMessage!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.bloodRedLight, fontWeight: FontWeight.bold),
+              ),
+            ),
           if (!isIntro && controller.gunFireResultMessage != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -274,6 +283,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               ),
             ),
           if (!isIntro && controller.armedPlayers.isNotEmpty) _buildGunBanner(),
+          if (!isIntro && controller.canAssassinateNow) _buildMercenaryDayBanner(),
           if (!isIntro && controller.activeExecutionWord != null) _buildExecutionWordBanner(),
           if (isIntro)
             const Text(
@@ -386,6 +396,14 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          if (controller.assassinationResultMessage != null) ...[
+            Text(
+              controller.assassinationResultMessage!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.bloodRedLight, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+          ],
           if (controller.gunFireResultMessage != null) ...[
             Text(
               controller.gunFireResultMessage!,
@@ -396,6 +414,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           ],
           if (controller.armedPlayers.isNotEmpty) ...[
             _buildGunBanner(),
+            const SizedBox(height: 12),
+          ],
+          if (controller.canAssassinateNow) ...[
+            _buildMercenaryDayBanner(),
             const SizedBox(height: 12),
           ],
           if (controller.activeExecutionWord != null) ...[
@@ -457,6 +479,34 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           OutlinedButton(
             onPressed: _showFireGunDialog,
             child: const Text('اعلامِ اسلحه و شلیک'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMercenaryDayBanner() {
+    final merc = controller.mercenaryPlayer!;
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.bloodRed.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.bloodRedLight),
+      ),
+      child: Column(
+        children: [
+          const Text(
+            '🔪 مزدور لباس‌شخصی می‌تونه همین الان ترور کنه (تا قبل از رأی‌گیری)',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton(
+            onPressed: () => _showAssassinatePicker(merc),
+            child: const Text('ترور'),
           ),
         ],
       ),
@@ -904,6 +954,24 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               const SizedBox(height: 8),
               _buildInterrogatorSection(),
             ],
+            if (controller.intelligenceMinisterPlayer != null) ...[
+              const SizedBox(height: 24),
+              const Divider(color: AppColors.gold),
+              const SizedBox(height: 8),
+              _buildIntelQuestionSection(),
+            ],
+            if (controller.policeCommanderPlayer != null) ...[
+              const SizedBox(height: 24),
+              const Divider(color: AppColors.gold),
+              const SizedBox(height: 8),
+              _buildDetentionSection(),
+            ],
+            if (controller.mercenaryPlayer != null && controller.mercenaryPlayer!.isAlive) ...[
+              const SizedBox(height: 24),
+              const Divider(color: AppColors.gold),
+              const SizedBox(height: 8),
+              _buildMercenaryNightSection(),
+            ],
           ],
           const SizedBox(height: 32),
           ElevatedButton(
@@ -1237,6 +1305,192 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     }
                   : null,
               child: const Text('ثبت'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIntelQuestionSection() {
+    final minister = controller.intelligenceMinisterPlayer!;
+    final result = controller.lastIntelQuestionResult;
+    final names = controller.lastIntelQuestionTargetNames;
+    return Column(
+      children: [
+        Text(
+          'وزیر اطلاعات: ${minister.intelQuestionsRemaining ?? 0} سؤالِ اطلاعاتیِ باقیمانده در کلِ بازی '
+          '(هر شب فقط یکی).',
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white70),
+        ),
+        if (result != null && names != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            '🔍 «${names.join('، ')}» نقش دارن؟ → '
+            '${result == InvestigationResult.like ? '👍 لایک (همه‌شون نقش دارن)' : '👎 دیس‌لایک (حداقل یکی‌شون نداره)'}',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+          ),
+        ],
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.help_outline),
+          label: const Text('پرسیدنِ سؤالِ اطلاعاتی'),
+          onPressed: controller.canAskIntelQuestionTonight ? _showIntelQuestionDialog : null,
+        ),
+      ],
+    );
+  }
+
+  void _showIntelQuestionDialog() {
+    final targets = controller.alivePlayers;
+    final selected = <int>{};
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          backgroundColor: AppColors.surfaceDark,
+          title: const Text('سؤالِ اطلاعاتی', style: TextStyle(color: AppColors.goldLight)),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'انتخاب کن این سؤال دقیقاً درباره‌ی کدوم بازیکن‌هاست:',
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+                ...targets.map(
+                  (p) => CheckboxListTile(
+                    dense: true,
+                    value: selected.contains(p.id),
+                    activeColor: AppColors.gold,
+                    onChanged: (v) => setDialogState(() {
+                      if (v ?? false) {
+                        selected.add(p.id);
+                      } else {
+                        selected.remove(p.id);
+                      }
+                    }),
+                    title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('انصراف'),
+            ),
+            ElevatedButton(
+              onPressed: selected.isNotEmpty
+                  ? () {
+                      controller.askIntelQuestion(selected.toList());
+                      Navigator.of(dialogContext).pop();
+                    }
+                  : null,
+              child: const Text('پرسیدن'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetentionSection() {
+    final detainedName =
+        controller.detainedPlayerId != null ? controller.playerById(controller.detainedPlayerId!).name : null;
+    return Column(
+      children: [
+        Text(
+          detainedName != null
+              ? 'امشب «$detainedName» بازداشت شده و قابلیتِ نقشِ خودش رو نداره.'
+              : 'فرمانده نیروی انتظامی می‌تونه امشب یه بازیکن رو بازداشت کنه (بازداشتیِ دیشب دوباره مجاز نیست).',
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.local_police),
+          label: const Text('بازداشتِ یه بازیکن'),
+          onPressed: controller.canDetainTonight ? _showDetainPicker : null,
+        ),
+      ],
+    );
+  }
+
+  void _showDetainPicker() {
+    final targets = controller.detainEligibleTargets;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceDark,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text('کی بازداشت بشه؟', style: TextStyle(color: AppColors.goldLight)),
+            ),
+            ...targets.map(
+              (p) => ListTile(
+                title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                onTap: () {
+                  controller.detainPlayer(p.id);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMercenaryNightSection() {
+    final merc = controller.mercenaryPlayer!;
+    return Column(
+      children: [
+        const Text(
+          'مزدور لباس‌شخصی می‌تونه امشب یه نفر رو ترور کنه — ولی خودش هم بلافاصله لو می‌ره و حذف می‌شه.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.dangerous),
+          label: const Text('ترور'),
+          style: OutlinedButton.styleFrom(foregroundColor: AppColors.bloodRedLight),
+          onPressed: controller.canAssassinateTonight ? () => _showAssassinatePicker(merc) : null,
+        ),
+      ],
+    );
+  }
+
+  void _showAssassinatePicker(SessionPlayer merc) {
+    final targets = controller.alivePlayers.where((p) => p.id != merc.id).toList();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceDark,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text('ترور روی کی؟', style: TextStyle(color: AppColors.goldLight)),
+            ),
+            ...targets.map(
+              (p) => ListTile(
+                title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                onTap: () {
+                  controller.assassinate(p.id);
+                  Navigator.of(context).pop();
+                },
+              ),
             ),
           ],
         ),

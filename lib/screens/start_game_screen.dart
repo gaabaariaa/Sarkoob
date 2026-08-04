@@ -34,6 +34,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
   bool _includeRapper = false;
   bool _includeRebel = false;
   bool _includeInterrogator = false;
+  bool _includeIntelMinister = false;
+  bool _includePoliceCommander = false;
+  bool _includeMercenary = false;
 
   static const int _minPlayers = 9;
 
@@ -78,7 +81,10 @@ class _StartGameScreenState extends State<StartGameScreen> {
       (_includeForeignMinister ? 1 : 0) +
       (_includeJudiciaryChief ? 1 : 0) +
       (_includeCelebrity ? 1 : 0) +
-      (_includeInterrogator ? 1 : 0);
+      (_includeInterrogator ? 1 : 0) +
+      (_includeIntelMinister ? 1 : 0) +
+      (_includePoliceCommander ? 1 : 0) +
+      (_includeMercenary ? 1 : 0);
 
   int get _citizenRoleSlotsEnabled =>
       (_includeDoctor ? 1 : 0) +
@@ -190,6 +196,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final judiciaryChiefIndex = nextSorkoobIndex(_includeJudiciaryChief);
     final celebrityIndex = nextSorkoobIndex(_includeCelebrity);
     final interrogatorIndex = nextSorkoobIndex(_includeInterrogator);
+    final intelMinisterIndex = nextSorkoobIndex(_includeIntelMinister);
+    final policeCommanderIndex = nextSorkoobIndex(_includePoliceCommander);
+    final mercenaryIndex = nextSorkoobIndex(_includeMercenary);
 
     final citizenShuffled = List<int>.generate(total, (i) => i)
         .where((i) => !sorkoobIndices.contains(i) && !independentIndices.contains(i))
@@ -213,6 +222,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final slaughterCharges = (total / 6).floor().clamp(1, 999);
     final revolutionaryCharges = (_sorkoobCount - 1).clamp(0, 999);
     final warGunCharges = slaughterCharges; // همون فرمولِ «هر ۶ نفر یکی»، رو کلِ بازیکن‌ها
+    final intelQuestionCharges = slaughterCharges; // همون فرمول
 
     final players = <SessionPlayer>[];
     for (var i = 0; i < total; i++) {
@@ -236,6 +246,12 @@ class _StartGameScreenState extends State<StartGameScreen> {
         roleId = SarkoobRoles.governmentCelebrity.id;
       } else if (i == interrogatorIndex) {
         roleId = SarkoobRoles.interrogator.id;
+      } else if (i == intelMinisterIndex) {
+        roleId = SarkoobRoles.intelligenceMinister.id;
+      } else if (i == policeCommanderIndex) {
+        roleId = SarkoobRoles.policeCommander.id;
+      } else if (i == mercenaryIndex) {
+        roleId = SarkoobRoles.mercenary.id;
       } else if (i == doctorIndex) {
         roleId = SarkoobRoles.doctor.id;
       } else if (i == hackerIndex) {
@@ -262,6 +278,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
           slaughterChargesRemaining: i == valiFaghihIndex ? slaughterCharges : null,
           revolutionaryChargesRemaining: i == revolutionaryIndex ? revolutionaryCharges : null,
           warGunsRemaining: i == rebelIndex ? warGunCharges : null,
+          intelQuestionsRemaining: i == intelMinisterIndex ? intelQuestionCharges : null,
         ),
       );
     }
@@ -422,6 +439,21 @@ class _StartGameScreenState extends State<StartGameScreen> {
             role: SarkoobRoles.interrogator,
             value: _includeInterrogator,
             onChanged: (v) => setState(() => _includeInterrogator = v),
+          ),
+          _roleToggle(
+            role: SarkoobRoles.intelligenceMinister,
+            value: _includeIntelMinister,
+            onChanged: (v) => setState(() => _includeIntelMinister = v),
+          ),
+          _roleToggle(
+            role: SarkoobRoles.policeCommander,
+            value: _includePoliceCommander,
+            onChanged: (v) => setState(() => _includePoliceCommander = v),
+          ),
+          _roleToggle(
+            role: SarkoobRoles.mercenary,
+            value: _includeMercenary,
+            onChanged: (v) => setState(() => _includeMercenary = v),
           ),
 
           const SizedBox(height: 24),

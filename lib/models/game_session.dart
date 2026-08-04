@@ -70,6 +70,9 @@ class SessionPlayer {
   GunType? heldGunType; // اسلحه‌ای که همین الان دستشه (null یعنی نداره)
   int? warGunsRemaining; // فقط رو خودِ شورشی: سهمیه‌ی کلِ اسلحه‌ی جنگی
 
+  // ---- مربوط به وزیر اطلاعات ----
+  int? intelQuestionsRemaining; // سهمیه‌ی کلِ سؤالِ اطلاعاتی در طولِ بازی
+
   // ---- مربوط به بازجو خبرنگار ----
   bool interrogationUsed; // آیا قابلیتِ یک‌بارمصرفِ بازجویی رو مصرف کرده؟
 
@@ -97,6 +100,7 @@ class SessionPlayer {
     this.isActiveResistanceMember = false,
     this.heldGunType,
     this.warGunsRemaining,
+    this.intelQuestionsRemaining,
     this.interrogationUsed = false,
   });
 
