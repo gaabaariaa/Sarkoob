@@ -33,6 +33,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   bool _includeZhina = false;
   bool _includeRapper = false;
   bool _includeRebel = false;
+  bool _includeNationalHero = false;
   bool _includeInterrogator = false;
   bool _includeIntelMinister = false;
   bool _includePoliceCommander = false;
@@ -93,7 +94,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
       (_includeLawyer ? 1 : 0) +
       (_includeZhina ? 1 : 0) +
       (_includeRapper ? 1 : 0) +
-      (_includeRebel ? 1 : 0);
+      (_includeRebel ? 1 : 0) +
+      (_includeNationalHero ? 1 : 0);
 
   int get _citizenCount {
     final total = _draftPlayers.length;
@@ -218,11 +220,13 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final zhinaIndex = nextCitizenIndex(_includeZhina);
     final rapperIndex = nextCitizenIndex(_includeRapper);
     final rebelIndex = nextCitizenIndex(_includeRebel);
+    final nationalHeroIndex = nextCitizenIndex(_includeNationalHero);
 
     final slaughterCharges = (total / 6).floor().clamp(1, 999);
     final revolutionaryCharges = (_sorkoobCount - 1).clamp(0, 999);
     final warGunCharges = slaughterCharges; // همون فرمولِ «هر ۶ نفر یکی»، رو کلِ بازیکن‌ها
     final intelQuestionCharges = slaughterCharges; // همون فرمول
+    final guaranteeCharges = slaughterCharges; // همون فرمول
 
     final players = <SessionPlayer>[];
     for (var i = 0; i < total; i++) {
@@ -266,6 +270,19 @@ class _StartGameScreenState extends State<StartGameScreen> {
         roleId = SarkoobRoles.rapper.id;
       } else if (i == rebelIndex) {
         roleId = SarkoobRoles.rebel.id;
+      } else if (i == nationalHeroIndex) {
+        roleId = SarkoobRoles.nationalHero.id;
+      }
+
+      // بازیکنی که هیچ نقشِ خاصی نگرفته: اگه عضوِ سرکوبه، «سرکوبگر»
+      // حساب می‌شه؛ اگه عضوِ شهرونده، «شهروندِ خاکستری». تیمِ مستقل رو
+      // دست‌نخورده می‌ذاریم چون هنوز نقشِ مخصوصی براش تعریف نشده.
+      if (roleId == null) {
+        if (teamId == SarkoobTeams.suppression.id) {
+          roleId = SarkoobRoles.suppressor.id;
+        } else if (teamId == SarkoobTeams.citizen.id) {
+          roleId = SarkoobRoles.grayCitizen.id;
+        }
       }
 
       players.add(
@@ -279,6 +296,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
           revolutionaryChargesRemaining: i == revolutionaryIndex ? revolutionaryCharges : null,
           warGunsRemaining: i == rebelIndex ? warGunCharges : null,
           intelQuestionsRemaining: i == intelMinisterIndex ? intelQuestionCharges : null,
+          guaranteesRemaining: i == nationalHeroIndex ? guaranteeCharges : null,
         ),
       );
     }
@@ -500,6 +518,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
             role: SarkoobRoles.rebel,
             value: _includeRebel,
             onChanged: (v) => setState(() => _includeRebel = v),
+          ),
+          _roleToggle(
+            role: SarkoobRoles.nationalHero,
+            value: _includeNationalHero,
+            onChanged: (v) => setState(() => _includeNationalHero = v),
           ),
 
           const SizedBox(height: 28),

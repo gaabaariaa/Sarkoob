@@ -18,7 +18,7 @@ class ChallengeRecord {
 
 /// ترتیبِ «بیدارشدنِ» شب: اول تیمِ سرکوب باهم، بعد هر نقشِ خاصِ شهروندی
 /// جداگونه و به‌ترتیب، و در آخر جمع‌بندیِ شب.
-enum NightStepKind { sorkoobTeam, rapper, hacker, doctor, rebel, revolutionary, lawyer, done }
+enum NightStepKind { sorkoobTeam, rapper, hacker, doctor, rebel, nationalHero, revolutionary, lawyer, done }
 
 /// موتور اصلی «گردانندگی» یه جلسه‌ی بازی: ترتیب صحبت، چالش، رأی‌گیری،
 /// دفاعیه، حذف، و شب (تصمیمِ رهبر سرکوب، مذاکره، حکم اعدام).
@@ -236,7 +236,7 @@ class GameFlowController extends ChangeNotifier {
   /// بعد از رأی‌گیریِ اول: چه کسانی وارد دفاعیه می‌شن؟
   void resolveFirstVoteRound() {
     _defenseCandidateIds = alivePlayers
-        .where((p) => p.votes >= majorityThreshold)
+        .where((p) => p.votes >= majorityThreshold && p.id != guaranteedPlayerId)
         .map((p) => p.id)
         .toList();
     _defensePointer = 0;
@@ -349,10 +349,16 @@ class GameFlowController extends ChangeNotifier {
   bool get sorkoobHasLostMember =>
       players.any((p) => p.teamId == SarkoobTeams.suppression.id && !p.isAlive);
 
+  /// آیا این بازیکن یه شهروندِ «خاکستری»ه؟ (بدونِ نقشِ خاص). چون بازیکنانِ
+  /// بدونِ نقشِ خاص از این به بعد صراحتاً roleId=grayCitizen می‌گیرن، هم
+  /// اون حالت هم حالتِ قدیمیِ null رو پوشش می‌دیم.
+  bool _isGrayCitizen(SessionPlayer p) =>
+      p.teamId == SarkoobTeams.citizen.id &&
+      (p.roleId == null || p.roleId == SarkoobRoles.grayCitizen.id);
+
   /// شهروندهای «خاکستری»: زنده، عضو تیم شهروند، و بدون نقشِ خاص.
-  List<SessionPlayer> get grayCitizens => players
-      .where((p) => p.isAlive && p.teamId == SarkoobTeams.citizen.id && p.roleId == null)
-      .toList();
+  List<SessionPlayer> get grayCitizens =>
+      players.where((p) => p.isAlive && _isGrayCitizen(p)).toList();
 
   bool get canUseNegotiate {
     if (sorkoobDisabledTonight) return false;
@@ -369,7 +375,7 @@ class GameFlowController extends ChangeNotifier {
     final minister = foreignMinisterPlayer;
     if (minister == null || isPlayerDetained(minister.id)) return;
     final target = playerById(targetId);
-    final isGrayCitizen = target.teamId == SarkoobTeams.citizen.id && target.roleId == null;
+    final isGrayCitizen = _isGrayCitizen(target);
     if (isGrayCitizen) {
       target.teamId = SarkoobTeams.suppression.id;
       target.roleId = SarkoobRoles.suppressor.id;
@@ -498,15 +504,21 @@ class GameFlowController extends ChangeNotifier {
   InvestigationResult? lastIntelQuestionResult;
   List<String>? lastIntelQuestionTargetNames;
 
-  /// لایک یعنی همه‌ی هدف‌ها نقش دارن (roleId != null)؛ دیس‌لایک یعنی
-  /// حداقل یکی‌شون نقشِ خاصی نداره. به تیم یا استثناهای استعلامِ هکر
-  /// کاری نداره — فقط واقعیتِ خامِ «نقش‌دار بودن» رو می‌گه.
+  /// لایک یعنی همه‌ی هدف‌ها نقشِ خاص دارن؛ دیس‌لایک یعنی حداقل یکی‌شون
+  /// نقشِ خاصی نداره (سرکوبگرِ ساده و شهروندِ خاکستری «نقش‌دار» حساب
+  /// نمی‌شن، چون نقشِ متمایزکننده‌ای نیستن). به تیم یا استثناهای
+  /// استعلامِ هکر کاری نداره — فقط واقعیتِ خامِ «نقشِ خاص داشتن» رو می‌گه.
   void askIntelQuestion(List<int> targetIds) {
     if (!canAskIntelQuestionTonight || targetIds.isEmpty) return;
     final minister = intelligenceMinisterPlayer!;
     minister.intelQuestionsRemaining = (minister.intelQuestionsRemaining ?? 0) - 1;
     _intelQuestionUsedTonight = true;
-    final allHaveRoles = targetIds.every((id) => playerById(id).roleId != null);
+    final allHaveRoles = targetIds.every((id) {
+      final roleId = playerById(id).roleId;
+      return roleId != null &&
+          roleId != SarkoobRoles.suppressor.id &&
+          roleId != SarkoobRoles.grayCitizen.id;
+    });
     lastIntelQuestionResult = allHaveRoles ? InvestigationResult.like : InvestigationResult.dislike;
     lastIntelQuestionTargetNames = targetIds.map((id) => playerById(id).name).toList();
     notifyListeners();
@@ -576,8 +588,12 @@ class GameFlowController extends ChangeNotifier {
     if (phase == GamePhaseType.night && isPlayerDetained(merc.id)) return;
     if (phase == GamePhaseType.day && votingStarted) return;
     final target = playerById(targetId);
-    _eliminatePlayer(target); // هدف طبقِ قانونِ عادی حذف می‌شه؛ وکیل می‌تونه بعداً نجاتش بده
-    // خودِ مزدور برگشت‌ناپذیره: «لو رفتن» یه اتفاقِ قطعیه، نه یه حذفِ
+    // طبقِ اصلاحِ قانون: هدفِ ترورشده هم مثلِ خودِ مزدور کاملاً و
+    // برای‌همیشه حذف می‌شه — نه یه حذفِ معمولی که وکیل بتونه خنثاش کنه.
+    target.isAlive = false;
+    target.isHalfAlive = false;
+    _checkZhinaTrigger(target);
+    // خودِ مزدور هم برگشت‌ناپذیره: «لو رفتن» یه اتفاقِ قطعیه، نه یه حذفِ
     // معمولی که وکیل بتونه خنثاش کنه.
     merc.isAlive = false;
     merc.isHalfAlive = false;
@@ -770,6 +786,37 @@ class GameFlowController extends ChangeNotifier {
     } else {
       gunFireResultMessage = '«${shooter.name}» شلیک کرد ولی اسلحه‌ش مشقی بود؛ هیچ اتفاقی نیفتاد.';
     }
+    notifyListeners();
+  }
+
+  // ---------- قهرمان ملی: تضمین (مستقل از بقیه) ----------
+
+  SessionPlayer? get nationalHeroPlayer {
+    for (final p in players) {
+      if (p.roleId == SarkoobRoles.nationalHero.id) return p;
+    }
+    return null;
+  }
+
+  /// کسی که امروز تضمین شده (اگه کسی باشه) — رأی نمیاره و در امانه.
+  int? guaranteedPlayerId;
+
+  bool _heroActedTonight = false;
+
+  bool get canGuaranteeTonight {
+    final hero = nationalHeroPlayer;
+    if (hero == null || !hero.isAlive) return false;
+    if (isPlayerDetained(hero.id)) return false;
+    if (_heroActedTonight) return false;
+    return (hero.guaranteesRemaining ?? 0) > 0;
+  }
+
+  void guaranteePlayer(int targetId) {
+    if (!canGuaranteeTonight) return;
+    final hero = nationalHeroPlayer!;
+    hero.guaranteesRemaining = (hero.guaranteesRemaining ?? 0) - 1;
+    _heroActedTonight = true;
+    guaranteedPlayerId = targetId;
     notifyListeners();
   }
 
@@ -966,6 +1013,7 @@ class GameFlowController extends ChangeNotifier {
     NightStepKind.hacker,
     NightStepKind.doctor,
     NightStepKind.rebel,
+    NightStepKind.nationalHero,
     NightStepKind.revolutionary,
     NightStepKind.lawyer,
     NightStepKind.done,
@@ -993,6 +1041,8 @@ class GameFlowController extends ChangeNotifier {
         return doctorPlayer != null;
       case NightStepKind.rebel:
         return rebelPlayer != null;
+      case NightStepKind.nationalHero:
+        return nationalHeroPlayer != null;
       case NightStepKind.revolutionary:
         return revolutionaryFighterPlayer != null;
       case NightStepKind.lawyer:
@@ -1006,12 +1056,34 @@ class GameFlowController extends ChangeNotifier {
   /// آیا الان می‌شه از مرحله‌ی «تیمِ سرکوب» جلوتر رفت؟ اگه ولی‌فقیه زنده‌ست،
   /// باید حتماً تصمیمش رو گرفته باشه (شات/سلاخی/مذاکره)؛ اگه زنده نیست،
   /// همیشه می‌شه رد شد (مذاکره اختیاریه).
+  /// آیا هیچ عضوِ زنده‌ای از تیمِ سرکوب، نقشِ خاص (غیر از سرکوبگرِ ساده)
+  /// نداره؟ یعنی ولی‌فقیه و بقیه‌ی نقش‌دارها همه حذف شدن.
+  bool get sorkoobHasNoSpecialRoleHolders {
+    return !alivePlayers.any(
+      (p) =>
+          p.teamId == SarkoobTeams.suppression.id &&
+          p.roleId != null &&
+          p.roleId != SarkoobRoles.suppressor.id,
+    );
+  }
+
+  /// آیا الان نوبتِ سرکوبگرهای ساده‌ست که به‌جای ولی‌فقیه، تصمیمِ شات
+  /// (نه سلاخی) رو بگیرن؟ فقط وقتی که دیگه هیچ نقش‌دارِ زنده‌ای نمونده.
+  bool get canFallbackShoot {
+    if (sorkoobDisabledTonight) return false;
+    final leader = valiFaghihPlayer;
+    if (leader != null && leader.isAlive) return false;
+    if (!sorkoobHasNoSpecialRoleHolders) return false;
+    return alivePlayers.any((p) => p.teamId == SarkoobTeams.suppression.id);
+  }
+
   bool get canAdvancePastSorkoobTeamStep {
     if (sorkoobDisabledTonight) return true;
     final leader = valiFaghihPlayer;
     final leaderAlive = leader != null && leader.isAlive;
-    if (!leaderAlive) return true;
-    return _nightActionTaken;
+    if (leaderAlive) return _nightActionTaken;
+    if (canFallbackShoot) return _nightActionTaken;
+    return true;
   }
 
   void advanceNightStep() {
@@ -1043,6 +1115,8 @@ class GameFlowController extends ChangeNotifier {
     _intelQuestionUsedTonight = false;
     lastIntelQuestionResult = null;
     lastIntelQuestionTargetNames = null;
+    _heroActedTonight = false;
+    guaranteedPlayerId = null; // تضمینِ دیروز فقط برای همون روز بود، الان منقضی می‌شه
     _detainedLastNight = detainedPlayerId; // دیشب کی بازداشت بود، برای قانونِ «نه دو شبِ پیاپی»
     detainedPlayerId = null;
     sorkoobDisabledTonight = sorkoobDisabledNextNight;

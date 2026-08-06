@@ -73,6 +73,9 @@ class SessionPlayer {
   // ---- مربوط به وزیر اطلاعات ----
   int? intelQuestionsRemaining; // سهمیه‌ی کلِ سؤالِ اطلاعاتی در طولِ بازی
 
+  // ---- مربوط به قهرمان ملی ----
+  int? guaranteesRemaining; // سهمیه‌ی کلِ تضمین در طولِ بازی
+
   // ---- مربوط به بازجو خبرنگار ----
   bool interrogationUsed; // آیا قابلیتِ یک‌بارمصرفِ بازجویی رو مصرف کرده؟
 
@@ -101,6 +104,7 @@ class SessionPlayer {
     this.heldGunType,
     this.warGunsRemaining,
     this.intelQuestionsRemaining,
+    this.guaranteesRemaining,
     this.interrogationUsed = false,
   });
 

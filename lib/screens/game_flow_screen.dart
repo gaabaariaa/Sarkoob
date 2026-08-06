@@ -264,6 +264,22 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     return SingleChildScrollView(
       child: Column(
         children: [
+          if (!isIntro && controller.guaranteedPlayerId != null)
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.goldDark.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '🛡️ «${controller.playerById(controller.guaranteedPlayerId!).name}» تضمینِ قهرمانِ ملی رو داره؛ '
+                'امروز نمی‌تونه رأی بیاره و در امانه.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+              ),
+            ),
           if (!isIntro && controller.assassinationResultMessage != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -396,6 +412,15 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          if (controller.guaranteedPlayerId != null) ...[
+            Text(
+              '🛡️ «${controller.playerById(controller.guaranteedPlayerId!).name}» تضمینِ قهرمانِ ملی رو داره؛ '
+              'امروز نمی‌تونه رأی بیاره و در امانه.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+          ],
           if (controller.assassinationResultMessage != null) ...[
             Text(
               controller.assassinationResultMessage!,
@@ -853,6 +878,13 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           playerName: controller.rebelPlayer?.name,
           body: _buildRebelSection(),
         );
+      case NightStepKind.nationalHero:
+        return _buildRoleNightStep(
+          wakeLabel: 'قهرمان ملی بیدار بشه',
+          sleepLabel: 'قهرمان ملی چشمش رو ببنده',
+          playerName: controller.nationalHeroPlayer?.name,
+          body: _buildNationalHeroSection(),
+        );
       case NightStepKind.revolutionary:
         return _buildRoleNightStep(
           wakeLabel: 'مبارز انقلابی بیدار بشه',
@@ -1100,6 +1132,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Widget _buildLeaderDecisionSection() {
     final leader = controller.valiFaghihPlayer;
     final leaderAlive = leader != null && leader.isAlive;
+    final fallback = controller.canFallbackShoot;
 
     if (!controller.nightActionTaken) {
       return Column(
@@ -1107,7 +1140,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           Text(
             leaderAlive
                 ? 'تیم سرکوب بیدار می‌شه و باهم مشورت می‌کنن؛ تصمیم نهایی با ولی‌فقیه‌ست.'
-                : 'ولی‌فقیه در بازی نیست یا حذف شده؛ شات و سلاخیِ رهبر دیگه در دسترس نیست.',
+                : fallback
+                    ? 'ولی‌فقیه و بقیه‌ی نقش‌دارهای سرکوب دیگه در بازی نیستن؛ تصمیمِ شات دستِ سرکوبگرهای باقی‌مونده‌ست.'
+                    : 'ولی‌فقیه در بازی نیست یا حذف شده؛ شات و سلاخیِ رهبر دیگه در دسترس نیست.',
             textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.white60),
           ),
@@ -1130,6 +1165,13 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               onPressed: (leader.slaughterChargesRemaining ?? 0) > 0
                   ? () => _showSlaughterPicker(leader)
                   : null,
+            ),
+          ] else if (fallback) ...[
+            ElevatedButton.icon(
+              icon: const Icon(Icons.gps_fixed),
+              label: const Text('شات (حذف تیمی)'),
+              style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+              onPressed: _showFallbackShootPicker,
             ),
           ],
           // نکته‌ی مهم: این شرط از رویِ زنده‌بودنِ ولی‌فقیه مستقل بررسی
@@ -1488,6 +1530,54 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 title: Text(p.name, style: const TextStyle(color: Colors.white)),
                 onTap: () {
                   controller.assassinate(p.id);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNationalHeroSection() {
+    final hero = controller.nationalHeroPlayer!;
+    return Column(
+      children: [
+        Text(
+          'قهرمان ملی می‌تونه امشب یه بازیکن رو تضمین کنه (${hero.guaranteesRemaining ?? 0} '
+          'تضمینِ باقیمانده در کلِ بازی).',
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.shield),
+          label: const Text('تضمینِ یه بازیکن'),
+          onPressed: controller.canGuaranteeTonight ? () => _showGuaranteePicker(hero) : null,
+        ),
+      ],
+    );
+  }
+
+  void _showGuaranteePicker(SessionPlayer hero) {
+    final targets = controller.alivePlayers;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceDark,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text('کی تضمین بشه؟', style: TextStyle(color: AppColors.goldLight)),
+            ),
+            ...targets.map(
+              (p) => ListTile(
+                title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                onTap: () {
+                  controller.guaranteePlayer(p.id);
                   Navigator.of(context).pop();
                 },
               ),
@@ -1946,6 +2036,34 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 title: Text(p.name, style: const TextStyle(color: Colors.white)),
                 onTap: () {
                   controller.lawyerRevive(p.id);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showFallbackShootPicker() {
+    final targets = controller.alivePlayers;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceDark,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text('شات روی کی؟', style: TextStyle(color: AppColors.goldLight)),
+            ),
+            ...targets.map(
+              (p) => ListTile(
+                title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                onTap: () {
+                  controller.leaderShoot(p.id);
                   Navigator.of(context).pop();
                 },
               ),
