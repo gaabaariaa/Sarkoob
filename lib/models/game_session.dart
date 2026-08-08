@@ -34,6 +34,7 @@ class GameSettings {
 class SessionPlayer {
   final int id;
   final String name;
+  final String? rosterId; // اگه از لیستِ دائمیِ بازیکن‌ها انتخاب شده بود
   bool isAlive;
   int recordCount; // «سابقه»
   String teamId; // یکی از شناسه‌های GameTeam (team_sorkoob / team_citizen / ...)
@@ -83,6 +84,7 @@ class SessionPlayer {
     required this.id,
     required this.name,
     required this.teamId,
+    this.rosterId,
     this.isAlive = true,
     this.recordCount = 0,
     this.isModiri = false,

@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import '../models/game_session.dart';
+import '../models/history.dart';
 import '../models/role.dart';
 import '../models/team.dart';
+import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
 import 'role_reveal_screen.dart';
 
 class _StartGameScreenState extends State<StartGameScreen> {
+  final StorageService _storage = StorageService();
   final List<String> _draftPlayers = [];
+  final Map<String, String> _draftRosterLinks = {}; // اسم -> آی‌دیِ لیستِ دائمی
+  List<SavedPlayerProfile> _roster = [];
   final TextEditingController _nameController = TextEditingController();
   int _speakSeconds = 60;
   int _doctorMaxSelfSaves = 2;
@@ -42,6 +47,17 @@ class _StartGameScreenState extends State<StartGameScreen> {
   static const int _minPlayers = 9;
 
   @override
+  void initState() {
+    super.initState();
+    _loadRoster();
+  }
+
+  Future<void> _loadRoster() async {
+    final roster = await _storage.loadRoster();
+    if (mounted) setState(() => _roster = roster);
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     super.dispose();
@@ -54,13 +70,89 @@ class _StartGameScreenState extends State<StartGameScreen> {
     });
   }
 
-  void _addPlayer() {
+  /// اسمی که دستی تایپ شده رو هم به لیستِ بازی و هم (اگه از قبل نبوده)
+  /// به لیستِ دائمی اضافه می‌کنه، تا لیستِ دائمی خودش‌به‌خود کامل بشه.
+  Future<void> _addPlayer() async {
     final name = _nameController.text.trim();
-    if (name.isEmpty) return;
+    if (name.isEmpty || _draftPlayers.contains(name)) return;
     setState(() {
       _draftPlayers.add(name);
       _nameController.clear();
     });
+    final rosterId = await _storage.ensurePlayerInRoster(name);
+    _draftRosterLinks[name] = rosterId;
+    _loadRoster();
+  }
+
+  Future<void> _showAddFromRosterSheet() async {
+    final available = _roster.where((p) => !_draftPlayers.contains(p.name)).toList();
+    final selected = <SavedPlayerProfile>{};
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceDark,
+      isScrollControlled: true,
+      builder: (_) => StatefulBuilder(
+        builder: (context, setSheetState) => DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.6,
+          builder: (context, scrollController) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text('افزودن از لیستِ بازیکنان', style: AppTheme.headingFont(size: 18)),
+              ),
+              if (available.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text(
+                    'همه‌ی بازیکنانِ لیستِ دائمی از قبل تو این بازی هستن.',
+                    style: TextStyle(color: Colors.white38),
+                  ),
+                ),
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  children: available
+                      .map(
+                        (p) => CheckboxListTile(
+                          value: selected.contains(p),
+                          activeColor: AppColors.gold,
+                          title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                          onChanged: (v) => setSheetState(() {
+                            if (v ?? false) {
+                              selected.add(p);
+                            } else {
+                              selected.remove(p);
+                            }
+                          }),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: ElevatedButton(
+                  onPressed: selected.isEmpty
+                      ? null
+                      : () {
+                          setState(() {
+                            for (final p in selected) {
+                              _draftPlayers.add(p.name);
+                              _draftRosterLinks[p.name] = p.id;
+                            }
+                          });
+                          Navigator.of(context).pop();
+                        },
+                  child: Text('افزودنِ ${selected.length} نفر'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _removePlayer(int index) {
@@ -289,6 +381,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
         SessionPlayer(
           id: i + 1,
           name: _draftPlayers[i],
+          rosterId: _draftRosterLinks[_draftPlayers[i]],
           teamId: teamId,
           roleId: roleId,
           hasArmor: i == valiFaghihIndex,
@@ -341,6 +434,12 @@ class _StartGameScreenState extends State<StartGameScreen> {
               const SizedBox(width: 8),
               ElevatedButton(onPressed: _addPlayer, child: const Text('افزودن')),
             ],
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            icon: const Icon(Icons.groups, color: AppColors.gold),
+            label: Text('افزودن از لیستِ بازیکنان (${_roster.length} نفر)'),
+            onPressed: _roster.isEmpty ? null : _showAddFromRosterSheet,
           ),
           const SizedBox(height: 12),
           const Text(

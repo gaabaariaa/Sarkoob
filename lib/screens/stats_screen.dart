@@ -1,57 +1,161 @@
 import 'package:flutter/material.dart';
+import '../models/history.dart';
+import '../models/role.dart';
+import '../models/team.dart';
+import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
 
-/// این صفحه فعلاً فقط «طراحی ظاهری» آماره؛ داده‌هاش نمونه (mock) هستن.
-class StatsScreen extends StatelessWidget {
+class StatsScreen extends StatefulWidget {
   const StatsScreen({super.key});
 
   @override
+  State<StatsScreen> createState() => _StatsScreenState();
+}
+
+class _PlayerAggregate {
+  final String key;
+  String displayName;
+  int games = 0;
+  int wins = 0;
+  final List<_PlayerGameRow> rows = [];
+
+  _PlayerAggregate({required this.key, required this.displayName});
+}
+
+class _PlayerGameRow {
+  final DateTime playedAt;
+  final String teamName;
+  final String? roleName;
+  final bool won;
+  _PlayerGameRow({
+    required this.playedAt,
+    required this.teamName,
+    this.roleName,
+    required this.won,
+  });
+}
+
+class _StatsScreenState extends State<StatsScreen> {
+  final StorageService _storage = StorageService();
+  List<GameHistoryEntry> _history = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final history = await _storage.loadHistory();
+    setState(() {
+      _history = history;
+      _loading = false;
+    });
+  }
+
+  String _teamName(String teamId) => SarkoobTeams.byId(teamId)?.name ?? teamId;
+
+  List<_PlayerAggregate> get _aggregates {
+    final map = <String, _PlayerAggregate>{};
+    for (final entry in _history) {
+      for (final p in entry.players) {
+        final key = p.rosterId ?? p.name;
+        final agg = map.putIfAbsent(
+          key,
+          () => _PlayerAggregate(key: key, displayName: p.name),
+        );
+        agg.displayName = p.name;
+        agg.games += 1;
+        if (p.wasOnWinningSide) agg.wins += 1;
+        final role = p.roleId != null ? SarkoobRoles.byId(p.roleId!) : null;
+        agg.rows.add(
+          _PlayerGameRow(
+            playedAt: entry.playedAt,
+            teamName: _teamName(p.teamId),
+            roleName: role?.name,
+            won: p.wasOnWinningSide,
+          ),
+        );
+      }
+    }
+    final list = map.values.toList()..sort((a, b) => b.wins.compareTo(a.wins));
+    return list;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('آمار')),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_history.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('آمار')),
+        body: const Center(
+          child: Text(
+            'هنوز هیچ بازی‌ای ثبت نشده.\nبعدِ تمام‌شدنِ اولین بازی، آمار همینجا نشون داده می‌شه.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white38),
+          ),
+        ),
+      );
+    }
+
+    final aggregates = _aggregates;
+    final lastGame = _history.first;
+    final winner = lastGame.players.where((p) => p.wasOnWinningSide).toList();
+    final loser = lastGame.players.where((p) => !p.wasOnWinningSide).toList();
+
     return Scaffold(
       appBar: AppBar(title: const Text('آمار')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text('بهترین و بدترین بازیکنِ آخرین بازی', style: AppTheme.headingFont(size: 20)),
+          Text('نتیجه‌ی آخرین بازی', style: AppTheme.headingFont(size: 20)),
           const SizedBox(height: 10),
           Row(
             children: [
-              Expanded(
-                child: _HighlightCard(
-                  icon: Icons.emoji_events,
-                  color: AppColors.gold,
-                  title: 'بهترین بازیکن',
-                  playerName: 'علی',
-                  reason: 'برد + ۲ اقدام موفق شبانه',
+              if (winner.isNotEmpty)
+                Expanded(
+                  child: _HighlightCard(
+                    icon: Icons.emoji_events,
+                    color: AppColors.gold,
+                    title: 'طرفِ برنده',
+                    playerName: winner.map((p) => p.name).join('، '),
+                    reason: _teamName(lastGame.winningTeamId),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _HighlightCard(
-                  icon: Icons.sentiment_dissatisfied,
-                  color: AppColors.bloodRedLight,
-                  title: 'بدترین بازیکن',
-                  playerName: 'رضا',
-                  reason: 'شب اول حذف شد',
+              if (winner.isNotEmpty && loser.isNotEmpty) const SizedBox(width: 12),
+              if (loser.isNotEmpty)
+                Expanded(
+                  child: _HighlightCard(
+                    icon: Icons.sentiment_dissatisfied,
+                    color: AppColors.bloodRedLight,
+                    title: 'طرفِ بازنده',
+                    playerName: '${loser.length} نفر',
+                    reason: 'حذف‌شده‌ها: ${loser.where((p) => !p.survived).length} نفر',
+                  ),
                 ),
-              ),
             ],
           ),
           const SizedBox(height: 28),
           Text('جدول رتبه‌بندی', style: AppTheme.headingFont(size: 20)),
           const SizedBox(height: 10),
-          ..._mockLeaderboard.map((row) => _LeaderboardRow(row: row)),
+          ...aggregates.map((agg) => _LeaderboardRow(agg: agg)),
           const SizedBox(height: 28),
           Text('تاریخچه‌ی کامل هر بازیکن', style: AppTheme.headingFont(size: 20)),
           const SizedBox(height: 4),
           const Text(
-            'با زدن روی هر بازیکن، لیست همه‌ی بازی‌هاش، نقش هر بازی، '
-            'و اقداماتی که انجام داده نشون داده می‌شه.',
+            'با زدن روی هر بازیکن، لیستِ همه‌ی بازی‌هاش و نتیجه‌ی هرکدوم نشون داده می‌شه.',
             style: TextStyle(color: Colors.white70),
           ),
           const SizedBox(height: 10),
-          ..._mockLeaderboard.map(
-            (row) => Card(
+          ...aggregates.map(
+            (agg) => Card(
               color: AppColors.surfaceCard,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -62,26 +166,29 @@ class StatsScreen extends StatelessWidget {
                 collapsedIconColor: AppColors.gold,
                 iconColor: AppColors.gold,
                 title: Text(
-                  row.name,
+                  agg.displayName,
                   style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  '${row.games} بازی — ${row.wins} برد',
+                  '${agg.games} بازی — ${agg.wins} برد',
                   style: const TextStyle(color: Colors.white60),
                 ),
-                children: const [
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(16, 0, 16, 12),
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        'نمونه — بازی ۱: نقش ولی‌فقیه، تیم سرکوب، برنده.\n'
-                        'نمونه — بازی ۲: نقش دکتر، تیم شهروند، بازنده.',
-                        style: TextStyle(color: Colors.white70, height: 1.6),
+                children: agg.rows
+                    .map(
+                      (row) => Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            '${row.playedAt.year}/${row.playedAt.month}/${row.playedAt.day} — '
+                            'نقش: ${row.roleName ?? row.teamName}، تیم: ${row.teamName}، '
+                            '${row.won ? 'برنده' : 'بازنده'}',
+                            style: const TextStyle(color: Colors.white70, height: 1.6),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ],
+                    )
+                    .toList(),
               ),
             ),
           ),
@@ -90,19 +197,6 @@ class StatsScreen extends StatelessWidget {
     );
   }
 }
-
-class _MockPlayerRow {
-  final String name;
-  final int games;
-  final int wins;
-  const _MockPlayerRow(this.name, this.games, this.wins);
-}
-
-const _mockLeaderboard = [
-  _MockPlayerRow('علی', 8, 5),
-  _MockPlayerRow('سارا', 6, 3),
-  _MockPlayerRow('رضا', 7, 2),
-];
 
 class _HighlightCard extends StatelessWidget {
   final IconData icon;
@@ -137,7 +231,8 @@ class _HighlightCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             playerName,
-            style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 18),
+            textAlign: TextAlign.center,
+            style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const SizedBox(height: 4),
           Text(
@@ -152,12 +247,12 @@ class _HighlightCard extends StatelessWidget {
 }
 
 class _LeaderboardRow extends StatelessWidget {
-  final _MockPlayerRow row;
-  const _LeaderboardRow({required this.row});
+  final _PlayerAggregate agg;
+  const _LeaderboardRow({required this.agg});
 
   @override
   Widget build(BuildContext context) {
-    final rate = row.games == 0 ? 0 : ((row.wins / row.games) * 100).round();
+    final rate = agg.games == 0 ? 0 : ((agg.wins / agg.games) * 100).round();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -165,15 +260,15 @@ class _LeaderboardRow extends StatelessWidget {
           CircleAvatar(
             backgroundColor: AppColors.gold.withOpacity(0.2),
             child: Text(
-              row.name.isNotEmpty ? row.name.substring(0, 1) : '?',
+              agg.displayName.isNotEmpty ? agg.displayName.substring(0, 1) : '?',
               style: const TextStyle(color: AppColors.goldLight),
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(row.name, style: const TextStyle(color: Colors.white)),
+            child: Text(agg.displayName, style: const TextStyle(color: Colors.white)),
           ),
-          Text('${row.games} بازی', style: const TextStyle(color: Colors.white60)),
+          Text('${agg.games} بازی', style: const TextStyle(color: Colors.white60)),
           const SizedBox(width: 12),
           Text('$rate% برد', style: const TextStyle(color: AppColors.goldLight)),
         ],

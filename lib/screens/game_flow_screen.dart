@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../controllers/game_flow_controller.dart';
 import '../models/game_session.dart';
+import '../models/history.dart';
 import '../models/role.dart';
 import '../models/team.dart';
+import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/countdown_timer_widget.dart';
 import '../widgets/role_card.dart';
@@ -23,6 +25,7 @@ class GameFlowScreen extends StatefulWidget {
 
 class _GameFlowScreenState extends State<GameFlowScreen> {
   late final GameFlowController controller;
+  final StorageService _storage = StorageService();
 
   @override
   void initState() {
@@ -50,6 +53,11 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             icon: const Icon(Icons.gavel),
             tooltip: 'اخراجِ انضباطی',
             onPressed: _showDisciplinaryExpelDialog,
+          ),
+          IconButton(
+            icon: const Icon(Icons.flag),
+            tooltip: 'پایانِ بازی و ثبت',
+            onPressed: _showEndGameDialog,
           ),
         ],
       ),
@@ -226,6 +234,93 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     }
                   : null,
               child: const Text('اخراج'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// ثبتِ نتیجه‌ی بازیِ تمام‌شده تو تاریخچه‌ی دائمی. گرداننده تیمِ برنده
+  /// رو دستی مشخص می‌کنه، چون تشخیصِ «بازی تموم شده و کی برده» به قضاوتِ
+  /// خودِ گرداننده‌ست، نه چیزی که اپ خودکار حساب کنه.
+  void _showEndGameDialog() {
+    final presentTeamIds = controller.players.map((p) => p.teamId).toSet().toList();
+    String? selectedTeamId;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          backgroundColor: AppColors.surfaceDark,
+          title: const Text('پایانِ بازی و ثبت', style: TextStyle(color: AppColors.goldLight)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'کدوم تیم برنده شد؟ این نتیجه تو تاریخچه و آمار ثبت می‌شه.',
+                style: TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+              const SizedBox(height: 8),
+              DropdownButton<String>(
+                isExpanded: true,
+                hint: const Text('انتخابِ تیمِ برنده', style: TextStyle(color: Colors.white70)),
+                dropdownColor: AppColors.surfaceDark,
+                value: selectedTeamId,
+                items: [
+                  ...presentTeamIds.map(
+                    (teamId) => DropdownMenuItem(
+                      value: teamId,
+                      child: Text(
+                        SarkoobTeams.byId(teamId)?.name ?? teamId,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                  const DropdownMenuItem(
+                    value: 'unknown',
+                    child: Text('نامشخص', style: TextStyle(color: Colors.white)),
+                  ),
+                ],
+                onChanged: (v) => setDialogState(() => selectedTeamId = v),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('انصراف'),
+            ),
+            ElevatedButton(
+              onPressed: selectedTeamId != null
+                  ? () async {
+                      final entry = GameHistoryEntry(
+                        id: DateTime.now().microsecondsSinceEpoch.toString(),
+                        playedAt: DateTime.now(),
+                        winningTeamId: selectedTeamId!,
+                        players: controller.players
+                            .map(
+                              (p) => GameHistoryPlayerRecord(
+                                rosterId: p.rosterId,
+                                name: p.name,
+                                teamId: p.teamId,
+                                roleId: p.roleId,
+                                survived: p.isAlive,
+                                wasOnWinningSide: p.teamId == selectedTeamId,
+                              ),
+                            )
+                            .toList(),
+                      );
+                      await _storage.addHistoryEntry(entry);
+                      if (!dialogContext.mounted) return;
+                      Navigator.of(dialogContext).pop();
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('نتیجه‌ی بازی تو تاریخچه ثبت شد.')),
+                      );
+                    }
+                  : null,
+              child: const Text('ثبت'),
             ),
           ],
         ),
