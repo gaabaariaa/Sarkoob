@@ -89,6 +89,7 @@ class GameFlowController extends ChangeNotifier {
     target.isAlive = false;
     target.isHalfAlive = false;
     _checkZhinaTrigger(target);
+    _skipDeadSpeakers();
     disciplinaryExpelMessage =
         '«${target.name}» به دلیلِ «$reason» توسطِ گرداننده از بازی اخراج شد.';
     notifyListeners();
@@ -135,7 +136,23 @@ class GameFlowController extends ChangeNotifier {
     final speaker = currentSpeaker;
     if (speaker != null) speaker.hasSpokenThisRound = true;
     _speakerPointer++;
+    _skipDeadSpeakers();
     notifyListeners();
+  }
+
+  /// وقتی وسطِ روز یکی حذف می‌شه (اخراجِ انضباطی، ترورِ مزدور، اسلحه‌ی
+  /// جنگی، کلمه‌ی ممنوع)، باید از صفِ نوبتِ صحبت هم خارج بشه — چه نوبتِ
+  /// عادیِ باقی‌مونده چه یه چالشِ درجریان — وگرنه گرداننده نوبتِ یه
+  /// بازیکنِ مرده رو می‌بینه. کسی که قبلاً نوبتش تموم شده رو دست‌نخورده
+  /// می‌ذاره (چیزی برای ردکردن نیست).
+  void _skipDeadSpeakers() {
+    if (_activeChallengerId != null && !playerById(_activeChallengerId!).isAlive) {
+      _activeChallengerId = null;
+    }
+    while (_speakerPointer < _speakingOrder.length &&
+        !playerById(_speakingOrder[_speakerPointer]).isAlive) {
+      _speakerPointer++;
+    }
   }
 
   /// بازیکن‌هایی که الان می‌تونن هدفِ چالش باشن (فقط توی روزهای عادی، و
@@ -346,6 +363,14 @@ class GameFlowController extends ChangeNotifier {
   String? negotiateResultMessage;
   String? lastNightSummary;
 
+  /// این سه‌تا مخصوصِ خلاصه‌ی دسته‌بندی‌شده‌ی صبحه: طبقِ قانون، اولِ روز
+  /// باید صریحاً اعلام بشه کی با سلاخی حذف شد، کی به‌شکلِ عادی حذف شد، و
+  /// کی رو وکیل برگردوند. با id کار می‌کنن (نه اسم، چون اسم‌ها ممکنه
+  /// تکراری باشن). هر شبِ جدید (تو moveToNight) خالی می‌شن.
+  final List<int> _tonightSlaughteredIds = [];
+  final List<int> _tonightEliminatedIds = [];
+  int? _tonightRevivedId;
+
   /// ژینا: اگه دیشب حذف شده باشه، این true می‌شه و امشب مصرفش می‌کنیم.
   bool sorkoobDisabledNextNight = false;
 
@@ -429,6 +454,7 @@ class GameFlowController extends ChangeNotifier {
       target.isAlive = false;
       target.eliminatedBySlaughter = true;
       _checkZhinaTrigger(target);
+      _tonightSlaughteredIds.add(target.id);
       slaughterResultMessage = '«${target.name}» با سلاخی از بازی خارج شد.';
     } else {
       if ((leader.slaughterChargesRemaining ?? 0) > 0) {
@@ -621,6 +647,7 @@ class GameFlowController extends ChangeNotifier {
     merc.isAlive = false;
     merc.isHalfAlive = false;
     _checkZhinaTrigger(merc);
+    _skipDeadSpeakers();
     assassinationResultMessage =
         '«${merc.name}» (مزدورِ لباس‌شخصی) «${target.name}» رو ترور کرد و خودش هم لو رفت و همون‌لحظه حذف شد.';
     notifyListeners();
@@ -668,6 +695,11 @@ class GameFlowController extends ChangeNotifier {
 
     target.isAlive = true;
     target.isHalfAlive = false;
+    // اگه همین امشب (مثلاً خودحذفیِ مبارزِ انقلابی) تو لیستِ «حذف‌شده‌ها»
+    // ثبت شده بود، دیگه واقعاً حذف نشده — از اون لیست درش می‌آریم تا تو
+    // خلاصه‌ی صبح هم «حذف‌شده» هم «برگشته» حساب نشه.
+    _tonightEliminatedIds.remove(target.id);
+    _tonightRevivedId = target.id;
 
     for (final p in othersHalfAlive) {
       p.isHalfAlive = false; // حذفِ کامل و نهایی
@@ -685,6 +717,7 @@ class GameFlowController extends ChangeNotifier {
     player.isAlive = false;
     player.isHalfAlive = hasUnusedPublicDefender;
     _checkZhinaTrigger(player);
+    _skipDeadSpeakers();
   }
 
   /// اگه بازیکنِ حذف‌شده خودِ ژینا باشه، شبِ بعد تیمِ سرکوب هیچ قابلیتی
@@ -761,6 +794,14 @@ class GameFlowController extends ChangeNotifier {
     return !isPlayerDetained(rebel.id);
   }
 
+  /// آیا تا الان یه اسلحه‌ی جنگی (از هر بازیکنی که شورشی بهش داده) واقعاً
+  /// شلیک شده؟ همین که یه‌بار این اتفاق بیفته، کارِ شورشی تمومه: دیگه هیچ
+  /// شبی بیدار نمی‌شه (حتی اگه سهمیه‌ی اسلحه‌ی جنگیِ بیشتری داشته باشه).
+  /// نکته: اگه اسلحه‌ای بدونِ استفاده تا شروعِ رأی‌گیری دستِ صاحبش منفجر
+  /// بشه (پایینِ همین فایل، startVoting)، «استفاده» حساب نمی‌شه — چون
+  /// واقعاً شلیک نشده — و شورشی همچنان بیدار می‌مونه.
+  bool rebelWarGunUsed = false;
+
   /// یه اسلحه (جنگی یا مشقی) به یه بازیکن می‌ده. جنگی از سهمیه‌ی کلِ
   /// شورشی کم می‌شه؛ مشقی نامحدوده.
   void giveGun(int targetId, GunType type) {
@@ -804,6 +845,7 @@ class GameFlowController extends ChangeNotifier {
     if (type == GunType.war) {
       final teamName = SarkoobTeams.byId(target.teamId)?.name ?? target.teamId;
       _eliminatePlayer(target);
+      rebelWarGunUsed = true;
       gunFireResultMessage =
           '«${target.name}» با شلیکِ «${shooter.name}» (اسلحه‌ی جنگی) از بازی خارج شد؛ تیمش: $teamName.';
     } else {
@@ -995,6 +1037,7 @@ class GameFlowController extends ChangeNotifier {
           'اعدامِ انقلابیِ «${fighter.name}» روی «${target.name}» ثبت شد؛ نتیجه‌ی نهایی صبح مشخص می‌شه.';
     } else if (target.teamId == SarkoobTeams.citizen.id) {
       _eliminatePlayer(fighter);
+      _tonightEliminatedIds.add(fighter.id);
       revolutionaryResultMessage =
           'هدفِ «${fighter.name}» عضوِ تیمِ شهروند بود! خودِ مبارزِ انقلابی همون‌لحظه از بازی خارج شد.';
     } else {
@@ -1019,6 +1062,7 @@ class GameFlowController extends ChangeNotifier {
       target.isAlive = false;
       target.eliminatedBySlaughter = true;
       _checkZhinaTrigger(target);
+      _tonightSlaughteredIds.add(target.id);
       revolutionaryResultMessage = '«${target.name}» با سلاخیِ مبارزِ انقلابی از بازی خارج شد.';
     } else {
       fighter.canStillSlaughter = false;
@@ -1044,14 +1088,13 @@ class GameFlowController extends ChangeNotifier {
 
   NightStepKind currentNightStep = NightStepKind.sorkoobTeam;
 
-  /// آیا این مرحله اصلاً امشب معنی داره؟ (نقش وجود داره و زنده‌ست، وگرنه
-  /// رد می‌شه بدون این‌که اصلاً نشون داده بشه)
   /// آیا این مرحله باید تو ترتیبِ شب بیاد؟ نکته‌ی مهم: مرده‌بودنِ صاحبِ
   /// نقش دلیلِ کافی برای ردکردنِ مرحله نیست — اگه هکر/دکتر/مبارز مرده
   /// باشن هم بازم باید صداشون بزنیم (فقط دکمه‌هاشون غیرفعاله)، وگرنه
-  /// حذف‌شدنِ خودِ مرحله از ترتیبِ شب لو می‌ده که اون نقش مرده. فقط وکیل
-  /// استثناست: وقتی قابلیتش رو علنی مصرف کرد (یکی رو برگردوند)، همه از
-  /// قبل فهمیدن، پس دیگه لازم نیست تو ترتیب بیاد.
+  /// حذف‌شدنِ خودِ مرحله از ترتیبِ شب لو می‌ده که اون نقش مرده. دو تا
+  /// استثنا داریم: وکیل، وقتی قابلیتش رو علنی مصرف کرد (یکی رو برگردوند)؛
+  /// و شورشی، وقتی یکی از اسلحه‌های جنگیش عملاً شلیک شده — تو هر دو حالت
+  /// همه از قبل (تویِ روز) فهمیدن، پس دیگه لازم نیست تو ترتیب بیان.
   bool _isNightStepApplicable(NightStepKind step) {
     switch (step) {
       case NightStepKind.sorkoobTeam:
@@ -1063,7 +1106,7 @@ class GameFlowController extends ChangeNotifier {
       case NightStepKind.doctor:
         return doctorPlayer != null;
       case NightStepKind.rebel:
-        return rebelPlayer != null;
+        return rebelPlayer != null && !rebelWarGunUsed;
       case NightStepKind.nationalHero:
         return nationalHeroPlayer != null;
       case NightStepKind.revolutionary:
@@ -1076,30 +1119,23 @@ class GameFlowController extends ChangeNotifier {
     }
   }
 
-  /// آیا الان می‌شه از مرحله‌ی «تیمِ سرکوب» جلوتر رفت؟ اگه ولی‌فقیه زنده‌ست،
-  /// باید حتماً تصمیمش رو گرفته باشه (شات/سلاخی/مذاکره)؛ اگه زنده نیست،
-  /// همیشه می‌شه رد شد (مذاکره اختیاریه).
-  /// آیا هیچ عضوِ زنده‌ای از تیمِ سرکوب، نقشِ خاص (غیر از سرکوبگرِ ساده)
-  /// نداره؟ یعنی ولی‌فقیه و بقیه‌ی نقش‌دارها همه حذف شدن.
-  bool get sorkoobHasNoSpecialRoleHolders {
-    return !alivePlayers.any(
-      (p) =>
-          p.teamId == SarkoobTeams.suppression.id &&
-          p.roleId != null &&
-          p.roleId != SarkoobRoles.suppressor.id,
-    );
-  }
-
-  /// آیا الان نوبتِ سرکوبگرهای ساده‌ست که به‌جای ولی‌فقیه، تصمیمِ شات
-  /// (نه سلاخی) رو بگیرن؟ فقط وقتی که دیگه هیچ نقش‌دارِ زنده‌ای نمونده.
+  /// آیا الان نوبتِ اعضای سرکوبه که به‌جای ولی‌فقیه، تصمیمِ شاتِ معمولی
+  /// (نه سلاخی) رو بگیرن؟ همین که ولی‌فقیه از بازی خارج بشه صادقه — چه
+  /// بقیه‌ی نقش‌دارهای سرکوب (وزیر امور خارجه، رئیس قوه قضاییه و...) زنده
+  /// باشن چه نه. سلاخی مخصوصِ خودِ ولی‌فقیه‌ست و با مرگش از بین می‌ره، ولی
+  /// شاتِ تیمی هیچ‌وقت کاملاً از دست نمی‌ره، مادامی که حداقل یه عضوِ زنده
+  /// از تیمِ سرکوب باقی باشه.
   bool get canFallbackShoot {
     if (sorkoobDisabledTonight) return false;
     final leader = valiFaghihPlayer;
     if (leader != null && leader.isAlive) return false;
-    if (!sorkoobHasNoSpecialRoleHolders) return false;
     return alivePlayers.any((p) => p.teamId == SarkoobTeams.suppression.id);
   }
 
+  /// آیا الان می‌شه از مرحله‌ی «تیمِ سرکوب» جلوتر رفت؟ اگه ولی‌فقیه زنده‌ست،
+  /// باید حتماً تصمیمش رو گرفته باشه (شات/سلاخی/مذاکره)؛ اگه زنده نیست ولی
+  /// بازم شاتِ جایگزین ممکنه، بازم باید یه تصمیم گرفته شده باشه؛ فقط وقتی
+  /// کلِ تیمِ سرکوب حذف شده، بدونِ هیچ تصمیمی هم می‌شه رد شد.
   bool get canAdvancePastSorkoobTeamStep {
     if (sorkoobDisabledTonight) return true;
     final leader = valiFaghihPlayer;
@@ -1148,9 +1184,18 @@ class GameFlowController extends ChangeNotifier {
     slaughterResultMessage = null;
     negotiateResultMessage = null;
     lastNightSummary = null;
+    _tonightSlaughteredIds.clear();
+    _tonightEliminatedIds.clear();
+    _tonightRevivedId = null;
     notifyListeners();
   }
 
+  /// پایانِ شب: ضربه‌های شات رو با نجاتِ دکتر و زره حل‌وفصل می‌کنه، و
+  /// خلاصه‌ی صبح رو می‌سازه. طبقِ قانون، خلاصه همیشه با سه خطِ صریح شروع
+  /// می‌شه — چون این دقیقاً چیزیه که گرداننده باید به جمع اعلام کنه:
+  /// کی با سلاخی حذف شد، کی به‌شکلِ عادی حذف شد، کی برگشت. جزئیاتِ
+  /// روایی‌ترِ بقیه‌ی رخدادها (مذاکره، اعدامِ انقلابی، رپر، از‌دست‌رفتنِ
+  /// زره) بعدِ اون میان، برای بایگانیِ خودِ گرداننده.
   void finishNight() {
     final messages = <String>[];
     _pendingHits.forEach((targetId, hitCount) {
@@ -1167,7 +1212,7 @@ class GameFlowController extends ChangeNotifier {
       }
       if (remaining > 0) {
         _eliminatePlayer(target);
-        messages.add('«${target.name}» شبِ گذشته حذف شد.');
+        _tonightEliminatedIds.add(target.id);
       } else {
         messages.add('«${target.name}» زره‌اش رو از دست داد، ولی زنده موند.');
       }
@@ -1176,7 +1221,22 @@ class GameFlowController extends ChangeNotifier {
     if (negotiateResultMessage != null) messages.insert(0, negotiateResultMessage!);
     if (revolutionaryResultMessage != null) messages.insert(0, revolutionaryResultMessage!);
     if (rapperResultMessage != null) messages.insert(0, rapperResultMessage!);
-    lastNightSummary = messages.isEmpty ? 'دیشب کسی حذف نشد.' : messages.join('\n');
+
+    final announcement = <String>[];
+    if (_tonightSlaughteredIds.isNotEmpty) {
+      final names = _tonightSlaughteredIds.map((id) => playerById(id).name).join('، ');
+      announcement.add('🔪 با سلاخی از بازی خارج شدن: $names');
+    }
+    if (_tonightEliminatedIds.isNotEmpty) {
+      final names = _tonightEliminatedIds.map((id) => playerById(id).name).join('، ');
+      announcement.add('❌ از بازی خارج شدن: $names');
+    }
+    if (_tonightRevivedId != null) {
+      announcement.add('✅ وکیل به بازی برگردوند: ${playerById(_tonightRevivedId!).name}');
+    }
+
+    final allLines = [...announcement, ...messages];
+    lastNightSummary = allLines.isEmpty ? 'دیشب کسی حذف نشد.' : allLines.join('\n');
     _pendingHits.clear();
     _savedPlayerIds.clear();
     notifyListeners();
