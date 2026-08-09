@@ -26,6 +26,7 @@ class GameFlowScreen extends StatefulWidget {
 class _GameFlowScreenState extends State<GameFlowScreen> {
   late final GameFlowController controller;
   final StorageService _storage = StorageService();
+  bool _showTeamCounts = false;
 
   @override
   void initState() {
@@ -59,13 +60,26 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             tooltip: 'پایانِ بازی و ثبت',
             onPressed: _showEndGameDialog,
           ),
+          IconButton(
+            icon: Icon(_showTeamCounts ? Icons.pie_chart : Icons.pie_chart_outline),
+            tooltip: _showTeamCounts
+                ? 'مخفی‌کردنِ تعدادِ زنده‌های هر تیم'
+                : 'نمایشِ تعدادِ زنده‌های هر تیم',
+            onPressed: () => setState(() => _showTeamCounts = !_showTeamCounts),
+          ),
         ],
       ),
       body: ListenableBuilder(
         listenable: controller,
         builder: (context, _) => Padding(
           padding: const EdgeInsets.all(16),
-          child: _buildBody(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (_showTeamCounts) _buildTeamCountsBanner(),
+              Expanded(child: _buildBody()),
+            ],
+          ),
         ),
       ),
     );
@@ -82,6 +96,47 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       case GamePhaseType.night:
         return 'شب ${c.roundNumber}';
     }
+  }
+
+  /// پنلِ نمایشِ تعدادِ زنده‌های هر تیم (مثلاً «سرکوب: ۲ / شهروند: ۴»)؛
+  /// با آیکونِ نمودارِ AppBar روشن/خاموش می‌شه. برخلافِ بقیه‌ی ابزارهای
+  /// گرداننده، دیالوگ نیست — یه بنرِ کوچیکِ بالای صفحه‌ست که تا وقتی
+  /// دوباره لمس نشه، سرِ جاش می‌مونه (برای نشون‌دادنِ سریع به بازیکن‌ها).
+  Widget _buildTeamCountsBanner() {
+    final counts = controller.aliveCountsByTeam;
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.gold.withOpacity(0.5)),
+      ),
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 24,
+        runSpacing: 8,
+        children: [
+          for (final entry in counts)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(radius: 5, backgroundColor: entry.key.color),
+                const SizedBox(width: 8),
+                Text(
+                  '${entry.key.name}: ${entry.value}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
   }
 
   /// لیستِ کاملِ همه‌ی بازیکنان با تیم، نقش، و وضعیتِ زنده/نیمه‌جان/حذف —

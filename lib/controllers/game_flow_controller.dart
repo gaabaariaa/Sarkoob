@@ -40,6 +40,29 @@ class GameFlowController extends ChangeNotifier {
   int get aliveCount => alivePlayers.length;
   int get majorityThreshold => (aliveCount / 2).ceil();
 
+  /// شمارشِ بازیکنانِ زنده به‌تفکیکِ تیم — فقط تیم‌هایی که واقعاً تو این
+  /// جلسه بازیکن دارن (سرکوب و شهروند همیشه، مستقل فقط اگه فعال باشه).
+  /// ترتیب: سرکوب، شهروند، بعد بقیه. اگه همه‌ی یه تیم حذف شده باشن، بازم
+  /// با شمارشِ ۰ نشون داده می‌شه (خودش یه اطلاعاتِ مهمه، نه چیزی که مخفی بشه).
+  List<MapEntry<GameTeam, int>> get aliveCountsByTeam {
+    final presentTeamIds = players.map((p) => p.teamId).toSet();
+    final orderedIds = [
+      SarkoobTeams.suppression.id,
+      SarkoobTeams.citizen.id,
+      ...presentTeamIds.where(
+        (id) => id != SarkoobTeams.suppression.id && id != SarkoobTeams.citizen.id,
+      ),
+    ];
+    return [
+      for (final id in orderedIds)
+        if (presentTeamIds.contains(id) && SarkoobTeams.byId(id) != null)
+          MapEntry(
+            SarkoobTeams.byId(id)!,
+            players.where((p) => p.teamId == id && p.isAlive).length,
+          ),
+    ];
+  }
+
   // ---------- ابزارِ گرداننده: جابه‌جاییِ ترتیب و اخراجِ انضباطی ----------
   // این دوتا مستقل از فازِ فعلیِ بازی‌ان (هم شب هم روز در دسترسن) و
   // فقط با آی‌دیِ خودِ بازیکن کار می‌کنن، پس جابه‌جاکردنِ ترتیب هیچ
