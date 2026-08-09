@@ -226,8 +226,10 @@ class GameFlowController extends ChangeNotifier {
   bool votingStarted = false;
 
   void startVoting() {
-    // اول: اسلحه‌ی جنگیِ استفاده‌نشده منفجر می‌شه و صاحبش حذف می‌شه؛
-    // اسلحه‌ی مشقیِ استفاده‌نشده هم فقط بی‌سروصدا پاک می‌شه.
+    // اول: اسلحه‌ی جنگیِ استفاده‌نشده منفجر می‌شه و صاحبش حذف می‌شه — این
+    // هم مثلِ شلیکِ واقعی «استفاده» حساب می‌شه (شورشی دیگه بیدار نمی‌شه)،
+    // چون گیرنده فرصتِ کاملِ یه روز رو داشت و به‌کارش نبرد. اسلحه‌ی مشقیِ
+    // استفاده‌نشده هم فقط بی‌سروصدا پاک می‌شه.
     final explosions = <String>[];
     for (final p in players) {
       if (!p.isAlive || p.heldGunType == null) continue;
@@ -236,6 +238,7 @@ class GameFlowController extends ChangeNotifier {
           '«${p.name}» تا شروعِ رأی‌گیری شلیک نکرد؛ اسلحه‌ی جنگی دستِ خودش منفجر شد و از بازی خارج شد.',
         );
         _eliminatePlayer(p);
+        rebelWarGunUsed = true;
       }
       p.heldGunType = null;
     }
@@ -794,12 +797,15 @@ class GameFlowController extends ChangeNotifier {
     return !isPlayerDetained(rebel.id);
   }
 
-  /// آیا تا الان یه اسلحه‌ی جنگی (از هر بازیکنی که شورشی بهش داده) واقعاً
-  /// شلیک شده؟ همین که یه‌بار این اتفاق بیفته، کارِ شورشی تمومه: دیگه هیچ
-  /// شبی بیدار نمی‌شه (حتی اگه سهمیه‌ی اسلحه‌ی جنگیِ بیشتری داشته باشه).
-  /// نکته: اگه اسلحه‌ای بدونِ استفاده تا شروعِ رأی‌گیری دستِ صاحبش منفجر
-  /// بشه (پایینِ همین فایل، startVoting)، «استفاده» حساب نمی‌شه — چون
-  /// واقعاً شلیک نشده — و شورشی همچنان بیدار می‌مونه.
+  /// آیا تا الان یه اسلحه‌ی جنگی به «نتیجه» رسیده — چه واقعاً شلیک شده چه
+  /// گیرنده تا شروعِ رأی‌گیریِ فردا استفاده‌ش نکرده و خودش دستِ صاحبش
+  /// منفجر شده (`startVoting`)؟ هر دو حالت «استفاده» حساب می‌شن، چون
+  /// گیرنده فرصتِ یه روزِ کامل رو داشت. همین که یه‌بار این اتفاق بیفته،
+  /// کارِ شورشی تمومه: دیگه هیچ شبی بیدار نمی‌شه (حتی با سهمیه‌ی بیشتر).
+  /// استثنا: اگه گیرنده همون‌شبی که اسلحه رو گرفته از بازی خارج بشه (شات/
+  /// سلاخی/اعدامِ انقلابی) و اصلاً به روزِ بعد نرسه، اصلاً فرصتی نداشته —
+  /// این «استفاده» حساب نمی‌شه؛ اسلحه به سهمیه‌ی شورشی برمی‌گرده
+  /// (`finishNight`ی پایینِ همین فایل) و می‌تونه شبِ دیگه به یکی دیگه بده.
   bool rebelWarGunUsed = false;
 
   /// یه اسلحه (جنگی یا مشقی) به یه بازیکن می‌ده. جنگی از سهمیه‌ی کلِ
@@ -1217,6 +1223,19 @@ class GameFlowController extends ChangeNotifier {
         messages.add('«${target.name}» زره‌اش رو از دست داد، ولی زنده موند.');
       }
     });
+
+    // اگه کسی که امشب اسلحه‌ی جنگی گرفته بود اصلاً به روزِ بعد نرسید (شات/
+    // سلاخی/اعدامِ انقلابی — هرکدوم)، فرصتِ استفاده نداشت. این «استفاده»
+    // حساب نمی‌شه: اسلحه به سهمیه‌ی شورشی برمی‌گرده تا شبِ دیگه به یکی
+    // دیگه بده، و rebelWarGunUsed دست‌نخورده می‌مونه.
+    for (final p in players) {
+      if (!p.isAlive && p.heldGunType == GunType.war) {
+        final rebel = rebelPlayer;
+        if (rebel != null) rebel.warGunsRemaining = (rebel.warGunsRemaining ?? 0) + 1;
+        p.heldGunType = null;
+      }
+    }
+
     if (slaughterResultMessage != null) messages.insert(0, slaughterResultMessage!);
     if (negotiateResultMessage != null) messages.insert(0, negotiateResultMessage!);
     if (revolutionaryResultMessage != null) messages.insert(0, revolutionaryResultMessage!);
