@@ -39,35 +39,6 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_titleFor(controller)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.groups),
-            tooltip: 'بازیکنان و نقش‌ها',
-            onPressed: _showRosterDialog,
-          ),
-          IconButton(
-            icon: const Icon(Icons.swap_vert),
-            tooltip: 'جابه‌جاییِ ترتیبِ بازیکنان',
-            onPressed: _showReorderDialog,
-          ),
-          IconButton(
-            icon: const Icon(Icons.gavel),
-            tooltip: 'اخراجِ انضباطی',
-            onPressed: _showDisciplinaryExpelDialog,
-          ),
-          IconButton(
-            icon: const Icon(Icons.flag),
-            tooltip: 'پایانِ بازی و ثبت',
-            onPressed: _showEndGameDialog,
-          ),
-          IconButton(
-            icon: Icon(_showTeamCounts ? Icons.pie_chart : Icons.pie_chart_outline),
-            tooltip: _showTeamCounts
-                ? 'مخفی‌کردنِ تعدادِ زنده‌های هر تیم'
-                : 'نمایشِ تعدادِ زنده‌های هر تیم',
-            onPressed: () => setState(() => _showTeamCounts = !_showTeamCounts),
-          ),
-        ],
       ),
       body: ListenableBuilder(
         listenable: controller,
@@ -80,6 +51,70 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               Expanded(child: _buildBody()),
             ],
           ),
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        color: AppColors.background,
+        elevation: 0,
+        child: SafeArea(
+          top: false,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _bottomBarAction(
+                icon: Icons.groups,
+                label: 'بازیکنان',
+                onPressed: _showRosterDialog,
+              ),
+              _bottomBarAction(
+                icon: Icons.swap_vert,
+                label: 'جابه‌جایی',
+                onPressed: _showReorderDialog,
+              ),
+              _bottomBarAction(
+                icon: Icons.gavel,
+                label: 'اخراج',
+                onPressed: _showDisciplinaryExpelDialog,
+              ),
+              _bottomBarAction(
+                icon: _showTeamCounts ? Icons.pie_chart : Icons.pie_chart_outline,
+                label: 'تعدادِ زنده',
+                active: _showTeamCounts,
+                onPressed: () => setState(() => _showTeamCounts = !_showTeamCounts),
+              ),
+              _bottomBarAction(
+                icon: Icons.flag,
+                label: 'پایانِ بازی',
+                onPressed: _showEndGameDialog,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// دکمه‌ی استاندارد برای BottomAppBar گرداننده: آیکون + لیبلِ کوچیک،
+  /// برای اینکه هم انگشتیِ راحت‌تر باشه (پایینِ صفحه) هم AppBar شلوغ نشه.
+  Widget _bottomBarAction({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+    bool active = false,
+  }) {
+    final color = active ? AppColors.goldLight : AppColors.gold;
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 22),
+            const SizedBox(height: 2),
+            Text(label, style: TextStyle(color: color, fontSize: 10)),
+          ],
         ),
       ),
     );
@@ -951,16 +986,21 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }
 
   Widget _buildReferendumVoting() {
-    final candidates = controller.alivePlayers;
-    final leading = controller.referendumLeadingCandidates;
+    final candidates = controller.referendumCandidates;
+    final isRunoff = controller.isReferendumRunoff;
     return Column(
       children: [
-        Text('رفراندوم: انتخابِ رهبرِ جامعه', style: AppTheme.headingFont(size: 20)),
+        Text(
+          isRunoff ? 'رفراندوم: رأی‌گیریِ مجدد (تساوی)' : 'رفراندوم: انتخابِ رهبرِ جامعه',
+          style: AppTheme.headingFont(size: 20),
+        ),
         const SizedBox(height: 4),
-        const Text(
-          'از سرِ نوبتِ صحبت، به ترتیب، هرکس علناً به یه نفر رأی می‌ده.',
+        Text(
+          isRunoff
+              ? 'رأی‌ها مساوی شد؛ این‌بار فقط بینِ همین نفرات، از سرِ نوبتِ صحبت، دوباره رأی می‌گیریم.'
+              : 'از سرِ نوبتِ صحبت، به ترتیب، هرکس علناً به یه نفر رأی می‌ده.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white60, fontSize: 12),
+          style: const TextStyle(color: Colors.white60, fontSize: 12),
         ),
         const SizedBox(height: 12),
         Expanded(
@@ -969,14 +1009,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           ),
         ),
         ElevatedButton(
-          onPressed: leading.isNotEmpty
-              ? () {
-                  if (leading.length == 1) {
-                    controller.confirmCommunityLeader(leading.first.id);
-                  } else {
-                    _showReferendumTieBreaker(leading);
-                  }
-                }
+          onPressed: controller.referendumLeadingCandidates.isNotEmpty
+              ? controller.resolveReferendumRound
               : null,
           style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
           child: const Text('پایانِ رأی‌گیری و تعیینِ رهبر'),
@@ -1005,39 +1039,6 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             IconButton(
               icon: const Icon(Icons.add_circle_outline, color: AppColors.gold),
               onPressed: () => controller.castReferendumVote(p.id, 1),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// اگه چندتا نامزد مساوی بیشترین رأی رو داشته باشن، قاعده‌ی خودکاری
-  /// برای شکستنِ تساوی تعریف نشده — گرداننده که رأی‌گیریِ علنی رو تویِ
-  /// جمع دیده، دستی تصمیم می‌گیره.
-  void _showReferendumTieBreaker(List<SessionPlayer> tied) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surfaceDark,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text(
-                'رأی‌ها مساویه؛ کدومشون رهبرِ جامعه بشه؟',
-                style: TextStyle(color: AppColors.goldLight),
-              ),
-            ),
-            ...tied.map(
-              (p) => ListTile(
-                title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                onTap: () {
-                  controller.confirmCommunityLeader(p.id);
-                  Navigator.of(context).pop();
-                },
-              ),
             ),
           ],
         ),

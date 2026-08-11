@@ -237,6 +237,7 @@ class GameFlowController extends ChangeNotifier {
     communityLeaderId = null;
     communityLeaderExpulsionMessage = null;
     _referendumVotes.clear();
+    _referendumCandidateIds = null;
     notifyListeners();
   }
 
@@ -1164,8 +1165,20 @@ class GameFlowController extends ChangeNotifier {
   // ---------- اجرای رفراندوم (روزِ بعد، قبل از رأی‌گیریِ حذف) ----------
 
   final Map<int, int> _referendumVotes = {}; // playerId -> تعداد رأی برای رهبریِ جامعه
+
+  /// null یعنی همه‌ی بازیکنانِ زنده کاندیدان؛ بعدِ یه تساوی، فقط همون
+  /// نامزدهای مساوی می‌مونن — دقیقاً مثلِ دورِ دومِ رأی‌گیریِ عادی که
+  /// فقط بینِ نفراتِ دفاعیه‌ست.
+  List<int>? _referendumCandidateIds;
   int? communityLeaderId;
   String? communityLeaderExpulsionMessage;
+
+  List<SessionPlayer> get referendumCandidates => _referendumCandidateIds == null
+      ? alivePlayers
+      : _referendumCandidateIds!.map((id) => playerById(id)).toList();
+
+  /// آیا الان تو دورِ محدودشده‌ایم (یعنی دورِ قبلی مساوی شده بود)؟
+  bool get isReferendumRunoff => _referendumCandidateIds != null;
 
   int referendumVotesFor(int playerId) => _referendumVotes[playerId] ?? 0;
 
@@ -1178,10 +1191,7 @@ class GameFlowController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// نامزد(هایی) که الان بیشترین رأی رو دارن. اگه یه نفره، برنده‌ی
-  /// بی‌چون‌وچرا؛ اگه چندتا مساوی بودن، گرداننده (که خودش رأی‌گیریِ علنی
-  /// رو تویِ جمع دیده) دستی تصمیم می‌گیره کدومشون رهبرِ جامعه بشه —
-  /// قاعده‌ای برای شکستنِ تساوی تعریف نشده، عمداً به‌عهده‌ی گرداننده‌ست.
+  /// نامزد(هایی) که الان بیشترین رأی رو دارن.
   List<SessionPlayer> get referendumLeadingCandidates {
     if (_referendumVotes.isEmpty) return [];
     final maxVotes = _referendumVotes.values.reduce((a, b) => a > b ? a : b);
@@ -1190,6 +1200,22 @@ class GameFlowController extends ChangeNotifier {
         .where((e) => e.value == maxVotes)
         .map((e) => playerById(e.key))
         .toList();
+  }
+
+  /// دکمه‌ی «پایانِ رأی‌گیری»: اگه یه برنده‌ی روشن هست، همون رهبرِ جامعه
+  /// می‌شه. اگه چندتا نامزد مساوی بیشترین رأی رو داشتن، دورِ بعدی محدود
+  /// می‌شه به فقط همین‌ها و رأی‌گیری از صفر شروع می‌شه — دقیقاً مثلِ
+  /// دورِ دومِ رأی‌گیریِ عادی (نه انتخابِ دستیِ گرداننده).
+  void resolveReferendumRound() {
+    final leading = referendumLeadingCandidates;
+    if (leading.isEmpty) return;
+    if (leading.length == 1) {
+      confirmCommunityLeader(leading.first.id);
+      return;
+    }
+    _referendumCandidateIds = leading.map((p) => p.id).toList();
+    _referendumVotes.clear();
+    notifyListeners();
   }
 
   void confirmCommunityLeader(int playerId) {
@@ -1217,6 +1243,7 @@ class GameFlowController extends ChangeNotifier {
     referendumScheduledToday = false;
     communityLeaderId = null;
     _referendumVotes.clear();
+    _referendumCandidateIds = null;
     notifyListeners();
   }
 
