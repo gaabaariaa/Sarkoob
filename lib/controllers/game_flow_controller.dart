@@ -18,7 +18,20 @@ class ChallengeRecord {
 
 /// ترتیبِ «بیدارشدنِ» شب: اول تیمِ سرکوب باهم، بعد هر نقشِ خاصِ شهروندی
 /// جداگونه و به‌ترتیب، و در آخر جمع‌بندیِ شب.
-enum NightStepKind { sorkoobTeam, rapper, hacker, doctor, rebel, nationalHero, revolutionary, lawyer, done }
+enum NightStepKind {
+  sorkoobTeam,
+  mossadLeader,
+  rapper,
+  hacker,
+  politicalAnalyst,
+  doctor,
+  rebel,
+  nationalHero,
+  revolutionary,
+  civicActivist,
+  lawyer,
+  done,
+}
 
 /// موتور اصلی «گردانندگی» یه جلسه‌ی بازی: ترتیب صحبت، چالش، رأی‌گیری،
 /// دفاعیه، حذف، و شب (تصمیمِ رهبر سرکوب، مذاکره، حکم اعدام).
@@ -218,6 +231,12 @@ class GameFlowController extends ChangeNotifier {
       activeExecutionWord = pendingExecutionWord;
       pendingExecutionWord = null;
     }
+    // اگه دیشب فعالِ مدنی درخواستِ رفراندوم داده بود، امروز — درست قبل از
+    // رأی‌گیریِ حذف — رفراندوم برگزار می‌شه.
+    referendumScheduledToday = _referendumRequestedThisNight;
+    communityLeaderId = null;
+    communityLeaderExpulsionMessage = null;
+    _referendumVotes.clear();
     notifyListeners();
   }
 
@@ -1006,6 +1025,201 @@ class GameFlowController extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ---------- رهبرِ موساد: انتخابِ شیوه (شبِ اول) + عملیاتِ ترور/سری (شب‌های زوج) ----------
+
+  SessionPlayer? get mossadLeaderPlayer {
+    for (final p in players) {
+      if (p.roleId == SarkoobRoles.mossadLeader.id) return p;
+    }
+    return null;
+  }
+
+  /// شبِ اول تا شیوه رو انتخاب نکرده، نمی‌شه از این مرحله رد شد (اگه
+  /// اصلاً رهبرِ موساد تو بازی نیست یا مرده، چیزی برای انتخاب‌کردن نیست
+  /// و همیشه می‌شه رد شد).
+  bool get canAdvancePastMossadLeaderStep {
+    final leader = mossadLeaderPlayer;
+    if (leader == null || !leader.isAlive) return true;
+    if (roundNumber != 1) return true;
+    return leader.mossadPlaystyle != null;
+  }
+
+  void chooseMossadPlaystyle(MossadPlaystyle style) {
+    final leader = mossadLeaderPlayer;
+    if (leader == null || !leader.isAlive || roundNumber != 1) return;
+    if (leader.mossadPlaystyle != null) return; // یه‌بار برای همیشه
+    leader.mossadPlaystyle = style;
+    notifyListeners();
+  }
+
+  /// عملیاتِ ترور/سری فقط شب‌های زوجِ بازی (دوم، چهارم، ...) قابل‌استفاده‌ست.
+  bool get canMossadActTonight {
+    final leader = mossadLeaderPlayer;
+    if (leader == null || !leader.isAlive || leader.mossadPlaystyle == null) return false;
+    if (roundNumber.isOdd) return false;
+    return !isPlayerDetained(leader.id);
+  }
+
+  String? mossadAssassinationResultMessage;
+
+  /// عملیاتِ ترور: هدف + حدسِ نقش. فقط اگه هدف واقعاً عضوِ سرکوب باشه و
+  /// نقشش درست حدس زده بشه حذف می‌شه — مثلِ سلاخی، مستقیم و برگشت‌ناپذیر
+  /// (نه از تابعِ _eliminatePlayer که وکیل می‌تونه نجات بده). حدسِ غلط
+  /// هیچ اثری تو بازی نداره و رهبرِ موساد به بقیه‌ی بازیکنا لو نمی‌ره —
+  /// ولی مثلِ سلاخیِ رهبرِ سرکوب، نتیجه (موفق یا ناموفق) رو تو صفحه‌ی
+  /// گرداننده نشون می‌دیم، چون lastNightSummary همیشه گزارشِ خصوصیِ
+  /// گرداننده‌ست، نه متنی که قراره عیناً به جمع خونده بشه.
+  void mossadAssassinate(int targetId, String guessedRoleId) {
+    if (!canMossadActTonight) return;
+    final leader = mossadLeaderPlayer!;
+    if (leader.mossadPlaystyle != MossadPlaystyle.assassination) return;
+    final target = playerById(targetId);
+    if (target.teamId == SarkoobTeams.suppression.id && target.roleId == guessedRoleId) {
+      target.isAlive = false;
+      _checkZhinaTrigger(target);
+      mossadAssassinationResultMessage = '«${target.name}» با ترورِ موساد از بازی خارج شد.';
+    } else {
+      mossadAssassinationResultMessage = 'ترورِ موساد بی‌اثر بود؛ هیچ‌کس متوجه نشد.';
+    }
+    notifyListeners();
+  }
+
+  /// عملیاتِ سری: مثلِ یه شاتِ ساده — صف‌بندی می‌شه تو همون _pendingHits ی
+  /// شاتِ ولی‌فقیه، پس زره و نجاتِ دکتر خودکار طبقِ همون قانونِ همیشگی
+  /// روش اثر می‌ذارن و نتیجه‌ش هم خودکار تو خلاصه‌ی صبح («❌ حذف‌شده‌ها»)
+  /// می‌شینه.
+  void mossadShoot(int targetId) {
+    if (!canMossadActTonight) return;
+    final leader = mossadLeaderPlayer!;
+    if (leader.mossadPlaystyle != MossadPlaystyle.secretOperation) return;
+    _pendingHits[targetId] = (_pendingHits[targetId] ?? 0) + 1;
+    notifyListeners();
+  }
+
+  // ---------- تحلیلگرِ سیاسی: استعلامِ عضویتِ تیمِ مستقل (شب‌های زوج) ----------
+
+  SessionPlayer? get politicalAnalystPlayer {
+    for (final p in players) {
+      if (p.roleId == SarkoobRoles.politicalAnalyst.id) return p;
+    }
+    return null;
+  }
+
+  bool _politicalAnalystUsedTonight = false;
+  InvestigationResult? lastIndependentInvestigationResult;
+  String? lastIndependentInvestigationTargetName;
+
+  bool get canPoliticalAnalystActTonight {
+    final analyst = politicalAnalystPlayer;
+    if (analyst == null || !analyst.isAlive || _politicalAnalystUsedTonight) return false;
+    if (roundNumber.isOdd) return false;
+    return !isPlayerDetained(analyst.id);
+  }
+
+  /// آیا این بازیکن عضوِ یه تیمِ مستقله؟ (سرکوب و شهروند حساب نمی‌شن —
+  /// فعلاً فقط موساد ممکنه، ولی جوری نوشته شده که با اضافه‌شدنِ تیمِ
+  /// مستقلِ بعدی هم خودکار درست کار کنه.)
+  bool _isIndependentTeamMember(SessionPlayer p) =>
+      p.teamId != SarkoobTeams.suppression.id && p.teamId != SarkoobTeams.citizen.id;
+
+  void politicalAnalystInvestigate(int targetId) {
+    if (!canPoliticalAnalystActTonight) return;
+    final target = playerById(targetId);
+    lastIndependentInvestigationResult = _isIndependentTeamMember(target)
+        ? InvestigationResult.like
+        : InvestigationResult.dislike;
+    lastIndependentInvestigationTargetName = target.name;
+    _politicalAnalystUsedTonight = true;
+    notifyListeners();
+  }
+
+  // ---------- فعال مدنی: درخواستِ رفراندوم (شبانه، یک‌بارمصرف) ----------
+
+  SessionPlayer? get civicActivistPlayer {
+    for (final p in players) {
+      if (p.roleId == SarkoobRoles.civicActivist.id) return p;
+    }
+    return null;
+  }
+
+  bool get canRequestReferendumTonight {
+    final activist = civicActivistPlayer;
+    if (activist == null || !activist.isAlive || activist.referendumUsed) return false;
+    return !isPlayerDetained(activist.id);
+  }
+
+  bool _referendumRequestedThisNight = false;
+
+  /// امروز (روزِ بلافاصله بعدِ درخواست)، قبل از رأی‌گیریِ حذف، رفراندوم
+  /// برگزار می‌شه. تویِ moveToDay ست می‌شه اگه دیشب درخواست شده باشه.
+  bool referendumScheduledToday = false;
+
+  void requestReferendum() {
+    if (!canRequestReferendumTonight) return;
+    civicActivistPlayer!.referendumUsed = true;
+    _referendumRequestedThisNight = true;
+    notifyListeners();
+  }
+
+  // ---------- اجرای رفراندوم (روزِ بعد، قبل از رأی‌گیریِ حذف) ----------
+
+  final Map<int, int> _referendumVotes = {}; // playerId -> تعداد رأی برای رهبریِ جامعه
+  int? communityLeaderId;
+  String? communityLeaderExpulsionMessage;
+
+  int referendumVotesFor(int playerId) => _referendumVotes[playerId] ?? 0;
+
+  /// رأی‌گیریِ رفراندوم علنیه (از سرِ نوبتِ صحبت، یکی‌یکی) — گرداننده فقط
+  /// با +/- شمارش می‌کنه، مثلِ رأی‌گیریِ عادی.
+  void castReferendumVote(int candidateId, int delta) {
+    final current = _referendumVotes[candidateId] ?? 0;
+    final updated = current + delta;
+    _referendumVotes[candidateId] = updated < 0 ? 0 : updated;
+    notifyListeners();
+  }
+
+  /// نامزد(هایی) که الان بیشترین رأی رو دارن. اگه یه نفره، برنده‌ی
+  /// بی‌چون‌وچرا؛ اگه چندتا مساوی بودن، گرداننده (که خودش رأی‌گیریِ علنی
+  /// رو تویِ جمع دیده) دستی تصمیم می‌گیره کدومشون رهبرِ جامعه بشه —
+  /// قاعده‌ای برای شکستنِ تساوی تعریف نشده، عمداً به‌عهده‌ی گرداننده‌ست.
+  List<SessionPlayer> get referendumLeadingCandidates {
+    if (_referendumVotes.isEmpty) return [];
+    final maxVotes = _referendumVotes.values.reduce((a, b) => a > b ? a : b);
+    if (maxVotes <= 0) return [];
+    return _referendumVotes.entries
+        .where((e) => e.value == maxVotes)
+        .map((e) => playerById(e.key))
+        .toList();
+  }
+
+  void confirmCommunityLeader(int playerId) {
+    communityLeaderId = playerId;
+    notifyListeners();
+  }
+
+  /// رهبرِ جامعه بلافاصله یه نفر رو اخراج می‌کنه — قطعی و برگشت‌ناپذیر،
+  /// حتی اگه وکیل هنوز استفاده نشده باشه (مثلِ اخراجِ انضباطی/ترورِ
+  /// مزدور، نه از تابعِ _eliminatePlayer). بعدش رفراندوم تموم می‌شه و
+  /// روالِ عادیِ رأی‌گیریِ همون روز از سر گرفته می‌شه.
+  void communityLeaderExpel(int targetId) {
+    if (communityLeaderId == null) return;
+    final leader = playerById(communityLeaderId!);
+    final target = playerById(targetId);
+    if (!target.isAlive) return;
+    final teamName = SarkoobTeams.byId(target.teamId)?.name ?? target.teamId;
+    target.isAlive = false;
+    target.isHalfAlive = false;
+    _checkZhinaTrigger(target);
+    _skipDeadSpeakers();
+    communityLeaderExpulsionMessage =
+        '«${target.name}» توسطِ رهبرِ جامعه («${leader.name}») از جامعه اخراج شد؛ تیمش: $teamName.';
+
+    referendumScheduledToday = false;
+    communityLeaderId = null;
+    _referendumVotes.clear();
+    notifyListeners();
+  }
+
   // ---------- مبارزِ انقلابی: اعدامِ انقلابی/سلاخی (مستقل از بقیه) ----------
 
   SessionPlayer? get revolutionaryFighterPlayer {
@@ -1082,12 +1296,15 @@ class GameFlowController extends ChangeNotifier {
 
   static const List<NightStepKind> _nightStepOrder = [
     NightStepKind.sorkoobTeam,
+    NightStepKind.mossadLeader,
     NightStepKind.rapper,
     NightStepKind.hacker,
+    NightStepKind.politicalAnalyst,
     NightStepKind.doctor,
     NightStepKind.rebel,
     NightStepKind.nationalHero,
     NightStepKind.revolutionary,
+    NightStepKind.civicActivist,
     NightStepKind.lawyer,
     NightStepKind.done,
   ];
@@ -1097,18 +1314,30 @@ class GameFlowController extends ChangeNotifier {
   /// آیا این مرحله باید تو ترتیبِ شب بیاد؟ نکته‌ی مهم: مرده‌بودنِ صاحبِ
   /// نقش دلیلِ کافی برای ردکردنِ مرحله نیست — اگه هکر/دکتر/مبارز مرده
   /// باشن هم بازم باید صداشون بزنیم (فقط دکمه‌هاشون غیرفعاله)، وگرنه
-  /// حذف‌شدنِ خودِ مرحله از ترتیبِ شب لو می‌ده که اون نقش مرده. دو تا
-  /// استثنا داریم: وکیل، وقتی قابلیتش رو علنی مصرف کرد (یکی رو برگردوند)؛
-  /// و شورشی، وقتی یکی از اسلحه‌های جنگیش عملاً شلیک شده — تو هر دو حالت
-  /// همه از قبل (تویِ روز) فهمیدن، پس دیگه لازم نیست تو ترتیب بیان.
+  /// حذف‌شدنِ خودِ مرحله از ترتیبِ شب لو می‌ده که اون نقش مرده. سه‌تا
+  /// استثنا داریم — هرکدوم چون همه از قبل (تویِ روز) با خبر شدن، پس دیگه
+  /// لازم نیست تو ترتیب بیان: وکیل، وقتی قابلیتش رو علنی مصرف کرد (یکی
+  /// رو برگردوند)؛ شورشی، وقتی یکی از اسلحه‌های جنگیش عملاً به‌نتیجه‌رسیده؛
+  /// فعال مدنی، وقتی درخواستِ رفراندومش رو مصرف کرده. جدا از اون‌ها،
+  /// رهبرِ موساد و تحلیلگرِ سیاسی هم فقط شب‌های خاصی (اولی هم شبِ اول هم
+  /// زوج، دومی فقط زوج) وارد ترتیب می‌شن — این یه قاعده‌ی عمومی و از قبل
+  /// مشخصِ خودِ نقشه، نه چیزی که لو بده کسی زنده یا مرده‌ست.
   bool _isNightStepApplicable(NightStepKind step) {
     switch (step) {
       case NightStepKind.sorkoobTeam:
         return true;
+      case NightStepKind.mossadLeader:
+        // شبِ اول (برای انتخابِ شیوه) یا شب‌های زوج (برای استفاده). فردِ
+        // مرده هم باز باید صداش کنیم (لوندادن)، پس isAlive رو چک نمی‌کنیم.
+        if (mossadLeaderPlayer == null) return false;
+        return roundNumber == 1 || roundNumber.isEven;
       case NightStepKind.rapper:
         return rapperPlayer != null;
       case NightStepKind.hacker:
         return hackerPlayer != null;
+      case NightStepKind.politicalAnalyst:
+        if (politicalAnalystPlayer == null) return false;
+        return roundNumber.isEven;
       case NightStepKind.doctor:
         return doctorPlayer != null;
       case NightStepKind.rebel:
@@ -1117,6 +1346,9 @@ class GameFlowController extends ChangeNotifier {
         return nationalHeroPlayer != null;
       case NightStepKind.revolutionary:
         return revolutionaryFighterPlayer != null;
+      case NightStepKind.civicActivist:
+        final activist = civicActivistPlayer;
+        return activist != null && !activist.referendumUsed;
       case NightStepKind.lawyer:
         final l = lawyerPlayer;
         return l != null && !l.revivalUsed;
@@ -1193,6 +1425,11 @@ class GameFlowController extends ChangeNotifier {
     _tonightSlaughteredIds.clear();
     _tonightEliminatedIds.clear();
     _tonightRevivedId = null;
+    mossadAssassinationResultMessage = null;
+    _politicalAnalystUsedTonight = false;
+    lastIndependentInvestigationResult = null;
+    lastIndependentInvestigationTargetName = null;
+    _referendumRequestedThisNight = false;
     notifyListeners();
   }
 
@@ -1240,6 +1477,9 @@ class GameFlowController extends ChangeNotifier {
     if (negotiateResultMessage != null) messages.insert(0, negotiateResultMessage!);
     if (revolutionaryResultMessage != null) messages.insert(0, revolutionaryResultMessage!);
     if (rapperResultMessage != null) messages.insert(0, rapperResultMessage!);
+    if (mossadAssassinationResultMessage != null) {
+      messages.insert(0, mossadAssassinationResultMessage!);
+    }
 
     final announcement = <String>[];
     if (_tonightSlaughteredIds.isNotEmpty) {

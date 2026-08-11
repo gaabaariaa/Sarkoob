@@ -23,7 +23,7 @@ class RulesScreen extends StatelessWidget {
             style: TextStyle(color: Colors.white70),
           ),
           const SizedBox(height: 16),
-          ...SarkoobTeams.all.map((team) => _TeamSection(team: team)),
+          ...SarkoobTeams.selectable.map((team) => _TeamSection(team: team)),
         ],
       ),
     );

@@ -17,7 +17,6 @@ class _StartGameScreenState extends State<StartGameScreen> {
   int _doctorMaxSelfSaves = 2;
 
   bool _includeMossad = false;
-  bool _includeMek = false;
   int _independentCount = 1;
 
   // چندتا از کلِ بازیکن‌ها عضوِ تیمِ سرکوبن. خودِ برنامه موقعِ شروعِ بازی
@@ -43,6 +42,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
   bool _includeIntelMinister = false;
   bool _includePoliceCommander = false;
   bool _includeMercenary = false;
+  bool _includeCivicActivist = false;
+  bool _includePoliticalAnalyst = false;
 
   static const int _minPlayers = 9;
 
@@ -63,10 +64,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
     super.dispose();
   }
 
-  void _setIndependentTeam({required bool mossad, required bool mek}) {
+  void _setIndependentTeam({required bool mossad}) {
     setState(() {
       _includeMossad = mossad;
-      _includeMek = mek;
     });
   }
 
@@ -167,7 +167,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
     });
   }
 
-  bool get _includeIndependent => _includeMossad || _includeMek;
+  // فعلاً تنها تیمِ مستقلِ قابل‌انتخاب موسادِه؛ اگه بعداً یه تیمِ دیگه
+  // اضافه شد، اینجا `|| _includeXxx` هم اضافه می‌شه.
+  bool get _includeIndependent => _includeMossad;
 
   int get _sorkoobRoleSlotsEnabled =>
       1 +
@@ -187,7 +189,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
       (_includeZhina ? 1 : 0) +
       (_includeRapper ? 1 : 0) +
       (_includeRebel ? 1 : 0) +
-      (_includeNationalHero ? 1 : 0);
+      (_includeNationalHero ? 1 : 0) +
+      (_includeCivicActivist ? 1 : 0) +
+      (_includePoliticalAnalyst ? 1 : 0);
 
   int get _citizenCount {
     final total = _draftPlayers.length;
@@ -265,8 +269,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
   void _startGame() {
     final total = _draftPlayers.length;
-    final independentTeamId =
-        _includeMossad ? SarkoobTeams.mossad.id : (_includeMek ? SarkoobTeams.mek.id : null);
+    final independentTeamId = _includeMossad ? SarkoobTeams.mossad.id : null;
     final independentCount = _includeIndependent ? _independentCount : 0;
 
     // تخصیصِ تیم: کاملاً تصادفی. کلِ بازیکن‌ها رو قاطی می‌کنیم، اولین
@@ -279,6 +282,12 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
     final sorkoobShuffled = sorkoobIndices.toList()..shuffle();
     final valiFaghihIndex = sorkoobShuffled.isNotEmpty ? sorkoobShuffled[0] : null;
+
+    // یکی از اعضای تیمِ مستقل (اگه موساد فعال باشه) رهبرِ موساد می‌شه —
+    // درست مثلِ ولی‌فقیهِ سرکوب.
+    final independentShuffled = independentIndices.toList()..shuffle();
+    final mossadLeaderIndex =
+        (_includeMossad && independentShuffled.isNotEmpty) ? independentShuffled[0] : null;
 
     var sorkoobCursor = 1; // اندیسِ ۰ همیشه ولی‌فقیه‌ست
     int? nextSorkoobIndex(bool enabled) {
@@ -313,6 +322,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final rapperIndex = nextCitizenIndex(_includeRapper);
     final rebelIndex = nextCitizenIndex(_includeRebel);
     final nationalHeroIndex = nextCitizenIndex(_includeNationalHero);
+    final civicActivistIndex = nextCitizenIndex(_includeCivicActivist);
+    final politicalAnalystIndex = nextCitizenIndex(_includePoliticalAnalyst);
 
     final slaughterCharges = (total / 6).floor().clamp(1, 999);
     final revolutionaryCharges = (_sorkoobCount - 1).clamp(0, 999);
@@ -364,11 +375,18 @@ class _StartGameScreenState extends State<StartGameScreen> {
         roleId = SarkoobRoles.rebel.id;
       } else if (i == nationalHeroIndex) {
         roleId = SarkoobRoles.nationalHero.id;
+      } else if (i == civicActivistIndex) {
+        roleId = SarkoobRoles.civicActivist.id;
+      } else if (i == politicalAnalystIndex) {
+        roleId = SarkoobRoles.politicalAnalyst.id;
+      } else if (i == mossadLeaderIndex) {
+        roleId = SarkoobRoles.mossadLeader.id;
       }
 
       // بازیکنی که هیچ نقشِ خاصی نگرفته: اگه عضوِ سرکوبه، «سرکوبگر»
-      // حساب می‌شه؛ اگه عضوِ شهرونده، «شهروندِ خاکستری». تیمِ مستقل رو
-      // دست‌نخورده می‌ذاریم چون هنوز نقشِ مخصوصی براش تعریف نشده.
+      // حساب می‌شه؛ اگه عضوِ شهرونده، «شهروندِ خاکستری». عضوِ سادهٔ
+      // تیمِ مستقل (غیر از رهبرِ موساد) دست‌نخورده می‌مونه چون هنوز
+      // نقشِ اختصاصیِ دومی براش تعریف نشده.
       if (roleId == null) {
         if (teamId == SarkoobTeams.suppression.id) {
           roleId = SarkoobRoles.suppressor.id;
@@ -478,40 +496,42 @@ class _StartGameScreenState extends State<StartGameScreen> {
           Text('تیم مستقل', style: AppTheme.headingFont(size: 20)),
           const SizedBox(height: 4),
           const Text(
-            'اختیاریه؛ حداکثر یکی از این دو تیم قابل‌اضافه‌شدنه.',
+            'اختیاریه.',
             style: TextStyle(color: Colors.white60, fontSize: 12),
           ),
           const SizedBox(height: 8),
           RadioListTile<String>(
             value: 'none',
-            groupValue: _includeMossad ? 'mossad' : (_includeMek ? 'mek' : 'none'),
-            onChanged: (_) => _setIndependentTeam(mossad: false, mek: false),
+            groupValue: _includeMossad ? 'mossad' : 'none',
+            onChanged: (_) => _setIndependentTeam(mossad: false),
             activeColor: AppColors.gold,
             title: const Text('بدون تیم مستقل', style: TextStyle(color: Colors.white)),
           ),
           RadioListTile<String>(
             value: 'mossad',
-            groupValue: _includeMossad ? 'mossad' : (_includeMek ? 'mek' : 'none'),
-            onChanged: (_) => _setIndependentTeam(mossad: true, mek: false),
+            groupValue: _includeMossad ? 'mossad' : 'none',
+            onChanged: (_) => _setIndependentTeam(mossad: true),
             activeColor: SarkoobTeams.mossad.color,
             title: Text(SarkoobTeams.mossad.name, style: const TextStyle(color: Colors.white)),
           ),
-          RadioListTile<String>(
-            value: 'mek',
-            groupValue: _includeMossad ? 'mossad' : (_includeMek ? 'mek' : 'none'),
-            onChanged: (_) => _setIndependentTeam(mossad: false, mek: true),
-            activeColor: SarkoobTeams.mek.color,
-            title: Text(SarkoobTeams.mek.name, style: const TextStyle(color: Colors.white)),
-          ),
           if (_includeIndependent)
             _countStepper(
-              label: 'چند نفر عضوِ ${_includeMossad ? SarkoobTeams.mossad.name : SarkoobTeams.mek.name} باشن؟',
+              label: 'چند نفر عضوِ ${SarkoobTeams.mossad.name} باشن؟',
               value: _independentCount,
               onDecrement: () => setState(() {
                 if (_independentCount > 1) _independentCount--;
               }),
               onIncrement: () => setState(() => _independentCount++),
             ),
+          if (_includeMossad) ...[
+            const SizedBox(height: 4),
+            const Text(
+              'یکی از اعضای موساد، تصادفاً، رهبرِ موساد می‌شه:',
+              style: TextStyle(color: Colors.white60, fontSize: 12),
+            ),
+            const SizedBox(height: 4),
+            _mandatoryRoleRow(SarkoobRoles.mossadLeader),
+          ],
 
           const SizedBox(height: 24),
           Text('تیم سرکوب', style: AppTheme.headingFont(size: 20)),
@@ -622,6 +642,16 @@ class _StartGameScreenState extends State<StartGameScreen> {
             role: SarkoobRoles.nationalHero,
             value: _includeNationalHero,
             onChanged: (v) => setState(() => _includeNationalHero = v),
+          ),
+          _roleToggle(
+            role: SarkoobRoles.civicActivist,
+            value: _includeCivicActivist,
+            onChanged: (v) => setState(() => _includeCivicActivist = v),
+          ),
+          _roleToggle(
+            role: SarkoobRoles.politicalAnalyst,
+            value: _includePoliticalAnalyst,
+            onChanged: (v) => setState(() => _includePoliticalAnalyst = v),
           ),
 
           const SizedBox(height: 28),

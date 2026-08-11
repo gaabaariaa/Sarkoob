@@ -80,6 +80,12 @@ class SessionPlayer {
   // ---- مربوط به بازجو خبرنگار ----
   bool interrogationUsed; // آیا قابلیتِ یک‌بارمصرفِ بازجویی رو مصرف کرده؟
 
+  // ---- مربوط به رهبر موساد ----
+  MossadPlaystyle? mossadPlaystyle; // شبِ اول انتخاب می‌شه، بعدش ثابت می‌مونه
+
+  // ---- مربوط به فعال مدنی ----
+  bool referendumUsed; // آیا قابلیتِ یک‌بارمصرفِ درخواستِ رفراندوم رو مصرف کرده؟
+
   SessionPlayer({
     required this.id,
     required this.name,
@@ -108,6 +114,8 @@ class SessionPlayer {
     this.intelQuestionsRemaining,
     this.guaranteesRemaining,
     this.interrogationUsed = false,
+    this.mossadPlaystyle,
+    this.referendumUsed = false,
   });
 
   bool get isSorkoobTeam => teamId == 'team_sorkoob';

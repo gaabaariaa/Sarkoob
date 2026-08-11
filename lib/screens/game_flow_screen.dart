@@ -394,6 +394,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         if (controller.isSecondVoteRound) return _buildVotePanel(isSecondRound: true);
         if (controller.inDefense) return _buildDefensePhase();
         if (controller.votingStarted) return _buildVotePanel(isSecondRound: false);
+        if (controller.isSpeakingRoundDone && controller.referendumScheduledToday) {
+          return _buildReferendumPhase();
+        }
         if (controller.isSpeakingRoundDone) return _buildStartVoteButton();
         return _buildSpeakingPhase(isIntro: false);
       case GamePhaseType.night:
@@ -428,6 +431,21 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 'امروز نمی‌تونه رأی بیاره و در امانه.',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+              ),
+            ),
+          if (!isIntro && controller.referendumScheduledToday)
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.goldDark.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                '🗳️ امروز، درست قبل از شروعِ رأی‌گیریِ حذف، رفراندومِ انتخابِ رهبرِ جامعه برگزار می‌شه.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
               ),
             ),
           if (!isIntro && controller.assassinationResultMessage != null)
@@ -582,6 +600,14 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           if (controller.gunFireResultMessage != null) ...[
             Text(
               controller.gunFireResultMessage!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+          ],
+          if (controller.communityLeaderExpulsionMessage != null) ...[
+            Text(
+              controller.communityLeaderExpulsionMessage!,
               textAlign: TextAlign.center,
               style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
             ),
@@ -915,6 +941,146 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     );
   }
 
+  // ---------- رفراندومِ فعالِ مدنی (روزِ بعد از درخواست، قبل از رأی‌گیریِ حذف) ----------
+
+  Widget _buildReferendumPhase() {
+    if (controller.communityLeaderId == null) {
+      return _buildReferendumVoting();
+    }
+    return _buildCommunityLeaderChoice();
+  }
+
+  Widget _buildReferendumVoting() {
+    final candidates = controller.alivePlayers;
+    final leading = controller.referendumLeadingCandidates;
+    return Column(
+      children: [
+        Text('رفراندوم: انتخابِ رهبرِ جامعه', style: AppTheme.headingFont(size: 20)),
+        const SizedBox(height: 4),
+        const Text(
+          'از سرِ نوبتِ صحبت، به ترتیب، هرکس علناً به یه نفر رأی می‌ده.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white60, fontSize: 12),
+        ),
+        const SizedBox(height: 12),
+        Expanded(
+          child: ListView(
+            children: candidates.map((p) => _referendumVoteRow(p)).toList(),
+          ),
+        ),
+        ElevatedButton(
+          onPressed: leading.isNotEmpty
+              ? () {
+                  if (leading.length == 1) {
+                    controller.confirmCommunityLeader(leading.first.id);
+                  } else {
+                    _showReferendumTieBreaker(leading);
+                  }
+                }
+              : null,
+          style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+          child: const Text('پایانِ رأی‌گیری و تعیینِ رهبر'),
+        ),
+      ],
+    );
+  }
+
+  Widget _referendumVoteRow(SessionPlayer p) {
+    return Card(
+      color: AppColors.surfaceCard,
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        child: Row(
+          children: [
+            Expanded(child: Text(p.name, style: const TextStyle(color: Colors.white))),
+            IconButton(
+              icon: const Icon(Icons.remove_circle_outline, color: AppColors.gold),
+              onPressed: () => controller.castReferendumVote(p.id, -1),
+            ),
+            Text(
+              '${controller.referendumVotesFor(p.id)}',
+              style: const TextStyle(color: AppColors.goldLight, fontSize: 16),
+            ),
+            IconButton(
+              icon: const Icon(Icons.add_circle_outline, color: AppColors.gold),
+              onPressed: () => controller.castReferendumVote(p.id, 1),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// اگه چندتا نامزد مساوی بیشترین رأی رو داشته باشن، قاعده‌ی خودکاری
+  /// برای شکستنِ تساوی تعریف نشده — گرداننده که رأی‌گیریِ علنی رو تویِ
+  /// جمع دیده، دستی تصمیم می‌گیره.
+  void _showReferendumTieBreaker(List<SessionPlayer> tied) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceDark,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text(
+                'رأی‌ها مساویه؛ کدومشون رهبرِ جامعه بشه؟',
+                style: TextStyle(color: AppColors.goldLight),
+              ),
+            ),
+            ...tied.map(
+              (p) => ListTile(
+                title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                onTap: () {
+                  controller.confirmCommunityLeader(p.id);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCommunityLeaderChoice() {
+    final leader = controller.playerById(controller.communityLeaderId!);
+    final targets = controller.alivePlayers.where((p) => p.id != leader.id).toList();
+    return Column(
+      children: [
+        Text('رهبرِ جامعه: ${leader.name}', style: AppTheme.headingFont(size: 20)),
+        const SizedBox(height: 8),
+        const Text(
+          'رهبرِ جامعه یه نفر رو انتخاب می‌کنه تا از جامعه اخراج بشه. این حذف قطعیه.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 16),
+        Expanded(
+          child: ListView(
+            children: targets
+                .map(
+                  (p) => Card(
+                    color: AppColors.surfaceCard,
+                    margin: const EdgeInsets.only(bottom: 8),
+                    child: ListTile(
+                      title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                      trailing: ElevatedButton(
+                        onPressed: () => controller.communityLeaderExpel(p.id),
+                        child: const Text('اخراج'),
+                      ),
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
   // ---------- دفاعیه ----------
 
   Widget _buildDefensePhase() {
@@ -1000,6 +1166,14 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     switch (controller.currentNightStep) {
       case NightStepKind.sorkoobTeam:
         return _buildSorkoobTeamStep();
+      case NightStepKind.mossadLeader:
+        return _buildRoleNightStep(
+          wakeLabel: 'رهبر موساد بیدار بشه',
+          sleepLabel: 'رهبر موساد چشمش رو ببنده',
+          playerName: controller.mossadLeaderPlayer?.name,
+          body: _buildMossadLeaderSection(),
+          canAdvance: controller.canAdvancePastMossadLeaderStep,
+        );
       case NightStepKind.rapper:
         return _buildRoleNightStep(
           wakeLabel: 'رپر معترض بیدار بشه',
@@ -1013,6 +1187,13 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           sleepLabel: 'هکر چشمش رو ببنده',
           playerName: controller.hackerPlayer?.name,
           body: _buildHackerSection(),
+        );
+      case NightStepKind.politicalAnalyst:
+        return _buildRoleNightStep(
+          wakeLabel: 'تحلیلگر سیاسی بیدار بشه',
+          sleepLabel: 'تحلیلگر سیاسی چشمش رو ببنده',
+          playerName: controller.politicalAnalystPlayer?.name,
+          body: _buildPoliticalAnalystSection(),
         );
       case NightStepKind.doctor:
         return _buildRoleNightStep(
@@ -1041,6 +1222,13 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           sleepLabel: 'مبارز انقلابی چشمش رو ببنده',
           playerName: controller.revolutionaryFighterPlayer?.name,
           body: _buildRevolutionarySection(),
+        );
+      case NightStepKind.civicActivist:
+        return _buildRoleNightStep(
+          wakeLabel: 'فعال مدنی بیدار بشه',
+          sleepLabel: 'فعال مدنی چشمش رو ببنده',
+          playerName: controller.civicActivistPlayer?.name,
+          body: _buildCivicActivistSection(),
         );
       case NightStepKind.lawyer:
         return _buildRoleNightStep(
@@ -1172,6 +1360,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     required String sleepLabel,
     required Widget body,
     String? playerName,
+    bool canAdvance = true,
   }) {
     return SingleChildScrollView(
       child: Column(
@@ -1200,12 +1389,284 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           body,
           const SizedBox(height: 32),
           ElevatedButton(
-            onPressed: controller.advanceNightStep,
+            onPressed: canAdvance ? controller.advanceNightStep : null,
             style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
             child: Text('🌑 $sleepLabel'),
           ),
         ],
       ),
+    );
+  }
+
+  // ---------- رهبرِ موساد ----------
+
+  Widget _buildMossadLeaderSection() {
+    final leader = controller.mossadLeaderPlayer!;
+
+    if (controller.roundNumber == 1) {
+      if (leader.mossadPlaystyle != null) {
+        return Text(
+          leader.mossadPlaystyle == MossadPlaystyle.assassination
+              ? 'شیوه انتخاب شد: 🕶 عملیاتِ ترور'
+              : 'شیوه انتخاب شد: 🗡 عملیاتِ سری',
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+        );
+      }
+      return Column(
+        children: [
+          const Text(
+            'رهبرِ موساد باید همین امشب، برای همیشه، شیوه‌ی بازیش رو انتخاب کنه:',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white70),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+            onPressed: () => controller.chooseMossadPlaystyle(MossadPlaystyle.assassination),
+            child: const Text('🕶 عملیاتِ ترور'),
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+            onPressed: () => controller.chooseMossadPlaystyle(MossadPlaystyle.secretOperation),
+            child: const Text('🗡 عملیاتِ سری'),
+          ),
+        ],
+      );
+    }
+
+    if (!leader.isAlive) {
+      return const Text(
+        'رهبرِ موساد دیگه در بازی نیست.',
+        textAlign: TextAlign.center,
+        style: TextStyle(color: Colors.white38),
+      );
+    }
+
+    final isAssassination = leader.mossadPlaystyle == MossadPlaystyle.assassination;
+    final resultText = controller.mossadAssassinationResultMessage;
+    return Column(
+      children: [
+        Text(
+          isAssassination
+              ? 'شیوه: 🕶 عملیاتِ ترور — هدف + حدسِ نقش (فقط رو اعضای سرکوب اثر داره)'
+              : 'شیوه: 🗡 عملیاتِ سری — یه شاتِ ساده رو یه بازیکن (زره جلوشو می‌گیره)',
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white70),
+        ),
+        if (isAssassination && resultText != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            resultText,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+          ),
+        ],
+        const SizedBox(height: 16),
+        if (controller.canMossadActTonight)
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+            onPressed: () => isAssassination
+                ? _showMossadAssassinationPicker(leader)
+                : _showMossadShootPicker(leader),
+            child: Text(isAssassination ? 'ترور (هدف + حدسِ نقش)' : 'شات'),
+          )
+        else
+          const Text('امشب دیگه اقدامی ممکن نیست.', style: TextStyle(color: Colors.white38)),
+      ],
+    );
+  }
+
+  void _showMossadAssassinationPicker(SessionPlayer leader) {
+    final targets = controller.alivePlayers.where((p) => p.id != leader.id).toList();
+    SessionPlayer? selectedTarget;
+    String? selectedRoleId;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceDark,
+      isScrollControlled: true,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('ترور: هدف + حدسِ نقش', style: TextStyle(color: AppColors.goldLight)),
+                    const SizedBox(height: 12),
+                    DropdownButton<SessionPlayer>(
+                      hint: const Text('انتخاب هدف', style: TextStyle(color: Colors.white70)),
+                      dropdownColor: AppColors.surfaceDark,
+                      value: selectedTarget,
+                      items: targets
+                          .map((p) => DropdownMenuItem(
+                                value: p,
+                                child: Text(p.name, style: const TextStyle(color: Colors.white)),
+                              ))
+                          .toList(),
+                      onChanged: (v) => setSheetState(() => selectedTarget = v),
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButton<String>(
+                      hint: const Text('حدسِ نقش', style: TextStyle(color: Colors.white70)),
+                      dropdownColor: AppColors.surfaceDark,
+                      value: selectedRoleId,
+                      items: SarkoobRoles.all
+                          .map((r) => DropdownMenuItem(
+                                value: r.id,
+                                child: Text(r.name, style: const TextStyle(color: Colors.white)),
+                              ))
+                          .toList(),
+                      onChanged: (v) => setSheetState(() => selectedRoleId = v),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: (selectedTarget != null && selectedRoleId != null)
+                          ? () {
+                              controller.mossadAssassinate(selectedTarget!.id, selectedRoleId!);
+                              Navigator.of(context).pop();
+                            }
+                          : null,
+                      child: const Text('تایید ترور'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showMossadShootPicker(SessionPlayer leader) {
+    final targets = controller.alivePlayers.where((p) => p.id != leader.id).toList();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceDark,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text('شات روی کی؟', style: TextStyle(color: AppColors.goldLight)),
+            ),
+            ...targets.map(
+              (p) => ListTile(
+                title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                onTap: () {
+                  controller.mossadShoot(p.id);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ---------- تحلیلگرِ سیاسی ----------
+
+  Widget _buildPoliticalAnalystSection() {
+    final result = controller.lastIndependentInvestigationResult;
+    final targetName = controller.lastIndependentInvestigationTargetName;
+    return Column(
+      children: [
+        const Text(
+          'تحلیلگر سیاسی می‌تونه امشب یکی از بازیکن‌ها رو استعلام بگیره: '
+          'آیا عضوِ یه تیمِ مستقله؟',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 8),
+        if (result != null && targetName != null) ...[
+          Text(
+            result == InvestigationResult.like
+                ? '🔍 نتیجه‌ی «$targetName»: 👍 لایک (مستقله)'
+                : '🔍 نتیجه‌ی «$targetName»: 👎 دیس‌لایک (مستقل نیست)',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'این نتیجه رو فقط خصوصی و درِگوشی به خودِ تحلیلگر بگو.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white38, fontSize: 11),
+          ),
+          const SizedBox(height: 8),
+        ],
+        OutlinedButton.icon(
+          icon: const Icon(Icons.travel_explore),
+          label: const Text('استعلامِ یه بازیکن'),
+          onPressed: controller.canPoliticalAnalystActTonight ? _showPoliticalAnalystPicker : null,
+        ),
+      ],
+    );
+  }
+
+  void _showPoliticalAnalystPicker() {
+    final analyst = controller.politicalAnalystPlayer!;
+    final targets = controller.alivePlayers.where((p) => p.id != analyst.id).toList();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceDark,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text('استعلام روی کی؟', style: TextStyle(color: AppColors.goldLight)),
+            ),
+            ...targets.map(
+              (p) => ListTile(
+                title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                onTap: () {
+                  controller.politicalAnalystInvestigate(p.id);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ---------- فعالِ مدنی ----------
+
+  Widget _buildCivicActivistSection() {
+    final activist = controller.civicActivistPlayer!;
+    if (activist.referendumUsed) {
+      return const Text(
+        'فعال مدنی قبلاً درخواستِ رفراندومش رو مصرف کرده.',
+        textAlign: TextAlign.center,
+        style: TextStyle(color: Colors.white38),
+      );
+    }
+    return Column(
+      children: [
+        const Text(
+          'فعال مدنی می‌تونه امشب، یک‌بار برای همیشه، تقاضای رفراندوم بده. '
+          'فردا — درست قبل از رأی‌گیریِ حذف — رفراندومِ انتخابِ رهبرِ جامعه '
+          'برگزار می‌شه.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 16),
+        ElevatedButton.icon(
+          icon: const Icon(Icons.how_to_vote),
+          label: const Text('درخواستِ رفراندوم'),
+          style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+          onPressed: controller.canRequestReferendumTonight ? controller.requestReferendum : null,
+        ),
+      ],
     );
   }
 

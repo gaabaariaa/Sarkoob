@@ -47,6 +47,12 @@ class SarkoobTeams {
 
   static const List<GameTeam> all = [suppression, citizen, mossad, mek];
 
+  /// تیم‌هایی که الان واقعاً قابل‌انتخابن — فعلاً مجاهدین خلق از سایدِ
+  /// مستقل حذف شده (شاید بعداً یه تیمِ دیگه جاش بیاد). `all` رو دست‌نخورده
+  /// نگه داشتیم که `byId` برای بازی‌های قدیمی/تاریخچه‌ای که شاید هنوز
+  /// `team_mek` داشته باشن هم درست کار کنه.
+  static const List<GameTeam> selectable = [suppression, citizen, mossad];
+
   static GameTeam? byId(String id) {
     for (final t in all) {
       if (t.id == id) return t;
