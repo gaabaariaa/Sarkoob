@@ -1,5 +1,25 @@
 import 'role.dart';
 
+/// برچسبِ فارسیِ هر مرحله‌ی تنبیهِ انضباطیِ گرداننده — هم تو خودِ بازی
+/// (دیالوگِ تنبیه) و هم تو آمار/تاریخچه (بعدِ تمومِ بازی) استفاده می‌شه،
+/// برای همینم یه تابعِ مشترکه، نه چیزی که تو هر صفحه جدا نوشته بشه.
+/// ۰=بدونِ سابقه، ۱=اخطار، ۲=منعِ یک‌روزه‌ی چالش، ۳=منعِ همیشگیِ چالش +
+/// سکوتِ همون‌روز، ۴ به‌بالا=اخراج (چه از همین مسیر چه اخراجِ مستقیم).
+String disciplineStageLabel(int stage) {
+  switch (stage) {
+    case 0:
+      return 'بدونِ سابقه';
+    case 1:
+      return 'اخطار گرفته';
+    case 2:
+      return 'یک‌روز از چالش‌دادن منع شده';
+    case 3:
+      return 'برای‌همیشه از چالش‌دادن منع شده و سکوتِ انضباطی خورده';
+    default:
+      return 'از بازی اخراج شده';
+  }
+}
+
 /// فازهای کلی یه جلسه‌ی بازی.
 enum GamePhaseType {
   introDay, // روز معارفه
@@ -86,6 +106,12 @@ class SessionPlayer {
   // ---- مربوط به فعال مدنی ----
   bool referendumUsed; // آیا قابلیتِ یک‌بارمصرفِ درخواستِ رفراندوم رو مصرف کرده؟
 
+  // ---- مربوط به تنبیهِ انضباطیِ گرداننده ----
+  int disciplineStage; // ۰=بدونِ سابقه، ۱=اخطار، ۲=منعِ یک‌روزه، ۳=منعِ همیشگی+سکوت، ۴=اخراج
+  int? challengeBanRoundNumber; // فقط برای منعِ یک‌روزه‌ی مرحله‌ی ۲: کدوم روز نمی‌تونه چالش بده
+  bool challengeBannedForever; // از مرحله‌ی ۳ به بعد، برای همیشه
+  int? silencedRoundNumber; // فقط برای مرحله‌ی ۳: کدوم روز باید نوبتِ صحبتش رد بشه
+
   SessionPlayer({
     required this.id,
     required this.name,
@@ -116,6 +142,10 @@ class SessionPlayer {
     this.interrogationUsed = false,
     this.mossadPlaystyle,
     this.referendumUsed = false,
+    this.disciplineStage = 0,
+    this.challengeBanRoundNumber,
+    this.challengeBannedForever = false,
+    this.silencedRoundNumber,
   });
 
   bool get isSorkoobTeam => teamId == 'team_sorkoob';

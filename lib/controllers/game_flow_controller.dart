@@ -16,6 +16,15 @@ class ChallengeRecord {
   const ChallengeRecord(this.giverId, this.receiverId);
 }
 
+/// عکسِ لحظه‌ایِ فاز/روزِ فعلی، قبل از هر انتقالِ فاز — فقط برای دکمه‌ی
+/// «برگشت یه مرحله». اقدام‌های ثبت‌شده (رأی، تصمیمِ شب، حذف) رو برنمی‌گردونه؛
+/// فقط نشانگرِ فاز/روز رو، برای وقتی گرداننده اشتباهی «ادامه» رو زده.
+class _PhaseSnapshot {
+  final GamePhaseType phase;
+  final int roundNumber;
+  const _PhaseSnapshot(this.phase, this.roundNumber);
+}
+
 /// ترتیبِ «بیدارشدنِ» شب: اول تیمِ سرکوب باهم، بعد هر نقشِ خاصِ شهروندی
 /// جداگونه و به‌ترتیب، و در آخر جمع‌بندیِ شب.
 enum NightStepKind {
@@ -76,6 +85,20 @@ class GameFlowController extends ChangeNotifier {
     ];
   }
 
+  /// نقش‌هایی که واقعاً تو همین جلسه انتخاب شدن (یعنی حداقل یه بازیکن
+  /// دارتشون) — نه کلِ کتابخونه‌ی نقش‌ها. برای منوهای «حدسِ نقش» (سلاخی،
+  /// ترورِ موساد) استفاده می‌شه تا فقط نقش‌های واقعاً درگیرِ این بازی
+  /// نشون داده بشن. ترتیب طبقِ همون ترتیبِ ثابتِ SarkoobRoles.all ـه.
+  List<GameRole> get rolesInPlay {
+    final idsInPlay = players.map((p) => p.roleId).whereType<String>().toSet();
+    return SarkoobRoles.all.where((r) => idsInPlay.contains(r.id)).toList();
+  }
+
+  /// مثلِ rolesInPlay، ولی فقط نقش‌های یه تیمِ خاص (مثلاً برای ترورِ
+  /// موساد که فقط باید بینِ نقش‌های تیمِ سرکوب حدس بزنه).
+  List<GameRole> rolesInPlayForTeam(String teamId) =>
+      rolesInPlay.where((r) => r.teamId == teamId).toList();
+
   // ---------- ابزارِ گرداننده: جابه‌جاییِ ترتیب و اخراجِ انضباطی ----------
   // این دوتا مستقل از فازِ فعلیِ بازی‌ان (هم شب هم روز در دسترسن) و
   // فقط با آی‌دیِ خودِ بازیکن کار می‌کنن، پس جابه‌جاکردنِ ترتیب هیچ
@@ -95,17 +118,78 @@ class GameFlowController extends ChangeNotifier {
   String? disciplinaryExpelMessage;
 
   /// اخراجِ انضباطیِ گرداننده (افشای نقش، تقلب، و مواردِ مشابه). برگشت‌ناپذیره
-  /// — حتی وکیل نمی‌تونه برش گردونه — و مستقل از فازِ فعلیِ بازیه.
+  /// — حتی وکیل نمی‌تونه برش گردونه — و مستقل از فازِ فعلیِ بازیه. هر
+  /// اخراج (چه مستقیم چه بعدِ چهارمین تنبیه) نمره‌ی انضباطی رو هم به
+  /// حداکثر (۴) می‌رسونه تا تو آمار «بی‌انضباط‌ترین بازیکن» درست حساب بشه.
   void disciplinaryExpel(int targetId, String reason) {
     final target = playerById(targetId);
     if (!target.isAlive) return;
     target.isAlive = false;
     target.isHalfAlive = false;
+    if (target.disciplineStage < 4) target.disciplineStage = 4;
     _checkZhinaTrigger(target);
     _skipDeadSpeakers();
     disciplinaryExpelMessage =
         '«${target.name}» به دلیلِ «$reason» توسطِ گرداننده از بازی اخراج شد.';
     notifyListeners();
+  }
+
+  // ---------- تنبیهِ انضباطیِ درجه‌بندی‌شده: اخطار → منعِ چالش → سکوت → اخراج ----------
+  // چهار مرحله‌ست و هربار که این ابزار برای یه بازیکن استفاده بشه، یه
+  // درجه جلوتر می‌ره (برگشت‌ناپذیر، نمی‌شه درجه رو پایین آورد). نتیجه‌ی
+  // هر درجه با disciplineStageLabel (تو game_session.dart) هم‌خونی داره.
+
+  /// آیا این بازیکن الان (طبقِ روز/فازِ فعلی) از دادنِ چالش منعه؟ چه
+  /// منعِ همیشگی (مرحله‌ی ۳+) چه منعِ یک‌روزه‌ی مرحله‌ی ۲، فقط تو همون
+  /// روزی که برای‌ش ثبت شده.
+  bool isChallengeBanned(SessionPlayer p) {
+    if (p.challengeBannedForever) return true;
+    return p.challengeBanRoundNumber != null &&
+        phase == GamePhaseType.day &&
+        p.challengeBanRoundNumber == roundNumber;
+  }
+
+  /// آیا این بازیکن امروز سکوتِ انضباطی داره (نوبتِ صحبتش باید رد بشه)؟
+  bool isSilencedToday(SessionPlayer p) =>
+      p.silencedRoundNumber != null &&
+      phase == GamePhaseType.day &&
+      p.silencedRoundNumber == roundNumber;
+
+  /// درجه‌ی بعدی رو برای این بازیکن اعمال می‌کنه و پیامِ نتیجه رو
+  /// برمی‌گردونه (برای نمایش به گرداننده). مرحله‌ی چهارم مستقیم از همون
+  /// disciplinaryExpel استفاده می‌کنه تا رفتارش (حذفِ کامل، ژینا، صفِ
+  /// نوبت) دقیقاً یکی باشه.
+  String applyNextDisciplineStage(int targetId, String reason) {
+    final target = playerById(targetId);
+    final effectiveReason = reason.trim().isEmpty ? 'نامشخص' : reason.trim();
+    final nextStage = target.disciplineStage + 1;
+
+    if (nextStage >= 4) {
+      disciplinaryExpel(targetId, 'چهارمین تخلفِ انضباطی — $effectiveReason');
+      return '«${target.name}» برای چهارمین‌بار تخلف کرد و از بازی اخراج شد.';
+    }
+
+    target.disciplineStage = nextStage;
+    final effectiveRound = phase == GamePhaseType.day ? roundNumber : roundNumber + 1;
+    String message;
+    switch (nextStage) {
+      case 1:
+        message = '«${target.name}» اخطار گرفت (دلیل: $effectiveReason).';
+        break;
+      case 2:
+        target.challengeBanRoundNumber = effectiveRound;
+        message = '«${target.name}» امروز نمی‌تونه به کسی چالش بده (دلیل: $effectiveReason).';
+        break;
+      default: // 3
+        target.challengeBannedForever = true;
+        target.silencedRoundNumber = effectiveRound;
+        _skipDeadSpeakers();
+        message = '«${target.name}» برای‌همیشه از چالش‌دادن منع شد و تا پایانِ امروز '
+            'سکوتِ انضباطی داره (دلیل: $effectiveReason).';
+        break;
+    }
+    notifyListeners();
+    return message;
   }
 
   // ---------- ترتیب صحبت ----------
@@ -122,6 +206,10 @@ class GameFlowController extends ChangeNotifier {
       p.challengeReceivedToday = false;
       p.challengeGivenToday = false;
     }
+    // اگه یکی دیشب (یا زودتر امروز) تنبیهِ سکوتِ انضباطی گرفته باشه و
+    // قرار باشه امروز سکوتش فعال بشه، نباید اولین نفرِ نوبتِ صحبتِ امروز
+    // بشه — وگرنه _skipDeadSpeakers هیچ‌وقت صداش نمی‌زنه که ردش کنه.
+    _skipDeadSpeakers();
   }
 
   SessionPlayer? get currentSpeaker =>
@@ -157,31 +245,48 @@ class GameFlowController extends ChangeNotifier {
   /// جنگی، کلمه‌ی ممنوع)، باید از صفِ نوبتِ صحبت هم خارج بشه — چه نوبتِ
   /// عادیِ باقی‌مونده چه یه چالشِ درجریان — وگرنه گرداننده نوبتِ یه
   /// بازیکنِ مرده رو می‌بینه. کسی که قبلاً نوبتش تموم شده رو دست‌نخورده
-  /// می‌ذاره (چیزی برای ردکردن نیست).
+  /// می‌ذاره (چیزی برای ردکردن نیست). بازیکنِ سکوتِ انضباطی‌گرفته هم دقیقاً
+  /// همینجا رد می‌شه — نوبتش می‌رسه ولی گرداننده باید ردش کنه، پس برای
+  /// حسابِ «باقی‌مونده» انگار صحبتش رو کرده.
   void _skipDeadSpeakers() {
-    if (_activeChallengerId != null && !playerById(_activeChallengerId!).isAlive) {
-      _activeChallengerId = null;
+    if (_activeChallengerId != null) {
+      final challenger = playerById(_activeChallengerId!);
+      if (!challenger.isAlive || isSilencedToday(challenger)) {
+        _activeChallengerId = null;
+      }
     }
-    while (_speakerPointer < _speakingOrder.length &&
-        !playerById(_speakingOrder[_speakerPointer]).isAlive) {
-      _speakerPointer++;
+    while (_speakerPointer < _speakingOrder.length) {
+      final p = playerById(_speakingOrder[_speakerPointer]);
+      if (!p.isAlive) {
+        _speakerPointer++;
+        continue;
+      }
+      if (isSilencedToday(p)) {
+        p.hasSpokenThisRound = true;
+        _speakerPointer++;
+        continue;
+      }
+      break;
     }
   }
 
   /// بازیکن‌هایی که الان می‌تونن هدفِ چالش باشن (فقط توی روزهای عادی، و
-  /// فقط کسایی که امروز قبلاً چالش نگرفتن).
+  /// فقط کسایی که امروز قبلاً چالش نگرفتن و سکوتِ انضباطی ندارن).
   List<SessionPlayer> get challengeEligiblePlayers {
     if (phase != GamePhaseType.day) return const [];
     return alivePlayers
-        .where((p) => !p.challengeReceivedToday && p.id != speakerForDisplay?.id)
+        .where((p) =>
+            !p.challengeReceivedToday && p.id != speakerForDisplay?.id && !isSilencedToday(p))
         .toList();
   }
 
   /// آیا کسی که الان نوبتِ عادیِ صحبتشه، می‌تونه (هنوز) به یکی چالش بده؟
-  /// هر بازیکن توی هر نوبتِ صحبتش فقط یک‌بار می‌تونه چالش بده.
+  /// هر بازیکن توی هر نوبتِ صحبتش فقط یک‌بار می‌تونه چالش بده، و اگه
+  /// تنبیهِ انضباطی (منعِ یک‌روزه یا همیشگی) داشته باشه هم نمی‌تونه.
   bool get canCurrentSpeakerGiveChallenge {
     final speaker = currentSpeaker;
-    return speaker != null && !speaker.challengeGivenToday;
+    if (speaker == null || speaker.challengeGivenToday) return false;
+    return !isChallengeBanned(speaker);
   }
 
   final List<ChallengeRecord> _todaysChallenges = [];
@@ -191,9 +296,9 @@ class GameFlowController extends ChangeNotifier {
   /// نوبتِ عادی دست‌نخورده می‌مونه. کی‌به‌کی برای نمایش ثبت می‌شه.
   void useChallenge(int receiverId) {
     final giver = currentSpeaker;
-    if (giver == null || giver.challengeGivenToday) return;
+    if (giver == null || giver.challengeGivenToday || isChallengeBanned(giver)) return;
     final receiver = playerById(receiverId);
-    if (receiver.challengeReceivedToday) return;
+    if (receiver.challengeReceivedToday || isSilencedToday(receiver)) return;
     giver.challengeGivenToday = true;
     receiver.challengeReceivedToday = true;
     _todaysChallenges.add(ChallengeRecord(giver.id, receiverId));
@@ -208,12 +313,31 @@ class GameFlowController extends ChangeNotifier {
 
   // ---------- انتقال بین فازها ----------
 
+  final List<_PhaseSnapshot> _phaseHistory = [];
+
+  /// آیا الان می‌شه یه مرحله (نه به منو، فقط فاز/روزِ قبلی) برگشت؟
+  bool get canStepBackPhase => _phaseHistory.isNotEmpty;
+
+  /// دکمه‌ی بک (چه سیستمی چه AppBar) به‌جای خروج به منو، همینو صدا می‌زنه:
+  /// فقط نشانگرِ فاز/روز رو یه قدم برمی‌گردونه، برای وقتی گرداننده اشتباهی
+  /// «ادامه» زده. رأی/تصمیمِ ثبت‌شده رو دست‌نمی‌زنه — اونا رو گرداننده باید
+  /// خودش با ابزارهای دیگه (مثلاً +/- رأی) دستی اصلاح کنه.
+  void stepBackOnePhase() {
+    if (_phaseHistory.isEmpty) return;
+    final previous = _phaseHistory.removeLast();
+    phase = previous.phase;
+    roundNumber = previous.roundNumber;
+    notifyListeners();
+  }
+
   void moveToIntroNight() {
+    _phaseHistory.add(_PhaseSnapshot(phase, roundNumber));
     phase = GamePhaseType.introNight;
     notifyListeners();
   }
 
   void moveToDay(int dayNumber) {
+    _phaseHistory.add(_PhaseSnapshot(phase, roundNumber));
     phase = GamePhaseType.day;
     roundNumber = dayNumber;
     _rebuildSpeakingOrder();
@@ -384,7 +508,6 @@ class GameFlowController extends ChangeNotifier {
   bool _nightActionTaken = false;
   String? slaughterResultMessage;
   String? negotiateResultMessage;
-  String? lastNightSummary;
 
   /// این سه‌تا مخصوصِ خلاصه‌ی دسته‌بندی‌شده‌ی صبحه: طبقِ قانون، اولِ روز
   /// باید صریحاً اعلام بشه کی با سلاخی حذف شد، کی به‌شکلِ عادی حذف شد، و
@@ -393,6 +516,15 @@ class GameFlowController extends ChangeNotifier {
   final List<int> _tonightSlaughteredIds = [];
   final List<int> _tonightEliminatedIds = [];
   int? _tonightRevivedId;
+
+  /// آیا این بازیکن هنوز می‌تونه امشب از قابلیتِ نقشِ خودش استفاده کنه؟
+  /// «زنده»ی معمولی، یا اگه همین امشب سلاخی/ترور شده (حذفش هنوز نهایی
+  /// نشده، فقط تهِ شب با finishNight قطعی می‌شه). این فقط برای خودِ
+  /// صاحبِ نقش (actor) استفاده می‌شه، نه برای لیستِ هدف‌های قابل‌انتخاب —
+  /// یکی که امشب سلاخی شده دیگه هدفِ نجات/بازداشت و... نمی‌تونه باشه،
+  /// ولی خودش هنوز نوبتِ خودش رو داره چون شب هنوز تموم نشده.
+  bool _stillActiveTonight(SessionPlayer p) =>
+      p.isAlive || (phase == GamePhaseType.night && _tonightSlaughteredIds.contains(p.id));
 
   /// ژینا: اگه دیشب حذف شده باشه، این true می‌شه و امشب مصرفش می‌کنیم.
   bool sorkoobDisabledNextNight = false;
@@ -613,7 +745,7 @@ class GameFlowController extends ChangeNotifier {
   bool get canDetainTonight {
     if (sorkoobDisabledTonight) return false;
     final commander = policeCommanderPlayer;
-    return commander != null && commander.isAlive && detainedPlayerId == null;
+    return commander != null && _stillActiveTonight(commander) && detainedPlayerId == null;
   }
 
   List<SessionPlayer> get detainEligibleTargets =>
@@ -638,13 +770,13 @@ class GameFlowController extends ChangeNotifier {
   bool get canAssassinateTonight {
     if (sorkoobDisabledTonight) return false;
     final merc = mercenaryPlayer;
-    if (merc == null || !merc.isAlive) return false;
+    if (merc == null || !_stillActiveTonight(merc)) return false;
     return !isPlayerDetained(merc.id);
   }
 
   bool get canAssassinateNow {
     final merc = mercenaryPlayer;
-    if (merc == null || !merc.isAlive) return false;
+    if (merc == null || !_stillActiveTonight(merc)) return false;
     if (phase == GamePhaseType.day && votingStarted) return false;
     return true;
   }
@@ -656,7 +788,7 @@ class GameFlowController extends ChangeNotifier {
   /// مزدور همیشه علنی و بلافاصله لو می‌ره و حذف می‌شه (این بخشِ خودِ قانونشه).
   void assassinate(int targetId) {
     final merc = mercenaryPlayer;
-    if (merc == null || !merc.isAlive) return;
+    if (merc == null || !_stillActiveTonight(merc)) return;
     if (phase == GamePhaseType.night && isPlayerDetained(merc.id)) return;
     if (phase == GamePhaseType.day && votingStarted) return;
     final target = playerById(targetId);
@@ -698,7 +830,7 @@ class GameFlowController extends ChangeNotifier {
 
   bool get canLawyerReviveTonight {
     final lawyer = lawyerPlayer;
-    if (lawyer == null || !lawyer.isAlive || lawyer.revivalUsed) return false;
+    if (lawyer == null || !_stillActiveTonight(lawyer) || lawyer.revivalUsed) return false;
     return !isPlayerDetained(lawyer.id);
   }
 
@@ -769,7 +901,7 @@ class GameFlowController extends ChangeNotifier {
 
   bool get canRapperActTonight {
     final rapper = rapperPlayer;
-    if (rapper == null || !rapper.isAlive || _rapperActedTonight) return false;
+    if (rapper == null || !_stillActiveTonight(rapper) || _rapperActedTonight) return false;
     return !isPlayerDetained(rapper.id);
   }
 
@@ -813,7 +945,7 @@ class GameFlowController extends ChangeNotifier {
 
   bool get canRebelActTonight {
     final rebel = rebelPlayer;
-    if (rebel == null || !rebel.isAlive) return false;
+    if (rebel == null || !_stillActiveTonight(rebel)) return false;
     return !isPlayerDetained(rebel.id);
   }
 
@@ -896,7 +1028,7 @@ class GameFlowController extends ChangeNotifier {
 
   bool get canGuaranteeTonight {
     final hero = nationalHeroPlayer;
-    if (hero == null || !hero.isAlive) return false;
+    if (hero == null || !_stillActiveTonight(hero)) return false;
     if (isPlayerDetained(hero.id)) return false;
     if (_heroActedTonight) return false;
     return (hero.guaranteesRemaining ?? 0) > 0;
@@ -931,7 +1063,7 @@ class GameFlowController extends ChangeNotifier {
 
   bool get canDoctorSaveTonight {
     final doc = doctorPlayer;
-    if (doc == null || !doc.isAlive) return false;
+    if (doc == null || !_stillActiveTonight(doc)) return false;
     if (isPlayerDetained(doc.id)) return false;
     return _doctorSavesUsedTonight < doctorNightlyCapacity;
   }
@@ -994,7 +1126,7 @@ class GameFlowController extends ChangeNotifier {
 
   bool get canHackerInvestigateTonight {
     final hacker = hackerPlayer;
-    if (hacker == null || !hacker.isAlive || _hackerUsedTonight) return false;
+    if (hacker == null || !_stillActiveTonight(hacker) || _hackerUsedTonight) return false;
     return !isPlayerDetained(hacker.id);
   }
 
@@ -1036,28 +1168,38 @@ class GameFlowController extends ChangeNotifier {
   }
 
   /// شبِ اول تا شیوه رو انتخاب نکرده، نمی‌شه از این مرحله رد شد (اگه
-  /// اصلاً رهبرِ موساد تو بازی نیست یا مرده، چیزی برای انتخاب‌کردن نیست
-  /// و همیشه می‌شه رد شد).
+  /// اصلاً رهبرِ موساد تو بازی نیست یا مرده — و امشب مرده حساب نمی‌شه اگه
+  /// همین امشب سلاخی شده، چون تصمیمش هنوز نهایی نشده — چیزی برای
+  /// انتخاب‌کردن نیست و همیشه می‌شه رد شد).
   bool get canAdvancePastMossadLeaderStep {
     final leader = mossadLeaderPlayer;
-    if (leader == null || !leader.isAlive) return true;
+    if (leader == null || !_stillActiveTonight(leader)) return true;
     if (roundNumber != 1) return true;
     return leader.mossadPlaystyle != null;
   }
 
   void chooseMossadPlaystyle(MossadPlaystyle style) {
     final leader = mossadLeaderPlayer;
-    if (leader == null || !leader.isAlive || roundNumber != 1) return;
+    if (leader == null || !_stillActiveTonight(leader) || roundNumber != 1) return;
     if (leader.mossadPlaystyle != null) return; // یه‌بار برای همیشه
     leader.mossadPlaystyle = style;
     notifyListeners();
   }
 
-  /// عملیاتِ ترور/سری فقط شب‌های زوجِ بازی (دوم، چهارم، ...) قابل‌استفاده‌ست.
+  /// آیا امشب هنوز از عملیاتِ ترور/سری استفاده نشده؟ (هرکدوم از
+  /// mossadAssassinate/mossadShoot که یه‌بار استفاده بشه، امشب دیگه
+  /// نمی‌شه عوضش کرد.)
+  bool _mossadActedTonight = false;
+
+  /// عملیاتِ ترور/سری فقط شب‌های زوجِ بازی (دوم، چهارم، ...) و فقط یک‌بار
+  /// در هر شب قابل‌استفاده‌ست.
   bool get canMossadActTonight {
     final leader = mossadLeaderPlayer;
-    if (leader == null || !leader.isAlive || leader.mossadPlaystyle == null) return false;
+    if (leader == null || !_stillActiveTonight(leader) || leader.mossadPlaystyle == null) {
+      return false;
+    }
     if (roundNumber.isOdd) return false;
+    if (_mossadActedTonight) return false;
     return !isPlayerDetained(leader.id);
   }
 
@@ -1065,19 +1207,22 @@ class GameFlowController extends ChangeNotifier {
 
   /// عملیاتِ ترور: هدف + حدسِ نقش. فقط اگه هدف واقعاً عضوِ سرکوب باشه و
   /// نقشش درست حدس زده بشه حذف می‌شه — مثلِ سلاخی، مستقیم و برگشت‌ناپذیر
-  /// (نه از تابعِ _eliminatePlayer که وکیل می‌تونه نجات بده). حدسِ غلط
-  /// هیچ اثری تو بازی نداره و رهبرِ موساد به بقیه‌ی بازیکنا لو نمی‌ره —
-  /// ولی مثلِ سلاخیِ رهبرِ سرکوب، نتیجه (موفق یا ناموفق) رو تو صفحه‌ی
-  /// گرداننده نشون می‌دیم، چون lastNightSummary همیشه گزارشِ خصوصیِ
-  /// گرداننده‌ست، نه متنی که قراره عیناً به جمع خونده بشه.
+  /// (نه از تابعِ _eliminatePlayer که وکیل می‌تونه نجات بده)، و طبقِ همون
+  /// قانون تو خلاصه‌ی دسته‌بندی‌شده‌ی صبح («🔪 سلاخی/ترور») هم می‌شینه.
+  /// حدسِ غلط هیچ اثری تو بازی نداره و رهبرِ موساد به بقیه‌ی بازیکنا لو
+  /// نمی‌ره — ولی نتیجه (موفق یا ناموفق) تو یادداشتِ خصوصیِ گرداننده
+  /// می‌مونه، نه متنی که قراره عیناً به جمع خونده بشه.
   void mossadAssassinate(int targetId, String guessedRoleId) {
     if (!canMossadActTonight) return;
     final leader = mossadLeaderPlayer!;
     if (leader.mossadPlaystyle != MossadPlaystyle.assassination) return;
+    _mossadActedTonight = true;
     final target = playerById(targetId);
     if (target.teamId == SarkoobTeams.suppression.id && target.roleId == guessedRoleId) {
       target.isAlive = false;
+      target.eliminatedBySlaughter = true;
       _checkZhinaTrigger(target);
+      _tonightSlaughteredIds.add(target.id);
       mossadAssassinationResultMessage = '«${target.name}» با ترورِ موساد از بازی خارج شد.';
     } else {
       mossadAssassinationResultMessage = 'ترورِ موساد بی‌اثر بود؛ هیچ‌کس متوجه نشد.';
@@ -1086,13 +1231,13 @@ class GameFlowController extends ChangeNotifier {
   }
 
   /// عملیاتِ سری: مثلِ یه شاتِ ساده — صف‌بندی می‌شه تو همون _pendingHits ی
-  /// شاتِ ولی‌فقیه، پس زره و نجاتِ دکتر خودکار طبقِ همون قانونِ همیشگی
-  /// روش اثر می‌ذارن و نتیجه‌ش هم خودکار تو خلاصه‌ی صبح («❌ حذف‌شده‌ها»)
-  /// می‌شینه.
+  /// شاتِ ولی‌فقیه، پس نجاتِ دکتر خودکار طبقِ همون قانونِ همیشگی روش اثر
+  /// می‌ذاره و نتیجه‌ش هم خودکار تو خلاصه‌ی صبح («❌ کشته‌شدن») می‌شینه.
   void mossadShoot(int targetId) {
     if (!canMossadActTonight) return;
     final leader = mossadLeaderPlayer!;
     if (leader.mossadPlaystyle != MossadPlaystyle.secretOperation) return;
+    _mossadActedTonight = true;
     _pendingHits[targetId] = (_pendingHits[targetId] ?? 0) + 1;
     notifyListeners();
   }
@@ -1112,7 +1257,9 @@ class GameFlowController extends ChangeNotifier {
 
   bool get canPoliticalAnalystActTonight {
     final analyst = politicalAnalystPlayer;
-    if (analyst == null || !analyst.isAlive || _politicalAnalystUsedTonight) return false;
+    if (analyst == null || !_stillActiveTonight(analyst) || _politicalAnalystUsedTonight) {
+      return false;
+    }
     if (roundNumber.isOdd) return false;
     return !isPlayerDetained(analyst.id);
   }
@@ -1145,7 +1292,9 @@ class GameFlowController extends ChangeNotifier {
 
   bool get canRequestReferendumTonight {
     final activist = civicActivistPlayer;
-    if (activist == null || !activist.isAlive || activist.referendumUsed) return false;
+    if (activist == null || !_stillActiveTonight(activist) || activist.referendumUsed) {
+      return false;
+    }
     return !isPlayerDetained(activist.id);
   }
 
@@ -1261,7 +1410,7 @@ class GameFlowController extends ChangeNotifier {
 
   bool get canRevolutionaryActTonight {
     final fighter = revolutionaryFighterPlayer;
-    if (fighter == null || !fighter.isAlive) return false;
+    if (fighter == null || !_stillActiveTonight(fighter)) return false;
     if (_revolutionaryActedTonight) return false;
     if (isPlayerDetained(fighter.id)) return false;
     return (fighter.revolutionaryChargesRemaining ?? 0) > 0;
@@ -1423,6 +1572,7 @@ class GameFlowController extends ChangeNotifier {
   // ---------- پایانِ شب ----------
 
   void moveToNight(int nightNumber) {
+    _phaseHistory.add(_PhaseSnapshot(phase, roundNumber));
     phase = GamePhaseType.night;
     roundNumber = nightNumber;
     currentNightStep = NightStepKind.sorkoobTeam;
@@ -1430,6 +1580,7 @@ class GameFlowController extends ChangeNotifier {
     _savedPlayerIds.clear();
     _doctorSavesUsedTonight = 0;
     _hackerUsedTonight = false;
+    _mossadActedTonight = false;
     lastInvestigationResult = null;
     lastInvestigationTargetName = null;
     _revolutionaryActedTonight = false;
@@ -1449,6 +1600,7 @@ class GameFlowController extends ChangeNotifier {
     slaughterResultMessage = null;
     negotiateResultMessage = null;
     lastNightSummary = null;
+    nightPrivateNotes = null;
     _tonightSlaughteredIds.clear();
     _tonightEliminatedIds.clear();
     _tonightRevivedId = null;
@@ -1460,14 +1612,22 @@ class GameFlowController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// پایانِ شب: ضربه‌های شات رو با نجاتِ دکتر و زره حل‌وفصل می‌کنه، و
-  /// خلاصه‌ی صبح رو می‌سازه. طبقِ قانون، خلاصه همیشه با سه خطِ صریح شروع
-  /// می‌شه — چون این دقیقاً چیزیه که گرداننده باید به جمع اعلام کنه:
-  /// کی با سلاخی حذف شد، کی به‌شکلِ عادی حذف شد، کی برگشت. جزئیاتِ
-  /// روایی‌ترِ بقیه‌ی رخدادها (مذاکره، اعدامِ انقلابی، رپر، از‌دست‌رفتنِ
-  /// زره) بعدِ اون میان، برای بایگانیِ خودِ گرداننده.
+  /// این متن همونیه که گرداننده باید عیناً و بصورتِ عمومی به جمع اعلام
+  /// کنه: فقط سه دسته — سلاخی/ترور، کشته‌شدن، بازگشت به بازی. هیچ جزئیاتِ
+  /// دیگه‌ای (چرا، با چه نقشی، مذاکره موفق بود یا نه، زره شکست یا نه)
+  /// اینجا نمیاد، چون اونا اطلاعاتِ راهبردی‌ان که نباید علنی بشن.
+  String? lastNightSummary;
+
+  /// یادداشتِ خصوصیِ گرداننده — همون جزئیاتِ بالا، فقط برای خودِ گرداننده
+  /// و هیچ‌وقت برای اعلامِ عمومی. جدا از lastNightSummary نگه داشته می‌شه
+  /// تا تو UI هم واضح متمایز نشون داده بشن.
+  String? nightPrivateNotes;
+
+  /// پایانِ شب: ضربه‌های شات رو با نجاتِ دکتر، زره‌ی معمولی، و زرهِ
+  /// همیشگیِ رهبرِ موساد حل‌وفصل می‌کنه، و دو تا خلاصه‌ی جدا می‌سازه: یکی
+  /// برای اعلامِ عمومی (سه دسته‌ی ثابت)، یکی برای یادداشتِ خصوصیِ گرداننده.
   void finishNight() {
-    final messages = <String>[];
+    final privateNotes = <String>[];
     _pendingHits.forEach((targetId, hitCount) {
       final target = playerById(targetId);
       if (!target.isAlive) return;
@@ -1476,6 +1636,13 @@ class GameFlowController extends ChangeNotifier {
         remaining -= 1; // نجاتِ دکتر فقط جلوی یکی از ضربه‌ها رو می‌گیره
       }
       if (remaining <= 0) return;
+      final targetRole = target.roleId != null ? SarkoobRoles.byId(target.roleId!) : null;
+      if (targetRole?.hasPermanentNightArmor == true) {
+        // رهبرِ موساد: زره‌ش هیچ‌وقت مصرف نمی‌شه، پس هر تعداد ضربه‌ی شات
+        // هم باشه، امشب زنده می‌مونه.
+        privateNotes.add('«${target.name}» (رهبرِ موساد) با زره‌ی همیشگی‌ش شاتِ شب رو خنثی کرد.');
+        return;
+      }
       if (target.hasArmor) {
         target.hasArmor = false;
         remaining -= 1;
@@ -1484,7 +1651,7 @@ class GameFlowController extends ChangeNotifier {
         _eliminatePlayer(target);
         _tonightEliminatedIds.add(target.id);
       } else {
-        messages.add('«${target.name}» زره‌اش رو از دست داد، ولی زنده موند.');
+        privateNotes.add('«${target.name}» زره‌اش رو از دست داد، ولی زنده موند.');
       }
     });
 
@@ -1500,29 +1667,30 @@ class GameFlowController extends ChangeNotifier {
       }
     }
 
-    if (slaughterResultMessage != null) messages.insert(0, slaughterResultMessage!);
-    if (negotiateResultMessage != null) messages.insert(0, negotiateResultMessage!);
-    if (revolutionaryResultMessage != null) messages.insert(0, revolutionaryResultMessage!);
-    if (rapperResultMessage != null) messages.insert(0, rapperResultMessage!);
+    if (slaughterResultMessage != null) privateNotes.insert(0, slaughterResultMessage!);
+    if (negotiateResultMessage != null) privateNotes.insert(0, negotiateResultMessage!);
+    if (revolutionaryResultMessage != null) privateNotes.insert(0, revolutionaryResultMessage!);
+    if (rapperResultMessage != null) privateNotes.insert(0, rapperResultMessage!);
     if (mossadAssassinationResultMessage != null) {
-      messages.insert(0, mossadAssassinationResultMessage!);
+      privateNotes.insert(0, mossadAssassinationResultMessage!);
     }
 
     final announcement = <String>[];
     if (_tonightSlaughteredIds.isNotEmpty) {
       final names = _tonightSlaughteredIds.map((id) => playerById(id).name).join('، ');
-      announcement.add('🔪 با سلاخی از بازی خارج شدن: $names');
+      announcement.add('🔪 با سلاخی/ترور از بازی خارج شدن: $names');
     }
     if (_tonightEliminatedIds.isNotEmpty) {
       final names = _tonightEliminatedIds.map((id) => playerById(id).name).join('، ');
-      announcement.add('❌ از بازی خارج شدن: $names');
+      announcement.add('❌ کشته شدن: $names');
     }
     if (_tonightRevivedId != null) {
-      announcement.add('✅ وکیل به بازی برگردوند: ${playerById(_tonightRevivedId!).name}');
+      announcement.add('✅ برگشتن به بازی: ${playerById(_tonightRevivedId!).name}');
     }
 
-    final allLines = [...announcement, ...messages];
-    lastNightSummary = allLines.isEmpty ? 'دیشب کسی حذف نشد.' : allLines.join('\n');
+    lastNightSummary =
+        announcement.isEmpty ? 'دیشب هیچ‌کس از بازی خارج نشد و هیچ‌کس هم برنگشت.' : announcement.join('\n');
+    nightPrivateNotes = privateNotes.isEmpty ? null : privateNotes.join('\n');
     _pendingHits.clear();
     _savedPlayerIds.clear();
     notifyListeners();

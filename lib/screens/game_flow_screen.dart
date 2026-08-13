@@ -36,58 +36,76 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_titleFor(controller)),
-      ),
-      body: ListenableBuilder(
+    // بکِ سیستمی/AppBar به‌جای بازگشت به منو، فقط یه فاز/روزِ گردانندگی
+    // رو برمی‌گردونه عقب. اگه چیزی برای برگشتن نباشه (شروعِ بازی)، پاپ
+    // نمی‌شه — برای خروجِ واقعی از دکمه‌ی «پایانِ بازی» پایینِ صفحه استفاده می‌شه.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (controller.canStepBackPhase) {
+          controller.stepBackOnePhase();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('برای خروج از گردانندگی، از دکمه‌ی «پایانِ بازی» تو نوارِ پایین استفاده کن.'),
+            ),
+          );
+        }
+      },
+      child: ListenableBuilder(
         listenable: controller,
-        builder: (context, _) => Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (_showTeamCounts) _buildTeamCountsBanner(),
-              Expanded(child: _buildBody()),
-            ],
+        builder: (context, _) => Scaffold(
+          appBar: AppBar(
+            title: Text(_titleFor(controller)),
           ),
-        ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        color: AppColors.background,
-        elevation: 0,
-        child: SafeArea(
-          top: false,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _bottomBarAction(
-                icon: Icons.groups,
-                label: 'بازیکنان',
-                onPressed: _showRosterDialog,
+          body: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (_showTeamCounts) _buildTeamCountsBanner(),
+                Expanded(child: _buildBody()),
+              ],
+            ),
+          ),
+          bottomNavigationBar: BottomAppBar(
+            color: AppColors.background,
+            elevation: 0,
+            child: SafeArea(
+              top: false,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _bottomBarAction(
+                    icon: Icons.groups,
+                    label: 'بازیکنان',
+                    onPressed: _showRosterDialog,
+                  ),
+                  _bottomBarAction(
+                    icon: Icons.swap_vert,
+                    label: 'جابه‌جایی',
+                    onPressed: _showReorderDialog,
+                  ),
+                  _bottomBarAction(
+                    icon: Icons.gavel,
+                    label: 'تنبیه',
+                    onPressed: _showDisciplineDialog,
+                  ),
+                  _bottomBarAction(
+                    icon: _showTeamCounts ? Icons.pie_chart : Icons.pie_chart_outline,
+                    label: 'تعدادِ زنده',
+                    active: _showTeamCounts,
+                    onPressed: () => setState(() => _showTeamCounts = !_showTeamCounts),
+                  ),
+                  _bottomBarAction(
+                    icon: Icons.flag,
+                    label: 'پایانِ بازی',
+                    onPressed: _showEndGameDialog,
+                  ),
+                ],
               ),
-              _bottomBarAction(
-                icon: Icons.swap_vert,
-                label: 'جابه‌جایی',
-                onPressed: _showReorderDialog,
-              ),
-              _bottomBarAction(
-                icon: Icons.gavel,
-                label: 'اخراج',
-                onPressed: _showDisciplinaryExpelDialog,
-              ),
-              _bottomBarAction(
-                icon: _showTeamCounts ? Icons.pie_chart : Icons.pie_chart_outline,
-                label: 'تعدادِ زنده',
-                active: _showTeamCounts,
-                onPressed: () => setState(() => _showTeamCounts = !_showTeamCounts),
-              ),
-              _bottomBarAction(
-                icon: Icons.flag,
-                label: 'پایانِ بازی',
-                onPressed: _showEndGameDialog,
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -199,7 +217,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 dense: true,
                 title: Text(p.name, style: const TextStyle(color: Colors.white)),
                 subtitle: Text(
-                  '$teamName${role != null ? ' — ${role.name}' : ''}',
+                  '$teamName${role != null ? ' — ${role.name}' : ''}'
+                  '${p.disciplineStage > 0 ? ' — ${disciplineStageLabel(p.disciplineStage)}' : ''}',
                   style: const TextStyle(color: AppColors.goldLight),
                 ),
                 trailing: Text(status, style: const TextStyle(color: Colors.white54)),
@@ -259,74 +278,140 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     );
   }
 
-  /// اخراجِ انضباطیِ یه بازیکن توسطِ گرداننده (افشای نقش، تقلب، و مواردِ
-  /// مشابه)؛ هم تو شب هم تو روز در دسترسه و برگشت‌ناپذیره.
-  void _showDisciplinaryExpelDialog() {
+  /// تنبیهِ انضباطیِ یه بازیکن توسطِ گرداننده — هم تو شب هم تو روز در
+  /// دسترسه. بعدِ انتخابِ بازیکن، گرداننده بینِ دو راه انتخاب می‌کنه:
+  /// «تنبیه» (درجه‌بندی‌شده: اخطار → منعِ چالش → سکوت → اخراج) یا
+  /// «اخراجِ» مستقیم و فوری (افشای نقش، تقلبِ آشکار، و مواردِ مشابه).
+  void _showDisciplineDialog() {
     SessionPlayer? selectedTarget;
+    bool isExpelChoice = false; // false = تنبیهِ درجه‌بندی‌شده، true = اخراجِ مستقیم
     final reasonController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
-        builder: (dialogContext, setDialogState) => AlertDialog(
-          backgroundColor: AppColors.surfaceDark,
-          title: const Text('اخراجِ انضباطی', style: TextStyle(color: AppColors.bloodRedLight)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'این کار برگشت‌ناپذیره و مستقل از قوانینِ عادیِ بازیه.',
-                style: TextStyle(color: Colors.white54, fontSize: 12),
-              ),
-              const SizedBox(height: 8),
-              DropdownButton<SessionPlayer>(
-                isExpanded: true,
-                hint: const Text('انتخابِ بازیکن', style: TextStyle(color: Colors.white70)),
-                dropdownColor: AppColors.surfaceDark,
-                value: selectedTarget,
-                items: controller.alivePlayers
-                    .map(
-                      (p) => DropdownMenuItem(
-                        value: p,
-                        child: Text(p.name, style: const TextStyle(color: Colors.white)),
+        builder: (dialogContext, setDialogState) {
+          final nextStage = selectedTarget == null ? 0 : selectedTarget!.disciplineStage + 1;
+          return AlertDialog(
+            backgroundColor: AppColors.surfaceDark,
+            title: const Text('تنبیهِ انضباطی', style: TextStyle(color: AppColors.bloodRedLight)),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'مستقل از قوانینِ عادیِ بازیه؛ برای رفتارِ خارج از نظمِ جلسه.',
+                    style: TextStyle(color: Colors.white54, fontSize: 12),
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButton<SessionPlayer>(
+                    isExpanded: true,
+                    hint: const Text('انتخابِ بازیکن', style: TextStyle(color: Colors.white70)),
+                    dropdownColor: AppColors.surfaceDark,
+                    value: selectedTarget,
+                    items: controller.alivePlayers
+                        .map(
+                          (p) => DropdownMenuItem(
+                            value: p,
+                            child: Text(p.name, style: const TextStyle(color: Colors.white)),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (v) => setDialogState(() => selectedTarget = v),
+                  ),
+                  if (selectedTarget != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'سابقه‌ی انضباطیِ فعلی: ${disciplineStageLabel(selectedTarget!.disciplineStage)}',
+                      style: const TextStyle(color: Colors.white38, fontSize: 12),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: isExpelChoice ? null : AppColors.goldDark.withOpacity(0.35),
+                              side: BorderSide(color: isExpelChoice ? Colors.white24 : AppColors.gold),
+                            ),
+                            onPressed: () => setDialogState(() => isExpelChoice = false),
+                            child: const Text('تنبیه'),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor:
+                                  isExpelChoice ? AppColors.bloodRedLight.withOpacity(0.35) : null,
+                              side: BorderSide(
+                                color: isExpelChoice ? AppColors.bloodRedLight : Colors.white24,
+                              ),
+                            ),
+                            onPressed: () => setDialogState(() => isExpelChoice = true),
+                            child: const Text('اخراجِ مستقیم'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    if (!isExpelChoice)
+                      Text(
+                        nextStage >= 4
+                            ? 'این چهارمین تخلفشه؛ همین الان از بازی اخراج می‌شه.'
+                            : 'نتیجه‌ی این تنبیه: ${disciplineStageLabel(nextStage)}',
+                        style: const TextStyle(color: AppColors.goldLight, fontSize: 13),
+                      )
+                    else
+                      const Text(
+                        'اخراجِ فوری و برگشت‌ناپذیر — بدونِ عبور از مراحلِ درجه‌بندی‌شده.',
+                        style: TextStyle(color: AppColors.bloodRedLight, fontSize: 13),
                       ),
-                    )
-                    .toList(),
-                onChanged: (v) => setDialogState(() => selectedTarget = v),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: reasonController,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(hintText: 'دلیل (مثلاً حرفِ خارج از نوبت، تقلب)'),
+                    ),
+                  ],
+                ],
               ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: reasonController,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(hintText: 'دلیل (مثلاً افشای نقش، تقلب)'),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('انصراف'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isExpelChoice ? AppColors.bloodRedLight : AppColors.gold,
+                ),
+                onPressed: selectedTarget != null
+                    ? () {
+                        final reason = reasonController.text.trim().isEmpty
+                            ? 'نامشخص'
+                            : reasonController.text.trim();
+                        final String resultMessage;
+                        if (isExpelChoice) {
+                          controller.disciplinaryExpel(selectedTarget!.id, reason);
+                          resultMessage = controller.disciplinaryExpelMessage ?? '';
+                        } else {
+                          resultMessage = controller.applyNextDisciplineStage(selectedTarget!.id, reason);
+                        }
+                        Navigator.of(dialogContext).pop();
+                        if (resultMessage.isNotEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(resultMessage)),
+                          );
+                        }
+                      }
+                    : null,
+                child: Text(isExpelChoice ? 'اخراج' : 'اعمالِ تنبیه'),
               ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('انصراف'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.bloodRedLight),
-              onPressed: selectedTarget != null
-                  ? () {
-                      final reason = reasonController.text.trim().isEmpty
-                          ? 'نامشخص'
-                          : reasonController.text.trim();
-                      controller.disciplinaryExpel(selectedTarget!.id, reason);
-                      Navigator.of(dialogContext).pop();
-                      if (controller.disciplinaryExpelMessage != null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(controller.disciplinaryExpelMessage!)),
-                        );
-                      }
-                    }
-                  : null,
-              child: const Text('اخراج'),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -397,6 +482,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                                 roleId: p.roleId,
                                 survived: p.isAlive,
                                 wasOnWinningSide: p.teamId == selectedTeamId,
+                                disciplineStage: p.disciplineStage,
                               ),
                             )
                             .toList(),
@@ -580,33 +666,74 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     );
   }
 
-  void _showChallengePicker() {
+  /// جعبه‌ابزارِ مشترکِ همه‌ی «انتخابِ یه بازیکن از لیست» — قبلاً هرکدوم
+  /// جدا نوشته شده بودن و بدونِ اسکرول، که با تعدادِ بازیکنِ واقعی
+  /// (۹+ نفر) از پایین overflow می‌کردن. اینجا هم isScrollControlled
+  /// هست هم خودِ لیست تو یه Expanded(ListView) ـه، پس هر تعداد بازیکن
+  /// جا می‌شه و اسکرول می‌خوره.
+  void _showPlayerListPicker({
+    required String title,
+    required List<SessionPlayer> targets,
+    required ValueChanged<SessionPlayer> onSelected,
+    String emptyMessage = 'الان کسی برای انتخاب نیست.',
+    String Function(SessionPlayer)? labelBuilder,
+  }) {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surfaceDark,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text(
-                'کدوم بازیکن چالش می‌گیره؟',
-                style: TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+      isScrollControlled: true,
+      builder: (sheetContext) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.5,
+        maxChildSize: 0.85,
+        builder: (context, scrollController) => SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(
+                  title,
+                  style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+                ),
               ),
-            ),
-            ...controller.challengeEligiblePlayers.map(
-              (p) => ListTile(
-                title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                onTap: () {
-                  controller.useChallenge(p.id);
-                  Navigator.of(context).pop();
-                },
+              Expanded(
+                child: targets.isEmpty
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Text(emptyMessage, style: const TextStyle(color: Colors.white38)),
+                        ),
+                      )
+                    : ListView(
+                        controller: scrollController,
+                        children: targets
+                            .map(
+                              (p) => ListTile(
+                                title: Text(
+                                  labelBuilder != null ? labelBuilder(p) : p.name,
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                                onTap: () {
+                                  Navigator.of(sheetContext).pop();
+                                  onSelected(p);
+                                },
+                              ),
+                            )
+                            .toList(),
+                      ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  void _showChallengePicker() {
+    _showPlayerListPicker(
+      title: 'کدوم بازیکن چالش می‌گیره؟',
+      targets: controller.challengeEligiblePlayers,
+      onSelected: (p) => controller.useChallenge(p.id),
     );
   }
 
@@ -851,30 +978,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }
 
   void _showForbiddenWordPicker() {
-    final targets = controller.alivePlayers;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surfaceDark,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('کی این کلمه رو گفت؟', style: TextStyle(color: AppColors.goldLight)),
-            ),
-            ...targets.map(
-              (p) => ListTile(
-                title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                onTap: () {
-                  controller.executePlayerForForbiddenWord(p.id);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+    _showPlayerListPicker(
+      title: 'کی این کلمه رو گفت؟',
+      targets: controller.alivePlayers,
+      onSelected: (p) => controller.executePlayerForForbiddenWord(p.id),
     );
   }
 
@@ -886,7 +993,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     return Column(
       children: [
         const Text(
-          'فقط این افراد بیدار می‌شن، همدیگه رو می‌بینن و نقشه می‌کشن:',
+          'اعضای تیم سرکوب بیدار بشن و همدیگه رو ببینن:',
           style: TextStyle(color: Colors.white70),
         ),
         const SizedBox(height: 16),
@@ -898,12 +1005,22 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     color: AppColors.bloodRed.withOpacity(0.35),
                     child: ListTile(
                       title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                      trailing: Text(
+                        p.roleId != null ? (SarkoobRoles.byId(p.roleId!)?.name ?? '') : '',
+                        style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 )
                 .toList(),
           ),
         ),
+        const SizedBox(height: 8),
+        const Text(
+          'فرصت برای مشورت',
+          style: TextStyle(color: Colors.white38, fontSize: 12),
+        ),
+        const SizedBox(height: 12),
         ElevatedButton(
           onPressed: () => controller.moveToDay(1),
           style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
@@ -1144,22 +1261,51 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Widget _buildNightPhase() {
     if (controller.lastNightSummary != null) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.nightlight_round, size: 48, color: AppColors.gold),
-            const SizedBox(height: 16),
-            Text(
-              controller.lastNightSummary!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white, fontSize: 16),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => controller.moveToDay(controller.roundNumber + 1),
-              child: Text('ادامه به روز ${controller.roundNumber + 1}'),
-            ),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.nightlight_round, size: 48, color: AppColors.gold),
+              const SizedBox(height: 16),
+              const Text(
+                'این متن رو عیناً به جمع اعلام کن:',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.goldLight, fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.gold),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  controller.lastNightSummary!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ),
+              if (controller.nightPrivateNotes != null) ...[
+                const SizedBox(height: 20),
+                const Text(
+                  'یادداشتِ خصوصیِ گرداننده (این رو اعلام نکن):',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white38, fontSize: 11),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  controller.nightPrivateNotes!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white54, fontSize: 13),
+                ),
+              ],
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => controller.moveToDay(controller.roundNumber + 1),
+                child: Text('ادامه به روز ${controller.roundNumber + 1}'),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -1516,7 +1662,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                       hint: const Text('حدسِ نقش', style: TextStyle(color: Colors.white70)),
                       dropdownColor: AppColors.surfaceDark,
                       value: selectedRoleId,
-                      items: SarkoobRoles.all
+                      items: controller.rolesInPlayForTeam(SarkoobTeams.suppression.id)
                           .map((r) => DropdownMenuItem(
                                 value: r.id,
                                 child: Text(r.name, style: const TextStyle(color: Colors.white)),
@@ -1545,30 +1691,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }
 
   void _showMossadShootPicker(SessionPlayer leader) {
-    final targets = controller.alivePlayers.where((p) => p.id != leader.id).toList();
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surfaceDark,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('شات روی کی؟', style: TextStyle(color: AppColors.goldLight)),
-            ),
-            ...targets.map(
-              (p) => ListTile(
-                title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                onTap: () {
-                  controller.mossadShoot(p.id);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+    _showPlayerListPicker(
+      title: 'شات روی کی؟',
+      targets: controller.alivePlayers.where((p) => p.id != leader.id).toList(),
+      onSelected: (p) => controller.mossadShoot(p.id),
     );
   }
 
@@ -1613,30 +1739,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   void _showPoliticalAnalystPicker() {
     final analyst = controller.politicalAnalystPlayer!;
-    final targets = controller.alivePlayers.where((p) => p.id != analyst.id).toList();
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surfaceDark,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('استعلام روی کی؟', style: TextStyle(color: AppColors.goldLight)),
-            ),
-            ...targets.map(
-              (p) => ListTile(
-                title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                onTap: () {
-                  controller.politicalAnalystInvestigate(p.id);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+    _showPlayerListPicker(
+      title: 'استعلام روی کی؟',
+      targets: controller.alivePlayers.where((p) => p.id != analyst.id).toList(),
+      onSelected: (p) => controller.politicalAnalystInvestigate(p.id),
     );
   }
 
@@ -1714,30 +1820,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }
 
   void _showRapperPicker(SessionPlayer rapper) {
-    final targets = controller.alivePlayers.where((p) => p.id != rapper.id).toList();
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surfaceDark,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('کی رو برای مقاومت انتخاب کنه؟', style: TextStyle(color: AppColors.goldLight)),
-            ),
-            ...targets.map(
-              (p) => ListTile(
-                title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                onTap: () {
-                  controller.rapperRecruit(p.id);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+    _showPlayerListPicker(
+      title: 'کی رو برای مقاومت انتخاب کنه؟',
+      targets: controller.alivePlayers.where((p) => p.id != rapper.id).toList(),
+      onSelected: (p) => controller.rapperRecruit(p.id),
     );
   }
 
@@ -2077,30 +2163,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }
 
   void _showDetainPicker() {
-    final targets = controller.detainEligibleTargets;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surfaceDark,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('کی بازداشت بشه؟', style: TextStyle(color: AppColors.goldLight)),
-            ),
-            ...targets.map(
-              (p) => ListTile(
-                title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                onTap: () {
-                  controller.detainPlayer(p.id);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+    _showPlayerListPicker(
+      title: 'کی بازداشت بشه؟',
+      targets: controller.detainEligibleTargets,
+      onSelected: (p) => controller.detainPlayer(p.id),
     );
   }
 
@@ -2125,30 +2191,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }
 
   void _showAssassinatePicker(SessionPlayer merc) {
-    final targets = controller.alivePlayers.where((p) => p.id != merc.id).toList();
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surfaceDark,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('ترور روی کی؟', style: TextStyle(color: AppColors.goldLight)),
-            ),
-            ...targets.map(
-              (p) => ListTile(
-                title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                onTap: () {
-                  controller.assassinate(p.id);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+    _showPlayerListPicker(
+      title: 'ترور روی کی؟',
+      targets: controller.alivePlayers.where((p) => p.id != merc.id).toList(),
+      onSelected: (p) => controller.assassinate(p.id),
     );
   }
 
@@ -2173,30 +2219,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }
 
   void _showGuaranteePicker(SessionPlayer hero) {
-    final targets = controller.alivePlayers;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surfaceDark,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('کی تضمین بشه؟', style: TextStyle(color: AppColors.goldLight)),
-            ),
-            ...targets.map(
-              (p) => ListTile(
-                title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                onTap: () {
-                  controller.guaranteePlayer(p.id);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+    _showPlayerListPicker(
+      title: 'کی تضمین بشه؟',
+      targets: controller.alivePlayers,
+      onSelected: (p) => controller.guaranteePlayer(p.id),
     );
   }
 
@@ -2357,39 +2383,12 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }
 
   void _showDoctorSavePicker(SessionPlayer doc) {
-    final targets =
-        controller.alivePlayers.where((p) => controller.canDoctorSaveTarget(p.id)).toList();
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surfaceDark,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('امشب کی رو نجات بده؟', style: TextStyle(color: AppColors.goldLight)),
-            ),
-            if (targets.isEmpty)
-              const Padding(
-                padding: EdgeInsets.only(bottom: 16),
-                child: Text('کسی برای نجات باقی نمونده.', style: TextStyle(color: Colors.white38)),
-              ),
-            ...targets.map(
-              (p) => ListTile(
-                title: Text(
-                  p.id == doc.id ? '${p.name} (خودش)' : p.name,
-                  style: const TextStyle(color: Colors.white),
-                ),
-                onTap: () {
-                  controller.doctorSave(p.id);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+    _showPlayerListPicker(
+      title: 'امشب کی رو نجات بده؟',
+      targets: controller.alivePlayers.where((p) => controller.canDoctorSaveTarget(p.id)).toList(),
+      onSelected: (p) => controller.doctorSave(p.id),
+      emptyMessage: 'کسی برای نجات باقی نمونده.',
+      labelBuilder: (p) => p.id == doc.id ? '${p.name} (خودش)' : p.name,
     );
   }
 
@@ -2431,30 +2430,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   void _showHackerInvestigatePicker() {
     final hacker = controller.hackerPlayer!;
-    final targets = controller.alivePlayers.where((p) => p.id != hacker.id).toList();
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surfaceDark,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('استعلام روی کی؟', style: TextStyle(color: AppColors.goldLight)),
-            ),
-            ...targets.map(
-              (p) => ListTile(
-                title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                onTap: () {
-                  controller.hackerInvestigate(p.id);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+    _showPlayerListPicker(
+      title: 'استعلام روی کی؟',
+      targets: controller.alivePlayers.where((p) => p.id != hacker.id).toList(),
+      onSelected: (p) => controller.hackerInvestigate(p.id),
     );
   }
 
@@ -2510,30 +2489,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }
 
   void _showRevolutionaryExecutePicker(SessionPlayer fighter) {
-    final targets = controller.alivePlayers.where((p) => p.id != fighter.id).toList();
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surfaceDark,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('اعدامِ انقلابی روی کی؟', style: TextStyle(color: AppColors.goldLight)),
-            ),
-            ...targets.map(
-              (p) => ListTile(
-                title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                onTap: () {
-                  controller.revolutionaryExecute(p.id);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+    _showPlayerListPicker(
+      title: 'اعدامِ انقلابی روی کی؟',
+      targets: controller.alivePlayers.where((p) => p.id != fighter.id).toList(),
+      onSelected: (p) => controller.revolutionaryExecute(p.id),
     );
   }
 
@@ -2574,7 +2533,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                       hint: const Text('حدسِ نقش', style: TextStyle(color: Colors.white70)),
                       dropdownColor: AppColors.surfaceDark,
                       value: selectedRoleId,
-                      items: SarkoobRoles.all
+                      items: controller.rolesInPlay
                           .map((r) => DropdownMenuItem(
                                 value: r.id,
                                 child: Text(r.name, style: const TextStyle(color: Colors.white)),
@@ -2631,116 +2590,35 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }
 
   void _showLawyerRevivePicker() {
-    final targets = controller.halfAlivePlayers;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surfaceDark,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('کی به بازی برگرده؟', style: TextStyle(color: AppColors.goldLight)),
-            ),
-            ...targets.map(
-              (p) => ListTile(
-                title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                onTap: () {
-                  controller.lawyerRevive(p.id);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+    _showPlayerListPicker(
+      title: 'کی به بازی برگرده؟',
+      targets: controller.halfAlivePlayers,
+      onSelected: (p) => controller.lawyerRevive(p.id),
     );
   }
 
   void _showFallbackShootPicker() {
-    final targets = controller.alivePlayers;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surfaceDark,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('شات روی کی؟', style: TextStyle(color: AppColors.goldLight)),
-            ),
-            ...targets.map(
-              (p) => ListTile(
-                title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                onTap: () {
-                  controller.leaderShoot(p.id);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+    _showPlayerListPicker(
+      title: 'شات روی کی؟',
+      targets: controller.alivePlayers,
+      onSelected: (p) => controller.leaderShoot(p.id),
     );
   }
 
   void _showShootPicker(SessionPlayer leader) {
-    final targets = controller.alivePlayers.where((p) => p.id != leader.id).toList();
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surfaceDark,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('شات روی کی؟', style: TextStyle(color: AppColors.goldLight)),
-            ),
-            ...targets.map(
-              (p) => ListTile(
-                title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                onTap: () {
-                  controller.leaderShoot(p.id);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+    _showPlayerListPicker(
+      title: 'شات روی کی؟',
+      targets: controller.alivePlayers.where((p) => p.id != leader.id).toList(),
+      onSelected: (p) => controller.leaderShoot(p.id),
     );
   }
 
   void _showNegotiatePicker() {
     final minister = controller.foreignMinisterPlayer;
-    final targets =
-        controller.alivePlayers.where((p) => minister == null || p.id != minister.id).toList();
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surfaceDark,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('با کی می‌خوان مذاکره کنن؟', style: TextStyle(color: AppColors.goldLight)),
-            ),
-            ...targets.map(
-              (p) => ListTile(
-                title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                onTap: () {
-                  controller.leaderNegotiate(p.id);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+    _showPlayerListPicker(
+      title: 'با کی می‌خوان مذاکره کنن؟',
+      targets: controller.alivePlayers.where((p) => minister == null || p.id != minister.id).toList(),
+      onSelected: (p) => controller.leaderNegotiate(p.id),
     );
   }
 
@@ -2781,7 +2659,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                       hint: const Text('حدسِ نقش', style: TextStyle(color: Colors.white70)),
                       dropdownColor: AppColors.surfaceDark,
                       value: selectedRoleId,
-                      items: SarkoobRoles.all
+                      items: controller.rolesInPlay
                           .map((r) => DropdownMenuItem(
                                 value: r.id,
                                 child: Text(r.name, style: const TextStyle(color: Colors.white)),

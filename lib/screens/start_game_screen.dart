@@ -17,12 +17,6 @@ class _StartGameScreenState extends State<StartGameScreen> {
   int _doctorMaxSelfSaves = 2;
 
   bool _includeMossad = false;
-  int _independentCount = 1;
-
-  // چندتا از کلِ بازیکن‌ها عضوِ تیمِ سرکوبن. خودِ برنامه موقعِ شروعِ بازی
-  // به همین تعداد، کاملاً تصادفی، از بینِ همه‌ی بازیکن‌ها انتخاب می‌کنه —
-  // نه گرداننده انتخاب می‌کنه کیا، نه کسی پیش‌فرض جایی می‌ره.
-  int _sorkoobCount = 1;
 
   // کدوم نقش‌های اختیاری تو این بازی فعالن؛ ولی‌فقیه همیشه اجباری و
   // فعاله. این‌که کدوم نقش‌ها اصلاً تو بازی باشن دستیه، ولی این‌که کدوم
@@ -44,6 +38,13 @@ class _StartGameScreenState extends State<StartGameScreen> {
   bool _includeMercenary = false;
   bool _includeCivicActivist = false;
   bool _includePoliticalAnalyst = false;
+
+  // به‌جای یه عددِ کلیِ «چند نفر عضوِ این تیم باشن» و کم‌کردنِ نقش‌های
+  // فعال ازش، حالا مسیر برعکسه: جلوی نقش‌های بدونِ قابلیتِ خاص هم
+  // (سرکوبگرِ ساده، شهروندِ خاکستری) یه شمارشگر هست، و مجموعِ تک‌تکِ
+  // نقش‌های هر تیم خودش اندازه‌ی اون تیم رو تعیین می‌کنه.
+  int _suppressorCount = 0;
+  int _grayCitizenCount = 0;
 
   static const int _minPlayers = 9;
 
@@ -84,6 +85,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     _loadRoster();
   }
 
+  /// از لیستِ دائمی، یا تک‌تک یا با «انتخابِ همه»، به این جلسه اضافه می‌کنه.
   Future<void> _showAddFromRosterSheet() async {
     final available = _roster.where((p) => !_draftPlayers.contains(p.name)).toList();
     final selected = <SavedPlayerProfile>{};
@@ -109,6 +111,27 @@ class _StartGameScreenState extends State<StartGameScreen> {
                     'همه‌ی بازیکنانِ لیستِ دائمی از قبل تو این بازی هستن.',
                     style: TextStyle(color: Colors.white38),
                   ),
+                )
+              else
+                CheckboxListTile(
+                  value: selected.isEmpty
+                      ? false
+                      : (selected.length == available.length ? true : null),
+                  tristate: true,
+                  activeColor: AppColors.gold,
+                  title: const Text(
+                    'انتخابِ همه',
+                    style: TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+                  ),
+                  onChanged: (_) => setSheetState(() {
+                    if (selected.length == available.length) {
+                      selected.clear();
+                    } else {
+                      selected
+                        ..clear()
+                        ..addAll(available);
+                    }
+                  }),
                 ),
               Expanded(
                 child: ListView(
@@ -193,33 +216,27 @@ class _StartGameScreenState extends State<StartGameScreen> {
       (_includeCivicActivist ? 1 : 0) +
       (_includePoliticalAnalyst ? 1 : 0);
 
-  int get _citizenCount {
-    final total = _draftPlayers.length;
-    final independent = _includeIndependent ? _independentCount : 0;
-    final result = total - _sorkoobCount - independent;
-    return result < 0 ? 0 : result;
-  }
+  // مجموعِ نقش‌های هر تیم (نقش‌های ویژه + عضوِ سادهٔ بدونِ قابلیتِ خاص)
+  // خودش اندازه‌ی اون تیم رو تعیین می‌کنه — نه برعکس.
+  int get _sorkoobTotal => _sorkoobRoleSlotsEnabled + _suppressorCount;
+  int get _independentTotal => _includeIndependent ? 1 : 0; // فعلاً فقط رهبرِ موساد
+  int get _citizenTotal => _citizenRoleSlotsEnabled + _grayCitizenCount;
+  int get _assignedTotal => _sorkoobTotal + _independentTotal + _citizenTotal;
 
   String? get _validationError {
     final total = _draftPlayers.length;
     if (total < _minPlayers) {
       return 'حداقل $_minPlayers بازیکن لازمه (الان $total نفر)';
     }
-    if (_sorkoobCount < 1) {
-      return 'تیم سرکوب باید حداقل ۱ نفر داشته باشه (خودِ ولی‌فقیه)';
+    if (_citizenTotal < 1) {
+      return 'باید حداقل ۱ نفر تو تیم شهروند باشه — تعدادِ شهروندِ خاکستری رو زیاد کن';
     }
-    if (_sorkoobCount < _sorkoobRoleSlotsEnabled) {
-      return 'با این تعداد عضوِ سرکوب، همه‌ی نقش‌های فعال‌شده‌ی این تیم جا نمی‌شن';
+    final diff = total - _assignedTotal;
+    if (diff > 0) {
+      return 'هنوز $diff نفر نقش نگرفتن — تعدادِ سرکوبگر یا شهروندِ خاکستری رو زیاد کن';
     }
-    if (_includeIndependent && _independentCount < 1) {
-      return 'تیم مستقل انتخاب شده؛ باید حداقل ۱ نفر داشته باشه';
-    }
-    final independent = _includeIndependent ? _independentCount : 0;
-    if (_sorkoobCount + independent >= total) {
-      return 'با این اعداد، کسی برای تیم شهروند نمی‌مونه؛ تعدادِ سرکوب/مستقل رو کم کن';
-    }
-    if (_citizenRoleSlotsEnabled > _citizenCount) {
-      return 'با این تعداد شهروند، همه‌ی نقش‌های فعال‌شده‌ی این تیم جا نمی‌شن';
+    if (diff < 0) {
+      return 'مجموعِ نقش‌ها ${-diff} نفر بیشتر از بازیکن‌هاست — تعدادِ سرکوبگر یا شهروندِ خاکستری رو کم کن';
     }
     return null;
   }
@@ -227,7 +244,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   bool get _isPowerUnbalanced {
     final total = _draftPlayers.length;
     if (total == 0) return false;
-    return _citizenCount < (total * 2 / 3);
+    return _citizenTotal < (total * 2 / 3);
   }
 
   Future<void> _onStartPressed() async {
@@ -270,15 +287,16 @@ class _StartGameScreenState extends State<StartGameScreen> {
   void _startGame() {
     final total = _draftPlayers.length;
     final independentTeamId = _includeMossad ? SarkoobTeams.mossad.id : null;
-    final independentCount = _includeIndependent ? _independentCount : 0;
+    final sorkoobCount = _sorkoobTotal;
+    final independentCount = _independentTotal;
 
     // تخصیصِ تیم: کاملاً تصادفی. کلِ بازیکن‌ها رو قاطی می‌کنیم، اولین
-    // $_sorkoobCount نفر سرکوب، بعدی‌ها (اگه تیمِ مستقل فعاله) مستقل، و
+    // $sorkoobCount نفر سرکوب، بعدی‌ها (اگه تیمِ مستقل فعاله) مستقل، و
     // بقیه خودکار شهروند.
     final allShuffled = List<int>.generate(total, (i) => i)..shuffle();
-    final sorkoobIndices = allShuffled.take(_sorkoobCount).toSet();
+    final sorkoobIndices = allShuffled.take(sorkoobCount).toSet();
     final independentIndices =
-        allShuffled.skip(_sorkoobCount).take(independentCount).toSet();
+        allShuffled.skip(sorkoobCount).take(independentCount).toSet();
 
     final sorkoobShuffled = sorkoobIndices.toList()..shuffle();
     final valiFaghihIndex = sorkoobShuffled.isNotEmpty ? sorkoobShuffled[0] : null;
@@ -326,7 +344,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final politicalAnalystIndex = nextCitizenIndex(_includePoliticalAnalyst);
 
     final slaughterCharges = (total / 6).floor().clamp(1, 999);
-    final revolutionaryCharges = (_sorkoobCount - 1).clamp(0, 999);
+    final revolutionaryCharges = (sorkoobCount - 1).clamp(0, 999);
     final warGunCharges = slaughterCharges; // همون فرمولِ «هر ۶ نفر یکی»، رو کلِ بازیکن‌ها
     final intelQuestionCharges = slaughterCharges; // همون فرمول
     final guaranteeCharges = slaughterCharges; // همون فرمول
@@ -514,19 +532,10 @@ class _StartGameScreenState extends State<StartGameScreen> {
             activeColor: SarkoobTeams.mossad.color,
             title: Text(SarkoobTeams.mossad.name, style: const TextStyle(color: Colors.white)),
           ),
-          if (_includeIndependent)
-            _countStepper(
-              label: 'چند نفر عضوِ ${SarkoobTeams.mossad.name} باشن؟',
-              value: _independentCount,
-              onDecrement: () => setState(() {
-                if (_independentCount > 1) _independentCount--;
-              }),
-              onIncrement: () => setState(() => _independentCount++),
-            ),
           if (_includeMossad) ...[
             const SizedBox(height: 4),
             const Text(
-              'یکی از اعضای موساد، تصادفاً، رهبرِ موساد می‌شه:',
+              'فعلاً تنها نقشِ این تیم رهبرِ موساده، پس این تیم همیشه دقیقاً ۱ نفره:',
               style: TextStyle(color: Colors.white60, fontSize: 12),
             ),
             const SizedBox(height: 4),
@@ -537,25 +546,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
           Text('تیم سرکوب', style: AppTheme.headingFont(size: 20)),
           const SizedBox(height: 4),
           const Text(
-            'چند نفر عضوِ این تیم باشن؛ خودِ برنامه موقعِ شروعِ بازی کاملاً '
-            'تصادفی مشخص می‌کنه کیا، و بینِ همون‌ها هم تصادفی تصمیم می‌گیره '
-            'کی ولی‌فقیه/وزیر/رئیس‌قضاییه بشه.',
+            'جلوی هر نقش، تعدادش رو مشخص کن؛ خودِ برنامه موقعِ شروعِ بازی '
+            'کاملاً تصادفی مشخص می‌کنه کدوم بازیکن کدوم نقش رو می‌گیره.',
             style: TextStyle(color: Colors.white60, fontSize: 12),
           ),
           const SizedBox(height: 8),
-          _countStepper(
-            label: 'تعدادِ اعضای تیم سرکوب',
-            value: _sorkoobCount,
-            onDecrement: () => setState(() {
-              if (_sorkoobCount > 1) _sorkoobCount--;
-            }),
-            onIncrement: () => setState(() => _sorkoobCount++),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'این بازی کدوم نقش‌های سرکوب رو داشته باشه؟',
-            style: TextStyle(color: Colors.white70, fontSize: 13),
-          ),
           _mandatoryRoleRow(SarkoobRoles.valiFaghih),
           _roleToggle(
             role: SarkoobRoles.foreignMinister,
@@ -592,15 +587,32 @@ class _StartGameScreenState extends State<StartGameScreen> {
             value: _includeMercenary,
             onChanged: (v) => setState(() => _includeMercenary = v),
           ),
+          const SizedBox(height: 4),
+          _roleCountStepper(
+            role: SarkoobRoles.suppressor,
+            value: _suppressorCount,
+            onDecrement: () => setState(() {
+              if (_suppressorCount > 0) _suppressorCount--;
+            }),
+            onIncrement: () => setState(() => _suppressorCount++),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'مجموعِ تیم سرکوب: $_sorkoobTotal نفر',
+            style: const TextStyle(
+              color: AppColors.goldLight,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
 
           const SizedBox(height: 24),
           Text('تیم شهروند', style: AppTheme.headingFont(size: 20)),
           const SizedBox(height: 4),
-          Text(
-            'بقیه‌ی بازیکنانی که تو تیم سرکوب/مستقل نیفتادن، خودکار و '
-            'تصادفی شهروند حساب می‌شن: تقریباً $_citizenCount نفر از مجموع '
-            '$total. این بازی کدوم نقش‌های شهروندی رو داشته باشه؟',
-            style: const TextStyle(color: Colors.white60, fontSize: 12),
+          const Text(
+            'همینطور جلوی هر نقشِ شهروندی، تعدادش رو مشخص کن؛ شهروندِ '
+            'خاکستری همون عضوِ سادهٔ بدونِ قابلیتِ خاصه.',
+            style: TextStyle(color: Colors.white60, fontSize: 12),
           ),
           const SizedBox(height: 8),
           _roleToggle(
@@ -652,6 +664,44 @@ class _StartGameScreenState extends State<StartGameScreen> {
             role: SarkoobRoles.politicalAnalyst,
             value: _includePoliticalAnalyst,
             onChanged: (v) => setState(() => _includePoliticalAnalyst = v),
+          ),
+          const SizedBox(height: 4),
+          _roleCountStepper(
+            role: SarkoobRoles.grayCitizen,
+            value: _grayCitizenCount,
+            onDecrement: () => setState(() {
+              if (_grayCitizenCount > 0) _grayCitizenCount--;
+            }),
+            onIncrement: () => setState(() => _grayCitizenCount++),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'مجموعِ تیم شهروند: $_citizenTotal نفر',
+            style: const TextStyle(
+              color: AppColors.goldLight,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: _assignedTotal == total ? AppColors.gold : AppColors.bloodRedLight,
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              'نقش‌بندی‌شده: $_assignedTotal از $total نفر'
+              '${_includeMossad ? ' (شاملِ ۱ نفرِ تیمِ مستقل)' : ''}',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: _assignedTotal == total ? AppColors.goldLight : AppColors.bloodRedLight,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
 
           const SizedBox(height: 28),
@@ -726,33 +776,6 @@ class _StartGameScreenState extends State<StartGameScreen> {
     );
   }
 
-  Widget _countStepper({
-    required String label,
-    required int value,
-    required VoidCallback onDecrement,
-    required VoidCallback onIncrement,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13)),
-        Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.remove, color: AppColors.gold),
-              onPressed: onDecrement,
-            ),
-            Text('$value نفر', style: const TextStyle(color: AppColors.goldLight, fontSize: 18)),
-            IconButton(
-              icon: const Icon(Icons.add, color: AppColors.gold),
-              onPressed: onIncrement,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
   Widget _roleToggle({
     required GameRole role,
     required bool value,
@@ -764,6 +787,43 @@ class _StartGameScreenState extends State<StartGameScreen> {
       activeColor: AppColors.gold,
       title: Text(role.name, style: const TextStyle(color: Colors.white)),
       dense: true,
+    );
+  }
+
+  /// شمارشگرِ عددی جلوی یه نقشِ «بدونِ قابلیتِ خاص» (سرکوبگر، شهروندِ
+  /// خاکستری) — برخلافِ نقش‌های ویژه که فقط ۰ یا ۱ تا ازشون معنی داره،
+  /// از این‌ها می‌شه هر تعداد تو بازی داشت.
+  Widget _roleCountStepper({
+    required GameRole role,
+    required int value,
+    required VoidCallback onDecrement,
+    required VoidCallback onIncrement,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(role.name, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+          ),
+          IconButton(
+            icon: const Icon(Icons.remove, color: AppColors.gold),
+            onPressed: onDecrement,
+          ),
+          SizedBox(
+            width: 28,
+            child: Text(
+              '$value',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.goldLight, fontSize: 16),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.add, color: AppColors.gold),
+            onPressed: onIncrement,
+          ),
+        ],
+      ),
     );
   }
 

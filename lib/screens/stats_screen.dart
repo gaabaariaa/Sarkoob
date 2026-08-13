@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/game_session.dart';
 import '../models/history.dart';
 import '../models/role.dart';
 import '../models/team.dart';
@@ -17,6 +18,7 @@ class _PlayerAggregate {
   String displayName;
   int games = 0;
   int wins = 0;
+  int disciplineScore = 0; // مجموعِ disciplineStage (۰-۴) تو همه‌ی بازی‌ها — برای «بی‌انضباط‌ترین»
   final List<_PlayerGameRow> rows = [];
 
   _PlayerAggregate({required this.key, required this.displayName});
@@ -27,11 +29,13 @@ class _PlayerGameRow {
   final String teamName;
   final String? roleName;
   final bool won;
+  final int disciplineStage;
   _PlayerGameRow({
     required this.playedAt,
     required this.teamName,
     this.roleName,
     required this.won,
+    this.disciplineStage = 0,
   });
 }
 
@@ -68,6 +72,7 @@ class _StatsScreenState extends State<StatsScreen> {
         agg.displayName = p.name;
         agg.games += 1;
         if (p.wasOnWinningSide) agg.wins += 1;
+        agg.disciplineScore += p.disciplineStage;
         final role = p.roleId != null ? SarkoobRoles.byId(p.roleId!) : null;
         agg.rows.add(
           _PlayerGameRow(
@@ -75,6 +80,7 @@ class _StatsScreenState extends State<StatsScreen> {
             teamName: _teamName(p.teamId),
             roleName: role?.name,
             won: p.wasOnWinningSide,
+            disciplineStage: p.disciplineStage,
           ),
         );
       }
@@ -109,6 +115,9 @@ class _StatsScreenState extends State<StatsScreen> {
     final lastGame = _history.first;
     final winner = lastGame.players.where((p) => p.wasOnWinningSide).toList();
     final loser = lastGame.players.where((p) => !p.wasOnWinningSide).toList();
+    final undisciplined = aggregates.where((a) => a.disciplineScore > 0).toList()
+      ..sort((a, b) => b.disciplineScore.compareTo(a.disciplineScore));
+    final mostUndisciplined = undisciplined.isEmpty ? null : undisciplined.first;
 
     return Scaffold(
       appBar: AppBar(title: const Text('آمار')),
@@ -142,6 +151,17 @@ class _StatsScreenState extends State<StatsScreen> {
                 ),
             ],
           ),
+          if (mostUndisciplined != null) ...[
+            const SizedBox(height: 12),
+            _HighlightCard(
+              icon: Icons.gavel,
+              color: AppColors.bloodRedLight,
+              title: 'بی‌انضباط‌ترین بازیکن (مجموعِ کلِ تاریخچه)',
+              playerName: mostUndisciplined.displayName,
+              reason: 'نمره‌ی انضباطیِ تجمعی: ${mostUndisciplined.disciplineScore} '
+                  '(مجموعِ مراحلِ تنبیه در همه‌ی بازی‌هاش)',
+            ),
+          ],
           const SizedBox(height: 28),
           Text('جدول رتبه‌بندی', style: AppTheme.headingFont(size: 20)),
           const SizedBox(height: 10),
@@ -182,7 +202,8 @@ class _StatsScreenState extends State<StatsScreen> {
                           child: Text(
                             '${row.playedAt.year}/${row.playedAt.month}/${row.playedAt.day} — '
                             'نقش: ${row.roleName ?? row.teamName}، تیم: ${row.teamName}، '
-                            '${row.won ? 'برنده' : 'بازنده'}',
+                            '${row.won ? 'برنده' : 'بازنده'}'
+                            '${row.disciplineStage > 0 ? '، ${disciplineStageLabel(row.disciplineStage)}' : ''}',
                             style: const TextStyle(color: Colors.white70, height: 1.6),
                           ),
                         ),
