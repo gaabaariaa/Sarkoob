@@ -456,6 +456,33 @@ class SarkoobRoles {
     canInvestigateIndependent: true,
   );
 
+  // ---------- سناریوی «مافیا» ----------
+
+  /// هر شب، همراه با بقیه‌ی اعضای مافیا بیدار می‌شه؛ با هم روی یه نفر
+  /// توافق می‌کنن و اون فرد از بازی حذف می‌شه. بینِ خودِ اعضای مافیا
+  /// فرقی نیست — همه دقیقاً همین نقش رو دارن و همدیگه رو می‌شناسن؛
+  /// برخلافِ ولی‌فقیه/سرکوبگر، اینجا نقشِ «رهبر» جدایی وجود نداره.
+  static final mafiaMember = GameRole(
+    id: 'role_mafia_member',
+    name: 'مافیا',
+    teamId: SarkoobTeams.mafiaGang.id,
+    description:
+        'هر شب، همراه با بقیه‌ی اعضای مافیا بیدار می‌شه و همدیگه رو می‌بینه؛ '
+        'با هم روی یه بازیکن برای حذف توافق می‌کنن. بینِ خودِ اعضای مافیا '
+        'فرقی نیست — همه دقیقاً همین نقش رو دارن.',
+  );
+
+  /// هیچ قابلیتِ ویژه‌ای نداره؛ دقیقاً معادلِ «شهروندِ خاکستری»یِ سناریوی
+  /// سرکوبه، فقط برای سناریوی مافیا.
+  static final villager = GameRole(
+    id: 'role_villager',
+    name: 'روستایی',
+    teamId: SarkoobTeams.mafiaTown.id,
+    description:
+        'هیچ قابلیتِ ویژه‌ای تو شب نداره. کارش اینه که با دقت تو صحبت‌ها و '
+        'رأی‌گیری‌ها سعی کنه اعضای مافیا رو شناسایی و حذف کنه.',
+  );
+
   static final List<GameRole> all = [
     valiFaghih,
     foreignMinister,
@@ -478,6 +505,8 @@ class SarkoobRoles {
     mossadLeader,
     civicActivist,
     politicalAnalyst,
+    mafiaMember,
+    villager,
   ];
 
   static GameRole? byId(String id) {
@@ -489,4 +518,12 @@ class SarkoobRoles {
 
   static List<GameRole> forTeam(String teamId) =>
       all.where((r) => r.teamId == teamId).toList();
+
+  /// همه‌ی نقش‌های یه سناریوی خاص — بر اساسِ اینکه تیمِ صاحبِ نقش به کدوم
+  /// سناریو تعلق داره، نه یه فیلدِ جداگونه‌ی scenarioId رو خودِ نقش.
+  static List<GameRole> forScenario(String scenarioId) {
+    final teamIds =
+        SarkoobTeams.forScenario(scenarioId).map((t) => t.id).toSet();
+    return all.where((r) => teamIds.contains(r.teamId)).toList();
+  }
 }

@@ -29,6 +29,7 @@ class _PhaseSnapshot {
 /// جداگونه و به‌ترتیب، و در آخر جمع‌بندیِ شب.
 enum NightStepKind {
   sorkoobTeam,
+  mafiaTeam,
   mossadLeader,
   rapper,
   hacker,
@@ -630,6 +631,30 @@ class GameFlowController extends ChangeNotifier {
       }
       slaughterResultMessage = 'حدس درست نبود؛ یک ظرفیتِ سلاخی مصرف شد.';
     }
+    _nightActionTaken = true;
+    notifyListeners();
+  }
+
+  // ---------- شب: تصمیمِ تیمِ مافیا (سناریوی مافیا) ----------
+
+  /// اعضای زنده‌ی مافیا — برای نمایشِ لیستِ کامل، مثلِ نمایشِ تیمِ سرکوب.
+  List<SessionPlayer> get aliveMafiaTeamPlayers =>
+      alivePlayers.where((p) => p.teamId == SarkoobTeams.mafiaGang.id).toList();
+
+  /// آیا امشب حداقل یه عضوِ زنده‌ی مافیا برای تصمیم‌گیری هست؟
+  bool get canMafiaTeamAct => aliveMafiaTeamPlayers.isNotEmpty;
+
+  /// آیا می‌شه از مرحله‌ی تیمِ مافیا جلوتر رفت؟ اگه اصلاً عضوِ زنده‌ای
+  /// نمونده، بدونِ تصمیم هم می‌شه رد شد؛ وگرنه باید امشب یه هدف انتخاب
+  /// شده باشه.
+  bool get canAdvancePastMafiaTeamStep => !canMafiaTeamAct || _nightActionTaken;
+
+  /// تیمِ مافیا (با هم) روی یه هدف توافق می‌کنن. مثلِ leaderShoot، فقط
+  /// صف‌بندی می‌شه تو همون _pendingHits ی مشترک — یعنی نجاتِ دکتر (اگه
+  /// بعداً برای این سناریو اضافه شد) خودکار روش اثر می‌ذاره.
+  void mafiaTeamShoot(int targetId) {
+    if (!canMafiaTeamAct) return;
+    _pendingHits[targetId] = (_pendingHits[targetId] ?? 0) + 1;
     _nightActionTaken = true;
     notifyListeners();
   }
@@ -1485,6 +1510,7 @@ class GameFlowController extends ChangeNotifier {
 
   static const List<NightStepKind> _nightStepOrder = [
     NightStepKind.sorkoobTeam,
+    NightStepKind.mafiaTeam,
     NightStepKind.mossadLeader,
     NightStepKind.rapper,
     NightStepKind.hacker,
@@ -1514,7 +1540,12 @@ class GameFlowController extends ChangeNotifier {
   bool _isNightStepApplicable(NightStepKind step) {
     switch (step) {
       case NightStepKind.sorkoobTeam:
-        return true;
+        // فقط تو سناریوی سرکوب معنی داره؛ تو یه بازیِ سناریوی مافیا هیچ
+        // بازیکنی این تیم رو نداره، پس این مرحله کلاً رد می‌شه.
+        return players.any((p) => p.teamId == SarkoobTeams.suppression.id);
+      case NightStepKind.mafiaTeam:
+        // آینه‌ی همون منطق، برای سناریوی مافیا.
+        return players.any((p) => p.teamId == SarkoobTeams.mafiaGang.id);
       case NightStepKind.mossadLeader:
         // شبِ اول (برای انتخابِ شیوه) یا شب‌های زوج (برای استفاده). فردِ
         // مرده هم باز باید صداش کنیم (لوندادن)، پس isAlive رو چک نمی‌کنیم.
@@ -1588,7 +1619,6 @@ class GameFlowController extends ChangeNotifier {
     _phaseHistory.add(_PhaseSnapshot(phase, roundNumber));
     phase = GamePhaseType.night;
     roundNumber = nightNumber;
-    currentNightStep = NightStepKind.sorkoobTeam;
     _pendingHits.clear();
     _savedPlayerIds.clear();
     _doctorSavesUsedTonight = 0;
@@ -1622,6 +1652,8 @@ class GameFlowController extends ChangeNotifier {
     lastIndependentInvestigationResult = null;
     lastIndependentInvestigationTargetName = null;
     _referendumRequestedThisNight = false;
+    currentNightStep =
+        _nightStepOrder.firstWhere(_isNightStepApplicable, orElse: () => NightStepKind.done);
     notifyListeners();
   }
 

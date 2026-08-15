@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/game_session.dart';
 import '../models/history.dart';
 import '../models/role.dart';
+import '../models/scenario.dart';
 import '../models/team.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
@@ -15,6 +16,16 @@ class _StartGameScreenState extends State<StartGameScreen> {
   final TextEditingController _nameController = TextEditingController();
   int _speakSeconds = 60;
   int _doctorMaxSelfSaves = 2;
+
+  // اولین قدمِ شروعِ بازی: انتخابِ سناریو. تا این انتخاب نشده، هیچ
+  // بخشِ تیم/نقشی نشون داده نمی‌شه — چون نقش‌های قابل‌انتخاب کاملاً به
+  // سناریو بستگی دارن.
+  GameScenario? _selectedScenario;
+
+  // ---- فقط برای سناریوی «مافیا»: دوتا شمارشگرِ ساده، چون فعلاً هر تیم
+  // فقط یه نقشِ یکسان برای همه‌ی اعضاش داره (بدونِ نقشِ اختیاریِ اضافه). ----
+  int _mafiaCount = 0;
+  int _villagerCount = 0;
 
   bool _includeMossad = false;
 
@@ -223,7 +234,42 @@ class _StartGameScreenState extends State<StartGameScreen> {
   int get _citizenTotal => _citizenRoleSlotsEnabled + _grayCitizenCount;
   int get _assignedTotal => _sorkoobTotal + _independentTotal + _citizenTotal;
 
+  // ---- جمعِ نقش‌بندی‌شده‌ی سناریوی «مافیا» ----
+  int get _mafiaAssignedTotal => _mafiaCount + _villagerCount;
+
+  bool get _isSorkoobScenario => _selectedScenario == SarkoobScenarios.sorkoob;
+  bool get _isMafiaScenario => _selectedScenario == SarkoobScenarios.mafia;
+
+  String? get _mafiaValidationError {
+    final total = _draftPlayers.length;
+    if (total < _minPlayers) {
+      return 'حداقل $_minPlayers بازیکن لازمه (الان $total نفر)';
+    }
+    if (_mafiaCount < 1) {
+      return 'باید حداقل ۱ نفر مافیا باشه';
+    }
+    if (_villagerCount < 1) {
+      return 'باید حداقل ۱ نفر روستایی باشه';
+    }
+    final diff = total - _mafiaAssignedTotal;
+    if (diff > 0) {
+      return 'هنوز $diff نفر نقش نگرفتن — تعدادِ مافیا یا روستایی رو زیاد کن';
+    }
+    if (diff < 0) {
+      return 'مجموعِ نقش‌ها ${-diff} نفر بیشتر از بازیکن‌هاست — تعدادِ مافیا یا روستایی رو کم کن';
+    }
+    return null;
+  }
+
+  /// راهنمای رایجِ بازیِ مافیا: تعدادِ مافیا نباید بیشتر از یک‌سومِ کل باشه.
+  bool get _isMafiaCountUnbalanced {
+    final total = _draftPlayers.length;
+    if (total == 0 || _mafiaCount == 0) return false;
+    return _mafiaCount > (total / 3);
+  }
+
   String? get _validationError {
+    if (_isMafiaScenario) return _mafiaValidationError;
     final total = _draftPlayers.length;
     if (total < _minPlayers) {
       return 'حداقل $_minPlayers بازیکن لازمه (الان $total نفر)';
@@ -251,25 +297,32 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final error = _validationError;
     if (error != null) return;
 
-    if (_isPowerUnbalanced) {
-      final proceed = await _showBalanceWarning();
+    final unbalanced = _isMafiaScenario ? _isMafiaCountUnbalanced : _isPowerUnbalanced;
+    if (unbalanced) {
+      final proceed = await _showBalanceWarning(
+        _isMafiaScenario
+            ? 'تعدادِ مافیا بیشتر از یک‌سومِ کل نفراته؛ تیمِ مافیا قدرتِ '
+                'زیادی نسبت به اهالیِ شهر داره. می‌خوای همینطوری ادامه بدی؟'
+            : 'تعداد تیم مقاومت (شهروند) کمتر از دو‌سومِ کل نفراته؛ تیم مقاومت '
+                'قدرت کمتری نسبت به بقیه‌ی تیم‌ها داره. می‌خوای همینطوری ادامه بدی؟',
+      );
       if (proceed != true) return;
     }
 
-    _startGame();
+    if (_isMafiaScenario) {
+      _startMafiaGame();
+    } else {
+      _startGame();
+    }
   }
 
-  Future<bool?> _showBalanceWarning() {
+  Future<bool?> _showBalanceWarning(String message) {
     return showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.surfaceDark,
         title: const Text('قدرت بازی بالانس نیست', style: TextStyle(color: AppColors.goldLight)),
-        content: const Text(
-          'تعداد تیم مقاومت (شهروند) کمتر از دو‌سومِ کل نفراته؛ تیم مقاومت '
-          'قدرت کمتری نسبت به بقیه‌ی تیم‌ها داره. می‌خوای همینطوری ادامه بدی؟',
-          style: TextStyle(color: Colors.white70),
-        ),
+        content: Text(message, style: const TextStyle(color: Colors.white70)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -441,14 +494,58 @@ class _StartGameScreenState extends State<StartGameScreen> {
     );
   }
 
+  /// نسخه‌ی سناریوی «مافیا»ی شروعِ بازی — چون فعلاً هر تیم فقط یه نقشِ
+  /// یکسان برای همه‌ی اعضاش داره، نیازی به cursor-یِ نقش‌به‌نقش نیست:
+  /// فقط یه شافلِ کلی برای تعیینِ اینکه کی مافیاست و کی روستایی.
+  void _startMafiaGame() {
+    final total = _draftPlayers.length;
+    final shuffledIndices = List<int>.generate(total, (i) => i)..shuffle();
+    final mafiaIndices = shuffledIndices.take(_mafiaCount).toSet();
+
+    final players = <SessionPlayer>[];
+    for (var i = 0; i < total; i++) {
+      final isMafia = mafiaIndices.contains(i);
+      players.add(
+        SessionPlayer(
+          id: i + 1,
+          name: _draftPlayers[i],
+          rosterId: _draftRosterLinks[_draftPlayers[i]],
+          teamId: isMafia ? SarkoobTeams.mafiaGang.id : SarkoobTeams.mafiaTown.id,
+          roleId: isMafia ? SarkoobRoles.mafiaMember.id : SarkoobRoles.villager.id,
+        ),
+      );
+    }
+
+    final settings = GameSettings(
+      speakSeconds: _speakSeconds,
+      doctorMaxSelfSaves: _doctorMaxSelfSaves,
+    );
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => RoleRevealScreen(players: players, settings: settings),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_selectedScenario == null) {
+      return _buildScenarioPicker();
+    }
+
     final introSeconds = (_speakSeconds / 2).round();
     final error = _validationError;
     final total = _draftPlayers.length;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('شروع بازی')),
+      appBar: AppBar(
+        title: Text('شروع بازی — ${_selectedScenario!.name}'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'تغییرِ سناریو',
+          onPressed: () => setState(() => _selectedScenario = null),
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -510,8 +607,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
             }).toList(),
           ),
 
-          const SizedBox(height: 24),
-          Text('تیم مستقل', style: AppTheme.headingFont(size: 20)),
+          if (_isSorkoobScenario) ...[
+            const SizedBox(height: 24),
+            Text('تیم مستقل', style: AppTheme.headingFont(size: 20)),
           const SizedBox(height: 4),
           const Text(
             'اختیاریه.',
@@ -703,6 +801,64 @@ class _StartGameScreenState extends State<StartGameScreen> {
               ),
             ),
           ),
+          ],
+
+          if (_isMafiaScenario) ...[
+            const SizedBox(height: 24),
+            Text('تیم مافیا', style: AppTheme.headingFont(size: 20)),
+            const SizedBox(height: 4),
+            const Text(
+              'همه‌ی اعضای این تیم دقیقاً یه نقشِ یکسان دارن (مافیا)؛ فقط '
+              'تعدادشون رو مشخص کن.',
+              style: TextStyle(color: Colors.white60, fontSize: 12),
+            ),
+            const SizedBox(height: 8),
+            _roleCountStepper(
+              role: SarkoobRoles.mafiaMember,
+              value: _mafiaCount,
+              onDecrement: () => setState(() {
+                if (_mafiaCount > 0) _mafiaCount--;
+              }),
+              onIncrement: () => setState(() => _mafiaCount++),
+            ),
+
+            const SizedBox(height: 24),
+            Text('تیم اهالی شهر', style: AppTheme.headingFont(size: 20)),
+            const SizedBox(height: 4),
+            const Text(
+              'بدونِ قابلیتِ ویژه — فقط با رأی و تحلیل دنبالِ مافیا می‌گردن.',
+              style: TextStyle(color: Colors.white60, fontSize: 12),
+            ),
+            const SizedBox(height: 8),
+            _roleCountStepper(
+              role: SarkoobRoles.villager,
+              value: _villagerCount,
+              onDecrement: () => setState(() {
+                if (_villagerCount > 0) _villagerCount--;
+              }),
+              onIncrement: () => setState(() => _villagerCount++),
+            ),
+
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: _mafiaAssignedTotal == total ? AppColors.gold : AppColors.bloodRedLight,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'نقش‌بندی‌شده: $_mafiaAssignedTotal از $total نفر',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color:
+                      _mafiaAssignedTotal == total ? AppColors.goldLight : AppColors.bloodRedLight,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
 
           const SizedBox(height: 28),
           Text('تنظیم زمان صحبت', style: AppTheme.headingFont(size: 20)),
@@ -730,32 +886,34 @@ class _StartGameScreenState extends State<StartGameScreen> {
             style: const TextStyle(color: Colors.white60, fontSize: 13),
           ),
 
-          const SizedBox(height: 24),
-          Text('نجاتِ خودِ دکتر', style: AppTheme.headingFont(size: 20)),
-          const SizedBox(height: 4),
-          const Text(
-            'دکتر در طولِ کلِ بازی حداکثر چندبار می‌تونه خودش رو نجات بده؟',
-            style: TextStyle(color: Colors.white60, fontSize: 12),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.remove, color: AppColors.gold),
-                onPressed: () => setState(() {
-                  if (_doctorMaxSelfSaves > 0) _doctorMaxSelfSaves--;
-                }),
-              ),
-              Text(
-                '$_doctorMaxSelfSaves بار',
-                style: const TextStyle(color: AppColors.goldLight, fontSize: 18),
-              ),
-              IconButton(
-                icon: const Icon(Icons.add, color: AppColors.gold),
-                onPressed: () => setState(() => _doctorMaxSelfSaves++),
-              ),
-            ],
-          ),
+          if (_isSorkoobScenario) ...[
+            const SizedBox(height: 24),
+            Text('نجاتِ خودِ دکتر', style: AppTheme.headingFont(size: 20)),
+            const SizedBox(height: 4),
+            const Text(
+              'دکتر در طولِ کلِ بازی حداکثر چندبار می‌تونه خودش رو نجات بده؟',
+              style: TextStyle(color: Colors.white60, fontSize: 12),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.remove, color: AppColors.gold),
+                  onPressed: () => setState(() {
+                    if (_doctorMaxSelfSaves > 0) _doctorMaxSelfSaves--;
+                  }),
+                ),
+                Text(
+                  '$_doctorMaxSelfSaves بار',
+                  style: const TextStyle(color: AppColors.goldLight, fontSize: 18),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.add, color: AppColors.gold),
+                  onPressed: () => setState(() => _doctorMaxSelfSaves++),
+                ),
+              ],
+            ),
+          ],
 
           const SizedBox(height: 24),
           if (error != null)
@@ -770,6 +928,60 @@ class _StartGameScreenState extends State<StartGameScreen> {
             onPressed: error == null ? _onStartPressed : null,
             style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
             child: const Text('شروع بازی (روز معارفه)'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScenarioPicker() {
+    return Scaffold(
+      appBar: AppBar(title: const Text('شروع بازی — انتخابِ سناریو')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const Text(
+            'اول سناریوی بازی رو انتخاب کن — تیم‌ها و نقش‌های قابل‌انتخاب '
+            'کاملاً به همین انتخاب بستگی دارن.',
+            style: TextStyle(color: Colors.white60, fontSize: 13),
+          ),
+          const SizedBox(height: 16),
+          ...SarkoobScenarios.all.map(
+            (scenario) => Card(
+              color: AppColors.surfaceCard,
+              margin: const EdgeInsets.only(bottom: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: scenario.color.withOpacity(0.6), width: 1.5),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () => setState(() => _selectedScenario = scenario),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(scenario.emoji, style: const TextStyle(fontSize: 26)),
+                          const SizedBox(width: 10),
+                          Text(
+                            scenario.name,
+                            style: AppTheme.headingFont(size: 22, color: scenario.color),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        scenario.description,
+                        style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),

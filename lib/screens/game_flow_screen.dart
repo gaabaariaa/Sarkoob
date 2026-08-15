@@ -988,18 +988,26 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   // ---------- شب معارفه ----------
 
   Widget _buildIntroNight() {
-    final sorkoobExceptModiri =
-        controller.players.where((p) => p.isSorkoobTeam && !p.isModiri).toList();
+    // چه سناریوی سرکوب چه مافیا، شبِ معارفه یعنی «تیمِ توطئه‌گر» با هم
+    // بیدار بشن و همدیگه رو ببینن — فقط بسته به این بازیِ خاص کدوم سناریو
+    // بوده، اون تیم فرق می‌کنه.
+    final isMafiaGame = controller.players.any((p) => p.teamId == SarkoobTeams.mafiaGang.id);
+    final conspiracyTeamId = isMafiaGame ? SarkoobTeams.mafiaGang.id : SarkoobTeams.suppression.id;
+    final wakingMembers = controller.players
+        .where((p) => p.teamId == conspiracyTeamId && !p.isModiri)
+        .toList();
     return Column(
       children: [
-        const Text(
-          'اعضای تیم سرکوب بیدار بشن و همدیگه رو ببینن:',
-          style: TextStyle(color: Colors.white70),
+        Text(
+          isMafiaGame
+              ? 'اعضای مافیا بیدار بشن و همدیگه رو ببینن:'
+              : 'اعضای تیم سرکوب بیدار بشن و همدیگه رو ببینن:',
+          style: const TextStyle(color: Colors.white70),
         ),
         const SizedBox(height: 16),
         Expanded(
           child: ListView(
-            children: sorkoobExceptModiri
+            children: wakingMembers
                 .map(
                   (p) => Card(
                     color: AppColors.bloodRed.withOpacity(0.35),
@@ -1313,6 +1321,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     switch (controller.currentNightStep) {
       case NightStepKind.sorkoobTeam:
         return _buildSorkoobTeamStep();
+      case NightStepKind.mafiaTeam:
+        return _buildMafiaTeamStep();
       case NightStepKind.mossadLeader:
         return _buildRoleNightStep(
           wakeLabel: 'رهبر موساد بیدار بشه',
@@ -1495,6 +1505,90 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             onPressed: controller.canAdvancePastSorkoobTeamStep ? controller.advanceNightStep : null,
             style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
             child: const Text('🌑 اعضای تیم سرکوب چشم‌هاشون رو ببندن'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMafiaRoster() {
+    final members = controller.aliveMafiaTeamPlayers;
+    if (members.isEmpty) return const SizedBox.shrink();
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: members
+            .map((p) => Text('👤 ${p.name}', style: const TextStyle(color: Colors.white)))
+            .toList(),
+      ),
+    );
+  }
+
+  Widget _buildMafiaKillSection() {
+    return Column(
+      children: [
+        const Text(
+          'مافیا با هم توافق می‌کنن امشب کی رو حذف کنن:',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 12),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+          onPressed: controller.nightActionTaken
+              ? null
+              : () => _showPlayerListPicker(
+                    title: 'مافیا کی رو حذف می‌کنه؟',
+                    targets: controller.alivePlayers
+                        .where((p) => p.teamId != SarkoobTeams.mafiaGang.id)
+                        .toList(),
+                    onSelected: (p) => controller.mafiaTeamShoot(p.id),
+                  ),
+          child: const Text('انتخابِ هدف'),
+        ),
+        if (controller.nightActionTaken) ...[
+          const SizedBox(height: 8),
+          const Text('هدفِ امشب انتخاب شد.', style: TextStyle(color: AppColors.goldLight)),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildMafiaTeamStep() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Text('شب ${controller.roundNumber}', style: AppTheme.headingFont(size: 24)),
+          const SizedBox(height: 8),
+          const Text(
+            '🔴 اعضای مافیا بیدار بشن',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          _buildMafiaRoster(),
+          const SizedBox(height: 16),
+          if (!controller.canMafiaTeamAct)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                'دیگه هیچ عضوِ زنده‌ای از مافیا نمونده — برو مرحله‌ی بعد.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white54),
+              ),
+            )
+          else
+            _buildMafiaKillSection(),
+          const SizedBox(height: 32),
+          ElevatedButton(
+            onPressed: controller.canAdvancePastMafiaTeamStep ? controller.advanceNightStep : null,
+            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+            child: const Text('🌑 اعضای مافیا چشم‌هاشون رو ببندن'),
           ),
         ],
       ),
