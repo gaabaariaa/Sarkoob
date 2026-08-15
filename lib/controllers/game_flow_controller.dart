@@ -134,14 +134,15 @@ class GameFlowController extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ---------- تنبیهِ انضباطیِ درجه‌بندی‌شده: اخطار → منعِ چالش → سکوت → اخراج ----------
+  // ---------- تنبیهِ انضباطیِ درجه‌بندی‌شده: اخطار → منعِ چالش‌گرفتن → سکوت → اخراج ----------
   // چهار مرحله‌ست و هربار که این ابزار برای یه بازیکن استفاده بشه، یه
   // درجه جلوتر می‌ره (برگشت‌ناپذیر، نمی‌شه درجه رو پایین آورد). نتیجه‌ی
   // هر درجه با disciplineStageLabel (تو game_session.dart) هم‌خونی داره.
 
-  /// آیا این بازیکن الان (طبقِ روز/فازِ فعلی) از دادنِ چالش منعه؟ چه
-  /// منعِ همیشگی (مرحله‌ی ۳+) چه منعِ یک‌روزه‌ی مرحله‌ی ۲، فقط تو همون
-  /// روزی که برای‌ش ثبت شده.
+  /// آیا این بازیکن الان (طبقِ روز/فازِ فعلی) از هدفِ چالش‌قرارگرفتن
+  /// (چالش‌گرفتن) منعه — یعنی کسی نمی‌تونه بهش چالش بده، نه اینکه خودش
+  /// نتونه به بقیه چالش بده. چه منعِ همیشگی (مرحله‌ی ۳+) چه منعِ
+  /// یک‌روزه‌ی مرحله‌ی ۲، فقط تو همون روزی که برای‌ش ثبت شده.
   bool isChallengeBanned(SessionPlayer p) {
     if (p.challengeBannedForever) return true;
     return p.challengeBanRoundNumber != null &&
@@ -178,13 +179,14 @@ class GameFlowController extends ChangeNotifier {
         break;
       case 2:
         target.challengeBanRoundNumber = effectiveRound;
-        message = '«${target.name}» امروز نمی‌تونه به کسی چالش بده (دلیل: $effectiveReason).';
+        message =
+            '«${target.name}» امروز نمی‌تونه چالش بگیره؛ یعنی کسی نمی‌تونه بهش چالش بده (دلیل: $effectiveReason).';
         break;
       default: // 3
         target.challengeBannedForever = true;
         target.silencedRoundNumber = effectiveRound;
         _skipDeadSpeakers();
-        message = '«${target.name}» برای‌همیشه از چالش‌دادن منع شد و تا پایانِ امروز '
+        message = '«${target.name}» برای‌همیشه از چالش‌گرفتن منع شد و تا پایانِ امروز '
             'سکوتِ انضباطی داره (دلیل: $effectiveReason).';
         break;
     }
@@ -271,34 +273,45 @@ class GameFlowController extends ChangeNotifier {
   }
 
   /// بازیکن‌هایی که الان می‌تونن هدفِ چالش باشن (فقط توی روزهای عادی، و
-  /// فقط کسایی که امروز قبلاً چالش نگرفتن و سکوتِ انضباطی ندارن).
+  /// فقط کسایی که امروز قبلاً چالش نگرفتن، سکوتِ انضباطی ندارن، و از
+  /// چالش‌گرفتن منع نشدن).
   List<SessionPlayer> get challengeEligiblePlayers {
     if (phase != GamePhaseType.day) return const [];
     return alivePlayers
         .where((p) =>
-            !p.challengeReceivedToday && p.id != speakerForDisplay?.id && !isSilencedToday(p))
+            !p.challengeReceivedToday &&
+            p.id != speakerForDisplay?.id &&
+            !isSilencedToday(p) &&
+            !isChallengeBanned(p))
         .toList();
   }
 
   /// آیا کسی که الان نوبتِ عادیِ صحبتشه، می‌تونه (هنوز) به یکی چالش بده؟
-  /// هر بازیکن توی هر نوبتِ صحبتش فقط یک‌بار می‌تونه چالش بده، و اگه
-  /// تنبیهِ انضباطی (منعِ یک‌روزه یا همیشگی) داشته باشه هم نمی‌تونه.
+  /// هر بازیکن توی هر نوبتِ صحبتش فقط یک‌بار می‌تونه چالش بده. تنبیهِ
+  /// انضباطیِ «منعِ چالش‌گرفتن» خودِ چالش‌دهنده رو محدود نمی‌کنه — فقط
+  /// باعث می‌شه بازیکنِ منع‌شده جزوِ اهدافِ قابل‌انتخاب نباشه
+  /// (challengeEligiblePlayers).
   bool get canCurrentSpeakerGiveChallenge {
     final speaker = currentSpeaker;
-    if (speaker == null || speaker.challengeGivenToday) return false;
-    return !isChallengeBanned(speaker);
+    return speaker != null && !speaker.challengeGivenToday;
   }
 
   final List<ChallengeRecord> _todaysChallenges = [];
   List<ChallengeRecord> get todaysChallenges => List.unmodifiable(_todaysChallenges);
 
   /// یه بازیکن (نوبتِ عادیِ فعلی) به یه بازیکنِ دیگه چالش می‌ده؛ بعدش
-  /// نوبتِ عادی دست‌نخورده می‌مونه. کی‌به‌کی برای نمایش ثبت می‌شه.
+  /// نوبتِ عادی دست‌نخورده می‌مونه. کی‌به‌کی برای نمایش ثبت می‌شه. اگه
+  /// گیرنده از چالش‌گرفتن منع شده باشه (تنبیهِ انضباطی)، چالش رد می‌شه —
+  /// نه محدودیتی رو خودِ چالش‌دهنده.
   void useChallenge(int receiverId) {
     final giver = currentSpeaker;
-    if (giver == null || giver.challengeGivenToday || isChallengeBanned(giver)) return;
+    if (giver == null || giver.challengeGivenToday) return;
     final receiver = playerById(receiverId);
-    if (receiver.challengeReceivedToday || isSilencedToday(receiver)) return;
+    if (receiver.challengeReceivedToday ||
+        isSilencedToday(receiver) ||
+        isChallengeBanned(receiver)) {
+      return;
+    }
     giver.challengeGivenToday = true;
     receiver.challengeReceivedToday = true;
     _todaysChallenges.add(ChallengeRecord(giver.id, receiverId));
