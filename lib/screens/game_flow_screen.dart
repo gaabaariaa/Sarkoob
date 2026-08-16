@@ -1307,6 +1307,81 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                   style: const TextStyle(color: Colors.white54, fontSize: 13),
                 ),
               ],
+              if (controller.statusInquiryChargesRemaining > 0 ||
+                  controller.statusInquiryResultMessage != null) ...[
+                const SizedBox(height: 24),
+                const Divider(color: Colors.white24),
+                const SizedBox(height: 8),
+                if (controller.statusInquiryResultMessage != null) ...[
+                  if (controller.statusInquiryLastVotePassed == true) ...[
+                    const Text(
+                      'استعلامِ وضعیت رأی آورد — این رو عیناً اعلام کن:',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColors.goldLight,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                  ],
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: controller.statusInquiryLastVotePassed == true
+                            ? AppColors.gold
+                            : Colors.white24,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      controller.statusInquiryResultMessage!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                    ),
+                  ),
+                ] else if (controller.statusInquiryVoteOpen) ...[
+                  Text(
+                    'چند نفر موافقِ استعلامِ وضعیت‌ان؟ (از ${controller.aliveCount} نفرِ زنده)',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.remove, color: AppColors.gold),
+                        onPressed: () => controller
+                            .setStatusInquiryYesVotes(controller.statusInquiryYesVotes - 1),
+                      ),
+                      Text(
+                        '${controller.statusInquiryYesVotes}',
+                        style: const TextStyle(color: AppColors.goldLight, fontSize: 20),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add, color: AppColors.gold),
+                        onPressed: () => controller
+                            .setStatusInquiryYesVotes(controller.statusInquiryYesVotes + 1),
+                      ),
+                    ],
+                  ),
+                  ElevatedButton(
+                    onPressed: controller.resolveStatusInquiryVote,
+                    child: const Text('ثبتِ نتیجه‌ی رأی'),
+                  ),
+                ] else ...[
+                  OutlinedButton(
+                    onPressed: controller.openStatusInquiryVote,
+                    child: Text(
+                      'آیا استعلامِ وضعیت می‌خواید؟ '
+                      '(${controller.statusInquiryChargesRemaining} تا مونده)',
+                    ),
+                  ),
+                ],
+              ],
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () => controller.moveToDay(controller.roundNumber + 1),

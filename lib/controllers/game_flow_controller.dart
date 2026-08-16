@@ -54,6 +54,9 @@ class GameFlowController extends ChangeNotifier {
 
   GameFlowController({required this.players, required this.settings}) {
     _rebuildSpeakingOrder();
+    final suppressionCount =
+        players.where((p) => p.teamId == SarkoobTeams.suppression.id).length;
+    statusInquiryChargesRemaining = suppressionCount > 0 ? suppressionCount - 1 : 0;
   }
 
   List<SessionPlayer> get alivePlayers => players.where((p) => p.isAlive).toList();
@@ -656,6 +659,79 @@ class GameFlowController extends ChangeNotifier {
     if (!canMafiaTeamAct) return;
     _pendingHits[targetId] = (_pendingHits[targetId] ?? 0) + 1;
     _nightActionTaken = true;
+    notifyListeners();
+  }
+
+  // ---------- استعلامِ وضعیت (زیرِ گزارشِ پایانِ شب) ----------
+
+  /// چندبار «استعلامِ وضعیت» هنوز مونده. یه‌بار موقعِ ساختنِ کنترلر
+  /// محاسبه می‌شه: اندازه‌ی تیمِ سرکوب در شروعِ بازی منهای ۱ (بخشِ
+  /// سازنده رو ببین). فقط تو سناریوی سرکوب معنی داره — تو سناریوی مافیا
+  /// این تیم اصلاً وجود نداره، پس همیشه ۰ می‌مونه و UI خودش بر همین اساس
+  /// پنهانش می‌کنه (نیازی به چکِ جداگونه‌ی سناریو نیست).
+  late int statusInquiryChargesRemaining;
+
+  /// آیا الان (زیرِ گزارشِ پایانِ شب) رأی‌گیریِ استعلامِ وضعیت بازه؟
+  bool statusInquiryVoteOpen = false;
+
+  /// تعدادِ رأیِ موافقی که گرداننده تا الان تو همین رأی‌گیریِ باز ثبت کرده.
+  int statusInquiryYesVotes = 0;
+
+  /// نتیجه‌ی آخرین رأی‌گیریِ امشب: true=اکثریت آورد، false=نیاورد،
+  /// null=امشب هنوز امتحان نشده.
+  bool? statusInquiryLastVotePassed;
+
+  /// متنِ نتیجه — یا آمارِ عمومیِ قابل‌اعلام (اگه رأی آورد)، یا یه یادداشتِ
+  /// کوتاه که رأی نیاورد. `null` یعنی امشب هنوز امتحان نشده.
+  String? statusInquiryResultMessage;
+
+  /// شمارشِ بازیکنانِ خارج‌شده از بازی (هرجور خارج‌شدنی — رأی، شات،
+  /// سلاخی، اخراجِ انضباطی، ترور، ...) به‌تفکیکِ تیم. برخلافِ
+  /// aliveCountsByTeam، تیمی که هیچ حذفی نداشته اصلاً تو لیست نمیاد،
+  /// چون استعلامِ وضعیت فقط قراره از خارج‌شده‌ها بگه.
+  List<MapEntry<GameTeam, int>> get eliminatedCountsByTeam {
+    final counts = <String, int>{};
+    for (final p in players.where((p) => !p.isAlive)) {
+      counts[p.teamId] = (counts[p.teamId] ?? 0) + 1;
+    }
+    return [
+      for (final entry in counts.entries)
+        if (SarkoobTeams.byId(entry.key) != null)
+          MapEntry(SarkoobTeams.byId(entry.key)!, entry.value),
+    ];
+  }
+
+  /// رأی‌گیری رو باز می‌کنه (شمارشگرِ موافق‌ها صفر می‌شه). اگه شارژی
+  /// نمونده باشه کاری نمی‌کنه.
+  void openStatusInquiryVote() {
+    if (statusInquiryChargesRemaining <= 0) return;
+    statusInquiryVoteOpen = true;
+    statusInquiryYesVotes = 0;
+    notifyListeners();
+  }
+
+  void setStatusInquiryYesVotes(int count) {
+    statusInquiryYesVotes = count.clamp(0, aliveCount);
+    notifyListeners();
+  }
+
+  /// نتیجه‌ی رأی‌گیری رو قطعی می‌کنه. اکثریت یعنی بیشتر از نصفِ زنده‌ها.
+  /// فقط وقتی واقعاً رأی بیاره یه شارژ مصرف می‌شه؛ رأی‌نیاوردن رایگانه
+  /// (می‌شه شبِ دیگه دوباره امتحان کرد).
+  void resolveStatusInquiryVote() {
+    statusInquiryVoteOpen = false;
+    final passed = statusInquiryYesVotes > aliveCount / 2;
+    statusInquiryLastVotePassed = passed;
+    if (passed) {
+      statusInquiryChargesRemaining--;
+      final counts = eliminatedCountsByTeam;
+      statusInquiryResultMessage = counts.isEmpty
+          ? 'نفراتِ خارج‌شده از بازی: تا الان کسی خارج نشده.'
+          : 'نفراتِ خارج‌شده از بازی:\n'
+              '${counts.map((e) => '${e.value} نفر ${e.key.name}').join('\n')}';
+    } else {
+      statusInquiryResultMessage = 'رأی‌گیریِ استعلامِ وضعیت اکثریت نیاورد؛ شارژی مصرف نشد.';
+    }
     notifyListeners();
   }
 
@@ -1644,6 +1720,10 @@ class GameFlowController extends ChangeNotifier {
     negotiateResultMessage = null;
     lastNightSummary = null;
     nightPrivateNotes = null;
+    statusInquiryVoteOpen = false;
+    statusInquiryYesVotes = 0;
+    statusInquiryLastVotePassed = null;
+    statusInquiryResultMessage = null;
     _tonightSlaughteredIds.clear();
     _tonightEliminatedIds.clear();
     _tonightRevivedId = null;
