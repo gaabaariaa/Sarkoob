@@ -379,6 +379,11 @@ class GameFlowController extends ChangeNotifier {
     communityLeaderExpulsionMessage = null;
     _referendumVotes.clear();
     _referendumCandidateIds = null;
+    autoDetectedWinnerTeamId = null;
+    gameEndMessage = null;
+    chaosPhaseActive = false;
+    chaosPhasePlayers = [];
+    _checkGameEndCondition();
     notifyListeners();
   }
 
@@ -659,6 +664,119 @@ class GameFlowController extends ChangeNotifier {
     if (!canMafiaTeamAct) return;
     _pendingHits[targetId] = (_pendingHits[targetId] ?? 0) + 1;
     _nightActionTaken = true;
+    notifyListeners();
+  }
+
+  // ---------- تریگرِ خودکارِ پایانِ بازی (فقط سناریوی سرکوب) ----------
+
+  /// اگه تریگرِ خودکار تشخیص داده باشه بازی تموم شده، آی‌دیِ تیمِ برنده؛
+  /// وگرنه null (یعنی بازی ادامه داره یا هنوز تو فازِ آشوبیم).
+  String? autoDetectedWinnerTeamId;
+
+  /// توضیحِ کوتاهِ چرایی/چگونگیِ تشخیصِ پایانِ بازی — برای نمایش به گرداننده.
+  String? gameEndMessage;
+
+  /// دقیقاً ۳ نفر زنده‌ن و ترکیب‌شون به‌خودی‌خود مشخص نیست (نیاز به
+  /// «دستِ توافق» داره) — تا وقتی resolveChaosPhase صدا زده نشه، بازی
+  /// همینجا معطل می‌مونه.
+  bool chaosPhaseActive = false;
+
+  /// سه بازیکنِ باقی‌مونده‌ی فازِ آشوب، برای نمایشِ گزینه‌های جفت‌شدن.
+  List<SessionPlayer> chaosPhasePlayers = [];
+
+  void _declareWinner(String teamId, String reason) {
+    autoDetectedWinnerTeamId = teamId;
+    gameEndMessage = reason;
+    chaosPhaseActive = false;
+  }
+
+  /// طبقِ سه حالتِ تعدادِ زنده‌ها (بیشتر از ۳ / دقیقاً ۳ / کمتر از ۳) چک
+  /// می‌کنه بازی تموم شده یا نه. این تریگر فقط برای سناریوی سرکوب طراحی
+  /// شده (بر اساسِ تیم‌های suppression/citizen/mossad)؛ اگه این جلسه
+  /// سناریوی مافیاست، بی‌اثر برمی‌گرده.
+  void _checkGameEndCondition() {
+    final isMafiaGame =
+        players.any((p) => p.teamId == SarkoobTeams.mafiaGang.id || p.teamId == SarkoobTeams.mafiaTown.id);
+    if (isMafiaGame) return;
+
+    final alive = alivePlayers;
+    final count = alive.length;
+    final hasMossad = alive.any((p) => p.teamId == SarkoobTeams.mossad.id);
+    final suppressionCount = alive.where((p) => p.teamId == SarkoobTeams.suppression.id).length;
+    final citizenCount = alive.where((p) => p.teamId == SarkoobTeams.citizen.id).length;
+
+    if (count > 3) {
+      if (hasMossad) return;
+      if (suppressionCount >= citizenCount) {
+        _declareWinner(
+          SarkoobTeams.suppression.id,
+          'بیشتر از ۳ نفر زنده‌ن، موساد تو بازی نیست، و تعدادِ سرکوب '
+          '($suppressionCount نفر) از شهروند ($citizenCount نفر) کمتر نیست.',
+        );
+      }
+      return;
+    }
+
+    if (count == 3) {
+      if (suppressionCount >= 2) {
+        // دو (یا هر سه‌ی) عضوِ سرکوب از شبِ معارفه همدیگه رو می‌شناسن؛
+        // قطعاً با هم متحد می‌شن، نیازی به فازِ آشوب نیست.
+        _declareWinner(
+          SarkoobTeams.suppression.id,
+          'دو نفر (یا بیشتر) از سه‌نفرِ باقی‌مونده عضوِ تیمِ سرکوبن و از قبل '
+          'همدیگه رو می‌شناسن — قطعاً با هم متحد می‌شن.',
+        );
+        return;
+      }
+      if (citizenCount == 3) {
+        _declareWinner(SarkoobTeams.citizen.id, 'هرسه نفرِ باقی‌مونده شهروندِ عادی‌ان.');
+        return;
+      }
+      // بقیه‌ی حالت‌ها (موساد+۲شهروند، ۲شهروند+۱سرکوب، یا هرکدوم یکی):
+      // نتیجه به اینکه کی‌باکی دست بده بستگی داره → فازِ آشوب.
+      chaosPhaseActive = true;
+      chaosPhasePlayers = alive;
+      return;
+    }
+
+    // count < 3
+    if (hasMossad) {
+      _declareWinner(SarkoobTeams.mossad.id, 'کمتر از ۳ نفر زنده‌ن و موساد هنوز تو بازیه.');
+    } else if (suppressionCount > 0) {
+      _declareWinner(
+        SarkoobTeams.suppression.id,
+        'کمتر از ۳ نفر زنده‌ن، موساد نیست ولی سرکوب هنوز هست.',
+      );
+    } else {
+      _declareWinner(SarkoobTeams.citizen.id, 'کمتر از ۳ نفر زنده‌ن و فقط شهروند مونده.');
+    }
+  }
+
+  /// گرداننده مشخص می‌کنه کدوم دو نفر (از سه‌تای فازِ آشوب) با هم دست
+  /// دادن؛ سومی طرفِ مقابله. قاعده: اگه موساد جزوِ این دو نفره → موساد
+  /// برنده؛ وگرنه اگه هم‌تیمی‌ان (هردو شهروند، چون سرکوبِ ۲نفره از قبل
+  /// خودکار رفع شده) → شهروند برنده؛ وگرنه (شهروند+سرکوب، موساد بیرون‌
+  /// مونده) → سرکوب برنده.
+  void resolveChaosPhase(int player1Id, int player2Id) {
+    if (!chaosPhaseActive) return;
+    final p1 = playerById(player1Id);
+    final p2 = playerById(player2Id);
+    if (p1.teamId == SarkoobTeams.mossad.id || p2.teamId == SarkoobTeams.mossad.id) {
+      _declareWinner(
+        SarkoobTeams.mossad.id,
+        '«${p1.name}» و «${p2.name}» با هم دست دادن و موساد جزوِ این دو نفره.',
+      );
+    } else if (p1.teamId == p2.teamId) {
+      _declareWinner(
+        p1.teamId,
+        '«${p1.name}» و «${p2.name}» (هردو ${SarkoobTeams.byId(p1.teamId)?.name}) با هم دست دادن.',
+      );
+    } else {
+      _declareWinner(
+        SarkoobTeams.suppression.id,
+        '«${p1.name}» و «${p2.name}» با هم دست دادن (شهروند+سرکوب)؛ موساد بیرون موند.',
+      );
+    }
     notifyListeners();
   }
 

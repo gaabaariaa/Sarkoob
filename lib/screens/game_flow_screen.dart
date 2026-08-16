@@ -419,9 +419,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   /// ثبتِ نتیجه‌ی بازیِ تمام‌شده تو تاریخچه‌ی دائمی. گرداننده تیمِ برنده
   /// رو دستی مشخص می‌کنه، چون تشخیصِ «بازی تموم شده و کی برده» به قضاوتِ
   /// خودِ گرداننده‌ست، نه چیزی که اپ خودکار حساب کنه.
-  void _showEndGameDialog() {
+  void _showEndGameDialog({String? preselectedTeamId}) {
     final presentTeamIds = controller.players.map((p) => p.teamId).toSet().toList();
-    String? selectedTeamId;
+    String? selectedTeamId = preselectedTeamId;
 
     showDialog(
       context: context,
@@ -511,6 +511,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       case GamePhaseType.introNight:
         return _buildIntroNight();
       case GamePhaseType.day:
+        if (controller.autoDetectedWinnerTeamId != null) return _buildGameOverScreen();
+        if (controller.chaosPhaseActive) return _buildChaosPhase();
         if (controller.lastResolution != null) return _buildDayResolved();
         if (controller.isSecondVoteRound) return _buildVotePanel(isSecondRound: true);
         if (controller.inDefense) return _buildDefensePhase();
@@ -1241,6 +1243,97 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }
 
   // ---------- نتیجه‌ی روز ----------
+
+  // ---------- پایانِ خودکارِ بازی / فازِ آشوب ----------
+
+  Widget _buildGameOverScreen() {
+    final teamId = controller.autoDetectedWinnerTeamId!;
+    final team = SarkoobTeams.byId(teamId);
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🏆', style: TextStyle(fontSize: 48)),
+            const SizedBox(height: 12),
+            Text('بازی تموم شد!', style: AppTheme.headingFont(size: 26)),
+            const SizedBox(height: 8),
+            Text(
+              '«${team?.name ?? teamId}» برنده شد',
+              style: TextStyle(
+                color: team?.color ?? AppColors.goldLight,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (controller.gameEndMessage != null) ...[
+              const SizedBox(height: 16),
+              Text(
+                controller.gameEndMessage!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white70, fontSize: 13),
+              ),
+            ],
+            const SizedBox(height: 28),
+            ElevatedButton(
+              onPressed: () => _showEndGameDialog(preselectedTeamId: teamId),
+              style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+              child: const Text('ثبتِ نتیجه تو تاریخچه'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChaosPhase() {
+    final trio = controller.chaosPhasePlayers;
+    if (trio.length != 3) return const SizedBox.shrink();
+    final a = trio[0];
+    final b = trio[1];
+    final c = trio[2];
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const Text('🌪️', style: TextStyle(fontSize: 40)),
+          const SizedBox(height: 8),
+          Text('فازِ آشوب', style: AppTheme.headingFont(size: 24)),
+          const SizedBox(height: 8),
+          const Text(
+            'فقط ۳ نفر باقی موندن. دو نفر از این سه نفر باید تو زمانِ زیر با '
+            'هم به توافق برسن و متحد بشن؛ نفرِ سوم طرفِ مقابله‌ست.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          const SizedBox(height: 16),
+          CountdownTimerWidget(totalSeconds: controller.settings.speakSeconds * 2),
+          const SizedBox(height: 24),
+          const Text(
+            'بعدِ توافق، مشخص کن کدوم دو نفر با هم دست دادن:',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          const SizedBox(height: 12),
+          _chaosPairButton(a, b),
+          _chaosPairButton(a, c),
+          _chaosPairButton(b, c),
+        ],
+      ),
+    );
+  }
+
+  Widget _chaosPairButton(SessionPlayer p1, SessionPlayer p2) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: OutlinedButton(
+        style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+        onPressed: () => controller.resolveChaosPhase(p1.id, p2.id),
+        child: Text('${p1.name}   🤝   ${p2.name}'),
+      ),
+    );
+  }
+
 
   Widget _buildDayResolved() {
     return Center(
