@@ -22,10 +22,27 @@ class _StartGameScreenState extends State<StartGameScreen> {
   // سناریو بستگی دارن.
   GameScenario? _selectedScenario;
 
-  // ---- فقط برای سناریوی «مافیا»: دوتا شمارشگرِ ساده، چون فعلاً هر تیم
-  // فقط یه نقشِ یکسان برای همه‌ی اعضاش داره (بدونِ نقشِ اختیاریِ اضافه). ----
-  int _mafiaCount = 0;
-  int _villagerCount = 0;
+  // ---- سناریوی «مافیا»: کاملاً موازیِ سرکوب — پدرخوانده اجباری،
+  // بقیه‌ی نقش‌ها اختیاری، دو شمارشگر برای اعضای سادهٔ هر تیم. ----
+  bool _includeZodiac = false;
+
+  bool _includeNegotiator = false;
+  bool _includeEnchanter = false;
+  bool _includeSpy = false;
+  bool _includeKidnapper = false;
+  bool _includeTerrorist = false;
+
+  bool _includeMafiaDoctor = false;
+  bool _includeDetective = false;
+  bool _includeProfessional = false;
+  bool _includeKonstantin = false;
+  bool _includeOcean = false;
+  bool _includeGunman = false;
+  bool _includeLeader = false;
+  bool _includeSherlock = false;
+
+  int _mafiaCount = 0; // مافیا ساده
+  int _simpleCitizenCount = 0; // شهروندِ ساده
 
   bool _includeMossad = false;
 
@@ -79,6 +96,12 @@ class _StartGameScreenState extends State<StartGameScreen> {
   void _setIndependentTeam({required bool mossad}) {
     setState(() {
       _includeMossad = mossad;
+    });
+  }
+
+  void _setMafiaIndependentTeam({required bool zodiac}) {
+    setState(() {
+      _includeZodiac = zodiac;
     });
   }
 
@@ -234,8 +257,29 @@ class _StartGameScreenState extends State<StartGameScreen> {
   int get _citizenTotal => _citizenRoleSlotsEnabled + _grayCitizenCount;
   int get _assignedTotal => _sorkoobTotal + _independentTotal + _citizenTotal;
 
-  // ---- جمعِ نقش‌بندی‌شده‌ی سناریوی «مافیا» ----
-  int get _mafiaAssignedTotal => _mafiaCount + _villagerCount;
+  // ---- جمعِ نقش‌بندی‌شده‌ی سناریوی «مافیا» (کاملاً موازیِ بالا) ----
+  int get _mafiaGangRoleSlotsEnabled =>
+      1 + // پدرخوانده، همیشه اجباری
+      (_includeNegotiator ? 1 : 0) +
+      (_includeEnchanter ? 1 : 0) +
+      (_includeSpy ? 1 : 0) +
+      (_includeKidnapper ? 1 : 0) +
+      (_includeTerrorist ? 1 : 0);
+
+  int get _mafiaTownRoleSlotsEnabled =>
+      (_includeMafiaDoctor ? 1 : 0) +
+      (_includeDetective ? 1 : 0) +
+      (_includeProfessional ? 1 : 0) +
+      (_includeKonstantin ? 1 : 0) +
+      (_includeOcean ? 1 : 0) +
+      (_includeGunman ? 1 : 0) +
+      (_includeLeader ? 1 : 0) +
+      (_includeSherlock ? 1 : 0);
+
+  int get _mafiaGangTotal => _mafiaGangRoleSlotsEnabled + _mafiaCount;
+  int get _mafiaTownTotal => _mafiaTownRoleSlotsEnabled + _simpleCitizenCount;
+  int get _zodiacTotal => _includeZodiac ? 1 : 0;
+  int get _mafiaAssignedTotal => _mafiaGangTotal + _mafiaTownTotal + _zodiacTotal;
 
   bool get _isSorkoobScenario => _selectedScenario == SarkoobScenarios.sorkoob;
   bool get _isMafiaScenario => _selectedScenario == SarkoobScenarios.mafia;
@@ -245,27 +289,24 @@ class _StartGameScreenState extends State<StartGameScreen> {
     if (total < _minPlayers) {
       return 'حداقل $_minPlayers بازیکن لازمه (الان $total نفر)';
     }
-    if (_mafiaCount < 1) {
-      return 'باید حداقل ۱ نفر مافیا باشه';
-    }
-    if (_villagerCount < 1) {
-      return 'باید حداقل ۱ نفر روستایی باشه';
+    if (_mafiaTownTotal < 1) {
+      return 'باید حداقل ۱ نفر تو تیم شهروند باشه — تعدادِ شهروندِ ساده رو زیاد کن';
     }
     final diff = total - _mafiaAssignedTotal;
     if (diff > 0) {
-      return 'هنوز $diff نفر نقش نگرفتن — تعدادِ مافیا یا روستایی رو زیاد کن';
+      return 'هنوز $diff نفر نقش نگرفتن — تعدادِ مافیا ساده یا شهروندِ ساده رو زیاد کن';
     }
     if (diff < 0) {
-      return 'مجموعِ نقش‌ها ${-diff} نفر بیشتر از بازیکن‌هاست — تعدادِ مافیا یا روستایی رو کم کن';
+      return 'مجموعِ نقش‌ها ${-diff} نفر بیشتر از بازیکن‌هاست — تعدادِ مافیا ساده یا شهروندِ ساده رو کم کن';
     }
     return null;
   }
 
-  /// راهنمای رایجِ بازیِ مافیا: تعدادِ مافیا نباید بیشتر از یک‌سومِ کل باشه.
+  /// راهنمای رایجِ بازیِ مافیا: تعدادِ تیمِ مافیا نباید بیشتر از یک‌سومِ کل باشه.
   bool get _isMafiaCountUnbalanced {
     final total = _draftPlayers.length;
-    if (total == 0 || _mafiaCount == 0) return false;
-    return _mafiaCount > (total / 3);
+    if (total == 0 || _mafiaGangTotal == 0) return false;
+    return _mafiaGangTotal > (total / 3);
   }
 
   String? get _validationError {
@@ -494,24 +535,123 @@ class _StartGameScreenState extends State<StartGameScreen> {
     );
   }
 
-  /// نسخه‌ی سناریوی «مافیا»ی شروعِ بازی — چون فعلاً هر تیم فقط یه نقشِ
-  /// یکسان برای همه‌ی اعضاش داره، نیازی به cursor-یِ نقش‌به‌نقش نیست:
-  /// فقط یه شافلِ کلی برای تعیینِ اینکه کی مافیاست و کی روستایی.
+  /// نسخه‌ی سناریوی «مافیا»ی شروعِ بازی — کاملاً موازیِ _startGame، فقط
+  /// با تیم‌ها/نقش‌های سناریوی مافیا.
   void _startMafiaGame() {
     final total = _draftPlayers.length;
-    final shuffledIndices = List<int>.generate(total, (i) => i)..shuffle();
-    final mafiaIndices = shuffledIndices.take(_mafiaCount).toSet();
+    final independentTeamId = _includeZodiac ? SarkoobTeams.zodiac.id : null;
+    final mafiaGangCount = _mafiaGangTotal;
+    final independentCount = _zodiacTotal;
+
+    final allShuffled = List<int>.generate(total, (i) => i)..shuffle();
+    final mafiaGangIndices = allShuffled.take(mafiaGangCount).toSet();
+    final independentIndices = allShuffled.skip(mafiaGangCount).take(independentCount).toSet();
+
+    final mafiaGangShuffled = mafiaGangIndices.toList()..shuffle();
+    final godfatherIndex = mafiaGangShuffled.isNotEmpty ? mafiaGangShuffled[0] : null;
+
+    final independentShuffled = independentIndices.toList()..shuffle();
+    final zodiacIndex = (_includeZodiac && independentShuffled.isNotEmpty) ? independentShuffled[0] : null;
+
+    var mafiaGangCursor = 1; // اندیسِ ۰ همیشه پدرخوانده‌ست
+    int? nextMafiaGangIndex(bool enabled) {
+      if (!enabled || mafiaGangCursor >= mafiaGangShuffled.length) return null;
+      return mafiaGangShuffled[mafiaGangCursor++];
+    }
+
+    final negotiatorIndex = nextMafiaGangIndex(_includeNegotiator);
+    final enchanterIndex = nextMafiaGangIndex(_includeEnchanter);
+    final spyIndex = nextMafiaGangIndex(_includeSpy);
+    final kidnapperIndex = nextMafiaGangIndex(_includeKidnapper);
+    final terroristIndex = nextMafiaGangIndex(_includeTerrorist);
+
+    final townShuffled = List<int>.generate(total, (i) => i)
+        .where((i) => !mafiaGangIndices.contains(i) && !independentIndices.contains(i))
+        .toList()
+      ..shuffle();
+
+    var townCursor = 0;
+    int? nextTownIndex(bool enabled) {
+      if (!enabled || townCursor >= townShuffled.length) return null;
+      return townShuffled[townCursor++];
+    }
+
+    final mafiaDoctorIndex = nextTownIndex(_includeMafiaDoctor);
+    final detectiveIndex = nextTownIndex(_includeDetective);
+    final professionalIndex = nextTownIndex(_includeProfessional);
+    final konstantinIndex = nextTownIndex(_includeKonstantin);
+    final oceanIndex = nextTownIndex(_includeOcean);
+    final gunmanIndex = nextTownIndex(_includeGunman);
+    final leaderIndex = nextTownIndex(_includeLeader);
+    final sherlockIndex = nextTownIndex(_includeSherlock);
+
+    final slaughterCharges = (total / 6).floor().clamp(1, 999);
+    final professionalCharges = (mafiaGangCount - 1).clamp(0, 999);
+    final warGunCharges = slaughterCharges;
 
     final players = <SessionPlayer>[];
     for (var i = 0; i < total; i++) {
-      final isMafia = mafiaIndices.contains(i);
+      final String teamId;
+      if (mafiaGangIndices.contains(i)) {
+        teamId = SarkoobTeams.mafiaGang.id;
+      } else if (independentIndices.contains(i)) {
+        teamId = independentTeamId!;
+      } else {
+        teamId = SarkoobTeams.mafiaTown.id;
+      }
+
+      String? roleId;
+      if (i == godfatherIndex) {
+        roleId = SarkoobRoles.godfather.id;
+      } else if (i == negotiatorIndex) {
+        roleId = SarkoobRoles.negotiator.id;
+      } else if (i == enchanterIndex) {
+        roleId = SarkoobRoles.enchanter.id;
+      } else if (i == spyIndex) {
+        roleId = SarkoobRoles.spy.id;
+      } else if (i == kidnapperIndex) {
+        roleId = SarkoobRoles.kidnapper.id;
+      } else if (i == terroristIndex) {
+        roleId = SarkoobRoles.terrorist.id;
+      } else if (i == mafiaDoctorIndex) {
+        roleId = SarkoobRoles.mafiaDoctor.id;
+      } else if (i == detectiveIndex) {
+        roleId = SarkoobRoles.detective.id;
+      } else if (i == professionalIndex) {
+        roleId = SarkoobRoles.professional.id;
+      } else if (i == konstantinIndex) {
+        roleId = SarkoobRoles.konstantin.id;
+      } else if (i == oceanIndex) {
+        roleId = SarkoobRoles.ocean.id;
+      } else if (i == gunmanIndex) {
+        roleId = SarkoobRoles.gunman.id;
+      } else if (i == leaderIndex) {
+        roleId = SarkoobRoles.leader.id;
+      } else if (i == sherlockIndex) {
+        roleId = SarkoobRoles.sherlock.id;
+      } else if (i == zodiacIndex) {
+        roleId = SarkoobRoles.zodiacRole.id;
+      }
+
+      if (roleId == null) {
+        if (teamId == SarkoobTeams.mafiaGang.id) {
+          roleId = SarkoobRoles.simpleMafia.id;
+        } else if (teamId == SarkoobTeams.mafiaTown.id) {
+          roleId = SarkoobRoles.simpleCitizen.id;
+        }
+      }
+
       players.add(
         SessionPlayer(
           id: i + 1,
           name: _draftPlayers[i],
           rosterId: _draftRosterLinks[_draftPlayers[i]],
-          teamId: isMafia ? SarkoobTeams.mafiaGang.id : SarkoobTeams.mafiaTown.id,
-          roleId: isMafia ? SarkoobRoles.mafiaMember.id : SarkoobRoles.villager.id,
+          teamId: teamId,
+          roleId: roleId,
+          hasArmor: i == godfatherIndex,
+          slaughterChargesRemaining: i == godfatherIndex ? slaughterCharges : null,
+          revolutionaryChargesRemaining: i == professionalIndex ? professionalCharges : null,
+          warGunsRemaining: i == gunmanIndex ? warGunCharges : null,
         ),
       );
     }
@@ -805,38 +945,157 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
           if (_isMafiaScenario) ...[
             const SizedBox(height: 24),
-            Text('تیم مافیا', style: AppTheme.headingFont(size: 20)),
+            Text('تیم مستقل', style: AppTheme.headingFont(size: 20)),
             const SizedBox(height: 4),
             const Text(
-              'همه‌ی اعضای این تیم دقیقاً یه نقشِ یکسان دارن (مافیا)؛ فقط '
-              'تعدادشون رو مشخص کن.',
+              'اختیاریه.',
               style: TextStyle(color: Colors.white60, fontSize: 12),
             ),
             const SizedBox(height: 8),
+            RadioListTile<String>(
+              value: 'none',
+              groupValue: _includeZodiac ? 'zodiac' : 'none',
+              onChanged: (_) => _setMafiaIndependentTeam(zodiac: false),
+              activeColor: AppColors.gold,
+              title: const Text('بدون تیم مستقل', style: TextStyle(color: Colors.white)),
+            ),
+            RadioListTile<String>(
+              value: 'zodiac',
+              groupValue: _includeZodiac ? 'zodiac' : 'none',
+              onChanged: (_) => _setMafiaIndependentTeam(zodiac: true),
+              activeColor: SarkoobTeams.zodiac.color,
+              title: Text(SarkoobTeams.zodiac.name, style: const TextStyle(color: Colors.white)),
+            ),
+            if (_includeZodiac) ...[
+              const SizedBox(height: 4),
+              const Text(
+                'فعلاً تنها نقشِ این تیم زودیاکه، پس این تیم همیشه دقیقاً ۱ نفره:',
+                style: TextStyle(color: Colors.white60, fontSize: 12),
+              ),
+              const SizedBox(height: 4),
+              _mandatoryRoleRow(SarkoobRoles.zodiacRole),
+            ],
+
+            const SizedBox(height: 24),
+            Text('تیم مافیا', style: AppTheme.headingFont(size: 20)),
+            const SizedBox(height: 4),
+            const Text(
+              'جلوی هر نقش، تعدادش رو مشخص کن؛ خودِ برنامه موقعِ شروعِ بازی '
+              'کاملاً تصادفی مشخص می‌کنه کدوم بازیکن کدوم نقش رو می‌گیره.',
+              style: TextStyle(color: Colors.white60, fontSize: 12),
+            ),
+            const SizedBox(height: 8),
+            _mandatoryRoleRow(SarkoobRoles.godfather),
+            _roleToggle(
+              role: SarkoobRoles.negotiator,
+              value: _includeNegotiator,
+              onChanged: (v) => setState(() => _includeNegotiator = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.enchanter,
+              value: _includeEnchanter,
+              onChanged: (v) => setState(() => _includeEnchanter = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.spy,
+              value: _includeSpy,
+              onChanged: (v) => setState(() => _includeSpy = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.kidnapper,
+              value: _includeKidnapper,
+              onChanged: (v) => setState(() => _includeKidnapper = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.terrorist,
+              value: _includeTerrorist,
+              onChanged: (v) => setState(() => _includeTerrorist = v),
+            ),
+            const SizedBox(height: 4),
             _roleCountStepper(
-              role: SarkoobRoles.mafiaMember,
+              role: SarkoobRoles.simpleMafia,
               value: _mafiaCount,
               onDecrement: () => setState(() {
                 if (_mafiaCount > 0) _mafiaCount--;
               }),
               onIncrement: () => setState(() => _mafiaCount++),
             ),
+            const SizedBox(height: 4),
+            Text(
+              'مجموعِ تیم مافیا: $_mafiaGangTotal نفر',
+              style: const TextStyle(
+                color: AppColors.goldLight,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
 
             const SizedBox(height: 24),
-            Text('تیم اهالی شهر', style: AppTheme.headingFont(size: 20)),
+            Text('تیم شهروند', style: AppTheme.headingFont(size: 20)),
             const SizedBox(height: 4),
             const Text(
-              'بدونِ قابلیتِ ویژه — فقط با رأی و تحلیل دنبالِ مافیا می‌گردن.',
+              'همینطور جلوی هر نقشِ شهروندی، تعدادش رو مشخص کن؛ شهروندِ '
+              'ساده همون عضوِ سادهٔ بدونِ قابلیتِ خاصه.',
               style: TextStyle(color: Colors.white60, fontSize: 12),
             ),
             const SizedBox(height: 8),
+            _roleToggle(
+              role: SarkoobRoles.mafiaDoctor,
+              value: _includeMafiaDoctor,
+              onChanged: (v) => setState(() => _includeMafiaDoctor = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.detective,
+              value: _includeDetective,
+              onChanged: (v) => setState(() => _includeDetective = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.professional,
+              value: _includeProfessional,
+              onChanged: (v) => setState(() => _includeProfessional = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.konstantin,
+              value: _includeKonstantin,
+              onChanged: (v) => setState(() => _includeKonstantin = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.ocean,
+              value: _includeOcean,
+              onChanged: (v) => setState(() => _includeOcean = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.gunman,
+              value: _includeGunman,
+              onChanged: (v) => setState(() => _includeGunman = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.leader,
+              value: _includeLeader,
+              onChanged: (v) => setState(() => _includeLeader = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.sherlock,
+              value: _includeSherlock,
+              onChanged: (v) => setState(() => _includeSherlock = v),
+            ),
+            const SizedBox(height: 4),
             _roleCountStepper(
-              role: SarkoobRoles.villager,
-              value: _villagerCount,
+              role: SarkoobRoles.simpleCitizen,
+              value: _simpleCitizenCount,
               onDecrement: () => setState(() {
-                if (_villagerCount > 0) _villagerCount--;
+                if (_simpleCitizenCount > 0) _simpleCitizenCount--;
               }),
-              onIncrement: () => setState(() => _villagerCount++),
+              onIncrement: () => setState(() => _simpleCitizenCount++),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'مجموعِ تیم شهروند: $_mafiaTownTotal نفر',
+              style: const TextStyle(
+                color: AppColors.goldLight,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
             ),
 
             const SizedBox(height: 20),
@@ -849,7 +1108,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                'نقش‌بندی‌شده: $_mafiaAssignedTotal از $total نفر',
+                'نقش‌بندی‌شده: $_mafiaAssignedTotal از $total نفر'
+                '${_includeZodiac ? ' (شاملِ ۱ نفرِ تیمِ مستقل)' : ''}',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color:
@@ -886,34 +1146,32 @@ class _StartGameScreenState extends State<StartGameScreen> {
             style: const TextStyle(color: Colors.white60, fontSize: 13),
           ),
 
-          if (_isSorkoobScenario) ...[
-            const SizedBox(height: 24),
-            Text('نجاتِ خودِ دکتر', style: AppTheme.headingFont(size: 20)),
-            const SizedBox(height: 4),
-            const Text(
-              'دکتر در طولِ کلِ بازی حداکثر چندبار می‌تونه خودش رو نجات بده؟',
-              style: TextStyle(color: Colors.white60, fontSize: 12),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.remove, color: AppColors.gold),
-                  onPressed: () => setState(() {
-                    if (_doctorMaxSelfSaves > 0) _doctorMaxSelfSaves--;
-                  }),
-                ),
-                Text(
-                  '$_doctorMaxSelfSaves بار',
-                  style: const TextStyle(color: AppColors.goldLight, fontSize: 18),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.add, color: AppColors.gold),
-                  onPressed: () => setState(() => _doctorMaxSelfSaves++),
-                ),
-              ],
-            ),
-          ],
+          const SizedBox(height: 24),
+          Text('نجاتِ خودِ دکتر', style: AppTheme.headingFont(size: 20)),
+          const SizedBox(height: 4),
+          const Text(
+            'دکتر در طولِ کلِ بازی حداکثر چندبار می‌تونه خودش رو نجات بده؟',
+            style: TextStyle(color: Colors.white60, fontSize: 12),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.remove, color: AppColors.gold),
+                onPressed: () => setState(() {
+                  if (_doctorMaxSelfSaves > 0) _doctorMaxSelfSaves--;
+                }),
+              ),
+              Text(
+                '$_doctorMaxSelfSaves بار',
+                style: const TextStyle(color: AppColors.goldLight, fontSize: 18),
+              ),
+              IconButton(
+                icon: const Icon(Icons.add, color: AppColors.gold),
+                onPressed: () => setState(() => _doctorMaxSelfSaves++),
+              ),
+            ],
+          ),
 
           const SizedBox(height: 24),
           if (error != null)

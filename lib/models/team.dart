@@ -71,10 +71,20 @@ class SarkoobTeams {
   /// می‌گردن.
   static final mafiaTown = GameTeam(
     id: 'team_mafia_town',
-    name: 'اهالی شهر',
+    name: 'شهروند',
     color: const Color(0xFF1976D2),
     scenarioId: SarkoobScenarios.mafia.id,
     description: 'بدونِ قابلیتِ ویژه؛ فقط با رأی و تحلیل دنبالِ مافیا می‌گردن.',
+  );
+
+  /// تیمِ مستقلِ سناریوی مافیا — معادلِ موساد تو سناریوی سرکوب. همیشه
+  /// دقیقاً ۱ نفره (خودِ زودیاک).
+  static final zodiac = GameTeam(
+    id: 'team_zodiac',
+    name: 'زودیاک',
+    color: const Color(0xFF4A148C),
+    scenarioId: SarkoobScenarios.mafia.id,
+    description: 'مأمورِ رمزآلودِ مستقل، با اهداف و اقداماتِ مستقلِ خودش.',
   );
 
   static final List<GameTeam> all = [
@@ -84,6 +94,7 @@ class SarkoobTeams {
     mek,
     mafiaGang,
     mafiaTown,
+    zodiac,
   ];
 
   /// تیم‌هایی که الان واقعاً قابل‌انتخابن — فعلاً مجاهدین خلق از سایدِ
@@ -96,6 +107,7 @@ class SarkoobTeams {
     mossad,
     mafiaGang,
     mafiaTown,
+    zodiac,
   ];
 
   static GameTeam? byId(String id) {

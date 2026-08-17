@@ -29,7 +29,6 @@ class _PhaseSnapshot {
 /// جداگونه و به‌ترتیب، و در آخر جمع‌بندیِ شب.
 enum NightStepKind {
   sorkoobTeam,
-  mafiaTeam,
   mossadLeader,
   rapper,
   hacker,
@@ -57,6 +56,16 @@ class GameFlowController extends ChangeNotifier {
     final suppressionCount =
         players.where((p) => p.teamId == SarkoobTeams.suppression.id).length;
     statusInquiryChargesRemaining = suppressionCount > 0 ? suppressionCount - 1 : 0;
+    // زودیاک برخلافِ رهبرِ موساد هیچ انتخابِ شیوه‌ای نداره — همیشه معادلِ
+    // «عملیاتِ سری»، از همون اول ثابت. همین باعث می‌شه UIی انتخاب‌شیوه‌ی
+    // شبِ اول خودکار رد بشه (چون mossadPlaystyle از قبل null نیست) و
+    // mossadAssassinate هم هیچ‌وقت براش true نشه (چون playstyle هیچ‌وقت
+    // assassination نمی‌شه).
+    for (final p in players) {
+      if (p.roleId == SarkoobRoles.zodiacRole.id) {
+        p.mossadPlaystyle = MossadPlaystyle.secretOperation;
+      }
+    }
   }
 
   List<SessionPlayer> get alivePlayers => players.where((p) => p.isAlive).toList();
@@ -558,28 +567,34 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get valiFaghihPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.valiFaghih.id) return p;
+      if (p.roleId == SarkoobRoles.valiFaghih.id || p.roleId == SarkoobRoles.godfather.id) return p;
     }
     return null;
   }
 
   SessionPlayer? get foreignMinisterPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.foreignMinister.id) return p;
+      if (p.roleId == SarkoobRoles.foreignMinister.id || p.roleId == SarkoobRoles.negotiator.id) return p;
     }
     return null;
   }
 
-  /// آیا حداقل یه عضوِ تیم سرکوب تا الان از بازی خارج شده؟
-  bool get sorkoobHasLostMember =>
-      players.any((p) => p.teamId == SarkoobTeams.suppression.id && !p.isAlive);
+  /// آیا حداقل یه عضوِ تیمِ رهبر (سرکوب یا مافیا، هرکدوم این جلسه حاضره)
+  /// تا الان از بازی خارج شده؟
+  bool get sorkoobHasLostMember => players.any(
+      (p) =>
+          (p.teamId == SarkoobTeams.suppression.id || p.teamId == SarkoobTeams.mafiaGang.id) &&
+          !p.isAlive);
 
-  /// آیا این بازیکن یه شهروندِ «خاکستری»ه؟ (بدونِ نقشِ خاص). چون بازیکنانِ
-  /// بدونِ نقشِ خاص از این به بعد صراحتاً roleId=grayCitizen می‌گیرن، هم
-  /// اون حالت هم حالتِ قدیمیِ null رو پوشش می‌دیم.
+  /// آیا این بازیکن یه عضوِ «سادهٔ» تیمِ شهروندِ همین سناریوعه؟ (بدونِ
+  /// نقشِ خاص). چون بازیکنانِ بدونِ نقشِ خاص از این به بعد صراحتاً
+  /// roleId=grayCitizen/simpleCitizen می‌گیرن، هم اون حالت هم حالتِ
+  /// قدیمیِ null رو پوشش می‌دیم.
   bool _isGrayCitizen(SessionPlayer p) =>
-      p.teamId == SarkoobTeams.citizen.id &&
-      (p.roleId == null || p.roleId == SarkoobRoles.grayCitizen.id);
+      (p.teamId == SarkoobTeams.citizen.id || p.teamId == SarkoobTeams.mafiaTown.id) &&
+      (p.roleId == null ||
+          p.roleId == SarkoobRoles.grayCitizen.id ||
+          p.roleId == SarkoobRoles.simpleCitizen.id);
 
   /// شهروندهای «خاکستری»: زنده، عضو تیم شهروند، و بدون نقشِ خاص.
   List<SessionPlayer> get grayCitizens =>
@@ -602,8 +617,9 @@ class GameFlowController extends ChangeNotifier {
     final target = playerById(targetId);
     final isGrayCitizen = _isGrayCitizen(target);
     if (isGrayCitizen) {
-      target.teamId = SarkoobTeams.suppression.id;
-      target.roleId = SarkoobRoles.suppressor.id;
+      final isMafiaGame = minister.teamId == SarkoobTeams.mafiaGang.id;
+      target.teamId = isMafiaGame ? SarkoobTeams.mafiaGang.id : SarkoobTeams.suppression.id;
+      target.roleId = isMafiaGame ? SarkoobRoles.simpleMafia.id : SarkoobRoles.suppressor.id;
       negotiateResultMessage = 'مذاکره با موفقیت صورت گرفت.';
     } else {
       negotiateResultMessage = 'مذاکره با شکست مواجه شد.';
@@ -639,30 +655,6 @@ class GameFlowController extends ChangeNotifier {
       }
       slaughterResultMessage = 'حدس درست نبود؛ یک ظرفیتِ سلاخی مصرف شد.';
     }
-    _nightActionTaken = true;
-    notifyListeners();
-  }
-
-  // ---------- شب: تصمیمِ تیمِ مافیا (سناریوی مافیا) ----------
-
-  /// اعضای زنده‌ی مافیا — برای نمایشِ لیستِ کامل، مثلِ نمایشِ تیمِ سرکوب.
-  List<SessionPlayer> get aliveMafiaTeamPlayers =>
-      alivePlayers.where((p) => p.teamId == SarkoobTeams.mafiaGang.id).toList();
-
-  /// آیا امشب حداقل یه عضوِ زنده‌ی مافیا برای تصمیم‌گیری هست؟
-  bool get canMafiaTeamAct => aliveMafiaTeamPlayers.isNotEmpty;
-
-  /// آیا می‌شه از مرحله‌ی تیمِ مافیا جلوتر رفت؟ اگه اصلاً عضوِ زنده‌ای
-  /// نمونده، بدونِ تصمیم هم می‌شه رد شد؛ وگرنه باید امشب یه هدف انتخاب
-  /// شده باشه.
-  bool get canAdvancePastMafiaTeamStep => !canMafiaTeamAct || _nightActionTaken;
-
-  /// تیمِ مافیا (با هم) روی یه هدف توافق می‌کنن. مثلِ leaderShoot، فقط
-  /// صف‌بندی می‌شه تو همون _pendingHits ی مشترک — یعنی نجاتِ دکتر (اگه
-  /// بعداً برای این سناریو اضافه شد) خودکار روش اثر می‌ذاره.
-  void mafiaTeamShoot(int targetId) {
-    if (!canMafiaTeamAct) return;
-    _pendingHits[targetId] = (_pendingHits[targetId] ?? 0) + 1;
     _nightActionTaken = true;
     notifyListeners();
   }
@@ -860,7 +852,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get judiciaryChiefPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.judiciaryChief.id) return p;
+      if (p.roleId == SarkoobRoles.judiciaryChief.id || p.roleId == SarkoobRoles.enchanter.id) return p;
     }
     return null;
   }
@@ -964,7 +956,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get policeCommanderPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.policeCommander.id) return p;
+      if (p.roleId == SarkoobRoles.policeCommander.id || p.roleId == SarkoobRoles.kidnapper.id) return p;
     }
     return null;
   }
@@ -994,7 +986,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get mercenaryPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.mercenary.id) return p;
+      if (p.roleId == SarkoobRoles.mercenary.id || p.roleId == SarkoobRoles.terrorist.id) return p;
     }
     return null;
   }
@@ -1044,7 +1036,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get lawyerPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.lawyer.id) return p;
+      if (p.roleId == SarkoobRoles.lawyer.id || p.roleId == SarkoobRoles.konstantin.id) return p;
     }
     return null;
   }
@@ -1120,7 +1112,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get rapperPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.rapper.id) return p;
+      if (p.roleId == SarkoobRoles.rapper.id || p.roleId == SarkoobRoles.ocean.id) return p;
     }
     return null;
   }
@@ -1152,7 +1144,7 @@ class GameFlowController extends ChangeNotifier {
 
     _rapperActedTonight = true;
 
-    if (target.teamId == SarkoobTeams.citizen.id) {
+    if (target.teamId == SarkoobTeams.citizen.id || target.teamId == SarkoobTeams.mafiaTown.id) {
       target.isActiveResistanceMember = true;
       rapperResultMessage = '«${target.name}» به تیمِ مقاومتِ فعال پیوست.';
     } else if (isSleeperStillHidden) {
@@ -1170,7 +1162,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get rebelPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.rebel.id) return p;
+      if (p.roleId == SarkoobRoles.rebel.id || p.roleId == SarkoobRoles.gunman.id) return p;
     }
     return null;
   }
@@ -1279,7 +1271,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get doctorPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.doctor.id) return p;
+      if (p.roleId == SarkoobRoles.doctor.id || p.roleId == SarkoobRoles.mafiaDoctor.id) return p;
     }
     return null;
   }
@@ -1347,7 +1339,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get hackerPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.hacker.id) return p;
+      if (p.roleId == SarkoobRoles.hacker.id || p.roleId == SarkoobRoles.detective.id) return p;
     }
     return null;
   }
@@ -1370,9 +1362,10 @@ class GameFlowController extends ChangeNotifier {
   InvestigationResult investigationResultFor(int targetId) {
     final target = playerById(targetId);
     final role = target.roleId != null ? SarkoobRoles.byId(target.roleId!) : null;
-    final isSorkoobTeam = target.teamId == SarkoobTeams.suppression.id;
+    final isLeaderTeam =
+        target.teamId == SarkoobTeams.suppression.id || target.teamId == SarkoobTeams.mafiaGang.id;
 
-    if (!isSorkoobTeam) return InvestigationResult.dislike;
+    if (!isLeaderTeam) return InvestigationResult.dislike;
     if (role != null && role.alwaysShowsInnocent) return InvestigationResult.dislike;
     if (role != null &&
         role.investigationHiddenUntilNight > 0 &&
@@ -1394,7 +1387,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get mossadLeaderPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.mossadLeader.id) return p;
+      if (p.roleId == SarkoobRoles.mossadLeader.id || p.roleId == SarkoobRoles.zodiacRole.id) return p;
     }
     return null;
   }
@@ -1478,7 +1471,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get politicalAnalystPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.politicalAnalyst.id) return p;
+      if (p.roleId == SarkoobRoles.politicalAnalyst.id || p.roleId == SarkoobRoles.sherlock.id) return p;
     }
     return null;
   }
@@ -1496,11 +1489,14 @@ class GameFlowController extends ChangeNotifier {
     return !isPlayerDetained(analyst.id);
   }
 
-  /// آیا این بازیکن عضوِ یه تیمِ مستقله؟ (سرکوب و شهروند حساب نمی‌شن —
-  /// فعلاً فقط موساد ممکنه، ولی جوری نوشته شده که با اضافه‌شدنِ تیمِ
-  /// مستقلِ بعدی هم خودکار درست کار کنه.)
+  /// آیا این بازیکن عضوِ یه تیمِ مستقله؟ (سرکوب/شهروند/مافیا/شهروندِ‌مافیا
+  /// حساب نمی‌شن — فعلاً فقط موساد و زودیاک ممکنه، ولی جوری نوشته شده که
+  /// با اضافه‌شدنِ تیمِ مستقلِ بعدی هم خودکار درست کار کنه.)
   bool _isIndependentTeamMember(SessionPlayer p) =>
-      p.teamId != SarkoobTeams.suppression.id && p.teamId != SarkoobTeams.citizen.id;
+      p.teamId != SarkoobTeams.suppression.id &&
+      p.teamId != SarkoobTeams.citizen.id &&
+      p.teamId != SarkoobTeams.mafiaGang.id &&
+      p.teamId != SarkoobTeams.mafiaTown.id;
 
   void politicalAnalystInvestigate(int targetId) {
     if (!canPoliticalAnalystActTonight) return;
@@ -1517,7 +1513,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get civicActivistPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.civicActivist.id) return p;
+      if (p.roleId == SarkoobRoles.civicActivist.id || p.roleId == SarkoobRoles.leader.id) return p;
     }
     return null;
   }
@@ -1632,7 +1628,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get revolutionaryFighterPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.revolutionaryFighter.id) return p;
+      if (p.roleId == SarkoobRoles.revolutionaryFighter.id || p.roleId == SarkoobRoles.professional.id) return p;
     }
     return null;
   }
@@ -1659,11 +1655,11 @@ class GameFlowController extends ChangeNotifier {
     fighter.revolutionaryChargesRemaining = (fighter.revolutionaryChargesRemaining ?? 0) - 1;
     _revolutionaryActedTonight = true;
 
-    if (target.teamId == SarkoobTeams.suppression.id) {
+    if (target.teamId == SarkoobTeams.suppression.id || target.teamId == SarkoobTeams.mafiaGang.id) {
       _pendingHits[targetId] = (_pendingHits[targetId] ?? 0) + 1;
       revolutionaryResultMessage =
           'اعدامِ انقلابیِ «${fighter.name}» روی «${target.name}» ثبت شد؛ نتیجه‌ی نهایی صبح مشخص می‌شه.';
-    } else if (target.teamId == SarkoobTeams.citizen.id) {
+    } else if (target.teamId == SarkoobTeams.citizen.id || target.teamId == SarkoobTeams.mafiaTown.id) {
       _eliminatePlayer(fighter);
       _tonightEliminatedIds.add(fighter.id);
       revolutionaryResultMessage =
@@ -1704,7 +1700,6 @@ class GameFlowController extends ChangeNotifier {
 
   static const List<NightStepKind> _nightStepOrder = [
     NightStepKind.sorkoobTeam,
-    NightStepKind.mafiaTeam,
     NightStepKind.mossadLeader,
     NightStepKind.rapper,
     NightStepKind.hacker,
@@ -1734,12 +1729,11 @@ class GameFlowController extends ChangeNotifier {
   bool _isNightStepApplicable(NightStepKind step) {
     switch (step) {
       case NightStepKind.sorkoobTeam:
-        // فقط تو سناریوی سرکوب معنی داره؛ تو یه بازیِ سناریوی مافیا هیچ
-        // بازیکنی این تیم رو نداره، پس این مرحله کلاً رد می‌شه.
-        return players.any((p) => p.teamId == SarkoobTeams.suppression.id);
-      case NightStepKind.mafiaTeam:
-        // آینه‌ی همون منطق، برای سناریوی مافیا.
-        return players.any((p) => p.teamId == SarkoobTeams.mafiaGang.id);
+        // «تیمِ رهبر»یِ همین جلسه — سرکوب تو سناریوی سرکوب، مافیا تو
+        // سناریوی مافیا. تو یه بازیِ دیگه هیچ بازیکنی این تیم‌ها رو
+        // نداره، پس این مرحله کلاً رد می‌شه.
+        return players.any(
+            (p) => p.teamId == SarkoobTeams.suppression.id || p.teamId == SarkoobTeams.mafiaGang.id);
       case NightStepKind.mossadLeader:
         // شبِ اول (برای انتخابِ شیوه) یا شب‌های زوج (برای استفاده). فردِ
         // مرده هم باز باید صداش کنیم (لوندادن)، پس isAlive رو چک نمی‌کنیم.
@@ -1776,12 +1770,14 @@ class GameFlowController extends ChangeNotifier {
   /// بقیه‌ی نقش‌دارهای سرکوب (وزیر امور خارجه، رئیس قوه قضاییه و...) زنده
   /// باشن چه نه. سلاخی مخصوصِ خودِ ولی‌فقیه‌ست و با مرگش از بین می‌ره، ولی
   /// شاتِ تیمی هیچ‌وقت کاملاً از دست نمی‌ره، مادامی که حداقل یه عضوِ زنده
-  /// از تیمِ سرکوب باقی باشه.
+  /// از تیمِ رهبر (سرکوب یا مافیا) باقی باشه.
   bool get canFallbackShoot {
     if (sorkoobDisabledTonight) return false;
     final leader = valiFaghihPlayer;
     if (leader != null && leader.isAlive) return false;
-    return alivePlayers.any((p) => p.teamId == SarkoobTeams.suppression.id);
+    final isMafiaGame = players.any((p) => p.teamId == SarkoobTeams.mafiaGang.id);
+    final leaderTeamId = isMafiaGame ? SarkoobTeams.mafiaGang.id : SarkoobTeams.suppression.id;
+    return alivePlayers.any((p) => p.teamId == leaderTeamId);
   }
 
   /// آیا الان می‌شه از مرحله‌ی «تیمِ سرکوب» جلوتر رفت؟ اگه ولی‌فقیه زنده‌ست،

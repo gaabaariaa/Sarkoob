@@ -28,6 +28,15 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   final StorageService _storage = StorageService();
   bool _showTeamCounts = false;
 
+  // «تیمِ رهبرِ» این جلسه سرکوبه یا مافیا؟ چندجا تو UIی مرحله‌ی تیمِ رهبر
+  // لازمه، برای همینم یه getterِ مشترکه به‌جایِ محاسبه‌ی پراکنده.
+  bool get _isMafiaGame => controller.players.any((p) => p.teamId == SarkoobTeams.mafiaGang.id);
+  String get _leaderTeamName => _isMafiaGame ? 'تیمِ مافیا' : 'تیمِ سرکوب';
+  String get _leaderRoleName => _isMafiaGame ? 'پدرخوانده' : 'ولی‌فقیه';
+  String get _plainCitizenLabel => _isMafiaGame ? 'شهروندِ ساده' : 'شهروندِ خاکستری';
+  String get _plainLeaderTeamLabel => _isMafiaGame ? 'مافیا ساده' : 'سرکوبگر';
+  String get _independentLeaderRoleName => _isMafiaGame ? 'زودیاک' : 'رهبر موساد';
+
   @override
   void initState() {
     super.initState();
@@ -1489,12 +1498,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     switch (controller.currentNightStep) {
       case NightStepKind.sorkoobTeam:
         return _buildSorkoobTeamStep();
-      case NightStepKind.mafiaTeam:
-        return _buildMafiaTeamStep();
       case NightStepKind.mossadLeader:
         return _buildRoleNightStep(
-          wakeLabel: 'رهبر موساد بیدار بشه',
-          sleepLabel: 'رهبر موساد چشمش رو ببنده',
+          wakeLabel: '$_independentLeaderRoleName بیدار بشه',
+          sleepLabel: '$_independentLeaderRoleName چشمش رو ببنده',
           playerName: controller.mossadLeaderPlayer?.name,
           body: _buildMossadLeaderSection(),
           canAdvance: controller.canAdvancePastMossadLeaderStep,
@@ -1588,9 +1595,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   /// لیستِ اعضای زنده‌ی تیمِ سرکوب به‌همراهِ نقشِ دقیقشون، برای این‌که
   /// گرداننده مطمئن باشه داره با آدمِ درست حرف می‌زنه.
   Widget _buildSorkoobRoster() {
-    final members = controller.alivePlayers
-        .where((p) => p.teamId == SarkoobTeams.suppression.id)
-        .toList();
+    final leaderTeamId = _isMafiaGame ? SarkoobTeams.mafiaGang.id : SarkoobTeams.suppression.id;
+    final members = controller.alivePlayers.where((p) => p.teamId == leaderTeamId).toList();
     if (members.isEmpty) return const SizedBox.shrink();
     return Container(
       width: double.infinity,
@@ -1603,7 +1609,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         children: members.map((p) {
           final role = p.roleId != null ? SarkoobRoles.byId(p.roleId!) : null;
           return Text(
-            '👤 ${p.name} — ${role?.name ?? 'سرکوبگر (بدون نقشِ خاص)'}',
+            '👤 ${p.name} — ${role?.name ?? '$_plainLeaderTeamLabel (بدون نقشِ خاص)'}',
             style: const TextStyle(color: Colors.white),
           );
         }).toList(),
@@ -1617,10 +1623,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         children: [
           Text('شب ${controller.roundNumber}', style: AppTheme.headingFont(size: 24)),
           const SizedBox(height: 8),
-          const Text(
-            '🔴 اعضای تیم سرکوب بیدار بشن',
+          Text(
+            '🔴 اعضای $_leaderTeamName بیدار بشن',
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+            style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           _buildSorkoobRoster(),
@@ -1672,91 +1678,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           ElevatedButton(
             onPressed: controller.canAdvancePastSorkoobTeamStep ? controller.advanceNightStep : null,
             style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-            child: const Text('🌑 اعضای تیم سرکوب چشم‌هاشون رو ببندن'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMafiaRoster() {
-    final members = controller.aliveMafiaTeamPlayers;
-    if (members.isEmpty) return const SizedBox.shrink();
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceCard,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        children: members
-            .map((p) => Text('👤 ${p.name}', style: const TextStyle(color: Colors.white)))
-            .toList(),
-      ),
-    );
-  }
-
-  Widget _buildMafiaKillSection() {
-    return Column(
-      children: [
-        const Text(
-          'مافیا با هم توافق می‌کنن امشب کی رو حذف کنن:',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white70),
-        ),
-        const SizedBox(height: 12),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-          onPressed: controller.nightActionTaken
-              ? null
-              : () => _showPlayerListPicker(
-                    title: 'مافیا کی رو حذف می‌کنه؟',
-                    targets: controller.alivePlayers
-                        .where((p) => p.teamId != SarkoobTeams.mafiaGang.id)
-                        .toList(),
-                    onSelected: (p) => controller.mafiaTeamShoot(p.id),
-                  ),
-          child: const Text('انتخابِ هدف'),
-        ),
-        if (controller.nightActionTaken) ...[
-          const SizedBox(height: 8),
-          const Text('هدفِ امشب انتخاب شد.', style: TextStyle(color: AppColors.goldLight)),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildMafiaTeamStep() {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          Text('شب ${controller.roundNumber}', style: AppTheme.headingFont(size: 24)),
-          const SizedBox(height: 8),
-          const Text(
-            '🔴 اعضای مافیا بیدار بشن',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          _buildMafiaRoster(),
-          const SizedBox(height: 16),
-          if (!controller.canMafiaTeamAct)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Text(
-                'دیگه هیچ عضوِ زنده‌ای از مافیا نمونده — برو مرحله‌ی بعد.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white54),
-              ),
-            )
-          else
-            _buildMafiaKillSection(),
-          const SizedBox(height: 32),
-          ElevatedButton(
-            onPressed: controller.canAdvancePastMafiaTeamStep ? controller.advanceNightStep : null,
-            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-            child: const Text('🌑 اعضای مافیا چشم‌هاشون رو ببندن'),
+            child: Text('🌑 اعضای $_leaderTeamName چشم‌هاشون رو ببندن'),
           ),
         ],
       ),
@@ -1846,10 +1768,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     }
 
     if (!leader.isAlive) {
-      return const Text(
-        'رهبرِ موساد دیگه در بازی نیست.',
+      return Text(
+        '$_independentLeaderRoleName دیگه در بازی نیست.',
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.white38),
+        style: const TextStyle(color: Colors.white38),
       );
     }
 
@@ -2099,10 +2021,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         children: [
           Text(
             leaderAlive
-                ? 'تیم سرکوب بیدار می‌شه و باهم مشورت می‌کنن؛ تصمیم نهایی با ولی‌فقیه‌ست.'
+                ? '$_leaderTeamName بیدار می‌شه و باهم مشورت می‌کنن؛ تصمیم نهایی با $_leaderRoleName‌ست.'
                 : fallback
-                    ? 'ولی‌فقیه دیگه در بازی نیست؛ سلاخی از بین رفته، ولی شاتِ معمولیِ تیمی همیشه باقی می‌مونه.'
-                    : 'هیچ عضوِ زنده‌ای از تیمِ سرکوب باقی نمونده؛ شاتی در کار نیست.',
+                    ? '$_leaderRoleName دیگه در بازی نیست؛ سلاخی از بین رفته، ولی شاتِ معمولیِ تیمی همیشه باقی می‌مونه.'
+                    : 'هیچ عضوِ زنده‌ای از $_leaderTeamName باقی نمونده؛ شاتی در کار نیست.',
             textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.white60),
           ),
@@ -2134,14 +2056,14 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               onPressed: _showFallbackShootPicker,
             ),
           ],
-          // نکته‌ی مهم: این شرط از رویِ زنده‌بودنِ ولی‌فقیه مستقل بررسی
-          // می‌شه، چون قابلیتِ مذاکره‌ی وزیر امور خارجه به رهبر ربطی نداره
-          // و حتی بعدِ حذفِ ولی‌فقیه هم باید در دسترس بمونه.
+          // نکته‌ی مهم: این شرط از رویِ زنده‌بودنِ رهبر مستقل بررسی می‌شه،
+          // چون قابلیتِ مذاکره به رهبر ربطی نداره و حتی بعدِ حذفِ رهبر هم
+          // باید در دسترس بمونه.
           if (controller.canUseNegotiate) ...[
             const SizedBox(height: 12),
             ElevatedButton.icon(
               icon: const Icon(Icons.handshake),
-              label: const Text('مذاکره (اغفال شهروند خاکستری)'),
+              label: Text('مذاکره (اغفالِ $_plainCitizenLabel)'),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
                 backgroundColor: AppColors.goldDark,
@@ -2176,10 +2098,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Widget _buildJudiciarySection() {
     return Column(
       children: [
-        const Text(
-          'رئیس قوه قضاییه می‌تونه (فقط یک‌بار در کل بازی) حکم اعدام صادر کنه:',
+        Text(
+          '${_isMafiaGame ? "افسونگر" : "رئیس قوه قضاییه"} می‌تونه (فقط یک‌بار در کل بازی) حکم اعدام صادر کنه:',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white70),
+          style: const TextStyle(color: Colors.white70),
         ),
         const SizedBox(height: 8),
         OutlinedButton.icon(
@@ -2607,7 +2529,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       children: [
         Text(
           'دکتر امشب می‌تونه ${controller.doctorNightlyCapacity} نفر رو در برابر '
-          'شاتِ شبِ سرکوب نجات بده (${saved.length} از ${controller.doctorNightlyCapacity} استفاده شده).',
+          'شاتِ شبِ $_leaderTeamName نجات بده (${saved.length} از ${controller.doctorNightlyCapacity} استفاده شده).',
           textAlign: TextAlign.center,
           style: const TextStyle(color: Colors.white70),
         ),
