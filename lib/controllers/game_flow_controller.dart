@@ -1143,14 +1143,18 @@ class GameFlowController extends ChangeNotifier {
         roundNumber <= targetRole.investigationHiddenUntilNight;
 
     _rapperActedTonight = true;
+    final isMafiaGame = players.any((p) => p.teamId == SarkoobTeams.mafiaGang.id);
+    final resistanceTeamPhrase = isMafiaGame ? 'تیمِ اوشن' : 'تیمِ مقاومتِ فعال';
+    final leaderTeamLabel = isMafiaGame ? 'مافیا' : 'سرکوب';
+    final resistanceGroupNoun = isMafiaGame ? 'تیمِ اوشن' : 'مقاومت';
 
     if (target.teamId == SarkoobTeams.citizen.id || target.teamId == SarkoobTeams.mafiaTown.id) {
       target.isActiveResistanceMember = true;
-      rapperResultMessage = '«${target.name}» به تیمِ مقاومتِ فعال پیوست.';
+      rapperResultMessage = '«${target.name}» به $resistanceTeamPhrase پیوست.';
     } else if (isSleeperStillHidden) {
       target.isActiveResistanceMember = true;
-      rapperResultMessage =
-          '«${target.name}» (که هنوز به‌عنوانِ سرکوب فعال نشده) به‌عنوانِ جاسوسِ سرکوب وارد مقاومت شد.';
+      rapperResultMessage = '«${target.name}» (که هنوز به‌عنوانِ $leaderTeamLabel فعال نشده) '
+          'به‌عنوانِ جاسوسِ $leaderTeamLabel وارد $resistanceGroupNoun شد.';
     } else {
       _eliminatePlayer(rapper);
       rapperResultMessage = 'انتخاب اشتباه بود! خودِ «${rapper.name}» همون‌لحظه حذف شد.';

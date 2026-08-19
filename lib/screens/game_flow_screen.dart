@@ -36,6 +36,17 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   String get _plainCitizenLabel => _isMafiaGame ? 'شهروندِ ساده' : 'شهروندِ خاکستری';
   String get _plainLeaderTeamLabel => _isMafiaGame ? 'مافیا ساده' : 'سرکوبگر';
   String get _independentLeaderRoleName => _isMafiaGame ? 'زودیاک' : 'رهبر موساد';
+  // بقیه‌ی نقش‌های تکی که تو مافیا هم معادل دارن — همون الگوی بالا.
+  String get _rapperRoleName => _isMafiaGame ? 'اوشن' : 'رپر معترض';
+  String get _resistanceGroupLabel => _isMafiaGame ? 'تیمِ اوشن' : 'مقاومتِ فعال';
+  String get _hackerRoleName => _isMafiaGame ? 'کارآگاه' : 'هکر';
+  String get _politicalAnalystRoleName => _isMafiaGame ? 'شرلوک' : 'تحلیلگر سیاسی';
+  String get _rebelRoleName => _isMafiaGame ? 'تفنگدار' : 'شورشی';
+  String get _revolutionaryRoleName => _isMafiaGame ? 'حرفه‌ای' : 'مبارز انقلابی';
+  String get _revolutionaryActionLabel => _isMafiaGame ? 'حذفِ حرفه‌ای' : 'اعدامِ انقلابی';
+  String get _civicActivistRoleName => _isMafiaGame ? 'لیدر' : 'فعال مدنی';
+  String get _lawyerRoleName => _isMafiaGame ? 'کنستانتین' : 'وکیل';
+  String get _forbiddenWordLabel => _isMafiaGame ? 'کلمه‌ی طلسم‌شده' : 'کلمه‌ی ممنوع';
 
   @override
   void initState() {
@@ -974,7 +985,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       child: Column(
         children: [
           Text(
-            '⚖️ حکم اعدام صادر شده؛ کلمه‌ی ممنوع: «${controller.activeExecutionWord}»',
+            '⚖️ حکم اعدام صادر شده؛ $_forbiddenWordLabel: «${controller.activeExecutionWord}»',
             textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
@@ -1508,22 +1519,22 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         );
       case NightStepKind.rapper:
         return _buildRoleNightStep(
-          wakeLabel: 'رپر معترض بیدار بشه',
-          sleepLabel: 'رپر معترض چشمش رو ببنده',
+          wakeLabel: '$_rapperRoleName بیدار بشه',
+          sleepLabel: '$_rapperRoleName چشمش رو ببنده',
           playerName: controller.rapperPlayer?.name,
           body: _buildRapperSection(),
         );
       case NightStepKind.hacker:
         return _buildRoleNightStep(
-          wakeLabel: 'هکر بیدار بشه',
-          sleepLabel: 'هکر چشمش رو ببنده',
+          wakeLabel: '$_hackerRoleName بیدار بشه',
+          sleepLabel: '$_hackerRoleName چشمش رو ببنده',
           playerName: controller.hackerPlayer?.name,
           body: _buildHackerSection(),
         );
       case NightStepKind.politicalAnalyst:
         return _buildRoleNightStep(
-          wakeLabel: 'تحلیلگر سیاسی بیدار بشه',
-          sleepLabel: 'تحلیلگر سیاسی چشمش رو ببنده',
+          wakeLabel: '$_politicalAnalystRoleName بیدار بشه',
+          sleepLabel: '$_politicalAnalystRoleName چشمش رو ببنده',
           playerName: controller.politicalAnalystPlayer?.name,
           body: _buildPoliticalAnalystSection(),
         );
@@ -1536,8 +1547,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         );
       case NightStepKind.rebel:
         return _buildRoleNightStep(
-          wakeLabel: 'شورشی بیدار بشه',
-          sleepLabel: 'شورشی چشمش رو ببنده',
+          wakeLabel: '$_rebelRoleName بیدار بشه',
+          sleepLabel: '$_rebelRoleName چشمش رو ببنده',
           playerName: controller.rebelPlayer?.name,
           body: _buildRebelSection(),
         );
@@ -1550,22 +1561,22 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         );
       case NightStepKind.revolutionary:
         return _buildRoleNightStep(
-          wakeLabel: 'مبارز انقلابی بیدار بشه',
-          sleepLabel: 'مبارز انقلابی چشمش رو ببنده',
+          wakeLabel: '$_revolutionaryRoleName بیدار بشه',
+          sleepLabel: '$_revolutionaryRoleName چشمش رو ببنده',
           playerName: controller.revolutionaryFighterPlayer?.name,
           body: _buildRevolutionarySection(),
         );
       case NightStepKind.civicActivist:
         return _buildRoleNightStep(
-          wakeLabel: 'فعال مدنی بیدار بشه',
-          sleepLabel: 'فعال مدنی چشمش رو ببنده',
+          wakeLabel: '$_civicActivistRoleName بیدار بشه',
+          sleepLabel: '$_civicActivistRoleName چشمش رو ببنده',
           playerName: controller.civicActivistPlayer?.name,
           body: _buildCivicActivistSection(),
         );
       case NightStepKind.lawyer:
         return _buildRoleNightStep(
-          wakeLabel: 'وکیل بیدار بشه',
-          sleepLabel: 'وکیل چشمش رو ببنده',
+          wakeLabel: '$_lawyerRoleName بیدار بشه',
+          sleepLabel: '$_lawyerRoleName چشمش رو ببنده',
           playerName: controller.lawyerPlayer?.name,
           body: _buildLawyerSection(),
         );
@@ -1887,28 +1898,31 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Widget _buildPoliticalAnalystSection() {
     final result = controller.lastIndependentInvestigationResult;
     final targetName = controller.lastIndependentInvestigationTargetName;
+    final membershipQuestion = _isMafiaGame ? 'زودیاکه' : 'عضوِ یه تیمِ مستقله';
+    final membershipYes = _isMafiaGame ? 'زودیاکه' : 'مستقله';
+    final membershipNo = _isMafiaGame ? 'زودیاک نیست' : 'مستقل نیست';
     return Column(
       children: [
-        const Text(
-          'تحلیلگر سیاسی می‌تونه امشب یکی از بازیکن‌ها رو استعلام بگیره: '
-          'آیا عضوِ یه تیمِ مستقله؟',
+        Text(
+          '$_politicalAnalystRoleName می‌تونه امشب یکی از بازیکن‌ها رو استعلام بگیره: '
+          'آیا $membershipQuestion؟',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white70),
+          style: const TextStyle(color: Colors.white70),
         ),
         const SizedBox(height: 8),
         if (result != null && targetName != null) ...[
           Text(
             result == InvestigationResult.like
-                ? '🔍 نتیجه‌ی «$targetName»: 👍 لایک (مستقله)'
-                : '🔍 نتیجه‌ی «$targetName»: 👎 دیس‌لایک (مستقل نیست)',
+                ? '🔍 نتیجه‌ی «$targetName»: 👍 لایک ($membershipYes)'
+                : '🔍 نتیجه‌ی «$targetName»: 👎 دیس‌لایک ($membershipNo)',
             textAlign: TextAlign.center,
             style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'این نتیجه رو فقط خصوصی و درِگوشی به خودِ تحلیلگر بگو.',
+          Text(
+            'این نتیجه رو فقط خصوصی و درِگوشی به خودِ $_politicalAnalystRoleName بگو.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white38, fontSize: 11),
+            style: const TextStyle(color: Colors.white38, fontSize: 11),
           ),
           const SizedBox(height: 8),
         ],
@@ -1935,16 +1949,16 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Widget _buildCivicActivistSection() {
     final activist = controller.civicActivistPlayer!;
     if (activist.referendumUsed) {
-      return const Text(
-        'فعال مدنی قبلاً درخواستِ رفراندومش رو مصرف کرده.',
+      return Text(
+        '$_civicActivistRoleName قبلاً درخواستِ رفراندومش رو مصرف کرده.',
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.white38),
+        style: const TextStyle(color: Colors.white38),
       );
     }
     return Column(
       children: [
-        const Text(
-          'فعال مدنی می‌تونه امشب، یک‌بار برای همیشه، تقاضای رفراندوم بده. '
+        Text(
+          '$_civicActivistRoleName می‌تونه امشب، یک‌بار برای همیشه، تقاضای رفراندوم بده. '
           'فردا — درست قبل از رأی‌گیریِ حذف — رفراندومِ انتخابِ رهبرِ جامعه '
           'برگزار می‌شه.',
           textAlign: TextAlign.center,
@@ -1972,10 +1986,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final showResult = result != null && rapper.isAlive;
     return Column(
       children: [
-        const Text(
-          'رپر معترض می‌تونه امشب یه نفر رو برای عضوگیری تو مقاومت انتخاب کنه:',
+        Text(
+          '$_rapperRoleName می‌تونه امشب یه نفر رو برای عضوگیری تو $_resistanceGroupLabel انتخاب کنه:',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white70),
+          style: const TextStyle(color: Colors.white70),
         ),
         const SizedBox(height: 8),
         if (showResult) ...[
@@ -1987,7 +2001,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           const SizedBox(height: 8),
           if (resistance.isNotEmpty)
             Text(
-              'حالا بگو: اعضای مقاومتِ فعال (${resistance.map((p) => p.name).join('، ')}) بیدار بشن '
+              'حالا بگو: اعضای $_resistanceGroupLabel (${resistance.map((p) => p.name).join('، ')}) بیدار بشن '
               'تا وضعیتِ جدید رو ببینن.',
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.white54, fontSize: 12),
@@ -2005,7 +2019,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   void _showRapperPicker(SessionPlayer rapper) {
     _showPlayerListPicker(
-      title: 'کی رو برای مقاومت انتخاب کنه؟',
+      title: 'کی رو برای $_resistanceGroupLabel انتخاب کنه؟',
       targets: controller.alivePlayers.where((p) => p.id != rapper.id).toList(),
       onSelected: (p) => controller.rapperRecruit(p.id),
     );
@@ -2416,7 +2430,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     return Column(
       children: [
         Text(
-          'شورشی می‌تونه امشب به هر تعداد بازیکن اسلحه بده. اسلحه‌ی جنگیِ '
+          '$_rebelRoleName می‌تونه امشب به هر تعداد بازیکن اسلحه بده. اسلحه‌ی جنگیِ '
           'باقیمانده: ${rebel.warGunsRemaining ?? 0} (مشقی نامحدوده).',
           textAlign: TextAlign.center,
           style: const TextStyle(color: Colors.white70),
@@ -2581,10 +2595,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final targetName = controller.lastInvestigationTargetName;
     return Column(
       children: [
-        const Text(
-          'هکر می‌تونه امشب یکی از بازیکن‌ها رو استعلام بگیره:',
+        Text(
+          '$_hackerRoleName می‌تونه امشب یکی از بازیکن‌ها رو استعلام بگیره:',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white70),
+          style: const TextStyle(color: Colors.white70),
         ),
         const SizedBox(height: 8),
         if (result != null && targetName != null) ...[
@@ -2596,10 +2610,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'این نتیجه رو فقط خصوصی و درِگوشی به خودِ هکر بگو.',
+          Text(
+            'این نتیجه رو فقط خصوصی و درِگوشی به خودِ $_hackerRoleName بگو.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white38, fontSize: 11),
+            style: const TextStyle(color: Colors.white38, fontSize: 11),
           ),
           const SizedBox(height: 8),
         ],
@@ -2631,7 +2645,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     return Column(
       children: [
         Text(
-          'مبارز انقلابی: $charges استفاده‌ی باقیمانده از اعدامِ انقلابی/سلاخی'
+          '$_revolutionaryRoleName: $charges استفاده‌ی باقیمانده از $_revolutionaryActionLabel/سلاخی'
           '${fighter.canStillSlaughter ? '' : ' (سلاخی دیگه در دسترسش نیست)'}',
           textAlign: TextAlign.center,
           style: const TextStyle(color: Colors.white70),
@@ -2650,7 +2664,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           children: [
             OutlinedButton.icon(
               icon: const Icon(Icons.gavel),
-              label: const Text('اعدامِ انقلابی'),
+              label: Text(_revolutionaryActionLabel),
               onPressed: (controller.canRevolutionaryActTonight && charges > 0)
                   ? () => _showRevolutionaryExecutePicker(fighter)
                   : null,
@@ -2674,7 +2688,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   void _showRevolutionaryExecutePicker(SessionPlayer fighter) {
     _showPlayerListPicker(
-      title: 'اعدامِ انقلابی روی کی؟',
+      title: '$_revolutionaryActionLabel روی کی؟',
       targets: controller.alivePlayers.where((p) => p.id != fighter.id).toList(),
       onSelected: (p) => controller.revolutionaryExecute(p.id),
     );
@@ -2752,8 +2766,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       children: [
         Text(
           lawyer.isAlive
-              ? 'وکیل هنوز قابلیتِ یک‌بارمصرفِ جان‌بخشیش رو مصرف نکرده.'
-              : 'وکیل («${lawyer.name}») خودش الان نیمه‌جانه یا حذف شده و نمی‌تونه فعلاً از این قابلیت استفاده کنه.',
+              ? '$_lawyerRoleName هنوز قابلیتِ یک‌بارمصرفِ جان‌بخشیش رو مصرف نکرده.'
+              : '$_lawyerRoleName («${lawyer.name}») خودش الان نیمه‌جانه یا حذف شده و نمی‌تونه فعلاً از این قابلیت استفاده کنه.',
           textAlign: TextAlign.center,
           style: const TextStyle(color: Colors.white70),
         ),
