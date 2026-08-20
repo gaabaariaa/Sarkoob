@@ -13,6 +13,29 @@ class MusicService {
   String? _trackPath;
   bool _isPlaying = false;
 
+  // پلیرِ کاملاً جدا برای زنگِ پایانِ تایمر (صحبت/معارفه/چالش/دفاعیه) —
+  // عمداً از پلیرِ موزیکِ شب جداست تا اگه (به‌ندرت) هم‌زمان لازم شدن،
+  // روی هم سوار نشن. صدای خودِ زنگ باندل‌شده‌ی خودِ اپه (یه دینگ‌دانگِ
+  // سنتزشده‌ی ساده، نه فایلِ کاربر)، نه چیزی که کاربر انتخاب کنه.
+  final AudioPlayer _alertPlayer = AudioPlayer();
+  bool _alertRinging = false;
+
+  bool get isAlertRinging => _alertRinging;
+
+  /// شروعِ زنگِ یکسره — تا صداش نکنی stopAlert، لوپ می‌مونه.
+  Future<void> playAlertLoop() async {
+    if (_alertRinging) return;
+    _alertRinging = true;
+    await _alertPlayer.setReleaseMode(ReleaseMode.loop);
+    await _alertPlayer.play(AssetSource('sounds/timer_end.wav'));
+  }
+
+  Future<void> stopAlert() async {
+    if (!_alertRinging) return;
+    _alertRinging = false;
+    await _alertPlayer.stop();
+  }
+
   bool get isPlaying => _isPlaying;
   String? get trackPath => _trackPath;
 

@@ -64,6 +64,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   void dispose() {
     controller.removeListener(_handleMusicForPhase);
     MusicService.instance.stop();
+    MusicService.instance.stopAlert();
     super.dispose();
   }
 
@@ -691,17 +692,12 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           CountdownTimerWidget(
             key: ValueKey('${speaker.id}-$isChallenge'),
             totalSeconds: controller.currentTurnSeconds,
-            onFinished: () {
-              if (isChallenge) {
-                controller.finishChallenge();
-              } else {
-                controller.advanceSpeaker();
-              }
-            },
+            onFinished: () => MusicService.instance.playAlertLoop(),
           ),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () {
+              MusicService.instance.stopAlert();
               if (isChallenge) {
                 controller.finishChallenge();
               } else {
@@ -716,7 +712,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               onPressed: (controller.challengeEligiblePlayers.isEmpty ||
                       !controller.canCurrentSpeakerGiveChallenge)
                   ? null
-                  : () => _showChallengePicker(),
+                  : () {
+                      MusicService.instance.stopAlert();
+                      _showChallengePicker();
+                    },
               icon: const Icon(Icons.bolt),
               label: const Text('چالش گرفتن یه بازیکن دیگه'),
             ),
@@ -1324,11 +1323,14 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         CountdownTimerWidget(
           key: ValueKey('defense-${speaker.id}'),
           totalSeconds: widget.settings.speakSeconds,
-          onFinished: controller.advanceDefenseSpeaker,
+          onFinished: () => MusicService.instance.playAlertLoop(),
         ),
         const SizedBox(height: 20),
         ElevatedButton(
-          onPressed: controller.advanceDefenseSpeaker,
+          onPressed: () {
+            MusicService.instance.stopAlert();
+            controller.advanceDefenseSpeaker();
+          },
           child: const Text('پایان دفاعیه‌ی این نفر'),
         ),
       ],
