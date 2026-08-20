@@ -1462,12 +1462,145 @@ class GameFlowController extends ChangeNotifier {
   /// عملیاتِ سری: مثلِ یه شاتِ ساده — صف‌بندی می‌شه تو همون _pendingHits ی
   /// شاتِ ولی‌فقیه، پس نجاتِ دکتر خودکار طبقِ همون قانونِ همیشگی روش اثر
   /// می‌ذاره و نتیجه‌ش هم خودکار تو خلاصه‌ی صبح («❌ کشته‌شدن») می‌شینه.
+  /// استثنا: اگه هدف خودِ محافظ باشه، اصلاً صف‌بندی نمی‌شه — برعکسش
+  /// می‌شه: زودیاک همون‌لحظه و کاملاً حذف می‌شه (پدافندِ غیرفعالِ محافظ،
+  /// مستقل از زره/نجاتِ دکتر).
   void mossadShoot(int targetId) {
     if (!canMossadActTonight) return;
     final leader = mossadLeaderPlayer!;
     if (leader.mossadPlaystyle != MossadPlaystyle.secretOperation) return;
     _mossadActedTonight = true;
+    final guard = guardPlayer;
+    if (guard != null && guard.isAlive && targetId == guard.id) {
+      leader.isAlive = false;
+      leader.isHalfAlive = false;
+      _checkZhinaTrigger(leader);
+      _tonightEliminatedIds.add(leader.id);
+      guardCounterResultMessage =
+          '«${leader.name}» (زودیاک) شاتِ عملیاتِ سری رو رویِ محافظ («${guard.name}») امتحان کرد '
+          'و خودش همون‌لحظه حذف شد.';
+      notifyListeners();
+      return;
+    }
     _pendingHits[targetId] = (_pendingHits[targetId] ?? 0) + 1;
+    notifyListeners();
+  }
+
+  /// پیامِ خصوصیِ نتیجه‌ی پدافندِ محافظ دربرابرِ شاتِ زودیاک — فقط برای
+  /// یادداشتِ گرداننده؛ خودِ حذفِ زودیاک از مسیرِ عادیِ _tonightEliminatedIds
+  /// می‌ره و تو خلاصه‌ی عمومی («❌») به‌عنوانِ یه حذفِ معمولی می‌شینه، بدونِ
+  /// لو رفتنِ اینکه چرا/چطور.
+  String? guardCounterResultMessage;
+
+  // ---------- بمب‌گذار / محافظ: خواب نیمروزی (فقط سناریوی مافیا) ----------
+  //
+  // بمب‌گذار یک‌بار در کلِ بازی (شب) هدف + رمزِ ۱-۴ رو تعیین می‌کنه.
+  // فردا صبح (تو UI، بنرِ روز) گرداننده علنی اعلام می‌کنه بمب جلوی کیه.
+  // همون روز، درست قبل از رأی‌گیری (بعدِ تمومِ‌شدنِ نوبتِ صحبت)، شهر می‌ره
+  // تو «خواب نیمروزی»: همه چشم می‌بندن، یه تصمیمِ مخفیانه گرفته می‌شه، و
+  // نتیجه (خنثی‌شدن/انفجار) علنی اعلام می‌شه. این یه مکانیزمِ عمومیه که
+  // احتمالاً نقش‌های بعدی هم ازش استفاده می‌کنن.
+
+  SessionPlayer? get bomberPlayer {
+    for (final p in players) {
+      if (p.roleId == SarkoobRoles.bomber.id) return p;
+    }
+    return null;
+  }
+
+  SessionPlayer? get guardPlayer {
+    for (final p in players) {
+      if (p.roleId == SarkoobRoles.guard.id) return p;
+    }
+    return null;
+  }
+
+  bool bomberChargeUsed = false;
+  int? bombTargetId;
+  int? _bombDefusalCode; // ۱ تا ۴ — فقط از پیکرِ اختصاصیِ کدپیکر قابل‌دیدنه
+  bool? guardSacrificeAnswer; // null = هنوز پرسیده نشده
+  String? bombOutcomeMessage; // اعلامِ نهاییِ علنی (خنثی‌شدن/انفجار)
+  bool _bombCodeChecked = false;
+  bool bombFullyResolved = false; // گرداننده روی «ادامه به رأی‌گیری» زد
+
+  bool get canPlantBombTonight {
+    final bomber = bomberPlayer;
+    if (bomber == null || !_stillActiveTonight(bomber)) return false;
+    if (bomberChargeUsed) return false;
+    if (phase == GamePhaseType.night && isPlayerDetained(bomber.id)) return false;
+    return true;
+  }
+
+  void plantBomb(int targetId, int code) {
+    if (!canPlantBombTonight || code < 1 || code > 4) return;
+    bomberChargeUsed = true;
+    bombTargetId = targetId;
+    _bombDefusalCode = code;
+    notifyListeners();
+  }
+
+  /// وقتی true بشه، _buildBody باید بره تو فازِ حل‌وفصلِ بمب (بعدِ نوبتِ
+  /// صحبت، قبل از رأی‌گیری) — تا وقتی گرداننده نتیجه رو ندیده و «ادامه»
+  /// نزده، true می‌مونه، حتی بعدِ چک‌شدنِ رمز.
+  bool get bombPendingResolution => bombTargetId != null && !bombFullyResolved;
+
+  SessionPlayer? get bombTargetPlayer => bombTargetId == null ? null : playerById(bombTargetId!);
+
+  int? get bombCorrectCode => _bombDefusalCode;
+
+  /// خودِ هدف، خودِ محافظه — رمز خودکار و بدونِ ریسک لو داده می‌شه.
+  bool get bombTargetIsGuardSelf {
+    final guard = guardPlayer;
+    final target = bombTargetPlayer;
+    return guard != null && target != null && guard.id == target.id;
+  }
+
+  /// آیا اصلاً باید از محافظ پرسیده بشه؟ (زنده باشه، تو بازی باشه، خودِ
+  /// هدف نباشه — اون حالتِ جدا و خودکاره، بالا.)
+  bool get shouldAskGuardForBomb {
+    final guard = guardPlayer;
+    final target = bombTargetPlayer;
+    if (guard == null || !guard.isAlive || target == null) return false;
+    return guard.id != target.id;
+  }
+
+  void recordGuardSacrificeAnswer(bool willing) {
+    if (!shouldAskGuardForBomb || guardSacrificeAnswer != null) return;
+    guardSacrificeAnswer = willing;
+    notifyListeners();
+  }
+
+  /// چه خودِ هدف حدس بزنه، چه محافظ به‌جاش — همینو صدا بزن.
+  void resolveBombCode(int chosenCode) {
+    if (bombTargetId == null || _bombCodeChecked) return;
+    final target = bombTargetPlayer!;
+    final guard = guardPlayer;
+    final guardSacrificed = shouldAskGuardForBomb && guardSacrificeAnswer == true;
+    final success = chosenCode == _bombDefusalCode;
+
+    if (success) {
+      bombOutcomeMessage = '💣 بمبِ «${target.name}» با رمزِ درست خنثی شد.';
+    } else {
+      _eliminatePlayer(target);
+      if (guardSacrificed && guard != null) {
+        guard.isAlive = false;
+        guard.isHalfAlive = false;
+        _checkZhinaTrigger(guard);
+        bombOutcomeMessage = '💣 بمبِ «${target.name}» با رمزِ غلط ترکید و از بازی خارج شد. '
+            '«${guard.name}» هم چون برای نجاتش فدا شده و رمز رو غلط زده بود، نقشِ محافظش '
+            'افشا شد و کاملاً از بازی خارج شد.';
+      } else {
+        bombOutcomeMessage = '💣 بمبِ «${target.name}» با رمزِ غلط ترکید و از بازی خارج شد.';
+      }
+    }
+    _bombCodeChecked = true;
+    _skipDeadSpeakers();
+    notifyListeners();
+  }
+
+  void acknowledgeBombOutcome() {
+    if (!_bombCodeChecked) return;
+    bombFullyResolved = true;
     notifyListeners();
   }
 
@@ -1846,6 +1979,7 @@ class GameFlowController extends ChangeNotifier {
     _tonightEliminatedIds.clear();
     _tonightRevivedId = null;
     mossadAssassinationResultMessage = null;
+    guardCounterResultMessage = null;
     _politicalAnalystUsedTonight = false;
     lastIndependentInvestigationResult = null;
     lastIndependentInvestigationTargetName = null;
@@ -1917,6 +2051,7 @@ class GameFlowController extends ChangeNotifier {
     if (mossadAssassinationResultMessage != null) {
       privateNotes.insert(0, mossadAssassinationResultMessage!);
     }
+    if (guardCounterResultMessage != null) privateNotes.insert(0, guardCounterResultMessage!);
 
     final announcement = <String>[];
     if (_tonightSlaughteredIds.isNotEmpty) {

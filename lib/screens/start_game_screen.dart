@@ -31,6 +31,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   bool _includeSpy = false;
   bool _includeKidnapper = false;
   bool _includeTerrorist = false;
+  bool _includeBomber = false;
 
   bool _includeMafiaDoctor = false;
   bool _includeDetective = false;
@@ -40,6 +41,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   bool _includeGunman = false;
   bool _includeLeader = false;
   bool _includeSherlock = false;
+  bool _includeGuard = false;
 
   int _mafiaCount = 0; // مافیا ساده
   int _simpleCitizenCount = 0; // شهروندِ ساده
@@ -264,7 +266,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
       (_includeEnchanter ? 1 : 0) +
       (_includeSpy ? 1 : 0) +
       (_includeKidnapper ? 1 : 0) +
-      (_includeTerrorist ? 1 : 0);
+      (_includeTerrorist ? 1 : 0) +
+      (_includeBomber ? 1 : 0);
 
   int get _mafiaTownRoleSlotsEnabled =>
       (_includeMafiaDoctor ? 1 : 0) +
@@ -274,7 +277,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
       (_includeOcean ? 1 : 0) +
       (_includeGunman ? 1 : 0) +
       (_includeLeader ? 1 : 0) +
-      (_includeSherlock ? 1 : 0);
+      (_includeSherlock ? 1 : 0) +
+      (_includeGuard ? 1 : 0);
 
   int get _mafiaGangTotal => _mafiaGangRoleSlotsEnabled + _mafiaCount;
   int get _mafiaTownTotal => _mafiaTownRoleSlotsEnabled + _simpleCitizenCount;
@@ -564,6 +568,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final spyIndex = nextMafiaGangIndex(_includeSpy);
     final kidnapperIndex = nextMafiaGangIndex(_includeKidnapper);
     final terroristIndex = nextMafiaGangIndex(_includeTerrorist);
+    final bomberIndex = nextMafiaGangIndex(_includeBomber);
 
     final townShuffled = List<int>.generate(total, (i) => i)
         .where((i) => !mafiaGangIndices.contains(i) && !independentIndices.contains(i))
@@ -584,6 +589,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final gunmanIndex = nextTownIndex(_includeGunman);
     final leaderIndex = nextTownIndex(_includeLeader);
     final sherlockIndex = nextTownIndex(_includeSherlock);
+    final guardIndex = nextTownIndex(_includeGuard);
 
     final slaughterCharges = (total / 6).floor().clamp(1, 999);
     final professionalCharges = (mafiaGangCount - 1).clamp(0, 999);
@@ -629,6 +635,10 @@ class _StartGameScreenState extends State<StartGameScreen> {
         roleId = SarkoobRoles.leader.id;
       } else if (i == sherlockIndex) {
         roleId = SarkoobRoles.sherlock.id;
+      } else if (i == bomberIndex) {
+        roleId = SarkoobRoles.bomber.id;
+      } else if (i == guardIndex) {
+        roleId = SarkoobRoles.guard.id;
       } else if (i == zodiacIndex) {
         roleId = SarkoobRoles.zodiacRole.id;
       }
@@ -1011,6 +1021,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
               value: _includeTerrorist,
               onChanged: (v) => setState(() => _includeTerrorist = v),
             ),
+            _roleToggle(
+              role: SarkoobRoles.bomber,
+              value: _includeBomber,
+              onChanged: (v) => setState(() => _includeBomber = v),
+            ),
             const SizedBox(height: 4),
             _roleCountStepper(
               role: SarkoobRoles.simpleMafia,
@@ -1078,6 +1093,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
               role: SarkoobRoles.sherlock,
               value: _includeSherlock,
               onChanged: (v) => setState(() => _includeSherlock = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.guard,
+              value: _includeGuard,
+              onChanged: (v) => setState(() => _includeGuard = v),
             ),
             const SizedBox(height: 4),
             _roleCountStepper(

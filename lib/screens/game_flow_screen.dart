@@ -537,6 +537,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         if (controller.isSecondVoteRound) return _buildVotePanel(isSecondRound: true);
         if (controller.inDefense) return _buildDefensePhase();
         if (controller.votingStarted) return _buildVotePanel(isSecondRound: false);
+        if (controller.isSpeakingRoundDone && controller.bombPendingResolution) {
+          return _buildBombResolutionPhase();
+        }
         if (controller.isSpeakingRoundDone && controller.referendumScheduledToday) {
           return _buildReferendumPhase();
         }
@@ -611,6 +614,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             ),
           if (!isIntro && controller.armedPlayers.isNotEmpty) _buildGunBanner(),
           if (!isIntro && controller.canAssassinateNow) _buildMercenaryDayBanner(),
+          if (!isIntro && controller.bombTargetId != null && !controller.bombFullyResolved)
+            _buildBombDayBanner(),
           if (!isIntro && controller.activeExecutionWord != null) _buildExecutionWordBanner(),
           if (isIntro)
             const Text(
@@ -995,6 +1000,28 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             child: const Text('یکی این کلمه رو گفت!'),
           ),
         ],
+      ),
+    );
+  }
+
+  /// بمب هنوز حل‌نشده‌ست؛ فقط اطلاع‌رسانیه — حل‌وفصلش خودکار، آخرِ همین
+  /// روز و قبل از رأی‌گیری، تو _buildBombResolutionPhase انجام می‌شه.
+  Widget _buildBombDayBanner() {
+    final target = controller.bombTargetPlayer;
+    if (target == null) return const SizedBox.shrink();
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.bloodRed.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.bloodRedLight),
+      ),
+      child: Text(
+        '💣 بمب جلوی «${target.name}» گذاشته شده. آخرِ همین روز، قبل از رأی‌گیری، خودکار حل‌وفصل می‌شه.',
+        textAlign: TextAlign.center,
+        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -1684,6 +1711,12 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               const SizedBox(height: 8),
               _buildMercenaryNightSection(),
             ],
+            if (controller.bomberPlayer != null) ...[
+              const SizedBox(height: 24),
+              const Divider(color: AppColors.gold),
+              const SizedBox(height: 8),
+              _buildBomberSection(),
+            ],
           ],
           const SizedBox(height: 32),
           ElevatedButton(
@@ -1693,6 +1726,232 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  /// بخشِ بمب‌گذار تو مرحله‌ی تیمِ رهبر — کاملاً مستقل از شات/سلاخی/مذاکره،
+  /// چون یک‌بارمصرفِ کلِ بازیه، نه یه تصمیمِ هرشبه.
+  Widget _buildBomberSection() {
+    if (controller.bomberChargeUsed) {
+      return const Text(
+        'بمب‌گذار قبلاً بمبش رو کار گذاشته (یک‌بارمصرفه؛ اگه هنوز حل نشده، '
+        'فردا صبح و آخرِ روز خودکار پیگیری می‌شه).',
+        textAlign: TextAlign.center,
+        style: TextStyle(color: Colors.white38),
+      );
+    }
+    return Column(
+      children: [
+        const Text(
+          'بمب‌گذار می‌تونه امشب، یک‌بار برای همیشه، جلوی یه بازیکن بمب '
+          'بذاره و یه رمزِ خنثی‌سازی (۱ تا ۴) انتخاب کنه.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.local_fire_department),
+          label: const Text('کارگذاریِ بمب'),
+          onPressed: controller.canPlantBombTonight ? _showBomberPicker : null,
+        ),
+      ],
+    );
+  }
+
+  void _showBomberPicker() {
+    _showPlayerListPicker(
+      title: 'بمب جلوی کی گذاشته بشه؟',
+      targets: controller.alivePlayers,
+      onSelected: _showBombCodePicker,
+    );
+  }
+
+  void _showBombCodePicker(SessionPlayer target) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.surfaceDark,
+        title: const Text('رمزِ خنثی‌سازی رو انتخاب کن', style: TextStyle(color: Colors.white)),
+        content: Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          alignment: WrapAlignment.center,
+          children: List.generate(4, (i) {
+            final code = i + 1;
+            return ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                controller.plantBomb(target.id, code);
+              },
+              child: Text('$code', style: const TextStyle(fontSize: 18)),
+            );
+          }),
+        ),
+      ),
+    );
+  }
+
+  /// فازِ «خواب نیمروزی»: آخرِ روز، قبل از رأی‌گیری، اگه بمبی هنوز حل‌نشده
+  /// باشه. سه شاخه‌ی مکالمه‌ای (هدف=محافظ / پرسیدن از محافظ / حدسِ خودِ
+  /// هدف) + یه صفحه‌ی نتیجه‌ی نهایی که با تأییدِ گرداننده می‌ره سراغِ
+  /// رأی‌گیری.
+  Widget _buildBombResolutionPhase() {
+    final target = controller.bombTargetPlayer;
+    if (target == null) return const SizedBox.shrink();
+
+    if (controller.bombOutcomeMessage != null) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            controller.bombOutcomeMessage!,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: AppColors.goldLight,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'حالا بگو همه چشماشون رو باز کنن.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white60),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: controller.acknowledgeBombOutcome,
+            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+            child: const Text('ادامه به رأی‌گیری'),
+          ),
+        ],
+      );
+    }
+
+    Widget branch;
+    if (controller.bombTargetIsGuardSelf) {
+      branch = _buildBombGuardSelfBranch(target, controller.guardPlayer!);
+    } else if (controller.shouldAskGuardForBomb && controller.guardSacrificeAnswer == null) {
+      branch = _buildBombAskGuardBranch();
+    } else if (controller.shouldAskGuardForBomb && controller.guardSacrificeAnswer == true) {
+      branch = _buildBombCodeGuessBranch(guesser: controller.guardPlayer!, forTarget: target);
+    } else {
+      branch = _buildBombCodeGuessBranch(guesser: target, forTarget: target);
+    }
+
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Text('🌙 خواب نیمروزی', style: AppTheme.headingFont(size: 22)),
+          const SizedBox(height: 4),
+          const Text(
+            'همه‌ی بازیکن‌ها چشماشون رو ببندن — یه تصمیمِ مخفیانه در جریانه.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white60),
+          ),
+          const SizedBox(height: 24),
+          branch,
+        ],
+      ),
+    );
+  }
+
+  Widget _playerBadge(String label, String name) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.gold.withOpacity(0.4)),
+      ),
+      child: Text(
+        '$label: $name',
+        style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildBombGuardSelfBranch(SessionPlayer target, SessionPlayer guard) {
+    return Column(
+      children: [
+        _playerBadge('👤 هدفِ بمب و محافظ، هردو', guard.name),
+        const SizedBox(height: 16),
+        Text(
+          'چون خودِ محافظ هدفه، رمزِ درست رو بی‌سروصدا بهش نشون بده: '
+          '${controller.bombCorrectCode}',
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 16),
+        ElevatedButton(
+          onPressed: () => controller.resolveBombCode(controller.bombCorrectCode!),
+          style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+          child: const Text('تأیید — بمب خنثی شد'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBombAskGuardBranch() {
+    final guard = controller.guardPlayer!;
+    return Column(
+      children: [
+        _playerBadge('👤 این نقش (محافظ)', guard.name),
+        const SizedBox(height: 16),
+        const Text(
+          'محافظ رو بی‌سروصدا بیدار کن و بپرس: می‌خوای برای نجاتِ هدف فدا بشی؟',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () => controller.recordGuardSacrificeAnswer(true),
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.goldDark),
+              child: const Text('بله، فدا می‌شه'),
+            ),
+            const SizedBox(width: 16),
+            OutlinedButton(
+              onPressed: () => controller.recordGuardSacrificeAnswer(false),
+              child: const Text('نه'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBombCodeGuessBranch({required SessionPlayer guesser, required SessionPlayer forTarget}) {
+    final isSelf = guesser.id == forTarget.id;
+    return Column(
+      children: [
+        _playerBadge(isSelf ? '👤 این نقش (هدف)' : '👤 این نقش (محافظ)', guesser.name),
+        const SizedBox(height: 16),
+        Text(
+          isSelf
+              ? 'حالا «${guesser.name}» باید رمزِ خنثی‌سازی رو حدس بزنه:'
+              : '«${guesser.name}» به‌جایِ «${forTarget.name}» رمز رو حدس می‌زنه:',
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          alignment: WrapAlignment.center,
+          children: List.generate(4, (i) {
+            final code = i + 1;
+            return ElevatedButton(
+              onPressed: () => controller.resolveBombCode(code),
+              style: ElevatedButton.styleFrom(minimumSize: const Size(56, 56)),
+              child: Text('$code', style: const TextStyle(fontSize: 18)),
+            );
+          }),
+        ),
+      ],
     );
   }
 
