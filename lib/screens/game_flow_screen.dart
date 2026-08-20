@@ -4,6 +4,7 @@ import '../models/game_session.dart';
 import '../models/history.dart';
 import '../models/role.dart';
 import '../models/team.dart';
+import '../services/music_service.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/countdown_timer_widget.dart';
@@ -52,6 +53,51 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   void initState() {
     super.initState();
     controller = GameFlowController(players: widget.players, settings: widget.settings);
+    // ست‌کردنِ مسیرِ موزیکِ ذخیره‌شده (اگه از قبل تو تنظیمات انتخاب شده)
+    // رو غیرِمنتظر می‌ذاریم؛ تا اولین شب برسه، این fetchِ سریعِ محلی
+    // بدونِ‌شک تموم شده.
+    _storage.loadMusicPath().then((path) => MusicService.instance.setTrackPath(path));
+    controller.addListener(_handleMusicForPhase);
+  }
+
+  @override
+  void dispose() {
+    controller.removeListener(_handleMusicForPhase);
+    MusicService.instance.stop();
+    super.dispose();
+  }
+
+  bool? _lastMusicShouldPlay;
+
+  /// شب (معارفه یا عادی) همیشه بله؛ روز فقط دقیقاً همون لحظه‌ای که
+  /// _buildBody واقعاً صفحه‌ی خواب‌نیمروزی رو نشون می‌ده (نه کلِ روزی که
+  /// یه بمبِ حل‌نشده وجود داره) — عیناً همون زنجیره‌ی شرط‌های _buildBody.
+  bool get _shouldPlayMusic {
+    final phase = controller.phase;
+    if (phase == GamePhaseType.introNight || phase == GamePhaseType.night) return true;
+    if (phase == GamePhaseType.day &&
+        controller.autoDetectedWinnerTeamId == null &&
+        !controller.chaosPhaseActive &&
+        controller.lastResolution == null &&
+        !controller.isSecondVoteRound &&
+        !controller.inDefense &&
+        !controller.votingStarted &&
+        controller.isSpeakingRoundDone &&
+        controller.bombPendingResolution) {
+      return true;
+    }
+    return false;
+  }
+
+  void _handleMusicForPhase() {
+    final should = _shouldPlayMusic;
+    if (should == _lastMusicShouldPlay) return;
+    _lastMusicShouldPlay = should;
+    if (should) {
+      MusicService.instance.play();
+    } else {
+      MusicService.instance.stop();
+    }
   }
 
   @override
