@@ -44,7 +44,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _pickMusic() async {
     setState(() => _busy = true);
     try {
-      final result = await FilePicker.pickFiles(type: FileType.audio);
+      final result = await FilePicker.platform.pickFiles(type: FileType.audio);
       final picked = (result != null && result.files.isNotEmpty) ? result.files.single : null;
       final sourcePath = picked?.path;
       if (picked == null || sourcePath == null) {
