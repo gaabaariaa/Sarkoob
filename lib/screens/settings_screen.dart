@@ -192,8 +192,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 8),
           const Text(
             'یه فایل یا یه پوشه‌ی پر از موزیک از گوشیت انتخاب کن تا خودکار '
-            'تو فازِ شب و «خواب نیمروزی» پشتِ‌سرِهم پخش (و لوپ) بشن، و با '
-            'شروعِ روز خودکار قطع بشن.',
+            'تو فازِ شب و «خواب نیمروزی» به‌صورتِ شافل پخش بشن، و با شروعِ '
+            'روز خودکار قطع بشن.',
             style: TextStyle(color: Colors.white60, fontSize: 13),
           ),
           const SizedBox(height: 16),
@@ -251,6 +251,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           label: Text(_previewing ? 'توقفِ پخشِ آزمایشی' : 'پخشِ آزمایشی'),
                           onPressed: _togglePreview,
                         ),
+                        if (_previewing)
+                          OutlinedButton.icon(
+                            icon: const Icon(Icons.skip_next),
+                            label: const Text('بعدی'),
+                            onPressed: () => MusicService.instance.skipToNext(),
+                          ),
                         OutlinedButton.icon(
                           icon: const Icon(Icons.delete_outline),
                           label: const Text('حذف'),

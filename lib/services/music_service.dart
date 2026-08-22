@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:audioplayers/audioplayers.dart';
 
 /// سرویسِ پخشِ موزیکِ پس‌زمینه — یه singletonِ ساده و مستقل از هر
@@ -16,8 +18,16 @@ class MusicService {
 
   final AudioPlayer _player = AudioPlayer();
   List<String> _playlist = [];
-  int _currentIndex = 0;
+  List<String> _playOrder = []; // چینشِ شافل‌شده‌ی همین دور
+  int _orderPosition = 0;
   bool _isPlaying = false;
+
+  final _random = Random();
+
+  void _reshuffle() {
+    _playOrder = List<String>.from(_playlist)..shuffle(_random);
+    _orderPosition = 0;
+  }
 
   // پلیرِ کاملاً جدا برای زنگِ پایانِ تایمر (صحبت/معارفه/چالش/دفاعیه) —
   // عمداً از پلیرِ موزیکِ شب جداست تا اگه (به‌ندرت) هم‌زمان لازم شدن،
@@ -50,22 +60,34 @@ class MusicService {
   /// ندارن — هردو یه «پلی‌لیست»ن، فقط طولشون فرق داره.
   void setPlaylist(List<String> paths) {
     _playlist = paths;
-    _currentIndex = 0;
+    _playOrder = [];
+    _orderPosition = 0;
   }
 
+  /// همیشه با یه چینشِ شافل‌شده‌ی تازه شروع می‌کنه — یعنی هر بار که موزیک
+  /// از نو روشن بشه (هر شب/هر خواب‌نیمروزی)، ترتیبِ آهنگ‌ها فرق می‌کنه.
   Future<void> play() async {
     if (_playlist.isEmpty) return;
-    _currentIndex = 0;
+    _reshuffle();
     _isPlaying = true;
     await _player.setReleaseMode(ReleaseMode.release);
-    await _player.play(DeviceFileSource(_playlist[_currentIndex]));
+    await _player.play(DeviceFileSource(_playOrder[_orderPosition]));
   }
 
+  /// می‌ره سراغِ آهنگِ بعدیِ همین چینشِ شافل‌شده؛ وقتی چینش تموم شد،
+  /// یه چینشِ شافل‌شده‌ی تازه می‌سازه (نه اینکه دوباره از همون ترتیب شروع
+  /// کنه) تا تکرارها هم متنوع بمونن.
   Future<void> _advanceAndPlay() async {
-    if (!_isPlaying || _playlist.isEmpty) return;
-    _currentIndex = (_currentIndex + 1) % _playlist.length;
-    await _player.play(DeviceFileSource(_playlist[_currentIndex]));
+    if (!_isPlaying || _playOrder.isEmpty) return;
+    _orderPosition++;
+    if (_orderPosition >= _playOrder.length) {
+      _reshuffle();
+    }
+    await _player.play(DeviceFileSource(_playOrder[_orderPosition]));
   }
+
+  /// دکمه‌ی «آهنگِ بعدی» — دستی، همون منطقِ رسیدن‌به‌آخرِ‌آهنگ رو صدا می‌زنه.
+  Future<void> skipToNext() => _advanceAndPlay();
 
   Future<void> stop() async {
     if (!_isPlaying) return;

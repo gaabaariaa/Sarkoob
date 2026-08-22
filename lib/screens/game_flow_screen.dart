@@ -166,6 +166,11 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     onPressed: () => setState(() => _showTeamCounts = !_showTeamCounts),
                   ),
                   _bottomBarAction(
+                    icon: Icons.skip_next,
+                    label: 'آهنگِ بعدی',
+                    onPressed: _skipMusicTrack,
+                  ),
+                  _bottomBarAction(
                     icon: Icons.flag,
                     label: 'پایانِ بازی',
                     onPressed: _showEndGameDialog,
@@ -176,6 +181,23 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  /// دکمه‌ی «آهنگِ بعدی» تو BottomAppBar — همیشه در دسترسه (نه فقط شبِ)
+  /// چون خواب‌نیمروزی هم می‌تونه وسطِ روز موزیک داشته باشه؛ اگه اصلاً
+  /// چیزی در حالِ پخش نباشه، به‌جایِ بی‌صدا هیچ‌کاری‌نکردن یه پیامِ کوتاه
+  /// می‌ده که گرداننده گیج نشه.
+  void _skipMusicTrack() {
+    if (!MusicService.instance.isPlaying) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('الان موزیکی در حالِ پخش نیست.')),
+      );
+      return;
+    }
+    MusicService.instance.skipToNext();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('⏭ رفت سراغِ آهنگِ بعدی'), duration: Duration(seconds: 1)),
     );
   }
 
