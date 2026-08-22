@@ -8,6 +8,17 @@ import '../services/music_service.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
 
+const List<String> _audioExtensions = [
+  '.mp3',
+  '.wav',
+  '.m4a',
+  '.aac',
+  '.ogg',
+  '.flac',
+  '.wma',
+  '.opus',
+];
+
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -17,8 +28,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final StorageService _storage = StorageService();
-  String? _trackPath;
-  String? _trackName;
+  List<String> _trackPaths = [];
   bool _busy = false;
   bool _previewing = false;
 
@@ -29,19 +39,70 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _load() async {
-    final path = await _storage.loadMusicPath();
-    final name = await _storage.loadMusicName();
+    final paths = await _storage.loadMusicPaths();
+    MusicService.instance.setPlaylist(paths);
+    if (!mounted) return;
+    setState(() => _trackPaths = paths);
+  }
+
+  @override
+  void dispose() {
+    if (_previewing) {
+      MusicService.instance.stop();
+    }
+    super.dispose();
+  }
+
+  String _displayName(String path) {
+    final base = path.split('/').last;
+    final match = RegExp(r'^\d{3}_(.+)$').firstMatch(base);
+    return match?.group(1) ?? base;
+  }
+
+  bool _isAudioFile(String path) {
+    final lower = path.toLowerCase();
+    return _audioExtensions.any((ext) => lower.endsWith(ext));
+  }
+
+  /// فایل‌های انتخاب‌شده (چه یه فایلِ تنها چه چندتا فایلِ یه پوشه) رو تو
+  /// یه پوشه‌ی محلیِ خودِ اپ کپی می‌کنه (نه فقط رفرنس به مسیرِ اصلی) تا
+  /// نیازی به نگه‌داشتنِ دسترسیِ درازمدت به فایل‌سیستمِ کاربر نباشه.
+  /// هربار که موزیکِ جدید انتخاب می‌شه، محتوایِ قبلیِ این پوشه پاک می‌شه.
+  Future<List<String>> _copyToAppStorage(List<String> sourcePaths) async {
+    final docsDir = await getApplicationDocumentsDirectory();
+    final musicDir = Directory('${docsDir.path}/night_music');
+    if (await musicDir.exists()) {
+      await musicDir.delete(recursive: true);
+    }
+    await musicDir.create(recursive: true);
+    final result = <String>[];
+    for (var i = 0; i < sourcePaths.length; i++) {
+      final originalName = sourcePaths[i].split('/').last;
+      final destPath = '${musicDir.path}/${i.toString().padLeft(3, '0')}_$originalName';
+      await File(sourcePaths[i]).copy(destPath);
+      result.add(destPath);
+    }
+    return result;
+  }
+
+  Future<void> _applySelection(List<String> sourcePaths) async {
+    final saved = await _copyToAppStorage(sourcePaths);
+    await _storage.saveMusicPaths(saved);
+    MusicService.instance.setPlaylist(saved);
     if (!mounted) return;
     setState(() {
-      _trackPath = path;
-      _trackName = name;
+      _trackPaths = saved;
+      _busy = false;
     });
   }
 
-  /// فایلِ انتخاب‌شده رو تو مسیرِ خودِ اپ کپی می‌کنه (نه فقط رفرنس به
-  /// مسیرِ اصلی) تا نیازی به نگه‌داشتنِ دسترسیِ درازمدت به فایلِ سیستمِ
-  /// کاربر نباشه، و بستنِ آهنگِ آماده تو اپ هم لازم نباشه (کپی‌رایته).
-  Future<void> _pickMusic() async {
+  void _showError(String message) {
+    if (!mounted) return;
+    setState(() => _busy = false);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _pickSingleFile() async {
     setState(() => _busy = true);
     try {
       final result = await FilePicker.platform.pickFiles(type: FileType.audio);
@@ -51,35 +112,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
         if (mounted) setState(() => _busy = false);
         return;
       }
-      final docsDir = await getApplicationDocumentsDirectory();
-      final ext = picked.extension ?? 'mp3';
-      final destPath = '${docsDir.path}/sarkoob_night_music.$ext';
-      await File(sourcePath).copy(destPath);
-      await _storage.saveMusicSelection(destPath, picked.name);
-      MusicService.instance.setTrackPath(destPath);
-      if (!mounted) return;
-      setState(() {
-        _trackPath = destPath;
-        _trackName = picked.name;
-        _busy = false;
-      });
+      await _applySelection([sourcePath]);
     } catch (e) {
-      if (!mounted) return;
-      setState(() => _busy = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('خطا تو انتخابِ موزیک: $e')),
-      );
+      _showError('خطا تو انتخابِ موزیک: $e');
+    }
+  }
+
+  /// انتخابِ یه پوشه و پخشِ همه‌ی موزیک‌های داخلش (پشتِ‌سرِهم، بعدِ آخری
+  /// برمی‌گرده اول). نکته: انتخابِ پوشه (برخلافِ فایل) رو بعضی گوشی‌ها/
+  /// بعضی مسیرها (مثلاً پوشه‌های کلاودی) ممکنه به مسیرِ قابلِ‌خوندن تبدیل
+  /// نشه — اگه اینجا خطا خورد، «انتخابِ یه فایل» همیشه راهِ مطمئنه.
+  Future<void> _pickFolder() async {
+    setState(() => _busy = true);
+    try {
+      final dirPath = await FilePicker.platform.getDirectoryPath();
+      if (dirPath == null) {
+        if (mounted) setState(() => _busy = false);
+        return;
+      }
+      final dir = Directory(dirPath);
+      final audioFiles = dir
+          .listSync()
+          .whereType<File>()
+          .where((f) => _isAudioFile(f.path))
+          .map((f) => f.path)
+          .toList()
+        ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+      if (audioFiles.isEmpty) {
+        _showError('تو این پوشه هیچ فایلِ موزیکی پیدا نشد.');
+        return;
+      }
+      await _applySelection(audioFiles);
+    } catch (e) {
+      _showError('این پوشه قابلِ‌خوندن نبود. اگه پوشه‌ی کلاودی/اشتراکی بود، '
+          'به‌جاش «انتخابِ یه فایل» رو امتحان کن. ($e)');
     }
   }
 
   Future<void> _clearMusic() async {
     await MusicService.instance.stop();
-    MusicService.instance.setTrackPath(null);
-    await _storage.saveMusicSelection(null, null);
+    MusicService.instance.setPlaylist([]);
+    await _storage.saveMusicPaths([]);
+    try {
+      final docsDir = await getApplicationDocumentsDirectory();
+      final musicDir = Directory('${docsDir.path}/night_music');
+      if (await musicDir.exists()) {
+        await musicDir.delete(recursive: true);
+      }
+    } catch (_) {
+      // پاک‌نشدنِ کپیِ محلی مهم نیست؛ چیزی که مهمه اینه که دیگه ازش
+      // استفاده نمی‌شه (playlist و تنظیمات همین الان خالی شدن).
+    }
     if (!mounted) return;
     setState(() {
-      _trackPath = null;
-      _trackName = null;
+      _trackPaths = [];
       _previewing = false;
     });
   }
@@ -88,19 +174,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (_previewing) {
       await MusicService.instance.stop();
     } else {
-      MusicService.instance.setTrackPath(_trackPath);
+      MusicService.instance.setPlaylist(_trackPaths);
       await MusicService.instance.play();
     }
     if (!mounted) return;
     setState(() => _previewing = !_previewing);
-  }
-
-  @override
-  void dispose() {
-    if (_previewing) {
-      MusicService.instance.stop();
-    }
-    super.dispose();
   }
 
   @override
@@ -113,8 +191,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Text('🎵 موزیکِ شب', style: AppTheme.headingFont(size: 20)),
           const SizedBox(height: 8),
           const Text(
-            'یه آهنگ از گوشیت انتخاب کن تا خودکار تو فازِ شب و «خواب '
-            'نیمروزی» پخش (و لوپ) بشه، و با شروعِ روز خودکار قطع بشه.',
+            'یه فایل یا یه پوشه‌ی پر از موزیک از گوشیت انتخاب کن تا خودکار '
+            'تو فازِ شب و «خواب نیمروزی» پشتِ‌سرِهم پخش (و لوپ) بشن، و با '
+            'شروعِ روز خودکار قطع بشن.',
             style: TextStyle(color: Colors.white60, fontSize: 13),
           ),
           const SizedBox(height: 16),
@@ -126,23 +205,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _trackName ?? 'هیچ موزیکی انتخاب نشده',
+                    _trackPaths.isEmpty
+                        ? 'هیچ موزیکی انتخاب نشده'
+                        : _trackPaths.length == 1
+                            ? _displayName(_trackPaths.first)
+                            : '${_trackPaths.length} فایلِ موزیک انتخاب شده',
                     style: TextStyle(
-                      color: _trackName != null ? Colors.white : Colors.white38,
+                      color: _trackPaths.isNotEmpty ? Colors.white : Colors.white38,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  if (_trackPaths.length > 1) ...[
+                    const SizedBox(height: 8),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 140),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: _trackPaths.length,
+                        itemBuilder: (context, i) => Text(
+                          '${i + 1}. ${_displayName(_trackPaths[i])}',
+                          style: const TextStyle(color: Colors.white54, fontSize: 12),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
                       ElevatedButton.icon(
-                        icon: const Icon(Icons.library_music),
-                        label: Text(_trackPath == null ? 'انتخابِ موزیک' : 'تعویضِ موزیک'),
-                        onPressed: _busy ? null : _pickMusic,
+                        icon: const Icon(Icons.audio_file),
+                        label: const Text('انتخابِ یه فایل'),
+                        onPressed: _busy ? null : _pickSingleFile,
                       ),
-                      if (_trackPath != null) ...[
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.folder_open),
+                        label: const Text('انتخابِ یه پوشه'),
+                        onPressed: _busy ? null : _pickFolder,
+                      ),
+                      if (_trackPaths.isNotEmpty) ...[
                         OutlinedButton.icon(
                           icon: Icon(_previewing ? Icons.stop : Icons.play_arrow),
                           label: Text(_previewing ? 'توقفِ پخشِ آزمایشی' : 'پخشِ آزمایشی'),

@@ -7,33 +7,19 @@ import '../models/history.dart';
 class StorageService {
   static const _rosterKey = 'sarkoob_roster_v1';
   static const _historyKey = 'sarkoob_history_v1';
-  static const _musicPathKey = 'sarkoob_music_path_v1';
-  static const _musicNameKey = 'sarkoob_music_name_v1';
+  static const _musicPathsKey = 'sarkoob_music_paths_v2';
 
-  /// مسیرِ محلیِ فایلِ موزیکِ انتخاب‌شده (کپیِ خودِ اپ، نه فایلِ اصلیِ
-  /// کاربر) — یا null اگه هنوز چیزی انتخاب نشده.
-  Future<String?> loadMusicPath() async {
+  /// مسیرهای محلیِ فایل‌های موزیکِ انتخاب‌شده (کپیِ خودِ اپ، نه فایل/پوشه‌ی
+  /// اصلیِ کاربر) — یه فایلِ تنها یا چندتا فایلِ یه پوشه، فرقی نداره،
+  /// همیشه یه لیسته (خالی = چیزی انتخاب نشده).
+  Future<List<String>> loadMusicPaths() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_musicPathKey);
+    return prefs.getStringList(_musicPathsKey) ?? [];
   }
 
-  /// اسمِ نمایشیِ فایل (اسمِ اصلیِ همون فایلی که کاربر انتخاب کرده بود).
-  Future<String?> loadMusicName() async {
+  Future<void> saveMusicPaths(List<String> paths) async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_musicNameKey);
-  }
-
-  /// هردو فیلد با هم ذخیره می‌شن (یا هردو پاک می‌شن، اگه path نال باشه)
-  /// تا از قطعه‌قطعه‌شدنِ آپدیت جلوگیری بشه.
-  Future<void> saveMusicSelection(String? path, String? name) async {
-    final prefs = await SharedPreferences.getInstance();
-    if (path == null) {
-      await prefs.remove(_musicPathKey);
-      await prefs.remove(_musicNameKey);
-    } else {
-      await prefs.setString(_musicPathKey, path);
-      if (name != null) await prefs.setString(_musicNameKey, name);
-    }
+    await prefs.setStringList(_musicPathsKey, paths);
   }
 
   Future<List<SavedPlayerProfile>> loadRoster() async {

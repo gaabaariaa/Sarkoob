@@ -6,11 +6,17 @@ import 'package:audioplayers/audioplayers.dart';
 /// بهش نیاز داریم. فقط از فایلِ محلیِ کپی‌شده تو مسیرِ خودِ اپ پخش
 /// می‌کنه (نه از فایلِ اصلیِ گوشیِ کاربر) — بخشِ ۱۳ فایلِ وضعیت رو ببین.
 class MusicService {
-  MusicService._internal();
+  MusicService._internal() {
+    // با تمومِ‌شدنِ هر فایل، خودکار برو سراغِ بعدی — اگه آخرین فایلِ
+    // پلی‌لیست بود، برگرد به اول (یعنی «پخشِ لوپ‌شده» حالا در سطحِ
+    // کلِ پلی‌لیسته، نه یه فایلِ تنها).
+    _player.onPlayerComplete.listen((_) => _advanceAndPlay());
+  }
   static final MusicService instance = MusicService._internal();
 
   final AudioPlayer _player = AudioPlayer();
-  String? _trackPath;
+  List<String> _playlist = [];
+  int _currentIndex = 0;
   bool _isPlaying = false;
 
   // پلیرِ کاملاً جدا برای زنگِ پایانِ تایمر (صحبت/معارفه/چالش/دفاعیه) —
@@ -37,24 +43,33 @@ class MusicService {
   }
 
   bool get isPlaying => _isPlaying;
-  String? get trackPath => _trackPath;
+  List<String> get playlist => _playlist;
 
-  /// فقط مسیر رو تو حافظه ست می‌کنه؛ چیزی پخش نمی‌کنه (اون کارِ play()ه).
-  void setTrackPath(String? path) {
-    _trackPath = path;
+  /// فقط لیست رو تو حافظه ست می‌کنه؛ چیزی پخش نمی‌کنه (اون کارِ play()ه).
+  /// چه یه فایلِ تنها چه چندتا فایلِ یه پوشه، از دیدِ این سرویس فرقی
+  /// ندارن — هردو یه «پلی‌لیست»ن، فقط طولشون فرق داره.
+  void setPlaylist(List<String> paths) {
+    _playlist = paths;
+    _currentIndex = 0;
   }
 
   Future<void> play() async {
-    final path = _trackPath;
-    if (path == null) return;
-    await _player.setReleaseMode(ReleaseMode.loop);
-    await _player.play(DeviceFileSource(path));
+    if (_playlist.isEmpty) return;
+    _currentIndex = 0;
     _isPlaying = true;
+    await _player.setReleaseMode(ReleaseMode.release);
+    await _player.play(DeviceFileSource(_playlist[_currentIndex]));
+  }
+
+  Future<void> _advanceAndPlay() async {
+    if (!_isPlaying || _playlist.isEmpty) return;
+    _currentIndex = (_currentIndex + 1) % _playlist.length;
+    await _player.play(DeviceFileSource(_playlist[_currentIndex]));
   }
 
   Future<void> stop() async {
     if (!_isPlaying) return;
-    await _player.stop();
     _isPlaying = false;
+    await _player.stop();
   }
 }

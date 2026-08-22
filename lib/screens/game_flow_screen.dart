@@ -56,7 +56,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     // ست‌کردنِ مسیرِ موزیکِ ذخیره‌شده (اگه از قبل تو تنظیمات انتخاب شده)
     // رو غیرِمنتظر می‌ذاریم؛ تا اولین شب برسه، این fetchِ سریعِ محلی
     // بدونِ‌شک تموم شده.
-    _storage.loadMusicPath().then((path) => MusicService.instance.setTrackPath(path));
+    _storage.loadMusicPaths().then((paths) => MusicService.instance.setPlaylist(paths));
     controller.addListener(_handleMusicForPhase);
   }
 
