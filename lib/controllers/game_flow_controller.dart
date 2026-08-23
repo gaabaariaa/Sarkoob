@@ -1151,8 +1151,9 @@ class GameFlowController extends ChangeNotifier {
 
   /// نتیجه بر اساسِ تیم/نقشِ واقعیِ هدفه: شهروندِ ساده = عضوگیریِ موفق؛
   /// نقشی که هنوز طبقِ قانونِ «دیرهنگام‌بودنِ افشا»ش فعال نشده (مثلِ
-  /// پرستوی نظام تو دو شبِ اول) = عضوگیریِ موفق ولی به‌عنوانِ جاسوس؛
-  /// در غیرِاین‌صورت (سرکوبِ فعال یا تیمِ مستقل) = خودِ رپر حذف می‌شه.
+  /// پرستوی نظام تو دو شبِ اول) یا نقشی که همیشه نفوذی‌ست (جاسوس) =
+  /// عضوگیریِ موفق ولی درواقع نفوذی؛ در غیرِاین‌صورت (تیمِ رهبرِ فعال یا
+  /// تیمِ مستقل) = خودِ رپر/اوشن حذف می‌شه.
   void rapperRecruit(int targetId) {
     final rapper = rapperPlayer;
     if (!canRapperActTonight || rapper == null) return;
@@ -1161,6 +1162,7 @@ class GameFlowController extends ChangeNotifier {
     final isSleeperStillHidden = targetRole != null &&
         targetRole.investigationHiddenUntilNight > 0 &&
         roundNumber <= targetRole.investigationHiddenUntilNight;
+    final isPermanentInfiltrator = targetRole?.alwaysInfiltratesResistance ?? false;
 
     _rapperActedTonight = true;
     final isMafiaGame = players.any((p) => p.teamId == SarkoobTeams.mafiaGang.id);
@@ -1175,6 +1177,10 @@ class GameFlowController extends ChangeNotifier {
       target.isActiveResistanceMember = true;
       rapperResultMessage = '«${target.name}» (که هنوز به‌عنوانِ $leaderTeamLabel فعال نشده) '
           'به‌عنوانِ جاسوسِ $leaderTeamLabel وارد $resistanceGroupNoun شد.';
+    } else if (isPermanentInfiltrator) {
+      target.isActiveResistanceMember = true;
+      rapperResultMessage = '«${target.name}» ظاهراً به $resistanceTeamPhrase پیوست، ولی درواقع '
+          'نفوذیِ همیشگیِ $leaderTeamLabel هست — مخفیانه جاش گرفته.';
     } else {
       _eliminatePlayer(rapper);
       rapperResultMessage = 'انتخاب اشتباه بود! خودِ «${rapper.name}» همون‌لحظه حذف شد.';
