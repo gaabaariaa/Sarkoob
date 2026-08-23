@@ -690,48 +690,54 @@ class GameFlowController extends ChangeNotifier {
   }
 
   /// طبقِ سه حالتِ تعدادِ زنده‌ها (بیشتر از ۳ / دقیقاً ۳ / کمتر از ۳) چک
-  /// می‌کنه بازی تموم شده یا نه. این تریگر فقط برای سناریوی سرکوب طراحی
-  /// شده (بر اساسِ تیم‌های suppression/citizen/mossad)؛ اگه این جلسه
-  /// سناریوی مافیاست، بی‌اثر برمی‌گرده.
+  /// می‌کنه بازی تموم شده یا نه. هر دو سناریو رو پوشش می‌ده: تیمِ رهبر
+  /// (سرکوب/مافیا)، تیمِ شهروند (citizen/mafiaTown)، و تیمِ مستقل
+  /// (موساد/زودیاک) بر اساسِ اینکه کدوم سناریو این جلسه حاضره تعیین
+  /// می‌شن — همون الگویِ ژنریکِ بخشِ ۶ی فایلِ وضعیت.
   void _checkGameEndCondition() {
-    final isMafiaGame =
-        players.any((p) => p.teamId == SarkoobTeams.mafiaGang.id || p.teamId == SarkoobTeams.mafiaTown.id);
-    if (isMafiaGame) return;
+    final isMafiaGame = players
+        .any((p) => p.teamId == SarkoobTeams.mafiaGang.id || p.teamId == SarkoobTeams.mafiaTown.id);
+    final leaderTeamId = isMafiaGame ? SarkoobTeams.mafiaGang.id : SarkoobTeams.suppression.id;
+    final townTeamId = isMafiaGame ? SarkoobTeams.mafiaTown.id : SarkoobTeams.citizen.id;
+    final independentTeamId = isMafiaGame ? SarkoobTeams.zodiac.id : SarkoobTeams.mossad.id;
+    final leaderTeamName = SarkoobTeams.byId(leaderTeamId)!.name;
+    final townTeamName = SarkoobTeams.byId(townTeamId)!.name;
+    final independentTeamName = SarkoobTeams.byId(independentTeamId)!.name;
 
     final alive = alivePlayers;
     final count = alive.length;
-    final hasMossad = alive.any((p) => p.teamId == SarkoobTeams.mossad.id);
-    final suppressionCount = alive.where((p) => p.teamId == SarkoobTeams.suppression.id).length;
-    final citizenCount = alive.where((p) => p.teamId == SarkoobTeams.citizen.id).length;
+    final hasIndependent = alive.any((p) => p.teamId == independentTeamId);
+    final leaderCount = alive.where((p) => p.teamId == leaderTeamId).length;
+    final townCount = alive.where((p) => p.teamId == townTeamId).length;
 
     if (count > 3) {
-      if (hasMossad) return;
-      if (suppressionCount >= citizenCount) {
+      if (hasIndependent) return;
+      if (leaderCount >= townCount) {
         _declareWinner(
-          SarkoobTeams.suppression.id,
-          'بیشتر از ۳ نفر زنده‌ن، موساد تو بازی نیست، و تعدادِ سرکوب '
-          '($suppressionCount نفر) از شهروند ($citizenCount نفر) کمتر نیست.',
+          leaderTeamId,
+          'بیشتر از ۳ نفر زنده‌ن، $independentTeamName تو بازی نیست، و تعدادِ '
+          '$leaderTeamName ($leaderCount نفر) از $townTeamName ($townCount نفر) کمتر نیست.',
         );
       }
       return;
     }
 
     if (count == 3) {
-      if (suppressionCount >= 2) {
-        // دو (یا هر سه‌ی) عضوِ سرکوب از شبِ معارفه همدیگه رو می‌شناسن؛
+      if (leaderCount >= 2) {
+        // دو (یا هر سه‌ی) عضوِ تیمِ رهبر از شبِ معارفه همدیگه رو می‌شناسن؛
         // قطعاً با هم متحد می‌شن، نیازی به فازِ آشوب نیست.
         _declareWinner(
-          SarkoobTeams.suppression.id,
-          'دو نفر (یا بیشتر) از سه‌نفرِ باقی‌مونده عضوِ تیمِ سرکوبن و از قبل '
+          leaderTeamId,
+          'دو نفر (یا بیشتر) از سه‌نفرِ باقی‌مونده عضوِ تیمِ ${leaderTeamName}ن و از قبل '
           'همدیگه رو می‌شناسن — قطعاً با هم متحد می‌شن.',
         );
         return;
       }
-      if (citizenCount == 3) {
-        _declareWinner(SarkoobTeams.citizen.id, 'هرسه نفرِ باقی‌مونده شهروندِ عادی‌ان.');
+      if (townCount == 3) {
+        _declareWinner(townTeamId, 'هرسه نفرِ باقی‌مونده ${townTeamName}ِ عادی‌ان.');
         return;
       }
-      // بقیه‌ی حالت‌ها (موساد+۲شهروند، ۲شهروند+۱سرکوب، یا هرکدوم یکی):
+      // بقیه‌ی حالت‌ها (مستقل+۲شهروند، ۲شهروند+۱رهبر، یا هرکدوم یکی):
       // نتیجه به اینکه کی‌باکی دست بده بستگی داره → فازِ آشوب.
       chaosPhaseActive = true;
       chaosPhasePlayers = alive;
@@ -739,31 +745,37 @@ class GameFlowController extends ChangeNotifier {
     }
 
     // count < 3
-    if (hasMossad) {
-      _declareWinner(SarkoobTeams.mossad.id, 'کمتر از ۳ نفر زنده‌ن و موساد هنوز تو بازیه.');
-    } else if (suppressionCount > 0) {
+    if (hasIndependent) {
+      _declareWinner(independentTeamId, 'کمتر از ۳ نفر زنده‌ن و $independentTeamName هنوز تو بازیه.');
+    } else if (leaderCount > 0) {
       _declareWinner(
-        SarkoobTeams.suppression.id,
-        'کمتر از ۳ نفر زنده‌ن، موساد نیست ولی سرکوب هنوز هست.',
+        leaderTeamId,
+        'کمتر از ۳ نفر زنده‌ن، $independentTeamName نیست ولی $leaderTeamName هنوز هست.',
       );
     } else {
-      _declareWinner(SarkoobTeams.citizen.id, 'کمتر از ۳ نفر زنده‌ن و فقط شهروند مونده.');
+      _declareWinner(townTeamId, 'کمتر از ۳ نفر زنده‌ن و فقط $townTeamName مونده.');
     }
   }
 
   /// گرداننده مشخص می‌کنه کدوم دو نفر (از سه‌تای فازِ آشوب) با هم دست
-  /// دادن؛ سومی طرفِ مقابله. قاعده: اگه موساد جزوِ این دو نفره → موساد
-  /// برنده؛ وگرنه اگه هم‌تیمی‌ان (هردو شهروند، چون سرکوبِ ۲نفره از قبل
-  /// خودکار رفع شده) → شهروند برنده؛ وگرنه (شهروند+سرکوب، موساد بیرون‌
-  /// مونده) → سرکوب برنده.
+  /// دادن؛ سومی طرفِ مقابله. قاعده: اگه تیمِ مستقل (موساد/زودیاک) جزوِ
+  /// این دو نفره → مستقل برنده؛ وگرنه اگه هم‌تیمی‌ان (هردو شهروند، چون
+  /// رهبرِ ۲نفره از قبل خودکار رفع شده) → شهروند برنده؛ وگرنه (شهروند+
+  /// رهبر، مستقل بیرون‌مونده) → رهبر برنده.
   void resolveChaosPhase(int player1Id, int player2Id) {
     if (!chaosPhaseActive) return;
+    final isMafiaGame = players
+        .any((p) => p.teamId == SarkoobTeams.mafiaGang.id || p.teamId == SarkoobTeams.mafiaTown.id);
+    final leaderTeamId = isMafiaGame ? SarkoobTeams.mafiaGang.id : SarkoobTeams.suppression.id;
+    final townTeamId = isMafiaGame ? SarkoobTeams.mafiaTown.id : SarkoobTeams.citizen.id;
+    final independentTeamId = isMafiaGame ? SarkoobTeams.zodiac.id : SarkoobTeams.mossad.id;
     final p1 = playerById(player1Id);
     final p2 = playerById(player2Id);
-    if (p1.teamId == SarkoobTeams.mossad.id || p2.teamId == SarkoobTeams.mossad.id) {
+    if (p1.teamId == independentTeamId || p2.teamId == independentTeamId) {
       _declareWinner(
-        SarkoobTeams.mossad.id,
-        '«${p1.name}» و «${p2.name}» با هم دست دادن و موساد جزوِ این دو نفره.',
+        independentTeamId,
+        '«${p1.name}» و «${p2.name}» با هم دست دادن و ${SarkoobTeams.byId(independentTeamId)!.name} '
+        'جزوِ این دو نفره.',
       );
     } else if (p1.teamId == p2.teamId) {
       _declareWinner(
@@ -772,8 +784,9 @@ class GameFlowController extends ChangeNotifier {
       );
     } else {
       _declareWinner(
-        SarkoobTeams.suppression.id,
-        '«${p1.name}» و «${p2.name}» با هم دست دادن (شهروند+سرکوب)؛ موساد بیرون موند.',
+        leaderTeamId,
+        '«${p1.name}» و «${p2.name}» با هم دست دادن (${SarkoobTeams.byId(townTeamId)!.name}+'
+        '${SarkoobTeams.byId(leaderTeamId)!.name})؛ ${SarkoobTeams.byId(independentTeamId)!.name} بیرون موند.',
       );
     }
     notifyListeners();
