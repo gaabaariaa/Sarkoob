@@ -53,9 +53,14 @@ class GameFlowController extends ChangeNotifier {
 
   GameFlowController({required this.players, required this.settings}) {
     _rebuildSpeakingOrder();
-    final suppressionCount =
-        players.where((p) => p.teamId == SarkoobTeams.suppression.id).length;
-    statusInquiryChargesRemaining = suppressionCount > 0 ? suppressionCount - 1 : 0;
+    // تیمِ رهبرِ همین جلسه — سرکوب یا مافیا، هرکدوم حاضره (بخشِ ۶ی فایلِ
+    // وضعیت: همون الگویِ جنریک‌سازیِ sorkoobHasLostMember/leaderNegotiate).
+    final leaderTeamCount = players
+        .where((p) =>
+            p.teamId == SarkoobTeams.suppression.id ||
+            p.teamId == SarkoobTeams.mafiaGang.id)
+        .length;
+    statusInquiryChargesRemaining = leaderTeamCount > 0 ? leaderTeamCount - 1 : 0;
     // زودیاک برخلافِ رهبرِ موساد هیچ انتخابِ شیوه‌ای نداره — همیشه معادلِ
     // «عملیاتِ سری»، از همون اول ثابت. همین باعث می‌شه UIی انتخاب‌شیوه‌ی
     // شبِ اول خودکار رد بشه (چون mossadPlaystyle از قبل null نیست) و
@@ -604,6 +609,7 @@ class GameFlowController extends ChangeNotifier {
     if (sorkoobDisabledTonight) return false;
     final minister = foreignMinisterPlayer;
     if (minister == null || !minister.isAlive) return false;
+    if (minister.negotiateUsed) return false;
     if (isPlayerDetained(minister.id)) return false;
     if (!sorkoobHasLostMember) return false;
     if (grayCitizens.isEmpty) return false;
@@ -613,7 +619,7 @@ class GameFlowController extends ChangeNotifier {
   void leaderNegotiate(int targetId) {
     if (sorkoobDisabledTonight) return;
     final minister = foreignMinisterPlayer;
-    if (minister == null || isPlayerDetained(minister.id)) return;
+    if (minister == null || isPlayerDetained(minister.id) || minister.negotiateUsed) return;
     final target = playerById(targetId);
     final isGrayCitizen = _isGrayCitizen(target);
     if (isGrayCitizen) {
@@ -624,6 +630,7 @@ class GameFlowController extends ChangeNotifier {
     } else {
       negotiateResultMessage = 'مذاکره با شکست مواجه شد.';
     }
+    minister.negotiateUsed = true; // یک‌بارمصرف: چه موفق چه ناموفق، دیگه تکرار نمی‌شه
     _nightActionTaken = true;
     notifyListeners();
   }
@@ -775,10 +782,10 @@ class GameFlowController extends ChangeNotifier {
   // ---------- استعلامِ وضعیت (زیرِ گزارشِ پایانِ شب) ----------
 
   /// چندبار «استعلامِ وضعیت» هنوز مونده. یه‌بار موقعِ ساختنِ کنترلر
-  /// محاسبه می‌شه: اندازه‌ی تیمِ سرکوب در شروعِ بازی منهای ۱ (بخشِ
-  /// سازنده رو ببین). فقط تو سناریوی سرکوب معنی داره — تو سناریوی مافیا
-  /// این تیم اصلاً وجود نداره، پس همیشه ۰ می‌مونه و UI خودش بر همین اساس
-  /// پنهانش می‌کنه (نیازی به چکِ جداگونه‌ی سناریو نیست).
+  /// محاسبه می‌شه: اندازه‌ی تیمِ رهبرِ همین جلسه (سرکوب یا مافیا، هرکدوم
+  /// حاضره) در شروعِ بازی منهای ۱ (بخشِ سازنده رو ببین). هر دو سناریو رو
+  /// پوشش می‌ده؛ اگه هیچ‌کدوم حاضر نبود (که پیش نمیاد) صفر می‌مونه و UI
+  /// خودش بر همین اساس پنهانش می‌کنه.
   late int statusInquiryChargesRemaining;
 
   /// آیا الان (زیرِ گزارشِ پایانِ شب) رأی‌گیریِ استعلامِ وضعیت بازه؟

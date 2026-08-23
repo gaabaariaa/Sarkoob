@@ -106,6 +106,9 @@ class SessionPlayer {
   // ---- مربوط به فعال مدنی ----
   bool referendumUsed; // آیا قابلیتِ یک‌بارمصرفِ درخواستِ رفراندوم رو مصرف کرده؟
 
+  // ---- مربوط به وزیر امور خارجه / مذاکره‌کننده ----
+  bool negotiateUsed; // آیا قابلیتِ یک‌بارمصرفِ مذاکره رو مصرف کرده؟ (چه موفق چه ناموفق)
+
   // ---- مربوط به تنبیهِ انضباطیِ گرداننده ----
   int disciplineStage; // ۰=بدونِ سابقه، ۱=اخطار، ۲=منعِ یک‌روزه، ۳=منعِ همیشگی+سکوت، ۴=اخراج
   int? challengeBanRoundNumber; // فقط برای منعِ یک‌روزه‌ی مرحله‌ی ۲: کدوم روز نمی‌تونه چالش بگیره (هدف باشه)
@@ -142,6 +145,7 @@ class SessionPlayer {
     this.interrogationUsed = false,
     this.mossadPlaystyle,
     this.referendumUsed = false,
+    this.negotiateUsed = false,
     this.disciplineStage = 0,
     this.challengeBanRoundNumber,
     this.challengeBannedForever = false,
