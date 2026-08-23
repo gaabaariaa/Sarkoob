@@ -1580,18 +1580,18 @@ class GameFlowController extends ChangeNotifier {
 
     if (success) {
       bombOutcomeMessage = '💣 بمبِ «${target.name}» با رمزِ درست خنثی شد.';
+    } else if (guardSacrificed && guard != null) {
+      // محافظ به‌جایِ هدف فدا شده و رمز رو غلط زده — فقط خودِ محافظ
+      // حذف می‌شه (کاملاً و برگشت‌ناپذیر، نه از مسیرِ نیمه‌جان)؛ هدفِ
+      // اصلیِ بمب چون محافظ به‌جاش ریسک کرده، بی‌آسیب زنده می‌مونه.
+      guard.isAlive = false;
+      guard.isHalfAlive = false;
+      _checkZhinaTrigger(guard);
+      bombOutcomeMessage = '💣 «${guard.name}» به‌جایِ «${target.name}» فدا شده بود و رمز رو غلط زد؛ '
+          'نقشِ محافظش افشا شد و کاملاً از بازی خارج شد. «${target.name}» زنده موند.';
     } else {
       _eliminatePlayer(target);
-      if (guardSacrificed && guard != null) {
-        guard.isAlive = false;
-        guard.isHalfAlive = false;
-        _checkZhinaTrigger(guard);
-        bombOutcomeMessage = '💣 بمبِ «${target.name}» با رمزِ غلط ترکید و از بازی خارج شد. '
-            '«${guard.name}» هم چون برای نجاتش فدا شده و رمز رو غلط زده بود، نقشِ محافظش '
-            'افشا شد و کاملاً از بازی خارج شد.';
-      } else {
-        bombOutcomeMessage = '💣 بمبِ «${target.name}» با رمزِ غلط ترکید و از بازی خارج شد.';
-      }
+      bombOutcomeMessage = '💣 بمبِ «${target.name}» با رمزِ غلط ترکید و از بازی خارج شد.';
     }
     _bombCodeChecked = true;
     _skipDeadSpeakers();
