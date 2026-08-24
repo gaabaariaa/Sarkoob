@@ -1795,7 +1795,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               const SizedBox(height: 8),
               _buildDetentionSection(),
             ],
-            if (controller.mercenaryPlayer != null && controller.mercenaryPlayer!.isAlive) ...[
+            if (controller.mercenaryPlayer != null &&
+                controller.isStillActiveTonight(controller.mercenaryPlayer!)) ...[
               const SizedBox(height: 24),
               const Divider(color: AppColors.gold),
               const SizedBox(height: 8),
@@ -2127,7 +2128,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       );
     }
 
-    if (!leader.isAlive) {
+    if (!controller.isStillActiveTonight(leader)) {
       return Text(
         '$_independentLeaderRoleName دیگه در بازی نیست.',
         textAlign: TextAlign.center,
@@ -2331,8 +2332,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     // نکته‌ی مهم: اگه انتخابِ رپر معترض غلط بوده باشه، خودش حذف می‌شه —
     // ولی این نتیجه رو همین‌جا نشون نمی‌دیم، وگرنه معلوم می‌شه که دقیقاً
     // همین نوبت باعثِ حذفش شده و نقشش لو می‌ره. اون حذف فقط تو جمع‌بندیِ
-    // آخرِ شب (کنارِ بقیه‌ی کشته‌ها) اعلام می‌شه.
-    final showResult = result != null && rapper.isAlive;
+    // آخرِ شب (کنارِ بقیه‌ی کشته‌ها) اعلام می‌شه. isStillActiveTonight
+    // (نه isAlive خام) چون اگه یکیِ دیگه (نه خودِ نتیجه‌ی این نوبت) امشب
+    // سلاخی/ترورش کرده باشه، نتیجه‌ی موفقِ خودِ همین نوبت باید دیده بشه.
+    final showResult = result != null && controller.isStillActiveTonight(rapper);
     return Column(
       children: [
         Text(
@@ -2990,7 +2993,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final result = controller.revolutionaryResultMessage;
     // همون منطقِ رپر معترض: اگه انتخابِ اشتباه باعثِ حذفِ خودش شده باشه،
     // همین‌جا نشونش نمی‌دیم تا نقشش لو نره؛ فقط تو جمع‌بندیِ آخرِ شب میاد.
-    final showResult = result != null && fighter.isAlive;
+    // isStillActiveTonight (نه isAlive خام)، چون اگه یکیِ دیگه امشب
+    // سلاخی/ترورش کرده باشه، نتیجه‌ی موفقِ خودِ همین نوبت باید دیده بشه.
+    final showResult = result != null && controller.isStillActiveTonight(fighter);
     return Column(
       children: [
         Text(
@@ -3114,7 +3119,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     return Column(
       children: [
         Text(
-          lawyer.isAlive
+          controller.isStillActiveTonight(lawyer)
               ? '$_lawyerRoleName هنوز قابلیتِ یک‌بارمصرفِ جان‌بخشیش رو مصرف نکرده.'
               : '$_lawyerRoleName («${lawyer.name}») خودش الان نیمه‌جانه یا حذف شده و نمی‌تونه فعلاً از این قابلیت استفاده کنه.',
           textAlign: TextAlign.center,

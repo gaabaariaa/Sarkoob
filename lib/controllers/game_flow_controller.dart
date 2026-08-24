@@ -562,6 +562,13 @@ class GameFlowController extends ChangeNotifier {
   bool _stillActiveTonight(SessionPlayer p) =>
       p.isAlive || (phase == GamePhaseType.night && _tonightSlaughteredIds.contains(p.id));
 
+  /// نسخه‌ی عمومیِ همون تابعِ بالا، مخصوصِ UI (`_stillActiveTonight` خصوصیِ
+  /// همین فایله). UI برای تصمیمِ «این بخش/پیام رو نشون بدم یا نه» باید از
+  /// همینِ متد استفاده کنه، نه `player.isAlive` خام — وگرنه بازیکنی که
+  /// همین امشب سلاخی/ترور شده ولی هنوز نوبتِ خودش رو داره (طبقِ
+  /// `_stillActiveTonight`)، تو UI انگار اصلاً دیگه در بازی نیست.
+  bool isStillActiveTonight(SessionPlayer p) => _stillActiveTonight(p);
+
   /// ژینا: اگه دیشب حذف شده باشه، این true می‌شه و امشب مصرفش می‌کنیم.
   bool sorkoobDisabledNextNight = false;
 
