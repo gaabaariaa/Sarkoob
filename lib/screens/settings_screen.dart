@@ -8,17 +8,6 @@ import '../services/music_service.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
 
-const List<String> _audioExtensions = [
-  '.mp3',
-  '.wav',
-  '.m4a',
-  '.aac',
-  '.ogg',
-  '.flac',
-  '.wma',
-  '.opus',
-];
-
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -59,13 +48,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return match?.group(1) ?? base;
   }
 
-  bool _isAudioFile(String path) {
-    final lower = path.toLowerCase();
-    return _audioExtensions.any((ext) => lower.endsWith(ext));
-  }
-
-  /// فایل‌های انتخاب‌شده (چه یه فایلِ تنها چه چندتا فایلِ یه پوشه) رو تو
-  /// یه پوشه‌ی محلیِ خودِ اپ کپی می‌کنه (نه فقط رفرنس به مسیرِ اصلی) تا
+  /// فایل‌های انتخاب‌شده (ممکنه یه فایل باشه یا چندتا) رو تو یه پوشه‌ی
+  /// محلیِ خودِ اپ کپی می‌کنه (نه فقط رفرنس به مسیرِ اصلی) تا
   /// نیازی به نگه‌داشتنِ دسترسیِ درازمدت به فایل‌سیستمِ کاربر نباشه.
   /// هربار که موزیکِ جدید انتخاب می‌شه، محتوایِ قبلیِ این پوشه پاک می‌شه.
   Future<List<String>> _copyToAppStorage(List<String> sourcePaths) async {
@@ -102,50 +86,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Future<void> _pickSingleFile() async {
+  Future<void> _pickFiles() async {
     setState(() => _busy = true);
     try {
-      final result = await FilePicker.platform.pickFiles(type: FileType.audio);
-      final picked = (result != null && result.files.isNotEmpty) ? result.files.single : null;
-      final sourcePath = picked?.path;
-      if (picked == null || sourcePath == null) {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.audio,
+        allowMultiple: true,
+      );
+      if (result == null || result.files.isEmpty) {
         if (mounted) setState(() => _busy = false);
         return;
       }
-      await _applySelection([sourcePath]);
+      final sourcePaths = result.files.map((f) => f.path).whereType<String>().toList();
+      if (sourcePaths.isEmpty) {
+        _showError('فایل‌های انتخاب‌شده قابلِ‌خوندن نبودن.');
+        return;
+      }
+      await _applySelection(sourcePaths);
     } catch (e) {
       _showError('خطا تو انتخابِ موزیک: $e');
-    }
-  }
-
-  /// انتخابِ یه پوشه و پخشِ همه‌ی موزیک‌های داخلش (پشتِ‌سرِهم، بعدِ آخری
-  /// برمی‌گرده اول). نکته: انتخابِ پوشه (برخلافِ فایل) رو بعضی گوشی‌ها/
-  /// بعضی مسیرها (مثلاً پوشه‌های کلاودی) ممکنه به مسیرِ قابلِ‌خوندن تبدیل
-  /// نشه — اگه اینجا خطا خورد، «انتخابِ یه فایل» همیشه راهِ مطمئنه.
-  Future<void> _pickFolder() async {
-    setState(() => _busy = true);
-    try {
-      final dirPath = await FilePicker.platform.getDirectoryPath();
-      if (dirPath == null) {
-        if (mounted) setState(() => _busy = false);
-        return;
-      }
-      final dir = Directory(dirPath);
-      final audioFiles = dir
-          .listSync()
-          .whereType<File>()
-          .where((f) => _isAudioFile(f.path))
-          .map((f) => f.path)
-          .toList()
-        ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
-      if (audioFiles.isEmpty) {
-        _showError('تو این پوشه هیچ فایلِ موزیکی پیدا نشد.');
-        return;
-      }
-      await _applySelection(audioFiles);
-    } catch (e) {
-      _showError('این پوشه قابلِ‌خوندن نبود. اگه پوشه‌ی کلاودی/اشتراکی بود، '
-          'به‌جاش «انتخابِ یه فایل» رو امتحان کن. ($e)');
     }
   }
 
@@ -191,9 +150,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Text('🎵 موزیکِ شب', style: AppTheme.headingFont(size: 20)),
           const SizedBox(height: 8),
           const Text(
-            'یه فایل یا یه پوشه‌ی پر از موزیک از گوشیت انتخاب کن تا خودکار '
-            'تو فازِ شب و «خواب نیمروزی» به‌صورتِ شافل پخش بشن، و با شروعِ '
-            'روز خودکار قطع بشن.',
+            'چندتا فایلِ موزیک از گوشیت انتخاب کن (می‌تونی همه‌ی آهنگ‌های یه '
+            'پوشه رو با هم تیک بزنی) تا خودکار تو فازِ شب و «خواب نیمروزی» '
+            'به‌صورتِ شافل پخش بشن، و با شروعِ روز خودکار قطع بشن.',
             style: TextStyle(color: Colors.white60, fontSize: 13),
           ),
           const SizedBox(height: 16),
@@ -237,13 +196,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     children: [
                       ElevatedButton.icon(
                         icon: const Icon(Icons.audio_file),
-                        label: const Text('انتخابِ یه فایل'),
-                        onPressed: _busy ? null : _pickSingleFile,
-                      ),
-                      OutlinedButton.icon(
-                        icon: const Icon(Icons.folder_open),
-                        label: const Text('انتخابِ یه پوشه'),
-                        onPressed: _busy ? null : _pickFolder,
+                        label: const Text('انتخابِ موزیک'),
+                        onPressed: _busy ? null : _pickFiles,
                       ),
                       if (_trackPaths.isNotEmpty) ...[
                         OutlinedButton.icon(
