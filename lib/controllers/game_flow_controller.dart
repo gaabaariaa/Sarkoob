@@ -712,6 +712,17 @@ class GameFlowController extends ChangeNotifier {
 
     if (count > 3) {
       if (hasIndependent) return;
+      if (leaderCount == 0) {
+        // قبلاً این حالت جا افتاده بود: اگه تیمِ رهبر کاملاً حذف بشه
+        // (مثلاً با رأی‌گیریِ روز) ولی بیشتر از ۳ نفر زنده بمونن، بازی
+        // هیچ‌وقت خودکار تموم نمی‌شد. این باگ هر دو سناریو رو می‌گرفت.
+        _declareWinner(
+          townTeamId,
+          'بیشتر از ۳ نفر زنده‌ن، $independentTeamName تو بازی نیست، و '
+          'دیگه هیچ عضوی از $leaderTeamName باقی نمونده.',
+        );
+        return;
+      }
       if (leaderCount >= townCount) {
         _declareWinner(
           leaderTeamId,

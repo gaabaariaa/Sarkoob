@@ -558,10 +558,11 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             ElevatedButton(
               onPressed: selectedTeamId != null
                   ? () async {
+                      final winnerId = selectedTeamId!;
                       final entry = GameHistoryEntry(
                         id: DateTime.now().microsecondsSinceEpoch.toString(),
                         playedAt: DateTime.now(),
-                        winningTeamId: selectedTeamId!,
+                        winningTeamId: winnerId,
                         players: controller.players
                             .map(
                               (p) => GameHistoryPlayerRecord(
@@ -570,7 +571,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                                 teamId: p.teamId,
                                 roleId: p.roleId,
                                 survived: p.isAlive,
-                                wasOnWinningSide: p.teamId == selectedTeamId,
+                                wasOnWinningSide: p.teamId == winnerId,
                                 disciplineStage: p.disciplineStage,
                               ),
                             )
@@ -580,9 +581,28 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                       if (!dialogContext.mounted) return;
                       Navigator.of(dialogContext).pop();
                       if (!mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('نتیجه‌ی بازی تو تاریخچه ثبت شد.')),
+                      final team = SarkoobTeams.byId(winnerId);
+                      await showDialog<void>(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (confirmContext) => AlertDialog(
+                          backgroundColor: AppColors.surfaceDark,
+                          title: const Text('🏆 بازی تموم شد', style: TextStyle(color: AppColors.goldLight)),
+                          content: Text(
+                            'بازی با بردِ تیمِ ${team?.name ?? 'نامشخص'} تموم شد و نتیجه تو '
+                            'تاریخچه ثبت شد.',
+                            style: TextStyle(color: team?.color ?? Colors.white70, fontSize: 15),
+                          ),
+                          actions: [
+                            ElevatedButton(
+                              onPressed: () => Navigator.of(confirmContext).pop(),
+                              child: const Text('تأیید'),
+                            ),
+                          ],
+                        ),
                       );
+                      if (!mounted) return;
+                      Navigator.of(context).popUntil((route) => route.isFirst);
                     }
                   : null,
               child: const Text('ثبت'),
