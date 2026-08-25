@@ -25,6 +25,21 @@ android {
         versionName = flutter.versionName
     }
 
+    // مهم: بدونِ این بلوک، هر ماشین (خصوصاً هر اجرای تازه‌ی GitHub
+    // Actions که هیچ‌وقت home قبلی نداره) یه debug.keystore تصادفیِ
+    // خودش می‌سازه. یعنی هر بیلدِ CI امضای متفاوتی داشت و اندروید
+    // نصبِ آپدیت رو رد می‌کرد («خطا میده» — باید اول حذف بشه). با این
+    // بلوک، همه‌ی بیلدها (لوکال یا CI) از همین یه کیستورِ ثابتِ
+    // چک‌شده‌ی تو ریپو (android/app/debug.keystore) استفاده می‌کنن.
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.

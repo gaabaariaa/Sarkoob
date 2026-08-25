@@ -12,3 +12,9 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+
+# استثنا: این کیستورِ دیباگِ عمداً چک‌شده‌ست (برای امضای یکسان تو
+# همه‌ی بیلدهای CI و لوکال — بخشِ کامنتِ signingConfigs تو
+# app/build.gradle.kts رو ببین). فقط دیباگه، حساس نیست؛ کیستورِ
+# release هیچ‌وقت نباید اینجوری اضافه بشه.
+!app/debug.keystore
