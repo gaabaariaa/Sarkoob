@@ -1881,16 +1881,16 @@ class GameFlowController extends ChangeNotifier {
 
   static const List<NightStepKind> _nightStepOrder = [
     NightStepKind.sorkoobTeam,
-    NightStepKind.mossadLeader,
-    NightStepKind.rapper,
-    NightStepKind.hacker,
-    NightStepKind.politicalAnalyst,
     NightStepKind.doctor,
-    NightStepKind.rebel,
-    NightStepKind.nationalHero,
+    NightStepKind.hacker,
     NightStepKind.revolutionary,
+    NightStepKind.rebel,
+    NightStepKind.rapper,
+    NightStepKind.politicalAnalyst,
+    NightStepKind.nationalHero,
     NightStepKind.civicActivist,
     NightStepKind.lawyer,
+    NightStepKind.mossadLeader,
     NightStepKind.done,
   ];
 
