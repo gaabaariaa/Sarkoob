@@ -475,6 +475,11 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isExpelChoice ? AppColors.bloodRedLight : AppColors.gold,
+                  // باگِ قبلی: چون foregroundColor ست نبود، تمِ سراسری
+                  // (colorScheme.primary=طلایی) فونتِ دکمه رو هم طلایی
+                  // می‌کرد — یعنی رو حالتِ «تنبیه» (پس‌زمینه‌ی طلایی)
+                  // فونت با پس‌زمینه قاطی و نامرئی می‌شد.
+                  foregroundColor: isExpelChoice ? Colors.white : Colors.black,
                 ),
                 onPressed: selectedTarget != null
                     ? () {

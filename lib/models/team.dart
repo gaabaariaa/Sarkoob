@@ -35,7 +35,7 @@ class SarkoobTeams {
   static final citizen = GameTeam(
     id: 'team_citizen',
     name: 'شهروند',
-    color: const Color(0xFF1976D2),
+    color: const Color(0xFF2E7D32),
     scenarioId: SarkoobScenarios.sorkoob.id,
     description: 'مردم عادی و فعالان مدنی؛ هدفشون شناسایی و حذف سرکوب‌گرهاست.',
   );
@@ -43,7 +43,7 @@ class SarkoobTeams {
   static final mossad = GameTeam(
     id: 'team_mossad',
     name: 'موساد',
-    color: const Color(0xFF546E7A),
+    color: const Color(0xFF1976D2),
     scenarioId: SarkoobScenarios.sorkoob.id,
     description: 'عامل نفوذی خارجی با اهداف و اقدامات مستقل خودش.',
   );
@@ -62,7 +62,7 @@ class SarkoobTeams {
   static final mafiaGang = GameTeam(
     id: 'team_mafia_gang',
     name: 'مافیا',
-    color: const Color(0xFF212121),
+    color: const Color(0xFFB71C1C),
     scenarioId: SarkoobScenarios.mafia.id,
     description: 'شب‌ها با هم بیدار می‌شن و روی یه نفر برای حذف توافق می‌کنن.',
   );
@@ -72,7 +72,7 @@ class SarkoobTeams {
   static final mafiaTown = GameTeam(
     id: 'team_mafia_town',
     name: 'شهروند',
-    color: const Color(0xFF1976D2),
+    color: const Color(0xFF2E7D32),
     scenarioId: SarkoobScenarios.mafia.id,
     description: 'بدونِ قابلیتِ ویژه؛ فقط با رأی و تحلیل دنبالِ مافیا می‌گردن.',
   );
@@ -82,7 +82,7 @@ class SarkoobTeams {
   static final zodiac = GameTeam(
     id: 'team_zodiac',
     name: 'زودیاک',
-    color: const Color(0xFF4A148C),
+    color: const Color(0xFFFBC02D),
     scenarioId: SarkoobScenarios.mafia.id,
     description: 'مأمورِ رمزآلودِ مستقل، با اهداف و اقداماتِ مستقلِ خودش.',
   );
