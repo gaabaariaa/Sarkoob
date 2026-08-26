@@ -70,12 +70,20 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   bool? _lastMusicShouldPlay;
 
-  /// شب (معارفه یا عادی) همیشه بله؛ روز فقط دقیقاً همون لحظه‌ای که
-  /// _buildBody واقعاً صفحه‌ی خواب‌نیمروزی رو نشون می‌ده (نه کلِ روزی که
-  /// یه بمبِ حل‌نشده وجود داره) — عیناً همون زنجیره‌ی شرط‌های _buildBody.
+  /// شب (معارفه یا عادی) همیشه بله — به‌جز خودِ صفحه‌ی خلاصه‌ی صبح
+  /// (مرحله‌ی done، بعدِ زدنِ «پایانِ شب»)، چون فازِ گیم هنوز night ه
+  /// (moveToDay فقط با دکمه‌ی «ادامه به روز»ی زیرِ همون خلاصه صدا زده
+  /// می‌شه)، ولی موزیک باید همینجا قطع بشه، نه بعدِ اون دکمه.
+  /// روز فقط دقیقاً همون لحظه‌ای که _buildBody واقعاً صفحه‌ی خواب‌نیمروزی
+  /// رو نشون می‌ده (نه کلِ روزی که یه بمبِ حل‌نشده وجود داره) — عیناً
+  /// همون زنجیره‌ی شرط‌های _buildBody — به‌جز خودِ صفحه‌ی نتیجه‌ی نهایی
+  /// (بعدِ resolveBombCode، قبلِ تأییدِ acknowledgeBombOutcome)، که
+  /// bombPendingResolution هنوز true می‌مونه ولی موزیک باید قطع بشه.
   bool get _shouldPlayMusic {
     final phase = controller.phase;
-    if (phase == GamePhaseType.introNight || phase == GamePhaseType.night) return true;
+    if (phase == GamePhaseType.introNight || phase == GamePhaseType.night) {
+      return controller.lastNightSummary == null;
+    }
     if (phase == GamePhaseType.day &&
         controller.autoDetectedWinnerTeamId == null &&
         !controller.chaosPhaseActive &&
@@ -85,7 +93,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         !controller.votingStarted &&
         controller.isSpeakingRoundDone &&
         controller.bombPendingResolution) {
-      return true;
+      return controller.bombOutcomeMessage == null;
     }
     return false;
   }
@@ -131,6 +139,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                _buildNowPlayingBox(),
                 if (_showTeamCounts) _buildTeamCountsBanner(),
                 Expanded(child: _buildBody()),
               ],
@@ -181,6 +190,66 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  /// باکسِ «درحالِ پخش» — هروقت موزیک واقعاً در حالِ پخشه (چه در حالِ
+  /// اجرا چه موقتاً مکث‌شده) بالای صفحه نشون داده می‌شه: اسمِ آهنگ +
+  /// دکمه‌ی مکث/ادامه + دکمه‌ی بعدی. با ListenableBuilderِ جداگونه‌ی
+  /// خودش، چون MusicService مستقل از GameFlowControllerه.
+  Widget _buildNowPlayingBox() {
+    return ListenableBuilder(
+      listenable: MusicService.instance,
+      builder: (context, _) {
+        if (!MusicService.instance.isPlaying) return const SizedBox.shrink();
+        final trackName = MusicService.instance.currentTrackName ?? 'موزیکِ پس‌زمینه';
+        final isPaused = MusicService.instance.isPaused;
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceDark,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.gold.withOpacity(0.4)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.music_note, color: AppColors.goldLight, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  trackName,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                ),
+              ),
+              IconButton(
+                iconSize: 24,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                icon: Icon(isPaused ? Icons.play_arrow : Icons.pause, color: AppColors.goldLight),
+                tooltip: isPaused ? 'ادامه' : 'مکث',
+                onPressed: () {
+                  if (isPaused) {
+                    MusicService.instance.resume();
+                  } else {
+                    MusicService.instance.pause();
+                  }
+                },
+              ),
+              IconButton(
+                iconSize: 24,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                icon: const Icon(Icons.skip_next, color: AppColors.goldLight),
+                tooltip: 'آهنگِ بعدی',
+                onPressed: () => MusicService.instance.skipToNext(),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

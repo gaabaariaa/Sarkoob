@@ -1,13 +1,16 @@
 import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 
 /// سرویسِ پخشِ موزیکِ پس‌زمینه — یه singletonِ ساده و مستقل از هر
 /// Widget خاصی، چون هم از صفحه‌ی تنظیمات (پخشِ آزمایشی، موقعِ انتخاب)
 /// هم از صفحه‌ی گردانندگیِ زنده (پخشِ خودکار تو فازِ شب/خواب‌نیمروزی)
 /// بهش نیاز داریم. فقط از فایلِ محلیِ کپی‌شده تو مسیرِ خودِ اپ پخش
 /// می‌کنه (نه از فایلِ اصلیِ گوشیِ کاربر) — بخشِ ۱۳ فایلِ وضعیت رو ببین.
-class MusicService {
+/// ChangeNotifier‌ه تا باکسِ «درحالِ پخش» (اسمِ آهنگ + مکث/بعدی) بتونه
+/// با ListenableBuilderِ خودش، مستقل از GameFlowController، ری‌بیلد بشه.
+class MusicService extends ChangeNotifier {
   MusicService._internal() {
     // با تمومِ‌شدنِ هر فایل، خودکار برو سراغِ بعدی — اگه آخرین فایلِ
     // پلی‌لیست بود، برگرد به اول (یعنی «پخشِ لوپ‌شده» حالا در سطحِ
@@ -21,6 +24,7 @@ class MusicService {
   List<String> _playOrder = []; // چینشِ شافل‌شده‌ی همین دور
   int _orderPosition = 0;
   bool _isPlaying = false;
+  bool _isPaused = false;
 
   final _random = Random();
 
@@ -53,7 +57,22 @@ class MusicService {
   }
 
   bool get isPlaying => _isPlaying;
+  bool get isPaused => _isPaused;
   List<String> get playlist => _playlist;
+
+  /// اسمِ نمایشیِ آهنگِ درحالِ پخش (بدونِ پیشوندِ سه‌رقمیِ ترتیب که
+  /// _copyToAppStorageِ صفحه‌ی تنظیمات موقعِ کپی اضافه می‌کنه)، یا null
+  /// اگه چیزی در حالِ پخش نیست. برای باکسِ «درحالِ پخش».
+  String? get currentTrackName {
+    if (!_isPlaying || _playOrder.isEmpty || _orderPosition >= _playOrder.length) return null;
+    return _displayNameFor(_playOrder[_orderPosition]);
+  }
+
+  String _displayNameFor(String path) {
+    final base = path.split('/').last;
+    final match = RegExp(r'^\d{3}_(.+)$').firstMatch(base);
+    return match?.group(1) ?? base;
+  }
 
   /// فقط لیست رو تو حافظه ست می‌کنه؛ چیزی پخش نمی‌کنه (اون کارِ play()ه).
   /// چه یه فایلِ تنها چه چندتا فایلِ یه پوشه، از دیدِ این سرویس فرقی
@@ -70,8 +89,10 @@ class MusicService {
     if (_playlist.isEmpty) return;
     _reshuffle();
     _isPlaying = true;
+    _isPaused = false;
     await _player.setReleaseMode(ReleaseMode.release);
     await _player.play(DeviceFileSource(_playOrder[_orderPosition]));
+    notifyListeners();
   }
 
   /// می‌ره سراغِ آهنگِ بعدیِ همین چینشِ شافل‌شده؛ وقتی چینش تموم شد،
@@ -83,15 +104,35 @@ class MusicService {
     if (_orderPosition >= _playOrder.length) {
       _reshuffle();
     }
+    _isPaused = false;
     await _player.play(DeviceFileSource(_playOrder[_orderPosition]));
+    notifyListeners();
   }
 
   /// دکمه‌ی «آهنگِ بعدی» — دستی، همون منطقِ رسیدن‌به‌آخرِ‌آهنگ رو صدا می‌زنه.
   Future<void> skipToNext() => _advanceAndPlay();
 
+  /// مکثِ موقت — برخلافِ stop، پلی‌لیست/جایگاهِ فعلی رو نگه می‌داره؛
+  /// resume دقیقاً از همونجا ادامه می‌ده.
+  Future<void> pause() async {
+    if (!_isPlaying || _isPaused) return;
+    _isPaused = true;
+    await _player.pause();
+    notifyListeners();
+  }
+
+  Future<void> resume() async {
+    if (!_isPlaying || !_isPaused) return;
+    _isPaused = false;
+    await _player.resume();
+    notifyListeners();
+  }
+
   Future<void> stop() async {
     if (!_isPlaying) return;
     _isPlaying = false;
+    _isPaused = false;
     await _player.stop();
+    notifyListeners();
   }
 }
