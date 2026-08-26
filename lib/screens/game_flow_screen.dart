@@ -1869,21 +1869,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.surfaceDark,
         title: const Text('رمزِ خنثی‌سازی رو انتخاب کن', style: TextStyle(color: Colors.white)),
-        content: Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          alignment: WrapAlignment.center,
-          children: List.generate(4, (i) {
-            final code = i + 1;
-            return ElevatedButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                controller.plantBomb(target.id, code);
-              },
-              child: Text('$code', style: const TextStyle(fontSize: 18)),
-            );
-          }),
-        ),
+        content: _buildBombCodeGrid((code) {
+          Navigator.of(dialogContext).pop();
+          controller.plantBomb(target.id, code);
+        }),
       ),
     );
   }
@@ -2020,6 +2009,40 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     );
   }
 
+  /// چیدمانِ ۲در۲ برای انتخابِ عددِ ۱ تا ۴ (کدِ بمب) — هم موقعِ
+  /// گذاشتنِ بمب هم موقعِ حدسِ خنثی‌سازی استفاده می‌شه. دکمه‌های بزرگ
+  /// (۸۸×۸۸) و فونتِ درشت، برای انتخابِ راحت‌ترِ روی گوشی.
+  Widget _buildBombCodeGrid(void Function(int code) onPicked) {
+    Widget codeButton(int code) {
+      return SizedBox(
+        width: 88,
+        height: 88,
+        child: ElevatedButton(
+          onPressed: () => onPicked(code),
+          style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          ),
+          child: Text('$code', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+        ),
+      );
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [codeButton(1), const SizedBox(width: 16), codeButton(2)],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [codeButton(3), const SizedBox(width: 16), codeButton(4)],
+        ),
+      ],
+    );
+  }
+
   Widget _buildBombCodeGuessBranch({required SessionPlayer guesser, required SessionPlayer forTarget}) {
     final isSelf = guesser.id == forTarget.id;
     return Column(
@@ -2034,19 +2057,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           style: const TextStyle(color: Colors.white70),
         ),
         const SizedBox(height: 16),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          alignment: WrapAlignment.center,
-          children: List.generate(4, (i) {
-            final code = i + 1;
-            return ElevatedButton(
-              onPressed: () => controller.resolveBombCode(code),
-              style: ElevatedButton.styleFrom(minimumSize: const Size(56, 56)),
-              child: Text('$code', style: const TextStyle(fontSize: 18)),
-            );
-          }),
-        ),
+        _buildBombCodeGrid((code) => controller.resolveBombCode(code)),
       ],
     );
   }
