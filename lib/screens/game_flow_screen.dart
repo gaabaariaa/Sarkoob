@@ -29,6 +29,11 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   final StorageService _storage = StorageService();
   bool _showTeamCounts = false;
 
+  /// یادداشتِ آزادِ گرداننده برای خودش (مظنون‌ها، حساب‌وکتابِ رأی، هرچی) —
+  /// فقط تو حافظه‌ی همین جلسه، مثلِ بقیه‌ی وضعیتِ زنده‌ی بازی؛ چیزِ
+  /// دیگه‌ای هم تو این اپ بینِ نشستن‌ها/ری‌استارت پایدار نمی‌مونه.
+  String _moderatorNotes = '';
+
   // «تیمِ رهبرِ» این جلسه سرکوبه یا مافیا؟ چندجا تو UIی مرحله‌ی تیمِ رهبر
   // لازمه، برای همینم یه getterِ مشترکه به‌جایِ محاسبه‌ی پراکنده.
   bool get _isMafiaGame => controller.players.any((p) => p.teamId == SarkoobTeams.mafiaGang.id);
@@ -175,9 +180,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     onPressed: () => setState(() => _showTeamCounts = !_showTeamCounts),
                   ),
                   _bottomBarAction(
-                    icon: Icons.skip_next,
-                    label: 'آهنگِ بعدی',
-                    onPressed: _skipMusicTrack,
+                    icon: _moderatorNotes.trim().isEmpty ? Icons.note_add_outlined : Icons.note_alt,
+                    label: 'یادداشت',
+                    active: _moderatorNotes.trim().isNotEmpty,
+                    onPressed: _showNotesDialog,
                   ),
                   _bottomBarAction(
                     icon: Icons.flag,
@@ -253,21 +259,47 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     );
   }
 
-  /// دکمه‌ی «آهنگِ بعدی» تو BottomAppBar — همیشه در دسترسه (نه فقط شبِ)
-  /// چون خواب‌نیمروزی هم می‌تونه وسطِ روز موزیک داشته باشه؛ اگه اصلاً
-  /// چیزی در حالِ پخش نباشه، به‌جایِ بی‌صدا هیچ‌کاری‌نکردن یه پیامِ کوتاه
-  /// می‌ده که گرداننده گیج نشه.
-  void _skipMusicTrack() {
-    if (!MusicService.instance.isPlaying) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('الان موزیکی در حالِ پخش نیست.')),
-      );
-      return;
-    }
-    MusicService.instance.skipToNext();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('⏭ رفت سراغِ آهنگِ بعدی'), duration: Duration(seconds: 1)),
-    );
+  /// دیالوگِ یادداشتِ آزادِ گرداننده — یه TextFieldِ چندخطی، با «ذخیره»
+  /// تغییرات تو _moderatorNotes می‌شینه (و آیکونِ دکمه‌ی BottomAppBar
+  /// طبقِ خالی/پرـبودنش عوض می‌شه).
+  void _showNotesDialog() {
+    final notesController = TextEditingController(text: _moderatorNotes);
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.surfaceDark,
+        title: const Text('یادداشتِ گرداننده', style: TextStyle(color: AppColors.goldLight)),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: TextField(
+            controller: notesController,
+            autofocus: true,
+            maxLines: 10,
+            minLines: 6,
+            textDirection: TextDirection.rtl,
+            style: const TextStyle(color: Colors.white),
+            decoration: const InputDecoration(
+              hintText: 'مثلاً: مظنون‌ها، حساب‌وکتابِ رأی، هر نکته‌ای...',
+              hintStyle: TextStyle(color: Colors.white38),
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('انصراف'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() => _moderatorNotes = notesController.text);
+              Navigator.of(dialogContext).pop();
+            },
+            child: const Text('ذخیره'),
+          ),
+        ],
+      ),
+    ).then((_) => notesController.dispose());
   }
 
   /// دکمه‌ی استاندارد برای BottomAppBar گرداننده: آیکون + لیبلِ کوچیک،
