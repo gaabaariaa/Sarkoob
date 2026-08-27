@@ -533,6 +533,7 @@ class GameFlowController extends ChangeNotifier {
     }
 
     _isSecondRound = false;
+    _checkGameEndCondition();
     notifyListeners();
   }
 
@@ -1986,7 +1987,17 @@ class GameFlowController extends ChangeNotifier {
 
   // ---------- پایانِ شب ----------
 
+  /// قبل از هر چیز چکِ پایانِ بازی — اگه با آخرین حذفِ روز (رأی‌گیری،
+  /// اسلحه‌ی جنگیِ منفجرشده و...) بازی همین الان تموم شده، دیگه لازم
+  /// نیست یه شبِ کاملِ بی‌فایده رد بشه؛ همینجا (بدونِ عوض‌کردنِ phase)
+  /// متوقف می‌شیم و UI خودش (اولویتِ autoDetectedWinnerTeamId تو
+  /// _buildBody) صفحه‌ی پایانِ بازی رو نشون می‌ده.
   void moveToNight(int nightNumber) {
+    _checkGameEndCondition();
+    if (autoDetectedWinnerTeamId != null) {
+      notifyListeners();
+      return;
+    }
     _phaseHistory.add(_PhaseSnapshot(phase, roundNumber));
     phase = GamePhaseType.night;
     roundNumber = nightNumber;

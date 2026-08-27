@@ -611,9 +611,37 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     );
   }
 
-  /// ثبتِ نتیجه‌ی بازیِ تمام‌شده تو تاریخچه‌ی دائمی. گرداننده تیمِ برنده
-  /// رو دستی مشخص می‌کنه، چون تشخیصِ «بازی تموم شده و کی برده» به قضاوتِ
-  /// خودِ گرداننده‌ست، نه چیزی که اپ خودکار حساب کنه.
+  /// ذخیره‌ی نتیجه‌ی بازی تو تاریخچه‌ی دائمی — مشترک بینِ ثبتِ دستیِ
+  /// گرداننده (دیالوگِ پایینی، انتخابِ تیم) و ثبتِ خودکارِ پایانِ
+  /// خودکارِ بازی (_confirmAutoGameOver).
+  Future<void> _saveGameHistoryEntry(String winnerId) async {
+    final entry = GameHistoryEntry(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      playedAt: DateTime.now(),
+      winningTeamId: winnerId,
+      players: controller.players
+          .map(
+            (p) => GameHistoryPlayerRecord(
+              rosterId: p.rosterId,
+              name: p.name,
+              teamId: p.teamId,
+              roleId: p.roleId,
+              survived: p.isAlive,
+              wasOnWinningSide: p.teamId == winnerId,
+              disciplineStage: p.disciplineStage,
+            ),
+          )
+          .toList(),
+    );
+    await _storage.addHistoryEntry(entry);
+  }
+
+  /// ثبتِ دستیِ نتیجه‌ی بازی (دکمه‌ی 🏁) — اینجا گرداننده خودش تیمِ
+  /// برنده رو مشخص می‌کنه، چون این مسیر برای وقتیه که خودِ گرداننده
+  /// (نه تریگرِ خودکار) تشخیص داده بازی تموم شده؛ اپ نمی‌دونه کدوم تیم
+  /// برده. برای پایانِ خودکارِ بازی (وقتی autoDetectedWinnerTeamId از
+  /// قبل با قطعیت مشخصه)، این دیالوگ اصلاً لازم نیست — _confirmAutoGameOver
+  /// رو ببین.
   void _showEndGameDialog({String? preselectedTeamId}) {
     final presentTeamIds = controller.players.map((p) => p.teamId).toSet().toList();
     String? selectedTeamId = preselectedTeamId;
@@ -665,25 +693,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               onPressed: selectedTeamId != null
                   ? () async {
                       final winnerId = selectedTeamId!;
-                      final entry = GameHistoryEntry(
-                        id: DateTime.now().microsecondsSinceEpoch.toString(),
-                        playedAt: DateTime.now(),
-                        winningTeamId: winnerId,
-                        players: controller.players
-                            .map(
-                              (p) => GameHistoryPlayerRecord(
-                                rosterId: p.rosterId,
-                                name: p.name,
-                                teamId: p.teamId,
-                                roleId: p.roleId,
-                                survived: p.isAlive,
-                                wasOnWinningSide: p.teamId == winnerId,
-                                disciplineStage: p.disciplineStage,
-                              ),
-                            )
-                            .toList(),
-                      );
-                      await _storage.addHistoryEntry(entry);
+                      await _saveGameHistoryEntry(winnerId);
                       if (!dialogContext.mounted) return;
                       Navigator.of(dialogContext).pop();
                       if (!mounted) return;
@@ -1489,6 +1499,15 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   // ---------- پایانِ خودکارِ بازی / فازِ آشوب ----------
 
+  /// پایانِ خودکارِ بازی: برخلافِ 🏁ی دستی، اینجا تیمِ برنده از قبل با
+  /// قطعیت مشخصه (_checkGameEndCondition تشخیصش داده)، پس نیازی به
+  /// پرسیدنِ گرداننده نیست — مستقیم ذخیره می‌شه و برمی‌گردیم به منو.
+  Future<void> _confirmAutoGameOver(String winnerId) async {
+    await _saveGameHistoryEntry(winnerId);
+    if (!mounted) return;
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
   Widget _buildGameOverScreen() {
     final teamId = controller.autoDetectedWinnerTeamId!;
     final team = SarkoobTeams.byId(teamId);
@@ -1520,9 +1539,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             ],
             const SizedBox(height: 28),
             ElevatedButton(
-              onPressed: () => _showEndGameDialog(preselectedTeamId: teamId),
+              onPressed: () => _confirmAutoGameOver(teamId),
               style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-              child: const Text('ثبتِ نتیجه تو تاریخچه'),
+              child: const Text('تأیید و بازگشت به منو'),
             ),
           ],
         ),
