@@ -299,7 +299,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           ),
         ],
       ),
-    ).then((_) => notesController.dispose());
+    );
   }
 
   /// دکمه‌ی استاندارد برای BottomAppBar گرداننده: آیکون + لیبلِ کوچیک،
