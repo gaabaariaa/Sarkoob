@@ -6,6 +6,7 @@ import '../models/scenario.dart';
 import '../models/team.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/game_3d_button.dart';
 import 'role_reveal_screen.dart';
 
 class _StartGameScreenState extends State<StartGameScreen> {
@@ -1202,10 +1203,13 @@ class _StartGameScreenState extends State<StartGameScreen> {
                 style: const TextStyle(color: AppColors.bloodRedLight),
               ),
             ),
-          ElevatedButton(
-            onPressed: error == null ? _onStartPressed : null,
-            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-            child: const Text('شروع بازی (روز معارفه)'),
+          SizedBox(
+            width: double.infinity,
+            child: Game3DButton(
+              label: 'شروع بازی (روز معارفه)',
+              icon: Icons.theater_comedy,
+              onPressed: error == null ? _onStartPressed : null,
+            ),
           ),
         ],
       ),

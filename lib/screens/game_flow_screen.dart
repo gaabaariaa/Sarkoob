@@ -8,6 +8,7 @@ import '../services/music_service.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/countdown_timer_widget.dart';
+import '../widgets/game_3d_button.dart';
 import '../widgets/role_card.dart';
 
 class GameFlowScreen extends StatefulWidget {
@@ -310,21 +311,11 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     required VoidCallback onPressed,
     bool active = false,
   }) {
-    final color = active ? AppColors.goldLight : AppColors.gold;
-    return InkWell(
-      onTap: onPressed,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(height: 2),
-            Text(label, style: TextStyle(color: color, fontSize: 10)),
-          ],
-        ),
-      ),
+    return Game3DBottomBarButton(
+      icon: icon,
+      label: label,
+      onPressed: onPressed,
+      active: active,
     );
   }
 
@@ -2134,15 +2125,21 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   /// (۸۸×۸۸) و فونتِ درشت، برای انتخابِ راحت‌ترِ روی گوشی.
   Widget _buildBombCodeGrid(void Function(int code) onPicked) {
     Widget codeButton(int code) {
-      return SizedBox(
-        width: 88,
-        height: 88,
-        child: ElevatedButton(
-          onPressed: () => onPicked(code),
-          style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      return Game3DSurface(
+        onPressed: () => onPicked(code),
+        depth: 6,
+        borderRadius: BorderRadius.circular(16),
+        padding: EdgeInsets.zero,
+        semanticLabel: 'رمز $code',
+        child: SizedBox(
+          width: 88,
+          height: 88,
+          child: Center(
+            child: Text(
+              '$code',
+              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Color(0xFF2A1B02)),
+            ),
           ),
-          child: Text('$code', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
         ),
       );
     }
