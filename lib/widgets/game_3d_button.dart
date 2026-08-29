@@ -231,33 +231,36 @@ class Game3DTile extends StatelessWidget {
     return Game3DSurface(
       onPressed: onTap,
       palette: palette,
-      depth: 7,
+      depth: 6,
       borderRadius: BorderRadius.circular(18),
       semanticLabel: title,
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.black.withOpacity(0.18),
-              border: Border.all(color: c.text.withOpacity(0.7), width: 1.4),
+      padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 8),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.black.withOpacity(0.18),
+                border: Border.all(color: c.text.withOpacity(0.7), width: 1.4),
+              ),
+              child: Icon(icon, color: c.text, size: 24),
             ),
-            child: Icon(icon, color: c.text, size: 26),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: c.text, fontSize: 14, fontWeight: FontWeight.w800),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: c.text, fontSize: 14, fontWeight: FontWeight.w800),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -327,17 +330,20 @@ class Game3DBottomBarButton extends StatelessWidget {
     return Game3DSurface(
       onPressed: onPressed,
       palette: palette,
-      depth: 4,
+      depth: 3,
       borderRadius: BorderRadius.circular(13),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       semanticLabel: label,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: c.text, size: 20),
-          const SizedBox(height: 3),
-          Text(label, style: TextStyle(color: c.text, fontSize: 9.5, fontWeight: FontWeight.w700)),
-        ],
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: c.text, size: 19),
+            const SizedBox(height: 2),
+            Text(label, style: TextStyle(color: c.text, fontSize: 9.5, fontWeight: FontWeight.w700)),
+          ],
+        ),
       ),
     );
   }
