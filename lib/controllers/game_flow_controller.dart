@@ -1202,6 +1202,7 @@ class GameFlowController extends ChangeNotifier {
           'نفوذیِ همیشگیِ $leaderTeamLabel هست — مخفیانه جاش گرفته.';
     } else {
       _eliminatePlayer(rapper);
+      _tonightEliminatedIds.add(rapper.id);
       rapperResultMessage = 'انتخاب اشتباه بود! خودِ «${rapper.name}» همون‌لحظه حذف شد.';
     }
     notifyListeners();
@@ -2070,9 +2071,11 @@ class GameFlowController extends ChangeNotifier {
       if (remaining <= 0) return;
       final targetRole = target.roleId != null ? SarkoobRoles.byId(target.roleId!) : null;
       if (targetRole?.hasPermanentNightArmor == true) {
-        // رهبرِ موساد: زره‌ش هیچ‌وقت مصرف نمی‌شه، پس هر تعداد ضربه‌ی شات
-        // هم باشه، امشب زنده می‌مونه.
-        privateNotes.add('«${target.name}» (رهبرِ موساد) با زره‌ی همیشگی‌ش شاتِ شب رو خنثی کرد.');
+        // زره‌ی همیشگی (رهبرِ موساد در سرکوب، زودیاک در مافیا): هیچ‌وقت
+        // مصرف نمی‌شه، پس امشب زنده می‌مونه؛ نامِ نقش رو دینامیک از
+        // targetRole می‌گیریم، نه هاردکد، چون این پرچم رو دو نقشِ متفاوت
+        // (بسته به سناریو) دارن.
+        privateNotes.add('«${target.name}» (${targetRole!.name}) با زره‌ی همیشگی‌ش شاتِ شب رو خنثی کرد.');
         return;
       }
       if (target.hasArmor) {

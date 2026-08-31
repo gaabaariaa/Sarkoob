@@ -376,6 +376,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   /// لیستِ کاملِ همه‌ی بازیکنان با تیم، نقش، و وضعیتِ زنده/نیمه‌جان/حذف —
   /// همیشه در دسترسِ گرداننده، هم شب هم روز.
   void _showRosterDialog() {
+    bool showOnlyAlive = false;
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surfaceDark,
@@ -383,29 +384,43 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       builder: (_) => DraggableScrollableSheet(
         expand: false,
         initialChildSize: 0.7,
-        builder: (context, scrollController) => ListView(
-          controller: scrollController,
-          padding: const EdgeInsets.all(16),
-          children: [
-            Text('بازیکنان و نقش‌ها', style: AppTheme.headingFont(size: 20)),
-            const SizedBox(height: 12),
-            ...controller.players.map((p) {
-              final role = p.roleId != null ? SarkoobRoles.byId(p.roleId!) : null;
-              final teamName = SarkoobTeams.byId(p.teamId)?.name ?? p.teamId;
-              final status =
-                  !p.isAlive ? (p.isHalfAlive ? 'نیمه‌جان' : 'حذف‌شده') : 'زنده';
-              return ListTile(
-                dense: true,
-                title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                subtitle: Text(
-                  '$teamName${role != null ? ' — ${role.name}' : ''}'
-                  '${p.disciplineStage > 0 ? ' — ${disciplineStageLabel(p.disciplineStage)}' : ''}',
-                  style: const TextStyle(color: AppColors.goldLight),
+        builder: (context, scrollController) => StatefulBuilder(
+          builder: (context, setSheetState) {
+            final list = showOnlyAlive
+                ? controller.players.where((p) => p.isAlive).toList()
+                : controller.players;
+            return ListView(
+              controller: scrollController,
+              padding: const EdgeInsets.all(16),
+              children: [
+                Text('بازیکنان و نقش‌ها', style: AppTheme.headingFont(size: 20)),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  activeColor: AppColors.gold,
+                  title: const Text('فقط بازیکنانِ زنده', style: TextStyle(color: Colors.white, fontSize: 14)),
+                  value: showOnlyAlive,
+                  onChanged: (v) => setSheetState(() => showOnlyAlive = v),
                 ),
-                trailing: Text(status, style: const TextStyle(color: Colors.white54)),
-              );
-            }),
-          ],
+                const SizedBox(height: 4),
+                ...list.map((p) {
+                  final role = p.roleId != null ? SarkoobRoles.byId(p.roleId!) : null;
+                  final teamName = SarkoobTeams.byId(p.teamId)?.name ?? p.teamId;
+                  final status =
+                      !p.isAlive ? (p.isHalfAlive ? 'نیمه‌جان' : 'حذف‌شده') : 'زنده';
+                  return ListTile(
+                    dense: true,
+                    title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                    subtitle: Text(
+                      '$teamName${role != null ? ' — ${role.name}' : ''}'
+                      '${p.disciplineStage > 0 ? ' — ${disciplineStageLabel(p.disciplineStage)}' : ''}',
+                      style: const TextStyle(color: AppColors.goldLight),
+                    ),
+                    trailing: Text(status, style: const TextStyle(color: Colors.white54)),
+                  );
+                }),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -3068,7 +3083,13 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   void _showDoctorSavePicker(SessionPlayer doc) {
     _showPlayerListPicker(
       title: 'امشب کی رو نجات بده؟',
-      targets: controller.alivePlayers.where((p) => controller.canDoctorSaveTarget(p.id)).toList(),
+      // از isStillActiveTonight استفاده می‌کنیم نه alivePlayers خام: کسی که
+      // امشب سلاخی شده نباید از لیست غیب بشه (لو می‌ده)، برای همینم تو لیست
+      // می‌مونه؛ اگه دکتر همونو انتخاب کنه، چون تو _pendingHits نیست، انتخابش
+      // طبقِ منطقِ خودِ doctorSave خودکار بی‌اثر می‌مونه.
+      targets: controller.players
+          .where((p) => controller.isStillActiveTonight(p) && controller.canDoctorSaveTarget(p.id))
+          .toList(),
       onSelected: (p) => controller.doctorSave(p.id),
       emptyMessage: 'کسی برای نجات باقی نمونده.',
       labelBuilder: (p) => p.id == doc.id ? '${p.name} (خودش)' : p.name,
