@@ -659,7 +659,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
           rosterId: _draftRosterLinks[_draftPlayers[i]],
           teamId: teamId,
           roleId: roleId,
-          hasArmor: i == godfatherIndex,
+          hasArmor: i == godfatherIndex || i == professionalIndex,
           slaughterChargesRemaining: i == godfatherIndex ? slaughterCharges : null,
           revolutionaryChargesRemaining: i == professionalIndex ? professionalCharges : null,
           warGunsRemaining: i == gunmanIndex ? warGunCharges : null,
