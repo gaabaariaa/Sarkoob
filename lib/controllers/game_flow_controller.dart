@@ -430,7 +430,7 @@ class GameFlowController extends ChangeNotifier {
       p.votes = 0;
     }
     voteSequenceIndex = 0;
-    currentVoterSelection = null;
+    currentVoterSelections = {};
     notifyListeners();
   }
 
@@ -450,9 +450,9 @@ class GameFlowController extends ChangeNotifier {
   /// اندیسِ رأی‌دهنده‌ی فعلی تو توالیِ نفربه‌نفر.
   int voteSequenceIndex = 0;
 
-  /// کاندیدایی که رأی‌دهنده‌ی فعلی همین الان روش زده (تا زدنِ «بعدی» قابلِ
-  /// تغییره؛ null یعنی هنوز هیچی نزده).
-  int? currentVoterSelection;
+  /// کاندیداهایی که رأی‌دهنده‌ی فعلی همین الان روش‌ها زده (چندگانه؛ تا
+  /// زدنِ «بعدی» قابلِ تاگل‌کردنه).
+  Set<int> currentVoterSelections = {};
 
   /// رأی‌دهنده‌ها به ترتیب — زنده و نیمه‌جان‌نبودن کافیه (alivePlayers خودش
   /// نیمه‌جان‌ها رو هم حذف می‌کنه چون isAlive=false دارن). وقتی قاعده‌ی
@@ -461,8 +461,8 @@ class GameFlowController extends ChangeNotifier {
 
   /// کاندیداهای قابل‌نمایش تو گریدِ رأی‌گیری — همه‌ی بازیکنان (نه فقط
   /// زنده‌ها)، چون نیمه‌جان/حذف‌شده‌ها باید تو UI دیده بشن ولی غیرفعال،
-  /// نه اینکه از لیست غیب بشن. تشخیصِ غیرفعال‌بودن با خودِ isAlive تو UI
-  /// چک می‌شه.
+  /// نه اینکه از لیست غیب بشن. تشخیصِ غیرفعال‌بودن (مرده/نیمه‌جان/خودِ
+  /// رأی‌دهنده) تو UI چک می‌شه.
   List<SessionPlayer> get voteSequenceCandidates => players;
 
   SessionPlayer? get currentVoteSequenceVoter => voteSequenceIndex < voteSequenceVoters.length
@@ -472,22 +472,27 @@ class GameFlowController extends ChangeNotifier {
   /// آیا همه‌ی رأی‌دهنده‌ها رأی دادن؟
   bool get voteSequenceFinished => voteSequenceIndex >= voteSequenceVoters.length;
 
-  /// انتخاب/تغییرِ انتخابِ رأی‌دهنده‌ی فعلی. اگه قبلاً یه کاندیدای دیگه رو
-  /// زده بود، اول رأیِ قبلی برداشته می‌شه، بعد رأیِ جدید ثبت می‌شه — پس
-  /// می‌شه قبل از «بعدی» نظر رو عوض کرد بدونِ دوبارشماری.
-  void selectVoteCandidate(int candidateId) {
-    if (currentVoterSelection == candidateId) return;
-    if (currentVoterSelection != null) removeVote(currentVoterSelection!);
-    addVote(candidateId);
-    currentVoterSelection = candidateId;
+  /// تاگل‌کردنِ انتخابِ یه کاندیدا برای رأی‌دهنده‌ی فعلی — چندتا کاندیدا
+  /// هم‌زمان قابلِ انتخابه؛ زدنِ دوباره‌ی همون یکی از حالتِ انتخاب خارجش
+  /// می‌کنه. رأی‌دادن به خودِ رأی‌دهنده مجاز نیست (دفاعی، UI هم دکمه‌ش
+  /// رو غیرفعال نشون می‌ده).
+  void toggleVoteCandidate(int candidateId) {
+    if (candidateId == currentVoteSequenceVoter?.id) return;
+    if (currentVoterSelections.contains(candidateId)) {
+      removeVote(candidateId);
+      currentVoterSelections.remove(candidateId);
+    } else {
+      addVote(candidateId);
+      currentVoterSelections.add(candidateId);
+    }
     notifyListeners();
   }
 
-  /// رفتن به رأی‌دهنده‌ی بعدی. فقط وقتی این یکی رأیش رو ثبت کرده باشه.
+  /// رفتن به رأی‌دهنده‌ی بعدی. فقط وقتی این یکی حداقل یه رأی ثبت کرده باشه.
   void advanceVoteSequence() {
-    if (currentVoterSelection == null) return;
+    if (currentVoterSelections.isEmpty) return;
     voteSequenceIndex += 1;
-    currentVoterSelection = null;
+    currentVoterSelections = {};
     notifyListeners();
   }
 

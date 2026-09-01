@@ -1350,8 +1350,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             crossAxisSpacing: 10,
             childAspectRatio: 1.3,
             children: candidates.map((c) {
-              final isSelected = controller.currentVoterSelection == c.id;
-              return _voteCandidateButton(c, isSelected: isSelected, enabled: c.isAlive);
+              final isSelected = controller.currentVoterSelections.contains(c.id);
+              final enabled = c.isAlive && c.id != voter.id;
+              return _voteCandidateButton(c, isSelected: isSelected, enabled: enabled);
             }).toList(),
           ),
         ),
@@ -1361,7 +1362,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           child: Game3DButton(
             label: 'بعدی',
             icon: Icons.arrow_forward_rounded,
-            onPressed: controller.currentVoterSelection == null ? null : controller.advanceVoteSequence,
+            onPressed: controller.currentVoterSelections.isEmpty ? null : controller.advanceVoteSequence,
           ),
         ),
       ],
@@ -1372,7 +1373,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final palette = isSelected ? Game3DPalette.danger : Game3DPalette.gold;
     final colors = Game3DColors.of(palette);
     return Game3DSurface(
-      onPressed: enabled ? () => controller.selectVoteCandidate(c.id) : null,
+      onPressed: enabled ? () => controller.toggleVoteCandidate(c.id) : null,
       palette: palette,
       depth: 5,
       borderRadius: BorderRadius.circular(14),
