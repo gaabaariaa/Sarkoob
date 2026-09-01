@@ -746,8 +746,11 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         if (controller.chaosPhaseActive) return _buildChaosPhase();
         if (controller.lastResolution != null) return _buildDayResolved();
         if (controller.isSecondVoteRound) return _buildVotePanel(isSecondRound: true);
+        if (controller.inDefense && !controller.defenseAnnouncementShown) {
+          return _buildDefenseAnnouncement();
+        }
         if (controller.inDefense) return _buildDefensePhase();
-        if (controller.votingStarted) return _buildVotePanel(isSecondRound: false);
+        if (controller.votingStarted) return _buildFirstRoundVoteSequence();
         if (controller.isSpeakingRoundDone && controller.bombPendingResolution) {
           return _buildBombResolutionPhase();
         }
@@ -1298,6 +1301,104 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   // ---------- رأی‌گیری (دور اول یا دوم) ----------
 
+  // ---------- رأی‌گیریِ دورِ اول، نفربه‌نفر ----------
+
+  Widget _buildFirstRoundVoteSequence() {
+    final voter = controller.currentVoteSequenceVoter;
+
+    if (voter == null) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.how_to_vote_rounded, color: AppColors.gold, size: 48),
+          const SizedBox(height: 16),
+          const Text('همه‌ی بازیکنان رأی دادن.', style: TextStyle(color: Colors.white, fontSize: 16)),
+          const SizedBox(height: 20),
+          Game3DButton(
+            label: 'محاسبه‌ی نتیجه',
+            icon: Icons.checklist_rounded,
+            onPressed: controller.resolveFirstVoteRound,
+          ),
+        ],
+      );
+    }
+
+    final candidates = controller.voteSequenceCandidates;
+    final totalVoters = controller.voteSequenceVoters.length;
+
+    return Column(
+      children: [
+        if (controller.gunExplosionSummary != null) ...[
+          Text(
+            controller.gunExplosionSummary!,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.bloodRedLight),
+          ),
+          const SizedBox(height: 8),
+        ],
+        Text('رأی‌گیری برای «${voter.name}»', style: AppTheme.headingFont(size: 20), textAlign: TextAlign.center),
+        const SizedBox(height: 4),
+        Text(
+          'نفرِ ${controller.voteSequenceIndex + 1} از $totalVoters',
+          style: const TextStyle(color: AppColors.goldLight, fontSize: 13),
+        ),
+        const SizedBox(height: 14),
+        Expanded(
+          child: GridView.count(
+            crossAxisCount: 3,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: 1.3,
+            children: candidates.map((c) {
+              final isSelected = controller.currentVoterSelection == c.id;
+              return _voteCandidateButton(c, isSelected: isSelected, enabled: c.isAlive);
+            }).toList(),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: Game3DButton(
+            label: 'بعدی',
+            icon: Icons.arrow_forward_rounded,
+            onPressed: controller.currentVoterSelection == null ? null : controller.advanceVoteSequence,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _voteCandidateButton(SessionPlayer c, {required bool isSelected, required bool enabled}) {
+    final palette = isSelected ? Game3DPalette.danger : Game3DPalette.gold;
+    final colors = Game3DColors.of(palette);
+    return Game3DSurface(
+      onPressed: enabled ? () => controller.selectVoteCandidate(c.id) : null,
+      palette: palette,
+      depth: 5,
+      borderRadius: BorderRadius.circular(14),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+      semanticLabel: c.name,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isSelected) ...[
+              Icon(Icons.check_circle, color: colors.text, size: 16),
+              const SizedBox(height: 2),
+            ],
+            Text(
+              c.name,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: colors.text, fontWeight: FontWeight.w800, fontSize: 13),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildVotePanel({required bool isSecondRound}) {
     final candidates = isSecondRound ? controller.defenseCandidates : controller.alivePlayers;
     return Column(
@@ -1466,6 +1567,26 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }
 
   // ---------- دفاعیه ----------
+
+  Widget _buildDefenseAnnouncement() {
+    final names = controller.defenseCandidates.map((p) => p.name).join('، ');
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.gavel_rounded, color: AppColors.gold, size: 48),
+        const SizedBox(height: 16),
+        const Text('وارد دفاعیه شدن:', style: TextStyle(color: Colors.white70, fontSize: 14)),
+        const SizedBox(height: 8),
+        Text(names, textAlign: TextAlign.center, style: AppTheme.headingFont(size: 22)),
+        const SizedBox(height: 28),
+        Game3DButton(
+          label: 'شروعِ دفاعیه',
+          icon: Icons.arrow_forward_rounded,
+          onPressed: controller.acknowledgeDefenseAnnouncement,
+        ),
+      ],
+    );
+  }
 
   Widget _buildDefensePhase() {
     final speaker = controller.currentDefenseSpeaker;
