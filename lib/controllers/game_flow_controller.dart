@@ -488,9 +488,9 @@ class GameFlowController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// رفتن به رأی‌دهنده‌ی بعدی. فقط وقتی این یکی حداقل یه رأی ثبت کرده باشه.
+  /// رفتن به رأی‌دهنده‌ی بعدی — همیشه فعاله، حتی اگه این رأی‌دهنده هیچ‌کس
+  /// رو انتخاب نکرده باشه (رأی‌ندادن/ابستین مجازه).
   void advanceVoteSequence() {
-    if (currentVoterSelections.isEmpty) return;
     voteSequenceIndex += 1;
     currentVoterSelections = {};
     notifyListeners();

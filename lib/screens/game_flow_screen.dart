@@ -1362,7 +1362,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           child: Game3DButton(
             label: 'بعدی',
             icon: Icons.arrow_forward_rounded,
-            onPressed: controller.currentVoterSelections.isEmpty ? null : controller.advanceVoteSequence,
+            onPressed: controller.advanceVoteSequence,
           ),
         ),
       ],
