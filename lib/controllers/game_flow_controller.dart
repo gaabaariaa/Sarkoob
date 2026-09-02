@@ -430,7 +430,7 @@ class GameFlowController extends ChangeNotifier {
       p.votes = 0;
     }
     voteSequenceIndex = 0;
-    currentVoterSelections = {};
+    votersAgainstCurrentSubject = {};
     notifyListeners();
   }
 
@@ -446,53 +446,56 @@ class GameFlowController extends ChangeNotifier {
   }
 
   // ---------- رأی‌گیریِ دورِ اول، نفربه‌نفر ----------
+  // «رأی‌گیری برای X» یعنی داریم رأی‌های علیهِ X رو می‌شمریم، نه اینکه X
+  // داره رأی می‌ده. گریدِ زیرش یعنی «کدوم بازیکن‌ها علیهِ X رأی دادن» —
+  // با هر دکمه‌ای که زده بشه، رأی به خودِ X (سوژه) اضافه/کم می‌شه.
 
-  /// اندیسِ رأی‌دهنده‌ی فعلی تو توالیِ نفربه‌نفر.
+  /// اندیسِ سوژه‌ی فعلی (کسی که الان براش رأی می‌شمریم) تو توالی.
   int voteSequenceIndex = 0;
 
-  /// کاندیداهایی که رأی‌دهنده‌ی فعلی همین الان روش‌ها زده (چندگانه؛ تا
-  /// زدنِ «بعدی» قابلِ تاگل‌کردنه).
-  Set<int> currentVoterSelections = {};
+  /// کدوم بازیکن‌ها تا الان علیهِ سوژه‌ی فعلی رأی دادن (چندگانه؛ تا زدنِ
+  /// «بعدی» قابلِ تاگل‌کردنه — زدنِ دوباره یعنی اون رأی رو پس گرفت).
+  Set<int> votersAgainstCurrentSubject = {};
 
-  /// رأی‌دهنده‌ها به ترتیب — زنده و نیمه‌جان‌نبودن کافیه (alivePlayers خودش
-  /// نیمه‌جان‌ها رو هم حذف می‌کنه چون isAlive=false دارن). وقتی قاعده‌ی
-  /// «حق رأی ندارن» بعداً مشخص شد، همین‌جا فیلترِ اضافه رو اضافه کن.
-  List<SessionPlayer> get voteSequenceVoters => alivePlayers;
+  /// سوژه‌ها به ترتیب — یعنی چه‌کسانی قراره براشون رأی شمرده بشه. زنده‌
+  /// بودن کافیه (alivePlayers خودش نیمه‌جان‌ها رو هم حذف می‌کنه چون
+  /// isAlive=false دارن). وقتی قاعده‌ی «حق رأی ندارن» بعداً مشخص شد،
+  /// همین‌جا فیلترِ اضافه رو اضافه کن.
+  List<SessionPlayer> get voteSequenceSubjects => alivePlayers;
 
-  /// کاندیداهای قابل‌نمایش تو گریدِ رأی‌گیری — همه‌ی بازیکنان (نه فقط
-  /// زنده‌ها)، چون نیمه‌جان/حذف‌شده‌ها باید تو UI دیده بشن ولی غیرفعال،
-  /// نه اینکه از لیست غیب بشن. تشخیصِ غیرفعال‌بودن (مرده/نیمه‌جان/خودِ
-  /// رأی‌دهنده) تو UI چک می‌شه.
-  List<SessionPlayer> get voteSequenceCandidates => players;
+  /// بازیکن‌های قابل‌نمایش تو گریدِ «کی علیهِ سوژه رأی داد» — همه‌ی
+  /// بازیکنان (نه فقط زنده‌ها)، چون نیمه‌جان/حذف‌شده‌ها باید تو UI دیده
+  /// بشن ولی غیرفعال (چون نمی‌تونن رأی بدن)، نه اینکه از لیست غیب بشن.
+  List<SessionPlayer> get voteSequenceElectors => players;
 
-  SessionPlayer? get currentVoteSequenceVoter => voteSequenceIndex < voteSequenceVoters.length
-      ? voteSequenceVoters[voteSequenceIndex]
+  SessionPlayer? get currentVoteSequenceSubject => voteSequenceIndex < voteSequenceSubjects.length
+      ? voteSequenceSubjects[voteSequenceIndex]
       : null;
 
-  /// آیا همه‌ی رأی‌دهنده‌ها رأی دادن؟
-  bool get voteSequenceFinished => voteSequenceIndex >= voteSequenceVoters.length;
+  /// آیا همه‌ی سوژه‌ها بررسی شدن؟
+  bool get voteSequenceFinished => voteSequenceIndex >= voteSequenceSubjects.length;
 
-  /// تاگل‌کردنِ انتخابِ یه کاندیدا برای رأی‌دهنده‌ی فعلی — چندتا کاندیدا
-  /// هم‌زمان قابلِ انتخابه؛ زدنِ دوباره‌ی همون یکی از حالتِ انتخاب خارجش
-  /// می‌کنه. رأی‌دادن به خودِ رأی‌دهنده مجاز نیست (دفاعی، UI هم دکمه‌ش
-  /// رو غیرفعال نشون می‌ده).
-  void toggleVoteCandidate(int candidateId) {
-    if (candidateId == currentVoteSequenceVoter?.id) return;
-    if (currentVoterSelections.contains(candidateId)) {
-      removeVote(candidateId);
-      currentVoterSelections.remove(candidateId);
+  /// تاگل‌کردنِ اینکه یه بازیکن (elector) علیهِ سوژه‌ی فعلی رأی داده یا نه.
+  /// رأی همیشه به خودِ سوژه اضافه/کم می‌شه، نه به کسی که دکمه‌ش زده شده.
+  /// خودِ سوژه نمی‌تونه علیهِ خودش رأی بده.
+  void toggleVoterForCurrentSubject(int electorId) {
+    final subject = currentVoteSequenceSubject;
+    if (subject == null || electorId == subject.id) return;
+    if (votersAgainstCurrentSubject.contains(electorId)) {
+      votersAgainstCurrentSubject.remove(electorId);
+      removeVote(subject.id);
     } else {
-      addVote(candidateId);
-      currentVoterSelections.add(candidateId);
+      votersAgainstCurrentSubject.add(electorId);
+      addVote(subject.id);
     }
     notifyListeners();
   }
 
-  /// رفتن به رأی‌دهنده‌ی بعدی — همیشه فعاله، حتی اگه این رأی‌دهنده هیچ‌کس
-  /// رو انتخاب نکرده باشه (رأی‌ندادن/ابستین مجازه).
+  /// رفتن به سوژه‌ی بعدی — همیشه فعاله، حتی اگه هیچ‌کس علیهِ این سوژه
+  /// رأی نداده باشه (یعنی صفر رأی، که کاملاً مجازه).
   void advanceVoteSequence() {
     voteSequenceIndex += 1;
-    currentVoterSelections = {};
+    votersAgainstCurrentSubject = {};
     notifyListeners();
   }
 

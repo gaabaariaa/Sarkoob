@@ -1304,15 +1304,15 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   // ---------- رأی‌گیریِ دورِ اول، نفربه‌نفر ----------
 
   Widget _buildFirstRoundVoteSequence() {
-    final voter = controller.currentVoteSequenceVoter;
+    final subject = controller.currentVoteSequenceSubject;
 
-    if (voter == null) {
+    if (subject == null) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.how_to_vote_rounded, color: AppColors.gold, size: 48),
           const SizedBox(height: 16),
-          const Text('همه‌ی بازیکنان رأی دادن.', style: TextStyle(color: Colors.white, fontSize: 16)),
+          const Text('رأیِ همه‌ی بازیکنان شمرده شد.', style: TextStyle(color: Colors.white, fontSize: 16)),
           const SizedBox(height: 20),
           Game3DButton(
             label: 'محاسبه‌ی نتیجه',
@@ -1323,8 +1323,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       );
     }
 
-    final candidates = controller.voteSequenceCandidates;
-    final totalVoters = controller.voteSequenceVoters.length;
+    final electors = controller.voteSequenceElectors;
+    final totalSubjects = controller.voteSequenceSubjects.length;
 
     return Column(
       children: [
@@ -1336,23 +1336,28 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           ),
           const SizedBox(height: 8),
         ],
-        Text('رأی‌گیری برای «${voter.name}»', style: AppTheme.headingFont(size: 20), textAlign: TextAlign.center),
+        Text('رأی‌گیری برای «${subject.name}»', style: AppTheme.headingFont(size: 20), textAlign: TextAlign.center),
         const SizedBox(height: 4),
         Text(
-          'نفرِ ${controller.voteSequenceIndex + 1} از $totalVoters',
+          'نفرِ ${controller.voteSequenceIndex + 1} از $totalSubjects   —   ${subject.votes} رأی',
           style: const TextStyle(color: AppColors.goldLight, fontSize: 13),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 4),
+        const Text(
+          'بزن رو هرکی که علیهِ این بازیکن رأی داد',
+          style: TextStyle(color: Colors.white54, fontSize: 12),
+        ),
+        const SizedBox(height: 10),
         Expanded(
           child: GridView.count(
             crossAxisCount: 3,
             mainAxisSpacing: 10,
             crossAxisSpacing: 10,
             childAspectRatio: 1.3,
-            children: candidates.map((c) {
-              final isSelected = controller.currentVoterSelections.contains(c.id);
-              final enabled = c.isAlive && c.id != voter.id;
-              return _voteCandidateButton(c, isSelected: isSelected, enabled: enabled);
+            children: electors.map((e) {
+              final isSelected = controller.votersAgainstCurrentSubject.contains(e.id);
+              final enabled = e.isAlive && e.id != subject.id;
+              return _voteCandidateButton(e, isSelected: isSelected, enabled: enabled);
             }).toList(),
           ),
         ),
@@ -1373,7 +1378,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final palette = isSelected ? Game3DPalette.danger : Game3DPalette.gold;
     final colors = Game3DColors.of(palette);
     return Game3DSurface(
-      onPressed: enabled ? () => controller.toggleVoteCandidate(c.id) : null,
+      onPressed: enabled ? () => controller.toggleVoterForCurrentSubject(c.id) : null,
       palette: palette,
       depth: 5,
       borderRadius: BorderRadius.circular(14),
