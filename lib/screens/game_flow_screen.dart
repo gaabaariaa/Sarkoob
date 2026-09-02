@@ -1486,7 +1486,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               return _voteCandidateButton(
                 c,
                 isSelected: false,
-                enabled: c.isAlive,
+                enabled: c.isAlive && c.id != voter.id,
                 onTap: () => controller.castReferendumVoteAndAdvance(c.id),
               );
             }).toList(),
