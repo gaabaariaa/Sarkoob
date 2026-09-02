@@ -393,6 +393,7 @@ class GameFlowController extends ChangeNotifier {
     communityLeaderExpulsionMessage = null;
     _referendumVotes.clear();
     _referendumCandidateIds = null;
+    referendumVoterIndex = 0;
     autoDetectedWinnerTeamId = null;
     gameEndMessage = null;
     chaosPhaseActive = false;
@@ -457,11 +458,9 @@ class GameFlowController extends ChangeNotifier {
   /// «بعدی» قابلِ تاگل‌کردنه — زدنِ دوباره یعنی اون رأی رو پس گرفت).
   Set<int> votersAgainstCurrentSubject = {};
 
-  /// سوژه‌ها به ترتیب — یعنی چه‌کسانی قراره براشون رأی شمرده بشه. زنده‌
-  /// بودن کافیه (alivePlayers خودش نیمه‌جان‌ها رو هم حذف می‌کنه چون
-  /// isAlive=false دارن). وقتی قاعده‌ی «حق رأی ندارن» بعداً مشخص شد،
-  /// همین‌جا فیلترِ اضافه رو اضافه کن.
-  List<SessionPlayer> get voteSequenceSubjects => alivePlayers;
+  /// سوژه‌ها به ترتیب — یعنی چه‌کسانی قراره براشون رأی شمرده بشه. تو دورِ
+  /// اول یعنی همه‌ی زنده‌ها؛ تو دورِ دوم (دفاعیه) فقط نفراتِ دفاعیه.
+  List<SessionPlayer> get voteSequenceSubjects => _isSecondRound ? defenseCandidates : alivePlayers;
 
   /// بازیکن‌های قابل‌نمایش تو گریدِ «کی علیهِ سوژه رأی داد» — همه‌ی
   /// بازیکنان (نه فقط زنده‌ها)، چون نیمه‌جان/حذف‌شده‌ها باید تو UI دیده
@@ -554,6 +553,8 @@ class GameFlowController extends ChangeNotifier {
     for (final id in _defenseCandidateIds) {
       playerById(id).votes = 0;
     }
+    voteSequenceIndex = 0;
+    votersAgainstCurrentSubject = {};
     notifyListeners();
   }
 
@@ -889,8 +890,12 @@ class GameFlowController extends ChangeNotifier {
   /// آیا الان (زیرِ گزارشِ پایانِ شب) رأی‌گیریِ استعلامِ وضعیت بازه؟
   bool statusInquiryVoteOpen = false;
 
-  /// تعدادِ رأیِ موافقی که گرداننده تا الان تو همین رأی‌گیریِ باز ثبت کرده.
-  int statusInquiryYesVotes = 0;
+  /// بازیکن‌هایی که تو همین رأی‌گیریِ بازِ استعلامِ وضعیت موافقت کردن —
+  /// گرداننده رو هرکی که «بله» گفت می‌زنه، نه یه شمارشگرِ خام.
+  Set<int> statusInquiryYesVoters = {};
+
+  /// تعدادِ رأیِ موافق — از رویِ خودِ Set محاسبه می‌شه.
+  int get statusInquiryYesVotes => statusInquiryYesVoters.length;
 
   /// نتیجه‌ی آخرین رأی‌گیریِ امشب: true=اکثریت آورد، false=نیاورد،
   /// null=امشب هنوز امتحان نشده.
@@ -916,17 +921,22 @@ class GameFlowController extends ChangeNotifier {
     ];
   }
 
-  /// رأی‌گیری رو باز می‌کنه (شمارشگرِ موافق‌ها صفر می‌شه). اگه شارژی
+  /// رأی‌گیری رو باز می‌کنه (لیستِ موافق‌ها خالی می‌شه). اگه شارژی
   /// نمونده باشه کاری نمی‌کنه.
   void openStatusInquiryVote() {
     if (statusInquiryChargesRemaining <= 0) return;
     statusInquiryVoteOpen = true;
-    statusInquiryYesVotes = 0;
+    statusInquiryYesVoters = {};
     notifyListeners();
   }
 
-  void setStatusInquiryYesVotes(int count) {
-    statusInquiryYesVotes = count.clamp(0, aliveCount);
+  /// تاگل‌کردنِ موافقتِ یه بازیکنِ خاص تو رأی‌گیریِ بازِ استعلامِ وضعیت.
+  void toggleStatusInquiryVoter(int playerId) {
+    if (statusInquiryYesVoters.contains(playerId)) {
+      statusInquiryYesVoters.remove(playerId);
+    } else {
+      statusInquiryYesVoters.add(playerId);
+    }
     notifyListeners();
   }
 
@@ -1808,6 +1818,25 @@ class GameFlowController extends ChangeNotifier {
 
   int referendumVotesFor(int playerId) => _referendumVotes[playerId] ?? 0;
 
+  // ---------- رأی‌گیریِ رفراندوم، نفربه‌نفر (رأی‌دهنده‌محور، تک‌انتخابی) ----------
+  // برخلافِ رأی‌گیریِ حذف (که سوژه‌محوره)، اینجا برعکسه: تو نوبتِ هر
+  // رأی‌دهنده، انتخابِ خودش ثبت می‌شه — دقیقاً مثلِ رأی‌گیریِ قدیم.
+
+  int referendumVoterIndex = 0;
+
+  List<SessionPlayer> get referendumVoters => alivePlayers;
+
+  SessionPlayer? get currentReferendumVoter =>
+      referendumVoterIndex < referendumVoters.length ? referendumVoters[referendumVoterIndex] : null;
+
+  /// ثبتِ انتخابِ رأی‌دهنده‌ی فعلی برای یه کاندیدا، و فوراً رفتن به
+  /// رأی‌دهنده‌ی بعدی — تک‌انتخابیه (برخلافِ چندانتخابیِ رأی‌گیریِ حذف).
+  void castReferendumVoteAndAdvance(int candidateId) {
+    castReferendumVote(candidateId, 1);
+    referendumVoterIndex += 1;
+    notifyListeners();
+  }
+
   /// رأی‌گیریِ رفراندوم علنیه (از سرِ نوبتِ صحبت، یکی‌یکی) — گرداننده فقط
   /// با +/- شمارش می‌کنه، مثلِ رأی‌گیریِ عادی.
   void castReferendumVote(int candidateId, int delta) {
@@ -1841,6 +1870,7 @@ class GameFlowController extends ChangeNotifier {
     }
     _referendumCandidateIds = leading.map((p) => p.id).toList();
     _referendumVotes.clear();
+    referendumVoterIndex = 0;
     notifyListeners();
   }
 
@@ -2094,7 +2124,7 @@ class GameFlowController extends ChangeNotifier {
     lastNightSummary = null;
     nightPrivateNotes = null;
     statusInquiryVoteOpen = false;
-    statusInquiryYesVotes = 0;
+    statusInquiryYesVoters = {};
     statusInquiryLastVotePassed = null;
     statusInquiryResultMessage = null;
     _tonightSlaughteredIds.clear();

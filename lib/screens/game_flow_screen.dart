@@ -745,12 +745,12 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         if (controller.autoDetectedWinnerTeamId != null) return _buildGameOverScreen();
         if (controller.chaosPhaseActive) return _buildChaosPhase();
         if (controller.lastResolution != null) return _buildDayResolved();
-        if (controller.isSecondVoteRound) return _buildVotePanel(isSecondRound: true);
+        if (controller.isSecondVoteRound) return _buildEliminationVoteSequence();
         if (controller.inDefense && !controller.defenseAnnouncementShown) {
           return _buildDefenseAnnouncement();
         }
         if (controller.inDefense) return _buildDefensePhase();
-        if (controller.votingStarted) return _buildFirstRoundVoteSequence();
+        if (controller.votingStarted) return _buildEliminationVoteSequence();
         if (controller.isSpeakingRoundDone && controller.bombPendingResolution) {
           return _buildBombResolutionPhase();
         }
@@ -1303,7 +1303,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   // ---------- رأی‌گیریِ دورِ اول، نفربه‌نفر ----------
 
-  Widget _buildFirstRoundVoteSequence() {
+  Widget _buildEliminationVoteSequence() {
     final subject = controller.currentVoteSequenceSubject;
 
     if (subject == null) {
@@ -1317,7 +1317,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           Game3DButton(
             label: 'محاسبه‌ی نتیجه',
             icon: Icons.checklist_rounded,
-            onPressed: controller.resolveFirstVoteRound,
+            onPressed: controller.isSecondVoteRound
+                ? controller.resolveSecondVoteRound
+                : controller.resolveFirstVoteRound,
           ),
         ],
       );
@@ -1357,7 +1359,12 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             children: electors.map((e) {
               final isSelected = controller.votersAgainstCurrentSubject.contains(e.id);
               final enabled = e.isAlive && e.id != subject.id;
-              return _voteCandidateButton(e, isSelected: isSelected, enabled: enabled);
+              return _voteCandidateButton(
+                e,
+                isSelected: isSelected,
+                enabled: enabled,
+                onTap: () => controller.toggleVoterForCurrentSubject(e.id),
+              );
             }).toList(),
           ),
         ),
@@ -1374,11 +1381,16 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     );
   }
 
-  Widget _voteCandidateButton(SessionPlayer c, {required bool isSelected, required bool enabled}) {
+  Widget _voteCandidateButton(
+    SessionPlayer c, {
+    required bool isSelected,
+    required bool enabled,
+    required VoidCallback onTap,
+  }) {
     final palette = isSelected ? Game3DPalette.danger : Game3DPalette.gold;
     final colors = Game3DColors.of(palette);
     return Game3DSurface(
-      onPressed: enabled ? () => controller.toggleVoterForCurrentSubject(c.id) : null,
+      onPressed: enabled ? onTap : null,
       palette: palette,
       depth: 5,
       borderRadius: BorderRadius.circular(14),
@@ -1405,67 +1417,6 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     );
   }
 
-  Widget _buildVotePanel({required bool isSecondRound}) {
-    final candidates = isSecondRound ? controller.defenseCandidates : controller.alivePlayers;
-    return Column(
-      children: [
-        Text(
-          isSecondRound ? 'رأی‌گیری نهایی (فقط بین نفرات دفاعیه)' : 'رأی‌گیری',
-          style: AppTheme.headingFont(size: 20),
-        ),
-        if (!isSecondRound && controller.gunExplosionSummary != null) ...[
-          const SizedBox(height: 8),
-          Text(
-            controller.gunExplosionSummary!,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.bloodRedLight),
-          ),
-        ],
-        const SizedBox(height: 12),
-        Expanded(
-          child: ListView(
-            children: candidates.map((p) => _voteRow(p)).toList(),
-          ),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            if (isSecondRound) {
-              controller.resolveSecondVoteRound();
-            } else {
-              controller.resolveFirstVoteRound();
-            }
-          },
-          style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-          child: Text(isSecondRound ? 'نهایی کردن نتیجه' : 'محاسبه‌ی نتیجه'),
-        ),
-      ],
-    );
-  }
-
-  Widget _voteRow(SessionPlayer p) {
-    return Card(
-      color: AppColors.surfaceCard,
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        child: Row(
-          children: [
-            Expanded(child: Text(p.name, style: const TextStyle(color: Colors.white))),
-            IconButton(
-              icon: const Icon(Icons.remove_circle_outline, color: AppColors.gold),
-              onPressed: () => controller.removeVote(p.id),
-            ),
-            Text('${p.votes}', style: const TextStyle(color: AppColors.goldLight, fontSize: 16)),
-            IconButton(
-              icon: const Icon(Icons.add_circle_outline, color: AppColors.gold),
-              onPressed: () => controller.addVote(p.id),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // ---------- رفراندومِ فعالِ مدنی (روزِ بعد از درخواست، قبل از رأی‌گیریِ حذف) ----------
 
   Widget _buildReferendumPhase() {
@@ -1476,63 +1427,72 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }
 
   Widget _buildReferendumVoting() {
-    final candidates = controller.referendumCandidates;
+    final voter = controller.currentReferendumVoter;
     final isRunoff = controller.isReferendumRunoff;
+
+    if (voter == null) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.how_to_vote_rounded, color: AppColors.gold, size: 48),
+          const SizedBox(height: 16),
+          const Text('رأیِ همه‌ی بازیکنان ثبت شد.', style: TextStyle(color: Colors.white, fontSize: 16)),
+          const SizedBox(height: 20),
+          Game3DButton(
+            label: 'تعیینِ رهبر',
+            icon: Icons.checklist_rounded,
+            onPressed: controller.resolveReferendumRound,
+          ),
+        ],
+      );
+    }
+
+    final candidates = controller.referendumCandidates;
+
     return Column(
       children: [
         Text(
           isRunoff ? 'رفراندوم: رأی‌گیریِ مجدد (تساوی)' : 'رفراندوم: انتخابِ رهبرِ جامعه',
+          style: AppTheme.headingFont(size: 18),
+          textAlign: TextAlign.center,
+        ),
+        if (isRunoff) ...[
+          const SizedBox(height: 4),
+          const Text(
+            'رأی‌ها مساوی شد؛ این‌بار فقط بینِ همین نفرات دوباره رأی می‌گیریم.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white60, fontSize: 12),
+          ),
+        ],
+        const SizedBox(height: 10),
+        Text(
+          'انتخابِ رهبری برای «${voter.name}» چیه؟',
           style: AppTheme.headingFont(size: 20),
+          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 4),
         Text(
-          isRunoff
-              ? 'رأی‌ها مساوی شد؛ این‌بار فقط بینِ همین نفرات، از سرِ نوبتِ صحبت، دوباره رأی می‌گیریم.'
-              : 'از سرِ نوبتِ صحبت، به ترتیب، هرکس علناً به یه نفر رأی می‌ده.',
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white60, fontSize: 12),
+          'نفرِ ${controller.referendumVoterIndex + 1} از ${controller.referendumVoters.length}',
+          style: const TextStyle(color: AppColors.goldLight, fontSize: 13),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
         Expanded(
-          child: ListView(
-            children: candidates.map((p) => _referendumVoteRow(p)).toList(),
+          child: GridView.count(
+            crossAxisCount: 3,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: 1.3,
+            children: candidates.map((c) {
+              return _voteCandidateButton(
+                c,
+                isSelected: false,
+                enabled: c.isAlive,
+                onTap: () => controller.castReferendumVoteAndAdvance(c.id),
+              );
+            }).toList(),
           ),
         ),
-        ElevatedButton(
-          onPressed: controller.referendumLeadingCandidates.isNotEmpty
-              ? controller.resolveReferendumRound
-              : null,
-          style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-          child: const Text('پایانِ رأی‌گیری و تعیینِ رهبر'),
-        ),
       ],
-    );
-  }
-
-  Widget _referendumVoteRow(SessionPlayer p) {
-    return Card(
-      color: AppColors.surfaceCard,
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        child: Row(
-          children: [
-            Expanded(child: Text(p.name, style: const TextStyle(color: Colors.white))),
-            IconButton(
-              icon: const Icon(Icons.remove_circle_outline, color: AppColors.gold),
-              onPressed: () => controller.castReferendumVote(p.id, -1),
-            ),
-            Text(
-              '${controller.referendumVotesFor(p.id)}',
-              style: const TextStyle(color: AppColors.goldLight, fontSize: 16),
-            ),
-            IconButton(
-              icon: const Icon(Icons.add_circle_outline, color: AppColors.gold),
-              onPressed: () => controller.castReferendumVote(p.id, 1),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -1832,30 +1792,29 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                   ),
                 ] else if (controller.statusInquiryVoteOpen) ...[
                   Text(
-                    'چند نفر موافقِ استعلامِ وضعیت‌ان؟ (از ${controller.aliveCount} نفرِ زنده)',
+                    'کی‌ها موافقِ استعلامِ وضعیت‌ان؟ (${controller.statusInquiryYesVotes} از ${controller.aliveCount} نفرِ زنده)',
                     textAlign: TextAlign.center,
                     style: const TextStyle(color: Colors.white70, fontSize: 13),
                   ),
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.remove, color: AppColors.gold),
-                        onPressed: () => controller
-                            .setStatusInquiryYesVotes(controller.statusInquiryYesVotes - 1),
-                      ),
-                      Text(
-                        '${controller.statusInquiryYesVotes}',
-                        style: const TextStyle(color: AppColors.goldLight, fontSize: 20),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.add, color: AppColors.gold),
-                        onPressed: () => controller
-                            .setStatusInquiryYesVotes(controller.statusInquiryYesVotes + 1),
-                      ),
-                    ],
+                  const SizedBox(height: 10),
+                  GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                    childAspectRatio: 1.3,
+                    children: controller.alivePlayers.map((p) {
+                      final isSelected = controller.statusInquiryYesVoters.contains(p.id);
+                      return _voteCandidateButton(
+                        p,
+                        isSelected: isSelected,
+                        enabled: true,
+                        onTap: () => controller.toggleStatusInquiryVoter(p.id),
+                      );
+                    }).toList(),
                   ),
+                  const SizedBox(height: 12),
                   ElevatedButton(
                     onPressed: controller.resolveStatusInquiryVote,
                     child: const Text('ثبتِ نتیجه‌ی رأی'),
