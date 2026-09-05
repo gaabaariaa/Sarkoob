@@ -65,6 +65,23 @@ class Game3DColors {
         return danger;
     }
   }
+
+  /// ساختِ یه پالتِ سه‌بعدی از رویِ یه رنگِ دلخواه (مثلاً رنگِ یه تیم) —
+  /// برای جاهایی که پالتِ ثابتِ gold/dark/danger کافی نیست.
+  static Game3DColors fromColor(Color base) {
+    final hsl = HSLColor.fromColor(base);
+    final top = hsl.withLightness((hsl.lightness + 0.16).clamp(0.0, 1.0)).toColor();
+    final bottom = hsl.withLightness((hsl.lightness - 0.06).clamp(0.0, 1.0)).toColor();
+    final edge = hsl.withLightness((hsl.lightness - 0.28).clamp(0.0, 1.0)).toColor();
+    final isLight = hsl.lightness > 0.6;
+    return Game3DColors(
+      top: top,
+      bottom: bottom,
+      edge: edge,
+      border: edge,
+      text: isLight ? const Color(0xFF1A1408) : Colors.white,
+    );
+  }
 }
 
 /// هسته‌ی مشترکِ همه‌ی دکمه‌های سه‌بعدی: گرادیانِ روشن‌به‌تیره + یه
@@ -79,6 +96,7 @@ class Game3DSurface extends StatefulWidget {
   final Widget child;
   final VoidCallback? onPressed;
   final Game3DPalette palette;
+  final Game3DColors? customColors;
   final BorderRadius borderRadius;
   final double depth;
   final EdgeInsetsGeometry padding;
@@ -89,6 +107,7 @@ class Game3DSurface extends StatefulWidget {
     required this.child,
     required this.onPressed,
     this.palette = Game3DPalette.gold,
+    this.customColors,
     this.borderRadius = const BorderRadius.all(Radius.circular(16)),
     this.depth = 5,
     this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -111,7 +130,7 @@ class _Game3DSurfaceState extends State<Game3DSurface> {
   @override
   Widget build(BuildContext context) {
     final enabled = widget.onPressed != null;
-    final c = enabled ? Game3DColors.of(widget.palette) : Game3DColors.disabled;
+    final c = !enabled ? Game3DColors.disabled : (widget.customColors ?? Game3DColors.of(widget.palette));
     final d = widget.depth;
 
     return Semantics(
@@ -162,6 +181,7 @@ class Game3DButton extends StatelessWidget {
   final IconData? icon;
   final VoidCallback? onPressed;
   final Game3DPalette palette;
+  final Color? customColor;
   final double fontSize;
 
   const Game3DButton({
@@ -170,16 +190,19 @@ class Game3DButton extends StatelessWidget {
     required this.onPressed,
     this.icon,
     this.palette = Game3DPalette.gold,
+    this.customColor,
     this.fontSize = 16,
   });
 
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null;
-    final c = enabled ? Game3DColors.of(palette) : Game3DColors.disabled;
+    final customColors = customColor != null ? Game3DColors.fromColor(customColor!) : null;
+    final c = !enabled ? Game3DColors.disabled : (customColors ?? Game3DColors.of(palette));
     return Game3DSurface(
       onPressed: onPressed,
       palette: palette,
+      customColors: customColors,
       semanticLabel: label,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       child: Row(

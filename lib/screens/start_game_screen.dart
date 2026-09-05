@@ -728,449 +728,77 @@ class _StartGameScreenState extends State<StartGameScreen> {
         children: [
           Text('بازیکن‌ها', style: AppTheme.headingFont(size: 20)),
           const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _nameController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
-                    labelText: 'اسم بازیکن',
-                    border: OutlineInputBorder(),
-                  ),
-                  onSubmitted: (_) => _addPlayer(),
-                ),
-              ),
-              const SizedBox(width: 8),
-              ElevatedButton(onPressed: _addPlayer, child: const Text('افزودن')),
-            ],
-          ),
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            icon: const Icon(Icons.groups, color: AppColors.gold),
-            label: Text('افزودن از لیستِ بازیکنان (${_roster.length} نفر)'),
-            onPressed: _roster.isEmpty ? null : _showAddFromRosterSheet,
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'با نگه‌داشتن و کشیدن، می‌تونی ترتیبِ بازیکن‌ها رو عوض کنی.',
-            style: TextStyle(color: Colors.white38, fontSize: 11),
-          ),
-          const SizedBox(height: 4),
-          ReorderableListView(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            onReorder: _reorderDraftPlayers,
-            children: _draftPlayers.asMap().entries.map((entry) {
-              final index = entry.key;
-              final name = entry.value;
-              return Card(
-                key: ValueKey('draft-player-$index-$name'),
-                color: AppColors.surfaceCard,
-                margin: const EdgeInsets.only(bottom: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  side: BorderSide(color: AppColors.gold.withOpacity(0.3)),
-                ),
-                child: ListTile(
-                  leading: const Icon(Icons.drag_handle, color: Colors.white38),
-                  title: Text(name, style: const TextStyle(color: Colors.white)),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: AppColors.bloodRedLight),
-                    onPressed: () => _removePlayer(index),
-                  ),
-                ),
-              );
-            }).toList(),
+          SizedBox(
+            width: double.infinity,
+            child: Game3DButton(
+              label: 'افزودنِ بازیکن‌ها (${_draftPlayers.length} نفر)',
+              icon: Icons.groups_rounded,
+              onPressed: _showPlayersPage,
+            ),
           ),
 
           if (_isSorkoobScenario) ...[
             const SizedBox(height: 24),
-            Text('تیم مستقل', style: AppTheme.headingFont(size: 20)),
-          const SizedBox(height: 4),
-          const Text(
-            'اختیاریه.',
-            style: TextStyle(color: Colors.white60, fontSize: 12),
-          ),
-          const SizedBox(height: 8),
-          RadioListTile<String>(
-            value: 'none',
-            groupValue: _includeMossad ? 'mossad' : 'none',
-            onChanged: (_) => _setIndependentTeam(mossad: false),
-            activeColor: AppColors.gold,
-            title: const Text('بدون تیم مستقل', style: TextStyle(color: Colors.white)),
-          ),
-          RadioListTile<String>(
-            value: 'mossad',
-            groupValue: _includeMossad ? 'mossad' : 'none',
-            onChanged: (_) => _setIndependentTeam(mossad: true),
-            activeColor: SarkoobTeams.mossad.color,
-            title: Text(SarkoobTeams.mossad.name, style: const TextStyle(color: Colors.white)),
-          ),
-          if (_includeMossad) ...[
-            const SizedBox(height: 4),
-            const Text(
-              'فعلاً تنها نقشِ این تیم رهبرِ موساده، پس این تیم همیشه دقیقاً ۱ نفره:',
-              style: TextStyle(color: Colors.white60, fontSize: 12),
+            _teamNavButton(
+              label: 'تیمِ مستقل',
+              color: _includeMossad ? SarkoobTeams.mossad.color : Colors.grey,
+              count: _includeMossad ? 1 : 0,
+              onTap: _showIndependentTeamPage,
             ),
-            const SizedBox(height: 4),
-            _mandatoryRoleRow(SarkoobRoles.mossadLeader),
-          ],
-
-          const SizedBox(height: 24),
-          Text('تیم سرکوب', style: AppTheme.headingFont(size: 20)),
-          const SizedBox(height: 4),
-          const Text(
-            'جلوی هر نقش، تعدادش رو مشخص کن؛ خودِ برنامه موقعِ شروعِ بازی '
-            'کاملاً تصادفی مشخص می‌کنه کدوم بازیکن کدوم نقش رو می‌گیره.',
-            style: TextStyle(color: Colors.white60, fontSize: 12),
-          ),
-          const SizedBox(height: 8),
-          _mandatoryRoleRow(SarkoobRoles.valiFaghih),
-          _roleToggle(
-            role: SarkoobRoles.foreignMinister,
-            value: _includeForeignMinister,
-            onChanged: (v) => setState(() => _includeForeignMinister = v),
-          ),
-          _roleToggle(
-            role: SarkoobRoles.judiciaryChief,
-            value: _includeJudiciaryChief,
-            onChanged: (v) => setState(() => _includeJudiciaryChief = v),
-          ),
-          _roleToggle(
-            role: SarkoobRoles.governmentCelebrity,
-            value: _includeCelebrity,
-            onChanged: (v) => setState(() => _includeCelebrity = v),
-          ),
-          _roleToggle(
-            role: SarkoobRoles.interrogator,
-            value: _includeInterrogator,
-            onChanged: (v) => setState(() => _includeInterrogator = v),
-          ),
-          _roleToggle(
-            role: SarkoobRoles.intelligenceMinister,
-            value: _includeIntelMinister,
-            onChanged: (v) => setState(() => _includeIntelMinister = v),
-          ),
-          _roleToggle(
-            role: SarkoobRoles.policeCommander,
-            value: _includePoliceCommander,
-            onChanged: (v) => setState(() => _includePoliceCommander = v),
-          ),
-          _roleToggle(
-            role: SarkoobRoles.mercenary,
-            value: _includeMercenary,
-            onChanged: (v) => setState(() => _includeMercenary = v),
-          ),
-          const SizedBox(height: 4),
-          _roleCountStepper(
-            role: SarkoobRoles.suppressor,
-            value: _suppressorCount,
-            onDecrement: () => setState(() {
-              if (_suppressorCount > 0) _suppressorCount--;
-            }),
-            onIncrement: () => setState(() => _suppressorCount++),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'مجموعِ تیم سرکوب: $_sorkoobTotal نفر',
-            style: const TextStyle(
-              color: AppColors.goldLight,
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
+            _teamNavButton(
+              label: SarkoobTeams.suppression.name,
+              color: SarkoobTeams.suppression.color,
+              count: _sorkoobTotal,
+              onTap: _showSorkoobTeamPage,
             ),
-          ),
-
-          const SizedBox(height: 24),
-          Text('تیم شهروند', style: AppTheme.headingFont(size: 20)),
-          const SizedBox(height: 4),
-          const Text(
-            'همینطور جلوی هر نقشِ شهروندی، تعدادش رو مشخص کن؛ شهروندِ '
-            'خاکستری همون عضوِ سادهٔ بدونِ قابلیتِ خاصه.',
-            style: TextStyle(color: Colors.white60, fontSize: 12),
-          ),
-          const SizedBox(height: 8),
-          _roleToggle(
-            role: SarkoobRoles.doctor,
-            value: _includeDoctor,
-            onChanged: (v) => setState(() => _includeDoctor = v),
-          ),
-          _roleToggle(
-            role: SarkoobRoles.hacker,
-            value: _includeHacker,
-            onChanged: (v) => setState(() => _includeHacker = v),
-          ),
-          _roleToggle(
-            role: SarkoobRoles.revolutionaryFighter,
-            value: _includeRevolutionary,
-            onChanged: (v) => setState(() => _includeRevolutionary = v),
-          ),
-          _roleToggle(
-            role: SarkoobRoles.lawyer,
-            value: _includeLawyer,
-            onChanged: (v) => setState(() => _includeLawyer = v),
-          ),
-          _roleToggle(
-            role: SarkoobRoles.zhina,
-            value: _includeZhina,
-            onChanged: (v) => setState(() => _includeZhina = v),
-          ),
-          _roleToggle(
-            role: SarkoobRoles.rapper,
-            value: _includeRapper,
-            onChanged: (v) => setState(() => _includeRapper = v),
-          ),
-          _roleToggle(
-            role: SarkoobRoles.rebel,
-            value: _includeRebel,
-            onChanged: (v) => setState(() => _includeRebel = v),
-          ),
-          _roleToggle(
-            role: SarkoobRoles.nationalHero,
-            value: _includeNationalHero,
-            onChanged: (v) => setState(() => _includeNationalHero = v),
-          ),
-          _roleToggle(
-            role: SarkoobRoles.civicActivist,
-            value: _includeCivicActivist,
-            onChanged: (v) => setState(() => _includeCivicActivist = v),
-          ),
-          _roleToggle(
-            role: SarkoobRoles.politicalAnalyst,
-            value: _includePoliticalAnalyst,
-            onChanged: (v) => setState(() => _includePoliticalAnalyst = v),
-          ),
-          const SizedBox(height: 4),
-          _roleCountStepper(
-            role: SarkoobRoles.grayCitizen,
-            value: _grayCitizenCount,
-            onDecrement: () => setState(() {
-              if (_grayCitizenCount > 0) _grayCitizenCount--;
-            }),
-            onIncrement: () => setState(() => _grayCitizenCount++),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'مجموعِ تیم شهروند: $_citizenTotal نفر',
-            style: const TextStyle(
-              color: AppColors.goldLight,
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
+            _teamNavButton(
+              label: SarkoobTeams.citizen.name,
+              color: SarkoobTeams.citizen.color,
+              count: _citizenTotal,
+              onTap: _showCitizenTeamPage,
             ),
-          ),
-
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: _assignedTotal == total ? AppColors.gold : AppColors.bloodRedLight,
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: _assignedTotal == total ? AppColors.gold : AppColors.bloodRedLight,
+                ),
+                borderRadius: BorderRadius.circular(8),
               ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              'نقش‌بندی‌شده: $_assignedTotal از $total نفر'
-              '${_includeMossad ? ' (شاملِ ۱ نفرِ تیمِ مستقل)' : ''}',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: _assignedTotal == total ? AppColors.goldLight : AppColors.bloodRedLight,
-                fontWeight: FontWeight.bold,
+              child: Text(
+                'نقش‌بندی‌شده: $_assignedTotal از $total نفر'
+                '${_includeMossad ? ' (شاملِ ۱ نفرِ تیمِ مستقل)' : ''}',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: _assignedTotal == total ? AppColors.goldLight : AppColors.bloodRedLight,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          ),
           ],
 
           if (_isMafiaScenario) ...[
             const SizedBox(height: 24),
-            Text('تیم مستقل', style: AppTheme.headingFont(size: 20)),
-            const SizedBox(height: 4),
-            const Text(
-              'اختیاریه.',
-              style: TextStyle(color: Colors.white60, fontSize: 12),
+            _teamNavButton(
+              label: 'تیمِ مستقل',
+              color: _includeZodiac ? SarkoobTeams.zodiac.color : Colors.grey,
+              count: _includeZodiac ? 1 : 0,
+              onTap: _showIndependentTeamPage,
             ),
-            const SizedBox(height: 8),
-            RadioListTile<String>(
-              value: 'none',
-              groupValue: _includeZodiac ? 'zodiac' : 'none',
-              onChanged: (_) => _setMafiaIndependentTeam(zodiac: false),
-              activeColor: AppColors.gold,
-              title: const Text('بدون تیم مستقل', style: TextStyle(color: Colors.white)),
+            _teamNavButton(
+              label: SarkoobTeams.mafiaGang.name,
+              color: SarkoobTeams.mafiaGang.color,
+              count: _mafiaGangTotal,
+              onTap: _showMafiaGangTeamPage,
             ),
-            RadioListTile<String>(
-              value: 'zodiac',
-              groupValue: _includeZodiac ? 'zodiac' : 'none',
-              onChanged: (_) => _setMafiaIndependentTeam(zodiac: true),
-              activeColor: SarkoobTeams.zodiac.color,
-              title: Text(SarkoobTeams.zodiac.name, style: const TextStyle(color: Colors.white)),
+            _teamNavButton(
+              label: SarkoobTeams.mafiaTown.name,
+              color: SarkoobTeams.mafiaTown.color,
+              count: _mafiaTownTotal,
+              onTap: _showMafiaTownTeamPage,
             ),
-            if (_includeZodiac) ...[
-              const SizedBox(height: 4),
-              const Text(
-                'فعلاً تنها نقشِ این تیم زودیاکه، پس این تیم همیشه دقیقاً ۱ نفره:',
-                style: TextStyle(color: Colors.white60, fontSize: 12),
-              ),
-              const SizedBox(height: 4),
-              _mandatoryRoleRow(SarkoobRoles.zodiacRole),
-            ],
-
-            const SizedBox(height: 24),
-            Text('تیم مافیا', style: AppTheme.headingFont(size: 20)),
-            const SizedBox(height: 4),
-            const Text(
-              'جلوی هر نقش، تعدادش رو مشخص کن؛ خودِ برنامه موقعِ شروعِ بازی '
-              'کاملاً تصادفی مشخص می‌کنه کدوم بازیکن کدوم نقش رو می‌گیره.',
-              style: TextStyle(color: Colors.white60, fontSize: 12),
-            ),
-            const SizedBox(height: 8),
-            _mandatoryRoleRow(SarkoobRoles.godfather),
-            _roleToggle(
-              role: SarkoobRoles.negotiator,
-              value: _includeNegotiator,
-              onChanged: (v) => setState(() => _includeNegotiator = v),
-            ),
-            _roleToggle(
-              role: SarkoobRoles.enchanter,
-              value: _includeEnchanter,
-              onChanged: (v) => setState(() => _includeEnchanter = v),
-            ),
-            _roleToggle(
-              role: SarkoobRoles.spy,
-              value: _includeSpy,
-              onChanged: (v) => setState(() => _includeSpy = v),
-            ),
-            _roleToggle(
-              role: SarkoobRoles.kidnapper,
-              value: _includeKidnapper,
-              onChanged: (v) => setState(() => _includeKidnapper = v),
-            ),
-            _roleToggle(
-              role: SarkoobRoles.terrorist,
-              value: _includeTerrorist,
-              onChanged: (v) => setState(() => _includeTerrorist = v),
-            ),
-            _roleToggle(
-              role: SarkoobRoles.bomber,
-              value: _includeBomber,
-              onChanged: (v) => setState(() => _includeBomber = v),
-            ),
-            _roleToggle(
-              role: SarkoobRoles.mistress,
-              value: _includeMistress,
-              onChanged: (v) => setState(() => _includeMistress = v),
-            ),
-            _roleToggle(
-              role: SarkoobRoles.natasha,
-              value: _includeNatasha,
-              onChanged: (v) => setState(() => _includeNatasha = v),
-            ),
-            _roleToggle(
-              role: SarkoobRoles.saboteur,
-              value: _includeSaboteur,
-              onChanged: (v) => setState(() => _includeSaboteur = v),
-            ),
-            const SizedBox(height: 4),
-            _roleCountStepper(
-              role: SarkoobRoles.simpleMafia,
-              value: _mafiaCount,
-              onDecrement: () => setState(() {
-                if (_mafiaCount > 0) _mafiaCount--;
-              }),
-              onIncrement: () => setState(() => _mafiaCount++),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'مجموعِ تیم مافیا: $_mafiaGangTotal نفر',
-              style: const TextStyle(
-                color: AppColors.goldLight,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 24),
-            Text('تیم شهروند', style: AppTheme.headingFont(size: 20)),
-            const SizedBox(height: 4),
-            const Text(
-              'همینطور جلوی هر نقشِ شهروندی، تعدادش رو مشخص کن؛ شهروندِ '
-              'ساده همون عضوِ سادهٔ بدونِ قابلیتِ خاصه.',
-              style: TextStyle(color: Colors.white60, fontSize: 12),
-            ),
-            const SizedBox(height: 8),
-            _roleToggle(
-              role: SarkoobRoles.mafiaDoctor,
-              value: _includeMafiaDoctor,
-              onChanged: (v) => setState(() => _includeMafiaDoctor = v),
-            ),
-            _roleToggle(
-              role: SarkoobRoles.detective,
-              value: _includeDetective,
-              onChanged: (v) => setState(() => _includeDetective = v),
-            ),
-            _roleToggle(
-              role: SarkoobRoles.professional,
-              value: _includeProfessional,
-              onChanged: (v) => setState(() => _includeProfessional = v),
-            ),
-            _roleToggle(
-              role: SarkoobRoles.konstantin,
-              value: _includeKonstantin,
-              onChanged: (v) => setState(() => _includeKonstantin = v),
-            ),
-            _roleToggle(
-              role: SarkoobRoles.ocean,
-              value: _includeOcean,
-              onChanged: (v) => setState(() => _includeOcean = v),
-            ),
-            _roleToggle(
-              role: SarkoobRoles.gunman,
-              value: _includeGunman,
-              onChanged: (v) => setState(() => _includeGunman = v),
-            ),
-            _roleToggle(
-              role: SarkoobRoles.leader,
-              value: _includeLeader,
-              onChanged: (v) => setState(() => _includeLeader = v),
-            ),
-            _roleToggle(
-              role: SarkoobRoles.sherlock,
-              value: _includeSherlock,
-              onChanged: (v) => setState(() => _includeSherlock = v),
-            ),
-            _roleToggle(
-              role: SarkoobRoles.guard,
-              value: _includeGuard,
-              onChanged: (v) => setState(() => _includeGuard = v),
-            ),
-            _roleToggle(
-              role: SarkoobRoles.discloser,
-              value: _includeDiscloser,
-              onChanged: (v) => setState(() => _includeDiscloser = v),
-            ),
-            _roleToggle(
-              role: SarkoobRoles.whiteBeard,
-              value: _includeWhiteBeard,
-              onChanged: (v) => setState(() => _includeWhiteBeard = v),
-            ),
-            const SizedBox(height: 4),
-            _roleCountStepper(
-              role: SarkoobRoles.simpleCitizen,
-              value: _simpleCitizenCount,
-              onDecrement: () => setState(() {
-                if (_simpleCitizenCount > 0) _simpleCitizenCount--;
-              }),
-              onIncrement: () => setState(() => _simpleCitizenCount++),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'مجموعِ تیم شهروند: $_mafiaTownTotal نفر',
-              style: const TextStyle(
-                color: AppColors.goldLight,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -1265,6 +893,545 @@ class _StartGameScreenState extends State<StartGameScreen> {
         ],
       ),
     );
+  }
+
+  /// دکمه‌ی رنگیِ هر تیم — رنگِ خودِ تیم، اسمِ تیم، تعدادِ اعضا روش.
+  Widget _teamNavButton({
+    required String label,
+    required Color color,
+    required int count,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: SizedBox(
+        width: double.infinity,
+        child: Game3DButton(
+          label: '$label ($count نفر)',
+          customColor: color,
+          onPressed: onTap,
+        ),
+      ),
+    );
+  }
+
+  /// ناوبریِ عمومی به یه «زیرصفحه» که محتواش با setSheetState محلی
+  /// آپدیت می‌شه (چون خودِ صفحه یه روتِ جداست، setState معمولیِ این
+  /// State بلافاصله روش اثر نمی‌ذاره). موقعِ برگشتن، هابِ اصلی هم با
+  /// یه setState خالی رفرش می‌شه تا شمارشگرهای رویِ دکمه‌های تیمی
+  /// درست باشن.
+  void _pushSection(String title, Color appBarTint, WidgetBuilder builder) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            title: Text(title),
+            backgroundColor: Color.alphaBlend(appBarTint.withOpacity(0.28), AppColors.surfaceDark),
+          ),
+          body: StatefulBuilder(
+            builder: (context, setSheetState) => SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: builder(context),
+            ),
+          ),
+        ),
+      ),
+    ).then((_) => setState(() {}));
+  }
+
+  void _showPlayersPage() {
+    _pushSection('بازیکن‌ها', AppColors.gold, (context) {
+      return StatefulBuilder(
+        builder: (context, setSheetState) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _nameController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      labelText: 'اسم بازیکن',
+                      border: OutlineInputBorder(),
+                    ),
+                    onSubmitted: (_) {
+                      _addPlayer();
+                      setSheetState(() {});
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    _addPlayer();
+                    setSheetState(() {});
+                  },
+                  child: const Text('افزودن'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.groups, color: AppColors.gold),
+              label: Text('افزودن از لیستِ بازیکنان (${_roster.length} نفر)'),
+              onPressed: _roster.isEmpty
+                  ? null
+                  : () async {
+                      await _showAddFromRosterSheet();
+                      setSheetState(() {});
+                    },
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'با نگه‌داشتن و کشیدن، می‌تونی ترتیبِ بازیکن‌ها رو عوض کنی.',
+              style: TextStyle(color: Colors.white38, fontSize: 11),
+            ),
+            const SizedBox(height: 4),
+            ReorderableListView(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              onReorder: (oldIndex, newIndex) {
+                _reorderDraftPlayers(oldIndex, newIndex);
+                setSheetState(() {});
+              },
+              children: _draftPlayers.asMap().entries.map((entry) {
+                final index = entry.key;
+                final name = entry.value;
+                return Card(
+                  key: ValueKey('draft-player-$index-$name'),
+                  color: AppColors.surfaceCard,
+                  margin: const EdgeInsets.only(bottom: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: BorderSide(color: AppColors.gold.withOpacity(0.3)),
+                  ),
+                  child: ListTile(
+                    leading: const Icon(Icons.drag_handle, color: Colors.white38),
+                    title: Text(name, style: const TextStyle(color: Colors.white)),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: AppColors.bloodRedLight),
+                      onPressed: () {
+                        _removePlayer(index);
+                        setSheetState(() {});
+                      },
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  void _showIndependentTeamPage() {
+    final isSorkoob = _isSorkoobScenario;
+    _pushSection('تیمِ مستقل', AppColors.gold, (context) {
+      return StatefulBuilder(
+        builder: (context, setSheetState) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('اختیاریه.', style: TextStyle(color: Colors.white60, fontSize: 12)),
+            const SizedBox(height: 8),
+            if (isSorkoob) ...[
+              RadioListTile<String>(
+                value: 'none',
+                groupValue: _includeMossad ? 'mossad' : 'none',
+                onChanged: (_) {
+                  _setIndependentTeam(mossad: false);
+                  setSheetState(() {});
+                },
+                activeColor: AppColors.gold,
+                title: const Text('بدون تیم مستقل', style: TextStyle(color: Colors.white)),
+              ),
+              RadioListTile<String>(
+                value: 'mossad',
+                groupValue: _includeMossad ? 'mossad' : 'none',
+                onChanged: (_) {
+                  _setIndependentTeam(mossad: true);
+                  setSheetState(() {});
+                },
+                activeColor: SarkoobTeams.mossad.color,
+                title: Text(SarkoobTeams.mossad.name, style: const TextStyle(color: Colors.white)),
+              ),
+              if (_includeMossad) ...[
+                const SizedBox(height: 4),
+                const Text(
+                  'فعلاً تنها نقشِ این تیم رهبرِ موساده، پس این تیم همیشه دقیقاً ۱ نفره:',
+                  style: TextStyle(color: Colors.white60, fontSize: 12),
+                ),
+                const SizedBox(height: 4),
+                _mandatoryRoleRow(SarkoobRoles.mossadLeader),
+              ],
+            ] else ...[
+              RadioListTile<String>(
+                value: 'none',
+                groupValue: _includeZodiac ? 'zodiac' : 'none',
+                onChanged: (_) {
+                  _setMafiaIndependentTeam(zodiac: false);
+                  setSheetState(() {});
+                },
+                activeColor: AppColors.gold,
+                title: const Text('بدون تیم مستقل', style: TextStyle(color: Colors.white)),
+              ),
+              RadioListTile<String>(
+                value: 'zodiac',
+                groupValue: _includeZodiac ? 'zodiac' : 'none',
+                onChanged: (_) {
+                  _setMafiaIndependentTeam(zodiac: true);
+                  setSheetState(() {});
+                },
+                activeColor: SarkoobTeams.zodiac.color,
+                title: Text(SarkoobTeams.zodiac.name, style: const TextStyle(color: Colors.white)),
+              ),
+              if (_includeZodiac) ...[
+                const SizedBox(height: 4),
+                const Text(
+                  'فعلاً تنها نقشِ این تیم زودیاکه، پس این تیم همیشه دقیقاً ۱ نفره:',
+                  style: TextStyle(color: Colors.white60, fontSize: 12),
+                ),
+                const SizedBox(height: 4),
+                _mandatoryRoleRow(SarkoobRoles.zodiacRole),
+              ],
+            ],
+          ],
+        ),
+      );
+    });
+  }
+
+  void _showSorkoobTeamPage() {
+    _pushSection(SarkoobTeams.suppression.name, SarkoobTeams.suppression.color, (context) {
+      return StatefulBuilder(
+        builder: (context, setSheetState) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'جلوی هر نقش، تعدادش رو مشخص کن؛ خودِ برنامه موقعِ شروعِ بازی '
+              'کاملاً تصادفی مشخص می‌کنه کدوم بازیکن کدوم نقش رو می‌گیره.',
+              style: TextStyle(color: Colors.white60, fontSize: 12),
+            ),
+            const SizedBox(height: 8),
+            _mandatoryRoleRow(SarkoobRoles.valiFaghih),
+            _roleToggle(
+              role: SarkoobRoles.foreignMinister,
+              value: _includeForeignMinister,
+              onChanged: (v) => setSheetState(() => _includeForeignMinister = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.judiciaryChief,
+              value: _includeJudiciaryChief,
+              onChanged: (v) => setSheetState(() => _includeJudiciaryChief = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.governmentCelebrity,
+              value: _includeCelebrity,
+              onChanged: (v) => setSheetState(() => _includeCelebrity = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.interrogator,
+              value: _includeInterrogator,
+              onChanged: (v) => setSheetState(() => _includeInterrogator = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.intelligenceMinister,
+              value: _includeIntelMinister,
+              onChanged: (v) => setSheetState(() => _includeIntelMinister = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.policeCommander,
+              value: _includePoliceCommander,
+              onChanged: (v) => setSheetState(() => _includePoliceCommander = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.mercenary,
+              value: _includeMercenary,
+              onChanged: (v) => setSheetState(() => _includeMercenary = v),
+            ),
+            const SizedBox(height: 4),
+            _roleCountStepper(
+              role: SarkoobRoles.suppressor,
+              value: _suppressorCount,
+              onDecrement: () => setSheetState(() {
+                if (_suppressorCount > 0) _suppressorCount--;
+              }),
+              onIncrement: () => setSheetState(() => _suppressorCount++),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'مجموعِ تیم سرکوب: $_sorkoobTotal نفر',
+              style: const TextStyle(
+                color: AppColors.goldLight,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  void _showCitizenTeamPage() {
+    _pushSection(SarkoobTeams.citizen.name, SarkoobTeams.citizen.color, (context) {
+      return StatefulBuilder(
+        builder: (context, setSheetState) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'همینطور جلوی هر نقشِ شهروندی، تعدادش رو مشخص کن؛ شهروندِ '
+              'خاکستری همون عضوِ سادهٔ بدونِ قابلیتِ خاصه.',
+              style: TextStyle(color: Colors.white60, fontSize: 12),
+            ),
+            const SizedBox(height: 8),
+            _roleToggle(
+              role: SarkoobRoles.doctor,
+              value: _includeDoctor,
+              onChanged: (v) => setSheetState(() => _includeDoctor = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.hacker,
+              value: _includeHacker,
+              onChanged: (v) => setSheetState(() => _includeHacker = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.revolutionaryFighter,
+              value: _includeRevolutionary,
+              onChanged: (v) => setSheetState(() => _includeRevolutionary = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.lawyer,
+              value: _includeLawyer,
+              onChanged: (v) => setSheetState(() => _includeLawyer = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.zhina,
+              value: _includeZhina,
+              onChanged: (v) => setSheetState(() => _includeZhina = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.rapper,
+              value: _includeRapper,
+              onChanged: (v) => setSheetState(() => _includeRapper = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.rebel,
+              value: _includeRebel,
+              onChanged: (v) => setSheetState(() => _includeRebel = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.nationalHero,
+              value: _includeNationalHero,
+              onChanged: (v) => setSheetState(() => _includeNationalHero = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.civicActivist,
+              value: _includeCivicActivist,
+              onChanged: (v) => setSheetState(() => _includeCivicActivist = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.politicalAnalyst,
+              value: _includePoliticalAnalyst,
+              onChanged: (v) => setSheetState(() => _includePoliticalAnalyst = v),
+            ),
+            const SizedBox(height: 4),
+            _roleCountStepper(
+              role: SarkoobRoles.grayCitizen,
+              value: _grayCitizenCount,
+              onDecrement: () => setSheetState(() {
+                if (_grayCitizenCount > 0) _grayCitizenCount--;
+              }),
+              onIncrement: () => setSheetState(() => _grayCitizenCount++),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'مجموعِ تیم شهروند: $_citizenTotal نفر',
+              style: const TextStyle(
+                color: AppColors.goldLight,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  void _showMafiaGangTeamPage() {
+    _pushSection(SarkoobTeams.mafiaGang.name, SarkoobTeams.mafiaGang.color, (context) {
+      return StatefulBuilder(
+        builder: (context, setSheetState) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'جلوی هر نقش، تعدادش رو مشخص کن؛ خودِ برنامه موقعِ شروعِ بازی '
+              'کاملاً تصادفی مشخص می‌کنه کدوم بازیکن کدوم نقش رو می‌گیره.',
+              style: TextStyle(color: Colors.white60, fontSize: 12),
+            ),
+            const SizedBox(height: 8),
+            _mandatoryRoleRow(SarkoobRoles.godfather),
+            _roleToggle(
+              role: SarkoobRoles.negotiator,
+              value: _includeNegotiator,
+              onChanged: (v) => setSheetState(() => _includeNegotiator = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.enchanter,
+              value: _includeEnchanter,
+              onChanged: (v) => setSheetState(() => _includeEnchanter = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.spy,
+              value: _includeSpy,
+              onChanged: (v) => setSheetState(() => _includeSpy = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.kidnapper,
+              value: _includeKidnapper,
+              onChanged: (v) => setSheetState(() => _includeKidnapper = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.terrorist,
+              value: _includeTerrorist,
+              onChanged: (v) => setSheetState(() => _includeTerrorist = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.bomber,
+              value: _includeBomber,
+              onChanged: (v) => setSheetState(() => _includeBomber = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.mistress,
+              value: _includeMistress,
+              onChanged: (v) => setSheetState(() => _includeMistress = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.natasha,
+              value: _includeNatasha,
+              onChanged: (v) => setSheetState(() => _includeNatasha = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.saboteur,
+              value: _includeSaboteur,
+              onChanged: (v) => setSheetState(() => _includeSaboteur = v),
+            ),
+            const SizedBox(height: 4),
+            _roleCountStepper(
+              role: SarkoobRoles.simpleMafia,
+              value: _mafiaCount,
+              onDecrement: () => setSheetState(() {
+                if (_mafiaCount > 0) _mafiaCount--;
+              }),
+              onIncrement: () => setSheetState(() => _mafiaCount++),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'مجموعِ تیم مافیا: $_mafiaGangTotal نفر',
+              style: const TextStyle(
+                color: AppColors.goldLight,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  void _showMafiaTownTeamPage() {
+    _pushSection(SarkoobTeams.mafiaTown.name, SarkoobTeams.mafiaTown.color, (context) {
+      return StatefulBuilder(
+        builder: (context, setSheetState) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'همینطور جلوی هر نقشِ شهروندی، تعدادش رو مشخص کن؛ شهروندِ '
+              'ساده همون عضوِ سادهٔ بدونِ قابلیتِ خاصه.',
+              style: TextStyle(color: Colors.white60, fontSize: 12),
+            ),
+            const SizedBox(height: 8),
+            _roleToggle(
+              role: SarkoobRoles.mafiaDoctor,
+              value: _includeMafiaDoctor,
+              onChanged: (v) => setSheetState(() => _includeMafiaDoctor = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.detective,
+              value: _includeDetective,
+              onChanged: (v) => setSheetState(() => _includeDetective = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.professional,
+              value: _includeProfessional,
+              onChanged: (v) => setSheetState(() => _includeProfessional = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.konstantin,
+              value: _includeKonstantin,
+              onChanged: (v) => setSheetState(() => _includeKonstantin = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.ocean,
+              value: _includeOcean,
+              onChanged: (v) => setSheetState(() => _includeOcean = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.gunman,
+              value: _includeGunman,
+              onChanged: (v) => setSheetState(() => _includeGunman = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.leader,
+              value: _includeLeader,
+              onChanged: (v) => setSheetState(() => _includeLeader = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.sherlock,
+              value: _includeSherlock,
+              onChanged: (v) => setSheetState(() => _includeSherlock = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.guard,
+              value: _includeGuard,
+              onChanged: (v) => setSheetState(() => _includeGuard = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.discloser,
+              value: _includeDiscloser,
+              onChanged: (v) => setSheetState(() => _includeDiscloser = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.whiteBeard,
+              value: _includeWhiteBeard,
+              onChanged: (v) => setSheetState(() => _includeWhiteBeard = v),
+            ),
+            const SizedBox(height: 4),
+            _roleCountStepper(
+              role: SarkoobRoles.simpleCitizen,
+              value: _simpleCitizenCount,
+              onDecrement: () => setSheetState(() {
+                if (_simpleCitizenCount > 0) _simpleCitizenCount--;
+              }),
+              onIncrement: () => setSheetState(() => _simpleCitizenCount++),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'مجموعِ تیم شهروند: $_mafiaTownTotal نفر',
+              style: const TextStyle(
+                color: AppColors.goldLight,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildScenarioPicker() {
