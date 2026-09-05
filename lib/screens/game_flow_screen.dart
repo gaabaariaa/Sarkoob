@@ -743,6 +743,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         return _buildIntroNight();
       case GamePhaseType.day:
         if (controller.autoDetectedWinnerTeamId != null) return _buildGameOverScreen();
+        if (controller.pendingDiscloserPlayerId != null) return _buildDiscloserPrompt();
         if (controller.chaosPhaseActive) return _buildChaosPhase();
         if (controller.lastResolution != null) return _buildDayResolved();
         if (controller.isSecondVoteRound) return _buildEliminationVoteSequence();
@@ -1009,6 +1010,14 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           if (controller.communityLeaderExpulsionMessage != null) ...[
             Text(
               controller.communityLeaderExpulsionMessage!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+          ],
+          if (controller.discloserAnnouncement != null) ...[
+            Text(
+              controller.discloserAnnouncement!,
               textAlign: TextAlign.center,
               style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
             ),
@@ -1534,6 +1543,50 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   // ---------- دفاعیه ----------
 
+  Widget _buildDiscloserPrompt() {
+    final discloser = controller.playerById(controller.pendingDiscloserPlayerId!);
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.campaign_rounded, color: AppColors.gold, size: 48),
+        const SizedBox(height: 16),
+        Text(
+          '«${discloser.name}» (افشاگر) در روز از بازی خارج شد.',
+          textAlign: TextAlign.center,
+          style: AppTheme.headingFont(size: 18),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'می‌خواد قبلِ رفتن، مافیابودن/نبودنِ یه نفر رو علناً افشا کنه؟',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 28),
+        SizedBox(
+          width: double.infinity,
+          child: Game3DButton(
+            label: 'بله، افشا کنه',
+            icon: Icons.campaign,
+            onPressed: () => _showDiscloserPicker(discloser),
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextButton(
+          onPressed: controller.dismissDiscloserPrompt,
+          child: const Text('نه، رد کن', style: TextStyle(color: Colors.white54)),
+        ),
+      ],
+    );
+  }
+
+  void _showDiscloserPicker(SessionPlayer discloser) {
+    _showPlayerListPicker(
+      title: 'افشاگر کی رو افشا کنه؟',
+      targets: controller.alivePlayers,
+      onSelected: (p) => controller.discloserReveal(p.id),
+    );
+  }
+
   Widget _buildDefenseAnnouncement() {
     final names = controller.defenseCandidates.map((p) => p.name).join('، ');
     return Column(
@@ -2018,6 +2071,21 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               const Divider(color: AppColors.gold),
               const SizedBox(height: 8),
               _buildMercenaryNightSection(),
+            ],
+            if (controller.natashaPlayer != null &&
+                controller.isStillActiveTonight(controller.natashaPlayer!) &&
+                !controller.natashaPlayer!.natashaSilenceUsed) ...[
+              const SizedBox(height: 24),
+              const Divider(color: AppColors.gold),
+              const SizedBox(height: 8),
+              _buildNatashaSection(),
+            ],
+            if (controller.saboteurPlayer != null &&
+                controller.isStillActiveTonight(controller.saboteurPlayer!)) ...[
+              const SizedBox(height: 24),
+              const Divider(color: AppColors.gold),
+              const SizedBox(height: 8),
+              _buildSaboteurSection(),
             ],
             if (controller.bomberPlayer != null) ...[
               const SizedBox(height: 24),
@@ -2611,14 +2679,87 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     );
   }
 
+  Widget _buildNatashaSection() {
+    final natasha = controller.natashaPlayer!;
+    return Column(
+      children: [
+        const Text(
+          'ناتاشا می‌تونه (فقط یک‌بار در کلِ بازی) یه نفر رو تا پایانِ روزِ بعد ساکت کنه:',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.voice_over_off_rounded),
+          label: const Text('انتخابِ یه بازیکن'),
+          onPressed: controller.canNatashaSilenceTonight ? () => _showNatashaPicker(natasha) : null,
+        ),
+      ],
+    );
+  }
+
+  void _showNatashaPicker(SessionPlayer natasha) {
+    _showPlayerListPicker(
+      title: 'ناتاشا کی رو ساکت کنه؟',
+      targets: controller.alivePlayers.where((p) => p.id != natasha.id).toList(),
+      onSelected: (p) => controller.natashaSilence(p.id),
+    );
+  }
+
+  Widget _buildSaboteurSection() {
+    final saboteur = controller.saboteurPlayer!;
+    final target = controller.saboteurTargetPlayerId != null
+        ? controller.playerById(controller.saboteurTargetPlayerId!)
+        : null;
+    return Column(
+      children: [
+        const Text(
+          'خرابکار می‌تونه امشب رو تفنگِ یه نفر خرابکاری کنه (اگه فردا با اسلحه‌ی جنگی شلیک کنه، تیر به خودش برمی‌گرده):',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white70),
+        ),
+        if (target != null) ...[
+          const SizedBox(height: 6),
+          Text('امشب رو تفنگِ «${target.name}» خرابکاری شده.',
+              style: const TextStyle(color: AppColors.goldLight, fontSize: 12)),
+        ],
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.build_circle_outlined),
+          label: const Text('انتخابِ یه بازیکن'),
+          onPressed: controller.canSaboteurActTonight ? () => _showSaboteurPicker(saboteur) : null,
+        ),
+      ],
+    );
+  }
+
+  void _showSaboteurPicker(SessionPlayer saboteur) {
+    _showPlayerListPicker(
+      title: 'خرابکار رو تفنگِ کی خرابکاری کنه؟',
+      targets: controller.alivePlayers.where((p) => p.id != saboteur.id).toList(),
+      onSelected: (p) => controller.saboteurChooseTarget(p.id),
+    );
+  }
+
   Widget _buildLeaderDecisionSection() {
     final leader = controller.valiFaghihPlayer;
     final leaderAlive = leader != null && leader.isAlive;
     final fallback = controller.canFallbackShoot;
+    final enraged = controller.godfatherEnragedTonight;
+    final canActAgain = controller.leaderActionsUsedTonight < (enraged ? 2 : 1);
 
-    if (!controller.nightActionTaken) {
+    if (!controller.nightActionTaken || (enraged && canActAgain)) {
       return Column(
         children: [
+          if (enraged) ...[
+            Text(
+              '🔥 معشوقه دیشب از بازی خارج شد؛ $_leaderRoleName عصبانیه و امشب می‌تونه '
+              '۲بار شات/سلاخی بزنه (${controller.leaderActionsUsedTonight} از ۲ استفاده شده).',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.bloodRedLight, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+          ],
           Text(
             leaderAlive
                 ? '$_leaderTeamName بیدار می‌شه و باهم مشورت می‌کنن؛ تصمیم نهایی با $_leaderRoleName‌ست.'

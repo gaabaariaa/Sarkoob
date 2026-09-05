@@ -146,6 +146,7 @@ class GameFlowController extends ChangeNotifier {
     target.isHalfAlive = false;
     if (target.disciplineStage < 4) target.disciplineStage = 4;
     _checkZhinaTrigger(target);
+    if (phase == GamePhaseType.day) _checkDiscloserTrigger(target);
     _skipDeadSpeakers();
     disciplinaryExpelMessage =
         '«${target.name}» به دلیلِ «$reason» توسطِ گرداننده از بازی اخراج شد.';
@@ -173,6 +174,39 @@ class GameFlowController extends ChangeNotifier {
       p.silencedRoundNumber != null &&
       phase == GamePhaseType.day &&
       p.silencedRoundNumber == roundNumber;
+
+  // ---------- ناتاشا: ساکت‌کردنِ یک‌بارمصرف (فقط سناریوی مافیا) ----------
+
+  SessionPlayer? get natashaPlayer {
+    for (final p in players) {
+      if (p.roleId == SarkoobRoles.natasha.id) return p;
+    }
+    return null;
+  }
+
+  /// کسی که امشب ناتاشا ساکتش کرده (برای اعلامِ عمومیِ صبح).
+  int? _natashaSilencedTonightId;
+
+  bool get canNatashaSilenceTonight {
+    final natasha = natashaPlayer;
+    if (natasha == null || !_stillActiveTonight(natasha) || natasha.natashaSilenceUsed) {
+      return false;
+    }
+    return !isPlayerDetained(natasha.id);
+  }
+
+  /// یه بازیکن رو تا پایانِ روزِ بعد ساکت می‌کنه — از همون
+  /// silencedRoundNumber ی سیستمِ انضباطی استفاده می‌کنه (نه صحبت، نه
+  /// چالش‌گرفتن)، فقط منبعش یه نقشه نه تصمیمِ گرداننده. یک‌بارمصرفِ کلِ‌بازیه.
+  void natashaSilence(int targetId) {
+    if (!canNatashaSilenceTonight) return;
+    final natasha = natashaPlayer!;
+    final target = playerById(targetId);
+    target.silencedRoundNumber = roundNumber + 1; // «روزِ بعد»
+    natasha.natashaSilenceUsed = true;
+    _natashaSilencedTonightId = targetId;
+    notifyListeners();
+  }
 
   /// درجه‌ی بعدی رو برای این بازیکن اعمال می‌کنه و پیامِ نتیجه رو
   /// برمی‌گردونه (برای نمایش به گرداننده). مرحله‌ی چهارم مستقیم از همون
@@ -716,6 +750,7 @@ class GameFlowController extends ChangeNotifier {
     if (leader == null || isPlayerDetained(leader.id)) return;
     _pendingHits[targetId] = (_pendingHits[targetId] ?? 0) + 1;
     _nightActionTaken = true;
+    leaderActionsUsedTonight++;
     notifyListeners();
   }
 
@@ -738,6 +773,7 @@ class GameFlowController extends ChangeNotifier {
       slaughterResultMessage = 'حدس درست نبود؛ یک ظرفیتِ سلاخی مصرف شد.';
     }
     _nightActionTaken = true;
+    leaderActionsUsedTonight++;
     notifyListeners();
   }
 
@@ -1211,6 +1247,8 @@ class GameFlowController extends ChangeNotifier {
     player.isAlive = false;
     player.isHalfAlive = hasUnusedPublicDefender;
     _checkZhinaTrigger(player);
+    _checkMistressTrigger(player);
+    if (phase == GamePhaseType.day) _checkDiscloserTrigger(player);
     _skipDeadSpeakers();
   }
 
@@ -1221,6 +1259,58 @@ class GameFlowController extends ChangeNotifier {
     if (player.roleId == SarkoobRoles.zhina.id) {
       sorkoobDisabledNextNight = true;
     }
+  }
+
+  /// آیا شبِ بعد پدرخوانده عصبانیه (می‌تونه ۲بار شات/سلاخی بزنه)؟ موقعِ
+  /// شروعِ شب از godfatherEnragedNextNight پر می‌شه.
+  bool godfatherEnragedNextNight = false;
+  bool godfatherEnragedTonight = false;
+
+  /// چندبار امشب رهبر شات/سلاخی زده — معمولاً حداکثر ۱، ولی اگه
+  /// godfatherEnragedTonight باشه حداکثر ۲.
+  int leaderActionsUsedTonight = 0;
+
+  /// اگه بازیکنِ حذف‌شده معشوقه باشه و پدرخوانده هنوز زنده باشه، شبِ بعد
+  /// پدرخوانده عصبانی می‌شه. عمداً کنارِ _checkZhinaTrigger صدا زده
+  /// می‌شه (همون محل‌ها)، ولی فقط تو سه‌جایی که خودِ کاربر مشخص کرده:
+  /// _eliminatePlayer (رأی/شات)، سلاخیِ حرفه‌ای، و اقداماتِ زودیاک —
+  /// نه اخراجِ انضباطی و نه اخراجِ رهبرِ جامعه.
+  void _checkMistressTrigger(SessionPlayer player) {
+    if (player.roleId != SarkoobRoles.mistress.id) return;
+    final godfather = valiFaghihPlayer;
+    if (godfather == null || !godfather.isAlive) return;
+    godfatherEnragedNextNight = true;
+  }
+
+  // ---------- افشاگر: افشای علنیِ تیم موقعِ خروج از بازی در روز ----------
+
+  /// اگه بازیکنی که در روز حذف شد افشاگر باشه، این پر می‌شه تا UI
+  /// ازش بپرسه می‌خواد افشا کنه یا نه.
+  int? pendingDiscloserPlayerId;
+
+  /// آخرین متنِ افشا — برای اعلامِ علنی به همه.
+  String? discloserAnnouncement;
+
+  void _checkDiscloserTrigger(SessionPlayer player) {
+    if (player.roleId != SarkoobRoles.discloser.id) return;
+    pendingDiscloserPlayerId = player.id;
+  }
+
+  /// افشاگر تصمیم گرفت افشا نکنه (یا گرداننده رد کرد).
+  void dismissDiscloserPrompt() {
+    pendingDiscloserPlayerId = null;
+    notifyListeners();
+  }
+
+  /// افشای عمومیِ مافیابودن/نبودنِ یه بازیکن.
+  void discloserReveal(int targetId) {
+    if (pendingDiscloserPlayerId == null) return;
+    final target = playerById(targetId);
+    final isMafia = target.teamId == SarkoobTeams.mafiaGang.id;
+    discloserAnnouncement =
+        '📢 افشاگر قبلِ خروج افشا کرد: «${target.name}» ${isMafia ? "عضوِ مافیاست" : "عضوِ مافیا نیست"}.';
+    pendingDiscloserPlayerId = null;
+    notifyListeners();
   }
 
   // ---------- رپر معترض: عضوگیریِ شبانه برای مقاومت (مستقل از بقیه) ----------
@@ -1310,6 +1400,32 @@ class GameFlowController extends ChangeNotifier {
   /// (`finishNight`ی پایینِ همین فایل) و می‌تونه شبِ دیگه به یکی دیگه بده.
   bool rebelWarGunUsed = false;
 
+  // ---------- خرابکار: خرابکاریِ روی تفنگ، هر شب (فقط سناریوی مافیا) ----------
+
+  SessionPlayer? get saboteurPlayer {
+    for (final p in players) {
+      if (p.roleId == SarkoobRoles.saboteur.id) return p;
+    }
+    return null;
+  }
+
+  /// کدوم بازیکن الان خرابکاری‌شده (اگه شلیک کنه، تیر به خودش برمی‌گرده).
+  /// هر شب از نو انتخاب می‌شه (اگه خرابکار امشب کسی رو انتخاب نکنه،
+  /// خرابکاریِ قبلی هم منقضی می‌شه).
+  int? saboteurTargetPlayerId;
+
+  bool get canSaboteurActTonight {
+    final saboteur = saboteurPlayer;
+    if (saboteur == null || !_stillActiveTonight(saboteur)) return false;
+    return !isPlayerDetained(saboteur.id);
+  }
+
+  void saboteurChooseTarget(int targetId) {
+    if (!canSaboteurActTonight) return;
+    saboteurTargetPlayerId = targetId;
+    notifyListeners();
+  }
+
   /// یه اسلحه (جنگی یا مشقی) به یه بازیکن می‌ده. جنگی از سهمیه‌ی کلِ
   /// شورشی کم می‌شه؛ مشقی نامحدوده.
   void giveGun(int targetId, GunType type) {
@@ -1348,9 +1464,19 @@ class GameFlowController extends ChangeNotifier {
     if (!shooter.isAlive || shooter.heldGunType == null) return;
     final type = shooter.heldGunType!;
     shooter.heldGunType = null;
-    final target = playerById(targetId);
 
     if (type == GunType.war) {
+      if (saboteurTargetPlayerId == shooterId) {
+        // خرابکاری کرده: تیر به خودِ شلیک‌کننده برمی‌گرده، نه به هدفِ
+        // موردنظرش.
+        _eliminatePlayer(shooter);
+        rebelWarGunUsed = true;
+        gunFireResultMessage =
+            '«${shooter.name}» شلیک کرد، ولی تفنگش خراب‌کاری‌شده بود؛ تیر به خودش برگشت و از بازی خارج شد.';
+        notifyListeners();
+        return;
+      }
+      final target = playerById(targetId);
       final teamName = SarkoobTeams.byId(target.teamId)?.name ?? target.teamId;
       _eliminatePlayer(target);
       rebelWarGunUsed = true;
@@ -1366,7 +1492,9 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get nationalHeroPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.nationalHero.id) return p;
+      if (p.roleId == SarkoobRoles.nationalHero.id || p.roleId == SarkoobRoles.whiteBeard.id) {
+        return p;
+      }
     }
     return null;
   }
@@ -1569,10 +1697,15 @@ class GameFlowController extends ChangeNotifier {
     if (leader.mossadPlaystyle != MossadPlaystyle.assassination) return;
     _mossadActedTonight = true;
     final target = playerById(targetId);
-    if (target.teamId == SarkoobTeams.suppression.id && target.roleId == guessedRoleId) {
+    // چکِ تیم قبلاً فقط suppression بود که تو سناریوی مافیا (زودیاک)
+    // هیچ‌وقت درست کار نمی‌کرد؛ حالا هر دو سناریو رو پوشش می‌ده.
+    final onLeaderTeam =
+        target.teamId == SarkoobTeams.suppression.id || target.teamId == SarkoobTeams.mafiaGang.id;
+    if (onLeaderTeam && target.roleId == guessedRoleId) {
       target.isAlive = false;
       target.eliminatedBySlaughter = true;
       _checkZhinaTrigger(target);
+      _checkMistressTrigger(target);
       _tonightSlaughteredIds.add(target.id);
       mossadAssassinationResultMessage = '«${target.name}» با ترورِ موساد از بازی خارج شد.';
     } else {
@@ -1892,6 +2025,7 @@ class GameFlowController extends ChangeNotifier {
     target.isAlive = false;
     target.isHalfAlive = false;
     _checkZhinaTrigger(target);
+    if (phase == GamePhaseType.day) _checkDiscloserTrigger(target);
     _skipDeadSpeakers();
     communityLeaderExpulsionMessage =
         '«${target.name}» توسطِ رهبرِ جامعه («${leader.name}») از جامعه اخراج شد؛ تیمش: $teamName.';
@@ -1965,6 +2099,7 @@ class GameFlowController extends ChangeNotifier {
       target.isAlive = false;
       target.eliminatedBySlaughter = true;
       _checkZhinaTrigger(target);
+      _checkMistressTrigger(target);
       _tonightSlaughteredIds.add(target.id);
       revolutionaryResultMessage = '«${target.name}» با سلاخیِ مبارزِ انقلابی از بازی خارج شد.';
     } else {
@@ -2118,6 +2253,11 @@ class GameFlowController extends ChangeNotifier {
     detainedPlayerId = null;
     sorkoobDisabledTonight = sorkoobDisabledNextNight;
     sorkoobDisabledNextNight = false;
+    godfatherEnragedTonight = godfatherEnragedNextNight;
+    godfatherEnragedNextNight = false;
+    leaderActionsUsedTonight = 0;
+    saboteurTargetPlayerId = null;
+    _natashaSilencedTonightId = null;
     _nightActionTaken = false;
     slaughterResultMessage = null;
     negotiateResultMessage = null;
@@ -2218,6 +2358,9 @@ class GameFlowController extends ChangeNotifier {
     }
     if (_tonightRevivedId != null) {
       announcement.add('✅ برگشتن به بازی: ${playerById(_tonightRevivedId!).name}');
+    }
+    if (_natashaSilencedTonightId != null) {
+      announcement.add('🤐 «${playerById(_natashaSilencedTonightId!).name}» امروز حقِ صحبت و چالش‌گرفتن نداره.');
     }
 
     lastNightSummary =

@@ -124,6 +124,28 @@ class GameRole {
   /// همین ترکیبه: علنی+لایک از شبِ اول، ولی نفوذیِ همیشگیِ اوشن).
   final bool alwaysInfiltratesResistance;
 
+  // ---- فیلدِ مخصوص معشوقه (فقط سناریوی مافیا) ----
+  // با حذف‌شدنِ صاحبِ این فیلد (از هر مسیرِ «معمولی» — رأی، شات، سلاخیِ
+  // حرفه‌ای، یا سایدِ مستقل)، اگه پدرخوانده هنوز زنده باشه، شبِ بعد
+  // پدرخوانده عصبانی می‌شه و می‌تونه ۲بار شات/سلاخی بزنه.
+  final bool enragesGodfatherOnDeath;
+
+  // ---- فیلدِ مخصوص ناتاشا (فقط سناریوی مافیا) ----
+  // یک‌بار در کلِ بازی، شب: یه بازیکن رو تا پایانِ روزِ بعد ساکت می‌کنه
+  // (نه صحبت، نه چالش‌گرفتن) — از همون silencedRoundNumber ی سیستمِ
+  // انضباطی استفاده می‌کنه، فقط منبعش یه نقشه نه تصمیمِ گرداننده.
+  final bool canSilence;
+
+  // ---- فیلدِ مخصوص خرابکار (فقط سناریوی مافیا) ----
+  // هر شب (نامحدود) یه نفر رو انتخاب می‌کنه؛ اگه همون بازیکن بعداً با
+  // اسلحه‌ی جنگی شلیک کنه، تیر به خودش برمی‌گرده.
+  final bool canSabotageGun;
+
+  // ---- فیلدِ مخصوص افشاگر ----
+  // اگه در روز (نه با شاتِ شب) از بازی خارج بشه، همون‌لحظه می‌تونه یه
+  // نفر رو انتخاب کنه تا گرداننده مافیابودن/نبودنِ اون رو علناً اعلام کنه.
+  final bool canDiscloseTeam;
+
   const GameRole({
     required this.id,
     required this.name,
@@ -156,6 +178,10 @@ class GameRole {
     this.hasPermanentNightArmor = false,
     this.investigationHiddenUntilNight = 0,
     this.alwaysInfiltratesResistance = false,
+    this.enragesGodfatherOnDeath = false,
+    this.canSilence = false,
+    this.canSabotageGun = false,
+    this.canDiscloseTeam = false,
   });
 }
 
@@ -790,6 +816,76 @@ class SarkoobRoles {
     countersZodiacShot: true,
   );
 
+  /// نقشِ جدید، معادلی تو سرکوب نداره — فقط سناریوی مافیا.
+  static final mistress = GameRole(
+    id: 'role_mistress',
+    name: 'معشوقه',
+    teamId: SarkoobTeams.mafiaGang.id,
+    description:
+        'معشوقه‌ی پدرخوانده‌ست؛ خودش قابلیتِ فعالی نداره. اگه با رأی‌گیریِ '
+        'روز، شات، سلاخیِ حرفه‌ای، یا اقدامِ سایدِ مستقل (زودیاک) از بازی '
+        'خارج بشه — نه با اخراجِ انضباطی یا اخراجِ رهبرِ جامعه — و '
+        'پدرخوانده هنوز زنده باشه، پدرخوانده عصبانی می‌شه: شبِ بعد '
+        'می‌تونه ۲بار شات/سلاخی بزنه (به‌جایِ ۱ بار).',
+    enragesGodfatherOnDeath: true,
+  );
+
+  /// نقشِ جدید، معادلی تو سرکوب نداره — فقط سناریوی مافیا.
+  static final natasha = GameRole(
+    id: 'role_natasha',
+    name: 'ناتاشا',
+    teamId: SarkoobTeams.mafiaGang.id,
+    description:
+        'یک‌بار در کلِ بازی، شب، یه بازیکن رو انتخاب می‌کنه و تا پایانِ '
+        'روزِ بعد ساکتش می‌کنه: اون بازیکن نه نوبتِ صحبت داره، نه کسی '
+        'می‌تونه بهش چالش بده. این موضوع صبح، کنارِ آمارِ کشته‌های شب، '
+        'علناً به همه اعلام می‌شه (بدونِ اینکه بگه ناتاشا این کار رو کرده).',
+    canSilence: true,
+  );
+
+  /// نقشِ جدید، معادلی تو سرکوب نداره — فقط سناریوی مافیا.
+  static final saboteur = GameRole(
+    id: 'role_saboteur',
+    name: 'خرابکار',
+    teamId: SarkoobTeams.mafiaGang.id,
+    description:
+        'هر شب (نامحدود، بدونِ سهمیه) می‌تونه یه بازیکن رو انتخاب کنه و '
+        'رو تفنگی که تفنگدار بهش داده خرابکاری کنه. اگه همون بازیکن بعداً '
+        '(در روز) با اسلحه‌ی جنگی شلیک کنه، تیر به خودش برمی‌گرده و خودش '
+        'از بازی خارج می‌شه — نه هدفِ موردنظرش.',
+    canSabotageGun: true,
+  );
+
+  /// نقشِ جدید، معادلی تو سرکوب نداره — فقط سناریوی مافیا.
+  static final discloser = GameRole(
+    id: 'role_discloser',
+    name: 'افشاگر',
+    teamId: SarkoobTeams.mafiaTown.id,
+    description:
+        'اگه در روز از بازی خارج بشه (رأی‌گیری، اسلحه‌ی جنگی، اخراجِ '
+        'انضباطی، یا اخراجِ رهبرِ جامعه — نه با شاتِ شب)، همون‌لحظه '
+        'می‌تونه یه بازیکن رو انتخاب کنه تا گرداننده مافیا یا غیرِمافیا '
+        'بودنِ اون رو علناً به همه اعلام کنه.',
+    canDiscloseTeam: true,
+  );
+
+  /// نقشِ جدید — دقیقاً همون قابلیتِ قهرمانِ ملیِ سناریوی سرکوب، فقط با
+  /// اسمِ دیگه برای سناریوی مافیا.
+  static final whiteBeard = GameRole(
+    id: 'role_white_beard',
+    name: 'ریش‌سفید',
+    teamId: SarkoobTeams.mafiaTown.id,
+    description:
+        'شبانه می‌تونه یه بازیکن رو «تضمین» کنه؛ روزِ بعد، اون بازیکن '
+        'نمی‌تونه رأی بیاره و کاملاً در امانه — حتی اگه اکثریتِ رأی هم '
+        'بهش بدن، رأیش باطل می‌شه و نفرِ بعدی که رأیِ بالا داره بررسی '
+        'می‌شه. هر شب فقط یک‌بار قابل‌استفاده‌ست. تعدادِ کلِ این تضمین‌ها '
+        'در طولِ بازی به تعدادِ بازیکن‌ها بستگی داره: تا ۱۱ نفر یکی، ۱۲ تا '
+        '۱۷ نفر دوتا، ۱۸ تا ۲۳ نفر سه‌تا، و به همین ترتیب هر ۶ نفر یکی '
+        'بیشتر.',
+    canGuarantee: true,
+  );
+
   static final List<GameRole> all = [
     valiFaghih,
     foreignMinister,
@@ -831,6 +927,11 @@ class SarkoobRoles {
     sherlock,
     bomber,
     guard,
+    mistress,
+    natasha,
+    saboteur,
+    discloser,
+    whiteBeard,
   ];
 
   static GameRole? byId(String id) {

@@ -99,6 +99,7 @@ class SessionPlayer {
 
   // ---- مربوط به بازجو خبرنگار ----
   bool interrogationUsed; // آیا قابلیتِ یک‌بارمصرفِ بازجویی رو مصرف کرده؟
+  bool natashaSilenceUsed; // آیا قابلیتِ یک‌بارمصرفِ ساکت‌کردنِ ناتاشا مصرف شده؟
 
   // ---- مربوط به رهبر موساد ----
   MossadPlaystyle? mossadPlaystyle; // شبِ اول انتخاب می‌شه، بعدش ثابت می‌مونه
@@ -143,6 +144,7 @@ class SessionPlayer {
     this.intelQuestionsRemaining,
     this.guaranteesRemaining,
     this.interrogationUsed = false,
+    this.natashaSilenceUsed = false,
     this.mossadPlaystyle,
     this.referendumUsed = false,
     this.negotiateUsed = false,

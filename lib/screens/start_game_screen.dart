@@ -43,6 +43,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
   bool _includeLeader = false;
   bool _includeSherlock = false;
   bool _includeGuard = false;
+  bool _includeMistress = false;
+  bool _includeNatasha = false;
+  bool _includeSaboteur = false;
+  bool _includeDiscloser = false;
+  bool _includeWhiteBeard = false;
 
   int _mafiaCount = 0; // مافیا ساده
   int _simpleCitizenCount = 0; // شهروندِ ساده
@@ -268,7 +273,10 @@ class _StartGameScreenState extends State<StartGameScreen> {
       (_includeSpy ? 1 : 0) +
       (_includeKidnapper ? 1 : 0) +
       (_includeTerrorist ? 1 : 0) +
-      (_includeBomber ? 1 : 0);
+      (_includeBomber ? 1 : 0) +
+      (_includeMistress ? 1 : 0) +
+      (_includeNatasha ? 1 : 0) +
+      (_includeSaboteur ? 1 : 0);
 
   int get _mafiaTownRoleSlotsEnabled =>
       (_includeMafiaDoctor ? 1 : 0) +
@@ -279,7 +287,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
       (_includeGunman ? 1 : 0) +
       (_includeLeader ? 1 : 0) +
       (_includeSherlock ? 1 : 0) +
-      (_includeGuard ? 1 : 0);
+      (_includeGuard ? 1 : 0) +
+      (_includeDiscloser ? 1 : 0) +
+      (_includeWhiteBeard ? 1 : 0);
 
   int get _mafiaGangTotal => _mafiaGangRoleSlotsEnabled + _mafiaCount;
   int get _mafiaTownTotal => _mafiaTownRoleSlotsEnabled + _simpleCitizenCount;
@@ -570,6 +580,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final kidnapperIndex = nextMafiaGangIndex(_includeKidnapper);
     final terroristIndex = nextMafiaGangIndex(_includeTerrorist);
     final bomberIndex = nextMafiaGangIndex(_includeBomber);
+    final mistressIndex = nextMafiaGangIndex(_includeMistress);
+    final natashaIndex = nextMafiaGangIndex(_includeNatasha);
+    final saboteurIndex = nextMafiaGangIndex(_includeSaboteur);
 
     final townShuffled = List<int>.generate(total, (i) => i)
         .where((i) => !mafiaGangIndices.contains(i) && !independentIndices.contains(i))
@@ -591,6 +604,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final leaderIndex = nextTownIndex(_includeLeader);
     final sherlockIndex = nextTownIndex(_includeSherlock);
     final guardIndex = nextTownIndex(_includeGuard);
+    final discloserIndex = nextTownIndex(_includeDiscloser);
+    final whiteBeardIndex = nextTownIndex(_includeWhiteBeard);
 
     final slaughterCharges = (total / 6).floor().clamp(1, 999);
     final professionalCharges = (mafiaGangCount - 1).clamp(0, 999);
@@ -642,6 +657,16 @@ class _StartGameScreenState extends State<StartGameScreen> {
         roleId = SarkoobRoles.guard.id;
       } else if (i == zodiacIndex) {
         roleId = SarkoobRoles.zodiacRole.id;
+      } else if (i == mistressIndex) {
+        roleId = SarkoobRoles.mistress.id;
+      } else if (i == natashaIndex) {
+        roleId = SarkoobRoles.natasha.id;
+      } else if (i == saboteurIndex) {
+        roleId = SarkoobRoles.saboteur.id;
+      } else if (i == discloserIndex) {
+        roleId = SarkoobRoles.discloser.id;
+      } else if (i == whiteBeardIndex) {
+        roleId = SarkoobRoles.whiteBeard.id;
       }
 
       if (roleId == null) {
@@ -663,6 +688,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
           slaughterChargesRemaining: i == godfatherIndex ? slaughterCharges : null,
           revolutionaryChargesRemaining: i == professionalIndex ? professionalCharges : null,
           warGunsRemaining: i == gunmanIndex ? warGunCharges : null,
+          guaranteesRemaining: i == whiteBeardIndex ? slaughterCharges : null,
         ),
       );
     }
@@ -1027,6 +1053,21 @@ class _StartGameScreenState extends State<StartGameScreen> {
               value: _includeBomber,
               onChanged: (v) => setState(() => _includeBomber = v),
             ),
+            _roleToggle(
+              role: SarkoobRoles.mistress,
+              value: _includeMistress,
+              onChanged: (v) => setState(() => _includeMistress = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.natasha,
+              value: _includeNatasha,
+              onChanged: (v) => setState(() => _includeNatasha = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.saboteur,
+              value: _includeSaboteur,
+              onChanged: (v) => setState(() => _includeSaboteur = v),
+            ),
             const SizedBox(height: 4),
             _roleCountStepper(
               role: SarkoobRoles.simpleMafia,
@@ -1099,6 +1140,16 @@ class _StartGameScreenState extends State<StartGameScreen> {
               role: SarkoobRoles.guard,
               value: _includeGuard,
               onChanged: (v) => setState(() => _includeGuard = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.discloser,
+              value: _includeDiscloser,
+              onChanged: (v) => setState(() => _includeDiscloser = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.whiteBeard,
+              value: _includeWhiteBeard,
+              onChanged: (v) => setState(() => _includeWhiteBeard = v),
             ),
             const SizedBox(height: 4),
             _roleCountStepper(
