@@ -146,6 +146,7 @@ class GameFlowController extends ChangeNotifier {
     target.isHalfAlive = false;
     if (target.disciplineStage < 4) target.disciplineStage = 4;
     _checkZhinaTrigger(target);
+    _checkMistressTrigger(target);
     if (phase == GamePhaseType.day) _checkDiscloserTrigger(target);
     _skipDeadSpeakers();
     disciplinaryExpelMessage =
@@ -1271,10 +1272,9 @@ class GameFlowController extends ChangeNotifier {
   int leaderActionsUsedTonight = 0;
 
   /// اگه بازیکنِ حذف‌شده معشوقه باشه و پدرخوانده هنوز زنده باشه، شبِ بعد
-  /// پدرخوانده عصبانی می‌شه. عمداً کنارِ _checkZhinaTrigger صدا زده
-  /// می‌شه (همون محل‌ها)، ولی فقط تو سه‌جایی که خودِ کاربر مشخص کرده:
-  /// _eliminatePlayer (رأی/شات)، سلاخیِ حرفه‌ای، و اقداماتِ زودیاک —
-  /// نه اخراجِ انضباطی و نه اخراجِ رهبرِ جامعه.
+  /// پدرخوانده عصبانی می‌شه. کنارِ _checkZhinaTrigger صدا زده می‌شه —
+  /// یعنی هر مسیرِ حذفی: رأی/شات (از تویِ _eliminatePlayer)، سلاخیِ
+  /// حرفه‌ای، اقداماتِ زودیاک، اخراجِ انضباطی، و اخراجِ رهبرِ جامعه.
   void _checkMistressTrigger(SessionPlayer player) {
     if (player.roleId != SarkoobRoles.mistress.id) return;
     final godfather = valiFaghihPlayer;
@@ -2025,6 +2025,7 @@ class GameFlowController extends ChangeNotifier {
     target.isAlive = false;
     target.isHalfAlive = false;
     _checkZhinaTrigger(target);
+    _checkMistressTrigger(target);
     if (phase == GamePhaseType.day) _checkDiscloserTrigger(target);
     _skipDeadSpeakers();
     communityLeaderExpulsionMessage =
