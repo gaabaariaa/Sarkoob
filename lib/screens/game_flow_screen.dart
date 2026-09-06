@@ -50,6 +50,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   String get _politicalAnalystRoleName => _isMafiaGame ? 'شرلوک' : 'تحلیلگر سیاسی';
   String get _rebelRoleName => _isMafiaGame ? 'تفنگدار' : 'شورشی';
   String get _revolutionaryRoleName => _isMafiaGame ? 'حرفه‌ای' : 'مبارز انقلابی';
+  String get _nationalHeroRoleName => _isMafiaGame ? 'ریش‌سفید' : 'قهرمان ملی';
   String get _revolutionaryActionLabel => _isMafiaGame ? 'حذفِ حرفه‌ای' : 'اعدامِ انقلابی';
   String get _civicActivistRoleName => _isMafiaGame ? 'لیدر' : 'فعال مدنی';
   String get _lawyerRoleName => _isMafiaGame ? 'کنستانتین' : 'وکیل';
@@ -412,7 +413,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     title: Text(p.name, style: const TextStyle(color: Colors.white)),
                     subtitle: Text(
                       '$teamName${role != null ? ' — ${role.name}' : ''}'
-                      '${p.disciplineStage > 0 ? ' — ${disciplineStageLabel(p.disciplineStage)}' : ''}',
+                      '${p.disciplineStage > 0 ? ' — ${disciplineStageLabel(p.disciplineStage)}' : ''}'
+                      '${!controller.hasVotingRightsToday(p) ? ' — 🚫 بدونِ حقِ رأیِ امروز' : ''}',
                       style: const TextStyle(color: AppColors.goldLight),
                     ),
                     trailing: Text(status, style: const TextStyle(color: Colors.white54)),
@@ -480,7 +482,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   /// «اخراجِ» مستقیم و فوری (افشای نقش، تقلبِ آشکار، و مواردِ مشابه).
   void _showDisciplineDialog() {
     SessionPlayer? selectedTarget;
-    bool isExpelChoice = false; // false = تنبیهِ درجه‌بندی‌شده، true = اخراجِ مستقیم
+    String actionMode = 'discipline'; // discipline | expel | revokeVote
     final reasonController = TextEditingController();
 
     showDialog(
@@ -528,36 +530,62 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                         Expanded(
                           child: OutlinedButton(
                             style: OutlinedButton.styleFrom(
-                              backgroundColor: isExpelChoice ? null : AppColors.goldDark.withOpacity(0.35),
-                              side: BorderSide(color: isExpelChoice ? Colors.white24 : AppColors.gold),
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              backgroundColor:
+                                  actionMode == 'discipline' ? AppColors.goldDark.withOpacity(0.35) : null,
+                              side: BorderSide(
+                                color: actionMode == 'discipline' ? AppColors.gold : Colors.white24,
+                              ),
                             ),
-                            onPressed: () => setDialogState(() => isExpelChoice = false),
-                            child: const Text('تنبیه'),
+                            onPressed: () => setDialogState(() => actionMode = 'discipline'),
+                            child: const Text('تنبیه', style: TextStyle(fontSize: 12)),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 6),
                         Expanded(
                           child: OutlinedButton(
                             style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
                               backgroundColor:
-                                  isExpelChoice ? AppColors.bloodRedLight.withOpacity(0.35) : null,
+                                  actionMode == 'revokeVote' ? AppColors.goldDark.withOpacity(0.35) : null,
                               side: BorderSide(
-                                color: isExpelChoice ? AppColors.bloodRedLight : Colors.white24,
+                                color: actionMode == 'revokeVote' ? AppColors.gold : Colors.white24,
                               ),
                             ),
-                            onPressed: () => setDialogState(() => isExpelChoice = true),
-                            child: const Text('اخراجِ مستقیم'),
+                            onPressed: () => setDialogState(() => actionMode = 'revokeVote'),
+                            child: const Text('گرفتنِ حقِ رأی', style: TextStyle(fontSize: 12)),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              backgroundColor: actionMode == 'expel'
+                                  ? AppColors.bloodRedLight.withOpacity(0.35)
+                                  : null,
+                              side: BorderSide(
+                                color: actionMode == 'expel' ? AppColors.bloodRedLight : Colors.white24,
+                              ),
+                            ),
+                            onPressed: () => setDialogState(() => actionMode = 'expel'),
+                            child: const Text('اخراجِ مستقیم', style: TextStyle(fontSize: 12)),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    if (!isExpelChoice)
+                    if (actionMode == 'discipline')
                       Text(
                         nextStage >= 4
                             ? 'این چهارمین تخلفشه؛ همین الان از بازی اخراج می‌شه.'
                             : 'نتیجه‌ی این تنبیه: ${disciplineStageLabel(nextStage)}',
                         style: const TextStyle(color: AppColors.goldLight, fontSize: 13),
+                      )
+                    else if (actionMode == 'revokeVote')
+                      const Text(
+                        'تا پایانِ امروز نمی‌تونه تو رأی‌گیریِ حذف/دفاعیه رأی بده؛ فردا خودکار برمی‌گرده.',
+                        style: TextStyle(color: AppColors.goldLight, fontSize: 13),
                       )
                     else
                       const Text(
@@ -581,12 +609,12 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isExpelChoice ? AppColors.bloodRedLight : AppColors.gold,
+                  backgroundColor: actionMode == 'expel' ? AppColors.bloodRedLight : AppColors.gold,
                   // باگِ قبلی: چون foregroundColor ست نبود، تمِ سراسری
                   // (colorScheme.primary=طلایی) فونتِ دکمه رو هم طلایی
                   // می‌کرد — یعنی رو حالتِ «تنبیه» (پس‌زمینه‌ی طلایی)
                   // فونت با پس‌زمینه قاطی و نامرئی می‌شد.
-                  foregroundColor: isExpelChoice ? Colors.white : Colors.black,
+                  foregroundColor: actionMode == 'expel' ? Colors.white : Colors.black,
                 ),
                 onPressed: selectedTarget != null
                     ? () {
@@ -594,11 +622,16 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                             ? 'نامشخص'
                             : reasonController.text.trim();
                         final String resultMessage;
-                        if (isExpelChoice) {
-                          controller.disciplinaryExpel(selectedTarget!.id, reason);
-                          resultMessage = controller.disciplinaryExpelMessage ?? '';
-                        } else {
-                          resultMessage = controller.applyNextDisciplineStage(selectedTarget!.id, reason);
+                        switch (actionMode) {
+                          case 'expel':
+                            controller.disciplinaryExpel(selectedTarget!.id, reason);
+                            resultMessage = controller.disciplinaryExpelMessage ?? '';
+                            break;
+                          case 'revokeVote':
+                            resultMessage = controller.revokeVotingRights(selectedTarget!.id, reason);
+                            break;
+                          default:
+                            resultMessage = controller.applyNextDisciplineStage(selectedTarget!.id, reason);
                         }
                         Navigator.of(dialogContext).pop();
                         if (resultMessage.isNotEmpty) {
@@ -608,7 +641,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                         }
                       }
                     : null,
-                child: Text(isExpelChoice ? 'اخراج' : 'اعمالِ تنبیه'),
+                child: Text(actionMode == 'expel' ? 'اخراج' : (actionMode == 'revokeVote' ? 'گرفتنِ حقِ رأی' : 'اعمالِ تنبیه')),
               ),
             ],
           );
@@ -788,7 +821,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                '🛡️ «${controller.playerById(controller.guaranteedPlayerId!).name}» تضمینِ قهرمانِ ملی رو داره؛ '
+                '🛡️ «${controller.playerById(controller.guaranteedPlayerId!).name}» تضمینِ ${SarkoobRoles.byId(controller.playerById(controller.guaranteedPlayerId!).roleId!)?.name ?? "قهرمانِ ملی"} رو داره؛ '
                 'امروز نمی‌تونه رأی بیاره و در امانه.',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
@@ -984,7 +1017,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         children: [
           if (controller.guaranteedPlayerId != null) ...[
             Text(
-              '🛡️ «${controller.playerById(controller.guaranteedPlayerId!).name}» تضمینِ قهرمانِ ملی رو داره؛ '
+              '🛡️ «${controller.playerById(controller.guaranteedPlayerId!).name}» تضمینِ ${SarkoobRoles.byId(controller.playerById(controller.guaranteedPlayerId!).roleId!)?.name ?? "قهرمانِ ملی"} رو داره؛ '
               'امروز نمی‌تونه رأی بیاره و در امانه.',
               textAlign: TextAlign.center,
               style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
@@ -1367,7 +1400,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             childAspectRatio: 1.3,
             children: electors.map((e) {
               final isSelected = controller.votersAgainstCurrentSubject.contains(e.id);
-              final enabled = e.isAlive && e.id != subject.id;
+              final enabled = controller.electorCanActOnCurrentSubject(e);
               return _voteCandidateButton(
                 e,
                 isSelected: isSelected,
@@ -1637,6 +1670,22 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           },
           child: const Text('پایان دفاعیه‌ی این نفر'),
         ),
+        const SizedBox(height: 12),
+        TextButton.icon(
+          icon: const Icon(Icons.block, color: AppColors.bloodRedLight, size: 18),
+          label: const Text(
+            'یکی حینِ دفاعیه اکت داد (حذف/لایک‌ودیس‌لایک/...)',
+            style: TextStyle(color: AppColors.bloodRedLight, fontSize: 12),
+          ),
+          onPressed: () => _showPlayerListPicker(
+            title: 'کی حینِ دفاعیه اکت داد؟',
+            targets: controller.alivePlayers.where((p) => p.id != speaker.id).toList(),
+            onSelected: (p) {
+              final msg = controller.revokeVotingRights(p.id, 'اکت در حینِ دفاعیه‌ی «${speaker.name}»');
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+            },
+          ),
+        ),
       ],
     );
   }
@@ -1755,9 +1804,27 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.white, fontSize: 16),
           ),
+          if (controller.discloserAnnouncement != null) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.gold),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                controller.discloserAnnouncement!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
           const SizedBox(height: 24),
           ElevatedButton(
-            onPressed: () => controller.moveToNight(controller.roundNumber),
+            onPressed: () {
+              controller.discloserAnnouncement = null;
+              controller.moveToNight(controller.roundNumber);
+            },
             child: const Text('ورود به شب'),
           ),
         ],
@@ -1941,8 +2008,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         );
       case NightStepKind.nationalHero:
         return _buildRoleNightStep(
-          wakeLabel: 'قهرمان ملی بیدار بشه',
-          sleepLabel: 'قهرمان ملی چشمش رو ببنده',
+          wakeLabel: '$_nationalHeroRoleName بیدار بشه',
+          sleepLabel: '$_nationalHeroRoleName چشمش رو ببنده',
           playerName: controller.nationalHeroPlayer?.name,
           body: _buildNationalHeroSection(),
         );
@@ -3128,7 +3195,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     return Column(
       children: [
         Text(
-          'قهرمان ملی می‌تونه امشب یه بازیکن رو تضمین کنه (${hero.guaranteesRemaining ?? 0} '
+          '$_nationalHeroRoleName می‌تونه امشب یه بازیکن رو تضمین کنه (${hero.guaranteesRemaining ?? 0} '
           'تضمینِ باقیمانده در کلِ بازی).',
           textAlign: TextAlign.center,
           style: const TextStyle(color: Colors.white70),

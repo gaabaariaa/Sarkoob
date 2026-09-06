@@ -115,6 +115,7 @@ class SessionPlayer {
   int? challengeBanRoundNumber; // فقط برای منعِ یک‌روزه‌ی مرحله‌ی ۲: کدوم روز نمی‌تونه چالش بگیره (هدف باشه)
   bool challengeBannedForever; // از مرحله‌ی ۳ به بعد، برای همیشه از چالش‌گرفتن منعه (نه چالش‌دادن)
   int? silencedRoundNumber; // فقط برای مرحله‌ی ۳: کدوم روز باید نوبتِ صحبتش رد بشه
+  int? noVoteRightsRoundNumber; // کدوم روز حقِ رأی نداره (اکتِ دفاعیه یا تنبیه)
 
   SessionPlayer({
     required this.id,
@@ -152,6 +153,7 @@ class SessionPlayer {
     this.challengeBanRoundNumber,
     this.challengeBannedForever = false,
     this.silencedRoundNumber,
+    this.noVoteRightsRoundNumber,
   });
 
   bool get isSorkoobTeam => teamId == 'team_sorkoob';

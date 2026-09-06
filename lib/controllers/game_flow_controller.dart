@@ -247,6 +247,26 @@ class GameFlowController extends ChangeNotifier {
     return message;
   }
 
+  /// گرفتنِ حقِ رأیِ یه بازیکن تا پایانِ همین روز — مستقل از پله‌های
+  /// انضباطیِ بالا؛ برای وقتی یکی موقعِ دفاعیه‌ی یکی دیگه اکت می‌ده
+  /// (رأی/لایک‌ودیس‌لایک/حذف) یا هر تخلفِ مشابهِ دیگه. فقط همون‌روزه:
+  /// isSilencedToday/hasVotingRightsToday با roundNumberِ فعلی چک می‌شن،
+  /// خودکار با شروعِ روزِ بعد منقضی می‌شه.
+  String revokeVotingRights(int targetId, String reason) {
+    final target = playerById(targetId);
+    final effectiveReason = reason.trim().isEmpty ? 'نامشخص' : reason.trim();
+    final effectiveRound = phase == GamePhaseType.day ? roundNumber : roundNumber + 1;
+    target.noVoteRightsRoundNumber = effectiveRound;
+    notifyListeners();
+    return '«${target.name}» تا پایانِ امروز حقِ رأی نداره (دلیل: $effectiveReason).';
+  }
+
+  /// آیا این بازیکن امروز حقِ رأی داره؟ (رأیِ حذف/دفاعیه — نه رفراندوم).
+  bool hasVotingRightsToday(SessionPlayer p) =>
+      !(p.noVoteRightsRoundNumber != null &&
+          phase == GamePhaseType.day &&
+          p.noVoteRightsRoundNumber == roundNumber);
+
   // ---------- ترتیب صحبت ----------
 
   List<int> _speakingOrder = [];
@@ -491,7 +511,14 @@ class GameFlowController extends ChangeNotifier {
 
   /// کدوم بازیکن‌ها تا الان علیهِ سوژه‌ی فعلی رأی دادن (چندگانه؛ تا زدنِ
   /// «بعدی» قابلِ تاگل‌کردنه — زدنِ دوباره یعنی اون رأی رو پس گرفت).
+  /// این محدودیت فقط به سوژه‌ی فعلی مربوطه.
   Set<int> votersAgainstCurrentSubject = {};
+
+  /// فقط تو دورِ دوم: هر رأی‌دهنده حداکثر به یه سوژه رأی می‌ده (نه
+  /// چندتا). electorId -> subjectId. با رفتن به سوژه‌ی بعدی خالی
+  /// نمی‌شه (برخلافِ votersAgainstCurrentSubject) چون این محدودیتِ
+  /// سراسریِ کلِ دورِ دومه، نه فقط یه سوژه.
+  Map<int, int> round2ElectorChoice = {};
 
   /// سوژه‌ها به ترتیب — یعنی چه‌کسانی قراره براشون رأی شمرده بشه. تو دورِ
   /// اول یعنی همه‌ی زنده‌ها؛ تو دورِ دوم (دفاعیه) فقط نفراتِ دفاعیه.
@@ -509,6 +536,22 @@ class GameFlowController extends ChangeNotifier {
   /// آیا همه‌ی سوژه‌ها بررسی شدن؟
   bool get voteSequenceFinished => voteSequenceIndex >= voteSequenceSubjects.length;
 
+  /// آیا این رأی‌دهنده الان می‌تونه رویِ سوژه‌ی فعلی دکمه بزنه؟ باید
+  /// زنده باشه، خودش نباشه، حقِ رأی داشته باشه، و — فقط تو دورِ دوم —
+  /// قبلاً به یه سوژه‌ی دیگه رأی نداده باشه (هر رأی‌دهنده تو دورِ دوم
+  /// فقط به یکی از نفراتِ دفاعیه می‌تونه رأی بده).
+  bool electorCanActOnCurrentSubject(SessionPlayer elector) {
+    final subject = currentVoteSequenceSubject;
+    if (subject == null) return false;
+    if (!elector.isAlive || elector.id == subject.id) return false;
+    if (!hasVotingRightsToday(elector)) return false;
+    if (_isSecondRound) {
+      final committedTo = round2ElectorChoice[elector.id];
+      if (committedTo != null && committedTo != subject.id) return false;
+    }
+    return true;
+  }
+
   /// تاگل‌کردنِ اینکه یه بازیکن (elector) علیهِ سوژه‌ی فعلی رأی داده یا نه.
   /// رأی همیشه به خودِ سوژه اضافه/کم می‌شه، نه به کسی که دکمه‌ش زده شده.
   /// خودِ سوژه نمی‌تونه علیهِ خودش رأی بده.
@@ -518,7 +561,15 @@ class GameFlowController extends ChangeNotifier {
     if (votersAgainstCurrentSubject.contains(electorId)) {
       votersAgainstCurrentSubject.remove(electorId);
       removeVote(subject.id);
+      if (_isSecondRound) round2ElectorChoice.remove(electorId);
     } else {
+      // تو دورِ دوم، اگه قبلاً رویِ یه سوژه‌ی دیگه قفل شده، اجازه نده
+      // (UI هم دکمه رو غیرفعال نشون می‌ده، این فقط یه لایه‌ی دفاعیِ اضافه‌ست).
+      if (_isSecondRound) {
+        final committedTo = round2ElectorChoice[electorId];
+        if (committedTo != null && committedTo != subject.id) return;
+        round2ElectorChoice[electorId] = subject.id;
+      }
       votersAgainstCurrentSubject.add(electorId);
       addVote(subject.id);
     }
@@ -590,6 +641,7 @@ class GameFlowController extends ChangeNotifier {
     }
     voteSequenceIndex = 0;
     votersAgainstCurrentSubject = {};
+    round2ElectorChoice = {};
     notifyListeners();
   }
 
