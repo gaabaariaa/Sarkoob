@@ -3,6 +3,7 @@ import '../controllers/game_flow_controller.dart';
 import '../models/game_session.dart';
 import '../models/history.dart';
 import '../models/role.dart';
+import '../models/score_event.dart';
 import '../models/team.dart';
 import '../services/music_service.dart';
 import '../services/storage_service.dart';
@@ -744,10 +745,21 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                         builder: (confirmContext) => AlertDialog(
                           backgroundColor: AppColors.surfaceDark,
                           title: const Text('🏆 بازی تموم شد', style: TextStyle(color: AppColors.goldLight)),
-                          content: Text(
-                            'بازی با بردِ تیمِ ${team?.name ?? 'نامشخص'} تموم شد و نتیجه تو '
-                            'تاریخچه ثبت شد.',
-                            style: TextStyle(color: team?.color ?? Colors.white70, fontSize: 15),
+                          content: SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'بازی با بردِ تیمِ ${team?.name ?? 'نامشخص'} تموم شد و نتیجه تو '
+                                  'تاریخچه ثبت شد.',
+                                  style: TextStyle(color: team?.color ?? Colors.white70, fontSize: 15),
+                                ),
+                                const SizedBox(height: 16),
+                                _bestWorstRow(controller.players),
+                                const SizedBox(height: 12),
+                                _scoreDetailButton(confirmContext, controller.players),
+                              ],
+                            ),
                           ),
                           actions: [
                             ElevatedButton(
@@ -1733,7 +1745,11 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 style: const TextStyle(color: Colors.white70, fontSize: 13),
               ),
             ],
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
+            _bestWorstRow(controller.players),
+            const SizedBox(height: 12),
+            _scoreDetailButton(context, controller.players),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => _confirmAutoGameOver(teamId),
               style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
@@ -1742,6 +1758,85 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  /// کارتِ کوچیکِ بهترین/بدترین بازیکنِ همین بازی، بر اساسِ scoreTotal
+  /// (سندِ طراحیِ امتیازدهی). اگه کمتر از ۲ نفر باشن یا امتیازشون مساوی
+  /// باشه، چیزی نشون نمی‌ده (فرقی برای نشون‌دادن نیست).
+  Widget _bestWorstRow(List<SessionPlayer> players) {
+    if (players.length < 2) return const SizedBox.shrink();
+    final sorted = players.toList()..sort((a, b) => b.scoreTotal.compareTo(a.scoreTotal));
+    final best = sorted.first;
+    final worst = sorted.last;
+    if (best.id == worst.id || best.scoreTotal == worst.scoreTotal) return const SizedBox.shrink();
+    return Row(
+      children: [
+        Expanded(
+          child: _miniPlayerScoreCard(
+            icon: Icons.star,
+            color: AppColors.gold,
+            title: 'بهترین بازیکن',
+            player: best,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _miniPlayerScoreCard(
+            icon: Icons.sentiment_very_dissatisfied,
+            color: AppColors.bloodRedLight,
+            title: 'بدترین بازیکن',
+            player: worst,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _miniPlayerScoreCard({
+    required IconData icon,
+    required Color color,
+    required String title,
+    required SessionPlayer player,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withOpacity(0.5)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 22),
+          const SizedBox(height: 4),
+          Text(title, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text(
+            player.name,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            '${player.scoreTotal >= 0 ? '+' : ''}${player.scoreTotal} امتیاز',
+            style: TextStyle(color: color, fontSize: 13),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// دکمه‌ای که صفحه‌ی جزئیاتِ امتیازِ همه‌ی بازیکنان رو باز می‌کنه — هم
+  /// از صفحه‌ی پایانِ خودکارِ بازی صدا زده می‌شه، هم از دیالوگِ ثبتِ دستی.
+  Widget _scoreDetailButton(BuildContext ctx, List<SessionPlayer> players) {
+    return OutlinedButton.icon(
+      onPressed: () => Navigator.of(ctx).push(
+        MaterialPageRoute(builder: (_) => _PlayerScoreDetailScreen(players: players)),
+      ),
+      icon: const Icon(Icons.list_alt),
+      label: const Text('جزئیاتِ امتیازِ همه‌ی بازیکنان'),
+      style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(46)),
     );
   }
 
@@ -3685,6 +3780,98 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           },
         );
       },
+    );
+  }
+}
+
+/// صفحه‌ی جزئیاتِ امتیازِ همه‌ی بازیکنان — هر بازیکن یه کارتِ بازشونده
+/// داره که تک‌تکِ رویدادهایِ امتیازیش (مکانیزم + امتیاز + دور/فاز) رو
+/// نشون می‌ده. مرتب‌شده بر اساسِ امتیازِ کل، از بیشترین به کمترین.
+class _PlayerScoreDetailScreen extends StatelessWidget {
+  final List<SessionPlayer> players;
+  const _PlayerScoreDetailScreen({required this.players});
+
+  @override
+  Widget build(BuildContext context) {
+    final sorted = players.toList()..sort((a, b) => b.scoreTotal.compareTo(a.scoreTotal));
+    return Scaffold(
+      appBar: AppBar(title: const Text('جزئیاتِ امتیازِ بازیکنان')),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(12),
+        itemCount: sorted.length,
+        itemBuilder: (context, index) {
+          final p = sorted[index];
+          final teamName = SarkoobTeams.byId(p.teamId)?.name ?? p.teamId;
+          final roleName = p.roleId != null ? SarkoobRoles.byId(p.roleId!)?.name : null;
+          final total = p.scoreTotal;
+          final color = total > 0
+              ? AppColors.gold
+              : (total < 0 ? AppColors.bloodRedLight : Colors.white60);
+          return Card(
+            color: AppColors.surfaceCard,
+            margin: const EdgeInsets.only(bottom: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: BorderSide(color: color.withOpacity(0.3)),
+            ),
+            child: ExpansionTile(
+              iconColor: AppColors.gold,
+              collapsedIconColor: Colors.white60,
+              title: Text(
+                p.name,
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(
+                '${roleName ?? teamName} — تیم: $teamName',
+                style: const TextStyle(color: Colors.white60, fontSize: 12),
+              ),
+              trailing: Text(
+                '${total >= 0 ? '+' : ''}$total',
+                style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              children: p.scoreEvents.isEmpty
+                  ? const [
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(16, 0, 16, 12),
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            'هیچ رویدادِ امتیازی‌ای ثبت نشده.',
+                            style: TextStyle(color: Colors.white38, fontSize: 12),
+                          ),
+                        ),
+                      ),
+                    ]
+                  : [
+                      const Divider(color: Colors.white24, height: 1),
+                      ...p.scoreEvents.map((e) => _scoreEventRow(e)),
+                      const SizedBox(height: 8),
+                    ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _scoreEventRow(ScoreEvent e) {
+    final eColor = e.points > 0 ? AppColors.gold : AppColors.bloodRedLight;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              '${e.mechanism} — ${e.phaseLabel}ِ دورِ ${e.roundNumber}',
+              style: const TextStyle(color: Colors.white70, fontSize: 13),
+            ),
+          ),
+          Text(
+            '${e.points > 0 ? '+' : ''}${e.points}',
+            style: TextStyle(color: eColor, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
     );
   }
 }
