@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/game_session.dart';
 import '../models/history.dart';
 import '../models/role.dart';
+import '../models/role_success_metric.dart';
 import '../models/team.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
@@ -20,6 +21,8 @@ class _PlayerAggregate {
   int wins = 0;
   int disciplineScore = 0; // مجموعِ disciplineStage (۰-۴) تو همه‌ی بازی‌ها — برای «بی‌انضباط‌ترین»
   int totalScoreSum = 0; // مجموعِ خامِ همه‌ی totalScoreهای این بازیکن — فقط برایِ محاسبه‌ی میانگین
+  int challengesGivenTotal = 0; // مجموعِ کلِ همه‌ی بازی‌ها — برای «چالش‌بده‌ترین»
+  int challengesReceivedTotal = 0; // مجموعِ کلِ همه‌ی بازی‌ها — برای «چالش‌بگیرترین»
   final List<_PlayerGameRow> rows = [];
 
   _PlayerAggregate({required this.key, required this.displayName});
@@ -45,6 +48,51 @@ class _PlayerGameRow {
     this.disciplineStage = 0,
     this.score = 0,
   });
+}
+
+class _RoleBest {
+  final String roleName;
+  final String playerName;
+  final int count;
+  final String unitLabel;
+  const _RoleBest({
+    required this.roleName,
+    required this.playerName,
+    required this.count,
+    required this.unitLabel,
+  });
+}
+
+class _RoleBestRow extends StatelessWidget {
+  final _RoleBest best;
+  const _RoleBestRow({required this.best});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        children: [
+          const Icon(Icons.military_tech, color: AppColors.goldLight, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+                children: [
+                  TextSpan(
+                    text: 'بهترین ${best.roleName}: ',
+                    style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(text: '${best.playerName} با ${best.count} ${best.unitLabel}'),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _StatsScreenState extends State<StatsScreen> {
@@ -82,6 +130,8 @@ class _StatsScreenState extends State<StatsScreen> {
         if (p.wasOnWinningSide) agg.wins += 1;
         agg.disciplineScore += p.disciplineStage;
         agg.totalScoreSum += p.totalScore;
+        agg.challengesGivenTotal += p.challengesGiven;
+        agg.challengesReceivedTotal += p.challengesReceived;
         final role = p.roleId != null ? SarkoobRoles.byId(p.roleId!) : null;
         agg.rows.add(
           _PlayerGameRow(
@@ -97,6 +147,44 @@ class _StatsScreenState extends State<StatsScreen> {
     }
     final list = map.values.toList()..sort((a, b) => b.wins.compareTo(a.wins));
     return list;
+  }
+
+  /// برایِ هر نقشی که تو role_success_metric.dart معیار داره، کسی که تو
+  /// کلِ تاریخچه (رویِ همه‌ی بازی‌هایی که همون نقش رو بازی کرده) بیشترین
+  /// تعدادِ رویدادِ امتیازیِ موفقِ متناظر با اون نقش رو داشته.
+  List<_RoleBest> get _bestPerRole {
+    final counts = <String, Map<String, int>>{}; // roleId -> playerKey -> count
+    final displayNames = <String, String>{}; // playerKey -> آخرین اسمِ دیده‌شده
+    for (final entry in _history) {
+      for (final p in entry.players) {
+        if (p.roleId == null) continue;
+        final metric = roleSuccessMetrics[p.roleId];
+        if (metric == null) continue;
+        final key = p.rosterId ?? p.name;
+        displayNames[key] = p.name;
+        final successCount = p.scoreEvents
+            .where((e) => e.points > 0 && metric.mechanisms.any((m) => e.mechanism.contains(m)))
+            .length;
+        if (successCount == 0) continue;
+        final roleMap = counts.putIfAbsent(p.roleId!, () => {});
+        roleMap[key] = (roleMap[key] ?? 0) + successCount;
+      }
+    }
+    final result = <_RoleBest>[];
+    for (final roleEntry in counts.entries) {
+      if (roleEntry.value.isEmpty) continue;
+      final best = roleEntry.value.entries.reduce((a, b) => b.value > a.value ? b : a);
+      final role = SarkoobRoles.byId(roleEntry.key);
+      if (role == null) continue;
+      result.add(_RoleBest(
+        roleName: role.name,
+        playerName: displayNames[best.key] ?? best.key,
+        count: best.value,
+        unitLabel: roleSuccessMetrics[roleEntry.key]!.unitLabel,
+      ));
+    }
+    result.sort((a, b) => a.roleName.compareTo(b.roleName));
+    return result;
   }
 
   @override
@@ -135,6 +223,16 @@ class _StatsScreenState extends State<StatsScreen> {
     final worstOfLastGame = scoredLastGame.isEmpty ? null : scoredLastGame.last;
     final scoreLeaderboard = aggregates.toList()
       ..sort((a, b) => b.avgScore.compareTo(a.avgScore));
+    final overallBest = scoreLeaderboard.isEmpty ? null : scoreLeaderboard.first;
+    final overallWorst = scoreLeaderboard.isEmpty ? null : scoreLeaderboard.last;
+
+    final byChallengesGiven = aggregates.where((a) => a.challengesGivenTotal > 0).toList()
+      ..sort((a, b) => b.challengesGivenTotal.compareTo(a.challengesGivenTotal));
+    final topChallengeGiver = byChallengesGiven.isEmpty ? null : byChallengesGiven.first;
+    final byChallengesReceived = aggregates.where((a) => a.challengesReceivedTotal > 0).toList()
+      ..sort((a, b) => b.challengesReceivedTotal.compareTo(a.challengesReceivedTotal));
+    final topChallengeReceiver = byChallengesReceived.isEmpty ? null : byChallengesReceived.first;
+    final bestPerRole = _bestPerRole;
 
     return Scaffold(
       appBar: AppBar(title: const Text('آمار')),
@@ -195,16 +293,91 @@ class _StatsScreenState extends State<StatsScreen> {
               ],
             ),
           ],
+          const SizedBox(height: 28),
+          Text('آمارِ کلِ بازی‌ها', style: AppTheme.headingFont(size: 20)),
+          const SizedBox(height: 4),
+          Text(
+            'روی مجموعِ ${_history.length} بازیِ ثبت‌شده.',
+            style: const TextStyle(color: Colors.white70),
+          ),
+          const SizedBox(height: 10),
+          if (overallBest != null && overallWorst != null && overallBest.key != overallWorst.key)
+            Row(
+              children: [
+                Expanded(
+                  child: _HighlightCard(
+                    icon: Icons.star,
+                    color: AppColors.gold,
+                    title: 'بهترین بازیکن (کلِ تاریخچه)',
+                    playerName: overallBest.displayName,
+                    reason: 'میانگینِ امتیاز: ${overallBest.avgScore >= 0 ? '+' : ''}'
+                        '${overallBest.avgScore.toStringAsFixed(1)}',
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _HighlightCard(
+                    icon: Icons.sentiment_very_dissatisfied,
+                    color: AppColors.bloodRedLight,
+                    title: 'بدترین بازیکن (کلِ تاریخچه)',
+                    playerName: overallWorst.displayName,
+                    reason: 'میانگینِ امتیاز: ${overallWorst.avgScore >= 0 ? '+' : ''}'
+                        '${overallWorst.avgScore.toStringAsFixed(1)}',
+                  ),
+                ),
+              ],
+            ),
           if (mostUndisciplined != null) ...[
             const SizedBox(height: 12),
             _HighlightCard(
               icon: Icons.gavel,
               color: AppColors.bloodRedLight,
-              title: 'بی‌انضباط‌ترین بازیکن (مجموعِ کلِ تاریخچه)',
+              title: 'بی‌انضباط‌ترین بازیکن',
               playerName: mostUndisciplined.displayName,
               reason: 'نمره‌ی انضباطیِ تجمعی: ${mostUndisciplined.disciplineScore} '
                   '(مجموعِ مراحلِ تنبیه در همه‌ی بازی‌هاش)',
             ),
+          ],
+          if (topChallengeReceiver != null || topChallengeGiver != null) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                if (topChallengeReceiver != null)
+                  Expanded(
+                    child: _HighlightCard(
+                      icon: Icons.record_voice_over,
+                      color: AppColors.goldLight,
+                      title: 'چالش‌بگیرترین بازیکن',
+                      playerName: topChallengeReceiver.displayName,
+                      reason: '${topChallengeReceiver.challengesReceivedTotal} بار چالش گرفته',
+                    ),
+                  ),
+                if (topChallengeReceiver != null && topChallengeGiver != null)
+                  const SizedBox(width: 12),
+                if (topChallengeGiver != null)
+                  Expanded(
+                    child: _HighlightCard(
+                      icon: Icons.campaign,
+                      color: AppColors.goldLight,
+                      title: 'چالش‌بده‌ترین بازیکن',
+                      playerName: topChallengeGiver.displayName,
+                      reason: '${topChallengeGiver.challengesGivenTotal} بار چالش داده',
+                    ),
+                  ),
+              ],
+            ),
+          ],
+          if (bestPerRole.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            Text('بهترین‌هایِ هر نقش', style: AppTheme.headingFont(size: 16)),
+            const SizedBox(height: 4),
+            const Text(
+              'بر اساسِ تعدادِ کارهایِ موفقِ اون نقش، رویِ مجموعِ همه‌ی بازی‌هایی که '
+              'کسی اون نقش رو بازی کرده.',
+              style: TextStyle(color: Colors.white38, fontSize: 12),
+            ),
+            const SizedBox(height: 8),
+            ...bestPerRole.map((r) => _RoleBestRow(best: r)),
           ],
           const SizedBox(height: 28),
           Text('جدول رتبه‌بندی', style: AppTheme.headingFont(size: 20)),

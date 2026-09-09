@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'score_event.dart';
 
 /// یه بازیکنِ ثابت تو لیستِ دائمیِ گرداننده — برای این‌که موقعِ شروعِ
 /// بازیِ جدید، لازم نباشه دوباره اسم‌ها رو تایپ کنه.
@@ -25,6 +26,9 @@ class GameHistoryPlayerRecord {
   final bool wasOnWinningSide;
   final int disciplineStage; // ۰-۴؛ آخرین مرحله‌ی تنبیهِ انضباطیِ این بازیکن تو این بازی
   final int totalScore; // جمعِ امتیازِ این بازیکن تو این بازی (سندِ طراحیِ امتیازدهی)
+  final int challengesGiven; // کلِ چالش‌هایی که این بازیکن تو کلِ همین بازی داد
+  final int challengesReceived; // کلِ چالش‌هایی که این بازیکن تو کلِ همین بازی گرفت
+  final List<ScoreEvent> scoreEvents; // ریزِ رویدادهایِ امتیازی — برایِ «بهترینِ هر نقش» و جزئیات
 
   GameHistoryPlayerRecord({
     this.rosterId,
@@ -35,6 +39,9 @@ class GameHistoryPlayerRecord {
     required this.wasOnWinningSide,
     this.disciplineStage = 0,
     this.totalScore = 0,
+    this.challengesGiven = 0,
+    this.challengesReceived = 0,
+    this.scoreEvents = const [],
   });
 
   Map<String, dynamic> toJson() => {
@@ -46,6 +53,9 @@ class GameHistoryPlayerRecord {
         'wasOnWinningSide': wasOnWinningSide,
         'disciplineStage': disciplineStage,
         'totalScore': totalScore,
+        'challengesGiven': challengesGiven,
+        'challengesReceived': challengesReceived,
+        'scoreEvents': scoreEvents.map((e) => e.toJson()).toList(),
       };
 
   factory GameHistoryPlayerRecord.fromJson(Map<String, dynamic> json) {
@@ -56,9 +66,17 @@ class GameHistoryPlayerRecord {
       roleId: json['roleId'] as String?,
       survived: json['survived'] as bool,
       wasOnWinningSide: json['wasOnWinningSide'] as bool,
-      // فیلدِ جدید؛ رکوردهای قدیمی‌ترِ ذخیره‌شده این کلید رو ندارن، پس صفر.
+      // فیلدهایِ جدید؛ رکوردهایِ قدیمی‌ترِ ذخیره‌شده این کلیدها رو ندارن،
+      // پس پیش‌فرضِ خالی/صفر.
       disciplineStage: json['disciplineStage'] as int? ?? 0,
       totalScore: json['totalScore'] as int? ?? 0,
+      challengesGiven: json['challengesGiven'] as int? ?? 0,
+      challengesReceived: json['challengesReceived'] as int? ?? 0,
+      scoreEvents: json['scoreEvents'] == null
+          ? const []
+          : (json['scoreEvents'] as List)
+              .map((e) => ScoreEvent.fromJson(e as Map<String, dynamic>))
+              .toList(),
     );
   }
 }

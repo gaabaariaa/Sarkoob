@@ -459,6 +459,8 @@ class GameFlowController extends ChangeNotifier {
     }
     giver.challengeGivenToday = true;
     receiver.challengeReceivedToday = true;
+    giver.challengesGivenTotal++;
+    receiver.challengesReceivedTotal++;
     _todaysChallenges.add(ChallengeRecord(giver.id, receiverId));
     _activeChallengerId = receiverId;
     notifyListeners();

@@ -63,6 +63,8 @@ class SessionPlayer {
   int votes;
   bool challengeReceivedToday; // آیا امروز قبلاً هدفِ چالش قرار گرفته؟
   bool challengeGivenToday; // آیا تو نوبتِ عادیِ امروزش قبلاً به کسی چالش داده؟
+  int challengesGivenTotal = 0; // شمارنده‌ی کلِ بازی (برخلافِ فلگِ بالا، هیچ‌وقت ریست نمی‌شه)
+  int challengesReceivedTotal = 0; // شمارنده‌ی کلِ بازی
   bool hasSpokenThisRound;
 
   // ---- مربوط به نقش (فعلاً فقط ولی‌فقیه از این‌ها استفاده می‌کنه) ----
