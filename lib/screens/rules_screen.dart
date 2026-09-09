@@ -51,6 +51,13 @@ class _RulesScreenState extends State<RulesScreen> {
                   'تیم رو ببینی؛ روی هر نقش بزن تا کارت کاملش رو ببینی.',
                   style: TextStyle(color: Colors.white70),
                 ),
+                const SizedBox(height: 6),
+                const Text(
+                  '🏆 علاوه‌بر امتیازدهیِ اختصاصیِ هر نقش (که زیرِ خودش نوشته شده)، '
+                  'همه‌ی بازیکنان از رأی‌گیری (رأیِ خروج)، رأیِ رهبری، بقا، و سیستمِ '
+                  'انضباطی هم امتیاز می‌گیرن — این‌ها مشترکه و زیرِ هر نقش تکرار نشده.',
+                  style: TextStyle(color: Colors.white38, fontSize: 12),
+                ),
                 const SizedBox(height: 16),
                 ...teams.map((team) => _TeamSection(team: team)),
               ],
@@ -145,7 +152,7 @@ class _RolePreviewScreen extends StatelessWidget {
       appBar: AppBar(title: Text(role.name)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: RoleInfoCard(role: role, team: team),
+        child: RoleInfoCard(role: role, team: team, showScoringInfo: true),
       ),
     );
   }

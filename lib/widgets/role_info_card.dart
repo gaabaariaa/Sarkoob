@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
 import '../models/role.dart';
+import '../models/role_scoring_info.dart';
 import '../models/team.dart';
 import '../theme/app_theme.dart';
 import 'ornate_frame.dart';
 
 /// کارت نمایش کامل یه نقش — نوار عنوانِ تیم بالا، عکس نقش (اگه باشه) وسط،
-/// نوار اسمِ نقش پایینش، توضیح زیرش.
+/// نوار اسمِ نقش پایینش، توضیح زیرش. اگه showScoringInfo فعال باشه (فقط
+/// تو صفحه‌ی قوانین)، یه بخشِ «امتیازدهی» هم زیرِ توضیح اضافه می‌شه.
 class RoleInfoCard extends StatelessWidget {
   final GameRole role;
   final GameTeam team;
+  final bool showScoringInfo;
 
-  const RoleInfoCard({super.key, required this.role, required this.team});
+  const RoleInfoCard({
+    super.key,
+    required this.role,
+    required this.team,
+    this.showScoringInfo = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +84,30 @@ class RoleInfoCard extends StatelessWidget {
             textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.white70, height: 1.6),
           ),
+          if (showScoringInfo && roleScoringInfo[role.id] != null) ...[
+            const SizedBox(height: 16),
+            OrnateFrame(
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                alignment: Alignment.center,
+                child: const Text(
+                  '🏆 امتیازدهی',
+                  style: TextStyle(
+                    color: AppColors.goldLight,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              roleScoringInfo[role.id]!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white60, height: 1.6, fontSize: 13),
+            ),
+          ],
         ],
       ),
     );
