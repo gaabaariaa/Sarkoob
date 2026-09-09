@@ -19,9 +19,15 @@ class _PlayerAggregate {
   int games = 0;
   int wins = 0;
   int disciplineScore = 0; // مجموعِ disciplineStage (۰-۴) تو همه‌ی بازی‌ها — برای «بی‌انضباط‌ترین»
+  int totalScoreSum = 0; // مجموعِ خامِ همه‌ی totalScoreهای این بازیکن — فقط برایِ محاسبه‌ی میانگین
   final List<_PlayerGameRow> rows = [];
 
   _PlayerAggregate({required this.key, required this.displayName});
+
+  /// میانگینِ امتیازِ این بازیکن به‌ازایِ هر بازی (سندِ طراحیِ امتیازدهی:
+  /// آمارِ درازمدت باید میانگین باشه، نه مجموعِ خام، وگرنه کسی که بیشتر
+  /// بازی کرده صرفاً به‌خاطرِ تعداد جلو می‌افته).
+  double get avgScore => games == 0 ? 0 : totalScoreSum / games;
 }
 
 class _PlayerGameRow {
@@ -30,12 +36,14 @@ class _PlayerGameRow {
   final String? roleName;
   final bool won;
   final int disciplineStage;
+  final int score;
   _PlayerGameRow({
     required this.playedAt,
     required this.teamName,
     this.roleName,
     required this.won,
     this.disciplineStage = 0,
+    this.score = 0,
   });
 }
 
@@ -73,6 +81,7 @@ class _StatsScreenState extends State<StatsScreen> {
         agg.games += 1;
         if (p.wasOnWinningSide) agg.wins += 1;
         agg.disciplineScore += p.disciplineStage;
+        agg.totalScoreSum += p.totalScore;
         final role = p.roleId != null ? SarkoobRoles.byId(p.roleId!) : null;
         agg.rows.add(
           _PlayerGameRow(
@@ -81,6 +90,7 @@ class _StatsScreenState extends State<StatsScreen> {
             roleName: role?.name,
             won: p.wasOnWinningSide,
             disciplineStage: p.disciplineStage,
+            score: p.totalScore,
           ),
         );
       }
@@ -119,6 +129,13 @@ class _StatsScreenState extends State<StatsScreen> {
       ..sort((a, b) => b.disciplineScore.compareTo(a.disciplineScore));
     final mostUndisciplined = undisciplined.isEmpty ? null : undisciplined.first;
 
+    final scoredLastGame = lastGame.players.toList()
+      ..sort((a, b) => b.totalScore.compareTo(a.totalScore));
+    final bestOfLastGame = scoredLastGame.isEmpty ? null : scoredLastGame.first;
+    final worstOfLastGame = scoredLastGame.isEmpty ? null : scoredLastGame.last;
+    final scoreLeaderboard = aggregates.toList()
+      ..sort((a, b) => b.avgScore.compareTo(a.avgScore));
+
     return Scaffold(
       appBar: AppBar(title: const Text('آمار')),
       body: ListView(
@@ -151,6 +168,33 @@ class _StatsScreenState extends State<StatsScreen> {
                 ),
             ],
           ),
+          if (bestOfLastGame != null && worstOfLastGame != null && bestOfLastGame != worstOfLastGame) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _HighlightCard(
+                    icon: Icons.star,
+                    color: AppColors.gold,
+                    title: 'بهترین بازیکنِ این بازی',
+                    playerName: bestOfLastGame.name,
+                    reason: 'امتیاز: ${bestOfLastGame.totalScore >= 0 ? '+' : ''}${bestOfLastGame.totalScore}',
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _HighlightCard(
+                    icon: Icons.sentiment_very_dissatisfied,
+                    color: AppColors.bloodRedLight,
+                    title: 'بدترین بازیکنِ این بازی',
+                    playerName: worstOfLastGame.name,
+                    reason:
+                        'امتیاز: ${worstOfLastGame.totalScore >= 0 ? '+' : ''}${worstOfLastGame.totalScore}',
+                  ),
+                ),
+              ],
+            ),
+          ],
           if (mostUndisciplined != null) ...[
             const SizedBox(height: 12),
             _HighlightCard(
@@ -166,6 +210,16 @@ class _StatsScreenState extends State<StatsScreen> {
           Text('جدول رتبه‌بندی', style: AppTheme.headingFont(size: 20)),
           const SizedBox(height: 10),
           ...aggregates.map((agg) => _LeaderboardRow(agg: agg)),
+          const SizedBox(height: 28),
+          Text('بهترین/بدترین بازیکنان (میانگینِ امتیاز)', style: AppTheme.headingFont(size: 20)),
+          const SizedBox(height: 4),
+          const Text(
+            'میانگینِ امتیازِ هر بازیکن رو کلِ بازی‌هاش (طبقِ سیستمِ امتیازدهیِ رأی/شات/'
+            'سلاخی/نجات/استعلام/انضباط و بقیه‌ی قابلیت‌ها).',
+            style: TextStyle(color: Colors.white70),
+          ),
+          const SizedBox(height: 10),
+          ...scoreLeaderboard.map((agg) => _ScoreLeaderboardRow(agg: agg)),
           const SizedBox(height: 28),
           Text('تاریخچه‌ی کامل هر بازیکن', style: AppTheme.headingFont(size: 20)),
           const SizedBox(height: 4),
@@ -203,7 +257,8 @@ class _StatsScreenState extends State<StatsScreen> {
                             '${row.playedAt.year}/${row.playedAt.month}/${row.playedAt.day} — '
                             'نقش: ${row.roleName ?? row.teamName}، تیم: ${row.teamName}، '
                             '${row.won ? 'برنده' : 'بازنده'}'
-                            '${row.disciplineStage > 0 ? '، ${disciplineStageLabel(row.disciplineStage)}' : ''}',
+                            '${row.disciplineStage > 0 ? '، ${disciplineStageLabel(row.disciplineStage)}' : ''}'
+                            '، امتیاز: ${row.score >= 0 ? '+' : ''}${row.score}',
                             style: const TextStyle(color: Colors.white70, height: 1.6),
                           ),
                         ),
@@ -292,6 +347,43 @@ class _LeaderboardRow extends StatelessWidget {
           Text('${agg.games} بازی', style: const TextStyle(color: Colors.white60)),
           const SizedBox(width: 12),
           Text('$rate% برد', style: const TextStyle(color: AppColors.goldLight)),
+        ],
+      ),
+    );
+  }
+}
+
+class _ScoreLeaderboardRow extends StatelessWidget {
+  final _PlayerAggregate agg;
+  const _ScoreLeaderboardRow({required this.agg});
+
+  @override
+  Widget build(BuildContext context) {
+    final avg = agg.avgScore;
+    final color = avg > 0
+        ? AppColors.gold
+        : (avg < 0 ? AppColors.bloodRedLight : Colors.white60);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: color.withOpacity(0.2),
+            child: Text(
+              agg.displayName.isNotEmpty ? agg.displayName.substring(0, 1) : '?',
+              style: TextStyle(color: color),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(agg.displayName, style: const TextStyle(color: Colors.white)),
+          ),
+          Text('${agg.games} بازی', style: const TextStyle(color: Colors.white60)),
+          const SizedBox(width: 12),
+          Text(
+            '${avg >= 0 ? '+' : ''}${avg.toStringAsFixed(1)} میانگین',
+            style: TextStyle(color: color, fontWeight: FontWeight.bold),
+          ),
         ],
       ),
     );

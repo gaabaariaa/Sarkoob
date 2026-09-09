@@ -668,6 +668,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               survived: p.isAlive,
               wasOnWinningSide: p.teamId == winnerId,
               disciplineStage: p.disciplineStage,
+              totalScore: p.scoreTotal,
             ),
           )
           .toList(),

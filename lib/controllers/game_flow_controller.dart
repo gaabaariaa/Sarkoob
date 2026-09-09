@@ -2,11 +2,23 @@ import 'package:flutter/foundation.dart';
 import '../models/game_session.dart';
 import '../models/role.dart';
 import '../models/team.dart';
+import '../models/score_event.dart';
 
 /// نتیجه‌ی نهاییِ حل‌وفصلِ رأی‌گیریِ یه روز.
 class VoteResolution {
   final String message;
   const VoteResolution(this.message);
+}
+
+/// یه ضربه‌ی شبانه‌ی معلق (شاتِ رهبر / شاتِ سریِ رهبرِ تیمِ مستقل / اعدامِ
+/// انقلابی) که به _pendingHits اضافه شده، به‌همراهِ عاملش — فقط برایِ
+/// امتیازدهی تو finishNight استفاده می‌شه (خودِ منطقِ بازی از _pendingHits
+/// معمولی استفاده می‌کنه، این جدا و اضافیه).
+class _PendingHitAttribution {
+  final int actorId;
+  final int targetId;
+  final String mechanism;
+  const _PendingHitAttribution(this.actorId, this.targetId, this.mechanism);
 }
 
 /// یه رکوردِ چالش: کی (giver) به کی (receiver) چالش داده، برای نمایش و ثبت.
@@ -77,6 +89,58 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer playerById(int id) => players.firstWhere((p) => p.id == id);
 
+  // ---------- موتورِ امتیازدهیِ بهترین/بدترین بازیکن ----------
+  // طبقِ سندِ طراحی: sarkoob-scoring-system-design.md. سه فیلدِ ردیابیِ
+  // موقتِ زیر فقط برایِ همین سیستم‌ان و به هیچ منطقِ دیگه‌ای دست نمی‌زنن.
+
+  /// subjectId -> مجموعه‌یِ رأی‌دهنده‌هایِ علیهش، برای همین دورِ رأی‌گیریِ
+  /// حذفِ در جریان (دورِ اول یا دوم). با شروعِ رأی‌گیریِ حذفِ جدید خالی می‌شه؛
+  /// موقعِ حل‌وفصلِ نهاییِ هر دور امتیازدهی می‌شه و خالی می‌شه.
+  final Map<int, Set<int>> _voteHistoryThisRound = {};
+
+  /// ضربه‌های شبانه‌ی معلق (leaderShoot/mossadShoot/revolutionaryExecute)
+  /// به‌همراهِ عاملشون؛ در finishNight بعدِ حل‌وفصلِ نهایی امتیازدهی و خالی می‌شه.
+  final List<_PendingHitAttribution> _pendingHitAttributions = [];
+
+  /// voterId -> candidateId برایِ رفراندومِ انتخابِ رهبرِ جامعه؛ در
+  /// confirmCommunityLeader امتیازدهی و خالی می‌شه.
+  final Map<int, int> _referendumVoterChoices = {};
+
+  String get _currentPhaseLabel => phase == GamePhaseType.night ? 'شب' : 'روز';
+
+  /// ثبتِ یه رویدادِ امتیازی برایِ یه بازیکن. امتیازِ صفر اصلاً ثبت نمی‌شه
+  /// (طبقِ اصلِ ۲ی سندِ طراحی: قابلیتِ بی‌اثر/استفاده‌نشده امتیاز نداره،
+  /// پس نیازی هم به ثبتِ یه رویدادِ صفرامتیاز نیست).
+  void _award(SessionPlayer player, int points, String mechanism) {
+    if (points == 0) return;
+    player.scoreEvents.add(ScoreEvent(
+      mechanism: mechanism,
+      points: points,
+      roundNumber: roundNumber,
+      phaseLabel: _currentPhaseLabel,
+    ));
+  }
+
+  /// آیا تیمِ هدف نسبت‌به تیمِ عامل «مقابل» حساب می‌شه؟ (بخشِ ۲ی سندِ
+  /// طراحی: نسبیه، نه یه لیستِ ثابت — همینکه teamId فرق کنه کافیه، چون
+  /// تو یه بازی فقط یه سناریو درگیره و تیم‌هاش هیچ‌وقت قاطی نمی‌شن.)
+  bool _isOpposingTeam(String actorTeamId, String targetTeamId) =>
+      actorTeamId != targetTeamId;
+
+  /// آیا این بازیکن نقشِ فعالِ شبانه داره (نه یه نقشِ ساده‌ی بدونِ
+  /// قابلیت)؟ برایِ سنجیدنِ «آیا بازداشت/اختلال روی این هدف واقعاً
+  /// معنی‌دار بود یا نه» استفاده می‌شه.
+  bool _hasActiveRole(SessionPlayer p) {
+    if (p.roleId == null) return false;
+    final simpleRoleIds = {
+      SarkoobRoles.suppressor.id,
+      SarkoobRoles.simpleMafia.id,
+      SarkoobRoles.grayCitizen.id,
+      SarkoobRoles.simpleCitizen.id,
+    };
+    return !simpleRoleIds.contains(p.roleId);
+  }
+
   int get aliveCount => alivePlayers.length;
   int get majorityThreshold => (aliveCount / 2).ceil();
 
@@ -139,12 +203,16 @@ class GameFlowController extends ChangeNotifier {
   /// — حتی وکیل نمی‌تونه برش گردونه — و مستقل از فازِ فعلیِ بازیه. هر
   /// اخراج (چه مستقیم چه بعدِ چهارمین تنبیه) نمره‌ی انضباطی رو هم به
   /// حداکثر (۴) می‌رسونه تا تو آمار «بی‌انضباط‌ترین بازیکن» درست حساب بشه.
-  void disciplinaryExpel(int targetId, String reason) {
+  void disciplinaryExpel(int targetId, String reason, {bool fromStageEscalation = false}) {
     final target = playerById(targetId);
     if (!target.isAlive) return;
     target.isAlive = false;
     target.isHalfAlive = false;
     if (target.disciplineStage < 4) target.disciplineStage = 4;
+    // امتیازدهی: اگه این اخراج نتیجه‌ی رسیدن به پله‌ی چهارمِ انضباطیه،
+    // امتیازش رو applyNextDisciplineStage از قبل با -۱ (مثلِ سه پله‌ی قبلی)
+    // ثبت کرده؛ این‌جا فقط برایِ اخراجِ مستقیم (بدونِ عبور از پله‌ها) -۳ می‌دیم.
+    if (!fromStageEscalation) _award(target, -3, 'اخراجِ انضباطیِ مستقیم');
     _checkZhinaTrigger(target);
     _checkMistressTrigger(target);
     if (phase == GamePhaseType.day) _checkDiscloserTrigger(target);
@@ -206,6 +274,7 @@ class GameFlowController extends ChangeNotifier {
     target.silencedRoundNumber = roundNumber + 1; // «روزِ بعد»
     natasha.natashaSilenceUsed = true;
     _natashaSilencedTonightId = targetId;
+    _award(natasha, _isOpposingTeam(natasha.teamId, target.teamId) ? 2 : -2, 'ساکت‌کردنِ ناتاشا');
     notifyListeners();
   }
 
@@ -217,9 +286,11 @@ class GameFlowController extends ChangeNotifier {
     final target = playerById(targetId);
     final effectiveReason = reason.trim().isEmpty ? 'نامشخص' : reason.trim();
     final nextStage = target.disciplineStage + 1;
+    _award(target, -1, 'تنبیهِ انضباطی');
 
     if (nextStage >= 4) {
-      disciplinaryExpel(targetId, 'چهارمین تخلفِ انضباطی — $effectiveReason');
+      disciplinaryExpel(targetId, 'چهارمین تخلفِ انضباطی — $effectiveReason',
+          fromStageEscalation: true);
       return '«${target.name}» برای چهارمین‌بار تخلف کرد و از بازی اخراج شد.';
     }
 
@@ -257,6 +328,7 @@ class GameFlowController extends ChangeNotifier {
     final effectiveReason = reason.trim().isEmpty ? 'نامشخص' : reason.trim();
     final effectiveRound = phase == GamePhaseType.day ? roundNumber : roundNumber + 1;
     target.noVoteRightsRoundNumber = effectiveRound;
+    _award(target, -1, 'گرفتنِ حقِ رأی');
     notifyListeners();
     return '«${target.name}» تا پایانِ امروز حقِ رأی نداره (دلیل: $effectiveReason).';
   }
@@ -449,6 +521,11 @@ class GameFlowController extends ChangeNotifier {
     _referendumVotes.clear();
     _referendumCandidateIds = null;
     referendumVoterIndex = 0;
+    // ایمنی: اگه یه روزِ قبلی به هر دلیلی (برگشت‌بهِ‌عقب و غیره) بدونِ
+    // رسیدن به resolveSecondVoteRound/confirmCommunityLeader نیمه‌کاره
+    // مونده باشه، این دو ردیابیِ امتیازی نباید به روزِ جدید نشت کنه.
+    _voteHistoryThisRound.clear();
+    _referendumVoterChoices.clear();
     autoDetectedWinnerTeamId = null;
     gameEndMessage = null;
     chaosPhaseActive = false;
@@ -475,6 +552,7 @@ class GameFlowController extends ChangeNotifier {
         );
         _eliminatePlayer(p);
         rebelWarGunUsed = true;
+        _award(p, -1, 'عدمِ استفاده از اسلحه‌ی جنگی تا پایانِ فرصت');
       }
       p.heldGunType = null;
     }
@@ -487,6 +565,7 @@ class GameFlowController extends ChangeNotifier {
     }
     voteSequenceIndex = 0;
     votersAgainstCurrentSubject = {};
+    _voteHistoryThisRound.clear();
     notifyListeners();
   }
 
@@ -579,6 +658,10 @@ class GameFlowController extends ChangeNotifier {
   /// رفتن به سوژه‌ی بعدی — همیشه فعاله، حتی اگه هیچ‌کس علیهِ این سوژه
   /// رأی نداده باشه (یعنی صفر رأی، که کاملاً مجازه).
   void advanceVoteSequence() {
+    final subject = currentVoteSequenceSubject;
+    if (subject != null) {
+      _voteHistoryThisRound[subject.id] = Set.from(votersAgainstCurrentSubject);
+    }
     voteSequenceIndex += 1;
     votersAgainstCurrentSubject = {};
     notifyListeners();
@@ -608,10 +691,40 @@ class GameFlowController extends ChangeNotifier {
 
   /// بعد از رأی‌گیریِ اول: چه کسانی وارد دفاعیه می‌شن؟
   void resolveFirstVoteRound() {
+    // امتیازدهیِ تضمین: فقط اگه واقعاً «نیاز» بوده (هدف رأیِ کافی برایِ
+    // ورود به دفاعیه رو داشته) امتیاز می‌گیره؛ وگرنه بی‌اثر بوده (۰).
+    if (guaranteedPlayerId != null) {
+      final guaranteed = playerById(guaranteedPlayerId!);
+      if (guaranteed.votes >= majorityThreshold) {
+        final hero = nationalHeroPlayer;
+        if (hero != null) {
+          final opposing = _isOpposingTeam(hero.teamId, guaranteed.teamId);
+          _award(hero, opposing ? -2 : 3, 'تضمینِ قهرمانِ ملی/ریش‌سفید');
+        }
+      }
+    }
+
     _defenseCandidateIds = alivePlayers
         .where((p) => p.votes >= majorityThreshold && p.id != guaranteedPlayerId)
         .map((p) => p.id)
         .toList();
+
+    // امتیازدهیِ رأیِ خروج — زاویه‌ی رأی‌دهنده: فقط سوژه‌هایی که وارد
+    // دفاعیه نشدن همین‌جا نهایی‌ان (رأیِ کافی نیاوردن، تکلیفشون مشخصه).
+    // سوژه‌هایی که وارد دفاعیه شدن، تو resolveSecondVoteRound با نتیجه‌ی
+    // نهایی امتیازدهی می‌شن، پس این‌جا حذف نمی‌شن از تاریخچه.
+    final toScore = Map<int, Set<int>>.from(_voteHistoryThisRound)
+      ..removeWhere((subjectId, _) => _defenseCandidateIds.contains(subjectId));
+    for (final entry in toScore.entries) {
+      final subject = playerById(entry.key);
+      for (final voterId in entry.value) {
+        final voter = playerById(voterId);
+        final opposing = _isOpposingTeam(voter.teamId, subject.teamId);
+        _award(voter, opposing ? 1 : -1, 'رأیِ خروج');
+      }
+      _voteHistoryThisRound.remove(entry.key);
+    }
+
     _defensePointer = 0;
     defenseAnnouncementShown = false;
     if (_defenseCandidateIds.isEmpty) {
@@ -646,10 +759,12 @@ class GameFlowController extends ChangeNotifier {
   }
 
   void resolveSecondVoteRound() {
+    int? eliminatedIdForScoring;
     if (_defenseCandidateIds.length == 1) {
       final only = playerById(_defenseCandidateIds.first);
       if (only.votes >= majorityThreshold) {
         _eliminatePlayer(only);
+        eliminatedIdForScoring = only.id;
         lastResolution = VoteResolution('«${only.name}» با رأی کافی حذف شد.');
       } else {
         only.recordCount++;
@@ -673,6 +788,7 @@ class GameFlowController extends ChangeNotifier {
 
       if (eliminated != null) {
         final eliminatedId = eliminated.id;
+        eliminatedIdForScoring = eliminatedId;
         _eliminatePlayer(eliminated);
         for (final p in candidates) {
           if (p.id != eliminatedId) p.recordCount++;
@@ -685,6 +801,29 @@ class GameFlowController extends ChangeNotifier {
         lastResolution = const VoteResolution('رأی و سابقه‌ی نفرات دفاعیه برابر بود؛ امروز کسی حذف نشد.');
       }
     }
+
+    // امتیازدهیِ رأیِ خروج — زاویه‌ی رأی‌دهنده، برایِ نفراتِ دفاعیه: حالا
+    // نتیجه‌ی نهایی مشخصه.
+    for (final entry in _voteHistoryThisRound.entries) {
+      final subject = playerById(entry.key);
+      final wasEliminated = entry.key == eliminatedIdForScoring;
+      for (final voterId in entry.value) {
+        final voter = playerById(voterId);
+        final opposing = _isOpposingTeam(voter.teamId, subject.teamId);
+        int points;
+        if (opposing && wasEliminated) {
+          points = 2;
+        } else if (opposing && !wasEliminated) {
+          points = 1;
+        } else if (!opposing && wasEliminated) {
+          points = -2;
+        } else {
+          points = -1;
+        }
+        _award(voter, points, 'رأیِ خروج');
+      }
+    }
+    _voteHistoryThisRound.clear();
 
     _isSecondRound = false;
     _checkGameEndCondition();
@@ -789,8 +928,10 @@ class GameFlowController extends ChangeNotifier {
       target.teamId = isMafiaGame ? SarkoobTeams.mafiaGang.id : SarkoobTeams.suppression.id;
       target.roleId = isMafiaGame ? SarkoobRoles.simpleMafia.id : SarkoobRoles.suppressor.id;
       negotiateResultMessage = 'مذاکره با موفقیت صورت گرفت.';
+      _award(minister, 2, 'مذاکره‌ی موفق');
     } else {
       negotiateResultMessage = 'مذاکره با شکست مواجه شد.';
+      _award(minister, -1, 'مذاکره‌ی ناموفق');
     }
     minister.negotiateUsed = true; // یک‌بارمصرف: چه موفق چه ناموفق، دیگه تکرار نمی‌شه
     _nightActionTaken = true;
@@ -802,6 +943,7 @@ class GameFlowController extends ChangeNotifier {
     final leader = valiFaghihPlayer;
     if (leader == null || isPlayerDetained(leader.id)) return;
     _pendingHits[targetId] = (_pendingHits[targetId] ?? 0) + 1;
+    _pendingHitAttributions.add(_PendingHitAttribution(leader.id, targetId, 'شاتِ رهبر'));
     _nightActionTaken = true;
     leaderActionsUsedTonight++;
     notifyListeners();
@@ -819,6 +961,7 @@ class GameFlowController extends ChangeNotifier {
       _checkZhinaTrigger(target);
       _tonightSlaughteredIds.add(target.id);
       slaughterResultMessage = '«${target.name}» با سلاخی از بازی خارج شد.';
+      _award(leader, 3, 'سلاخیِ رهبر');
     } else {
       if ((leader.slaughterChargesRemaining ?? 0) > 0) {
         leader.slaughterChargesRemaining = leader.slaughterChargesRemaining! - 1;
@@ -1106,10 +1249,16 @@ class GameFlowController extends ChangeNotifier {
     final interrogator = interrogatorPlayer;
     if (interrogator == null) return;
     interrogator.interrogationUsed = true;
-    lastInterrogationTargetName = playerById(targetId).name;
+    final target = playerById(targetId);
+    lastInterrogationTargetName = target.name;
     lastInterrogationQuestion = (question != null && question.trim().isNotEmpty)
         ? question.trim()
         : null;
+    // نتیجه‌ی واقعیِ بازجویی با اشاره‌ی دستِ فیزیکی مشخص می‌شه (تو اپ
+    // ذخیره نمی‌شه)، ولی برایِ امتیازدهی همینکه هدف واقعاً تیمِ‌مقابل
+    // بوده یا نه از قبل تو مدل مشخصه.
+    _award(interrogator, _isOpposingTeam(interrogator.teamId, target.teamId) ? 2 : 0,
+        'بازجویی/جاسوسی');
     notifyListeners();
   }
 
@@ -1153,6 +1302,7 @@ class GameFlowController extends ChangeNotifier {
     });
     lastIntelQuestionResult = allHaveRoles ? InvestigationResult.like : InvestigationResult.dislike;
     lastIntelQuestionTargetNames = targetIds.map((id) => playerById(id).name).toList();
+    _award(minister, allHaveRoles ? 1 : 0, 'سؤالِ اطلاعاتی');
     notifyListeners();
   }
 
@@ -1183,6 +1333,11 @@ class GameFlowController extends ChangeNotifier {
     if (!canDetainTonight) return;
     if (targetId == _detainedLastNight) return;
     detainedPlayerId = targetId;
+    final commander = policeCommanderPlayer!;
+    final target = playerById(targetId);
+    final opposing = _isOpposingTeam(commander.teamId, target.teamId);
+    final meaningful = opposing && _hasActiveRole(target);
+    _award(commander, meaningful ? 2 : -1, 'بازداشتِ شبانه');
     notifyListeners();
   }
 
@@ -1233,6 +1388,7 @@ class GameFlowController extends ChangeNotifier {
     _skipDeadSpeakers();
     assassinationResultMessage =
         '«${merc.name}» (مزدورِ لباس‌شخصی) «${target.name}» رو ترور کرد و خودش هم لو رفت و همون‌لحظه حذف شد.';
+    _award(merc, _isOpposingTeam(merc.teamId, target.teamId) ? 3 : -3, 'ترورِ مزدور/تروریست');
     notifyListeners();
   }
 
@@ -1289,6 +1445,7 @@ class GameFlowController extends ChangeNotifier {
     }
 
     lawyer.revivalUsed = true;
+    _award(lawyer, _isOpposingTeam(lawyer.teamId, target.teamId) ? -2 : 3, 'احیایِ وکیل/کنستانتین');
     notifyListeners();
   }
 
@@ -1357,10 +1514,15 @@ class GameFlowController extends ChangeNotifier {
   /// افشای عمومیِ مافیابودن/نبودنِ یه بازیکن.
   void discloserReveal(int targetId) {
     if (pendingDiscloserPlayerId == null) return;
+    final discloser = playerById(pendingDiscloserPlayerId!);
     final target = playerById(targetId);
     final isMafia = target.teamId == SarkoobTeams.mafiaGang.id;
     discloserAnnouncement =
         '📢 افشاگر قبلِ خروج افشا کرد: «${target.name}» ${isMafia ? "عضوِ مافیاست" : "عضوِ مافیا نیست"}.';
+    // افشا همیشه راسته (دروغ‌گفتن امکان‌پذیر نیست)؛ پس امتیازدهی رو
+    // اینکه کیو انتخاب کرد: افشایِ یه هم‌تیمیِ واقعی به ضررِ تیمِ خودشه،
+    // افشایِ یه شهروند صرفاً یه اطلاعِ خنثی/کم‌ارزشه.
+    _award(discloser, isMafia ? -2 : 1, 'افشایِ عمومیِ تیم');
     pendingDiscloserPlayerId = null;
     notifyListeners();
   }
@@ -1410,18 +1572,22 @@ class GameFlowController extends ChangeNotifier {
     if (target.teamId == SarkoobTeams.citizen.id || target.teamId == SarkoobTeams.mafiaTown.id) {
       target.isActiveResistanceMember = true;
       rapperResultMessage = '«${target.name}» به $resistanceTeamPhrase پیوست.';
+      _award(rapper, 3, 'جذبِ مقاومتِ موفق');
     } else if (isSleeperStillHidden) {
       target.isActiveResistanceMember = true;
       rapperResultMessage = '«${target.name}» (که هنوز به‌عنوانِ $leaderTeamLabel فعال نشده) '
           'به‌عنوانِ جاسوسِ $leaderTeamLabel وارد $resistanceGroupNoun شد.';
+      _award(rapper, -1, 'جذبِ ناخواسته‌ی نفوذی');
     } else if (isPermanentInfiltrator) {
       target.isActiveResistanceMember = true;
       rapperResultMessage = '«${target.name}» ظاهراً به $resistanceTeamPhrase پیوست، ولی درواقع '
           'نفوذیِ همیشگیِ $leaderTeamLabel هست — مخفیانه جاش گرفته.';
+      _award(rapper, -1, 'جذبِ ناخواسته‌ی نفوذی');
     } else {
       _eliminatePlayer(rapper);
       _tonightEliminatedIds.add(rapper.id);
       rapperResultMessage = 'انتخاب اشتباه بود! خودِ «${rapper.name}» همون‌لحظه حذف شد.';
+      _award(rapper, -3, 'جذبِ اشتباه (خودحذفی)');
     }
     notifyListeners();
   }
@@ -1516,6 +1682,7 @@ class GameFlowController extends ChangeNotifier {
     if (!shooter.isAlive || shooter.heldGunType == null) return;
     final type = shooter.heldGunType!;
     shooter.heldGunType = null;
+    final rebel = rebelPlayer;
 
     if (type == GunType.war) {
       if (saboteurTargetPlayerId == shooterId) {
@@ -1525,15 +1692,23 @@ class GameFlowController extends ChangeNotifier {
         rebelWarGunUsed = true;
         gunFireResultMessage =
             '«${shooter.name}» شلیک کرد، ولی تفنگش خراب‌کاری‌شده بود؛ تیر به خودش برگشت و از بازی خارج شد.';
+        final saboteur = saboteurPlayer;
+        // شوتر تقصیری نداره (تصمیمِ خرابکار بوده)؛ فقط خرابکار امتیاز می‌گیره.
+        if (saboteur != null) _award(saboteur, 2, 'خرابکاریِ موفق');
         notifyListeners();
         return;
       }
       final target = playerById(targetId);
       final teamName = SarkoobTeams.byId(target.teamId)?.name ?? target.teamId;
+      final shooterOpposing = _isOpposingTeam(shooter.teamId, target.teamId);
       _eliminatePlayer(target);
       rebelWarGunUsed = true;
       gunFireResultMessage =
           '«${target.name}» با شلیکِ «${shooter.name}» (اسلحه‌ی جنگی) از بازی خارج شد؛ تیمش: $teamName.';
+      _award(shooter, shooterOpposing ? 2 : -3, 'شلیکِ اسلحه‌ی جنگی');
+      if (rebel != null && rebel.id != shooter.id) {
+        _award(rebel, shooterOpposing ? 2 : -1, 'توزیعِ اسلحه‌ی جنگی');
+      }
     } else {
       gunFireResultMessage = '«${shooter.name}» شلیک کرد ولی اسلحه‌ش مشقی بود؛ هیچ اتفاقی نیفتاد.';
     }
@@ -1634,6 +1809,11 @@ class GameFlowController extends ChangeNotifier {
 
   void executePlayerForForbiddenWord(int playerId) {
     final player = playerById(playerId);
+    final chief = judiciaryChiefPlayer;
+    if (chief != null) {
+      final opposing = _isOpposingTeam(chief.teamId, player.teamId);
+      _award(chief, opposing ? 2 : -2, 'حکمِ کلمه‌ی ممنوع');
+    }
     _eliminatePlayer(player);
     // توجه: activeExecutionWord اینجا reset نمی‌شه — کلمه تا شروعِ رأی‌گیریِ
     // همون روز فعال می‌مونه (طبق قانون: هرکی بگتش، هر چندتا نفر که باشن،
@@ -1683,9 +1863,11 @@ class GameFlowController extends ChangeNotifier {
 
   void hackerInvestigate(int targetId) {
     if (!canHackerInvestigateTonight) return;
+    final hacker = hackerPlayer!;
     lastInvestigationResult = investigationResultFor(targetId);
     lastInvestigationTargetName = playerById(targetId).name;
     _hackerUsedTonight = true;
+    _award(hacker, lastInvestigationResult == InvestigationResult.like ? 2 : 0, 'استعلامِ هکر/کارآگاه');
     notifyListeners();
   }
 
@@ -1760,6 +1942,7 @@ class GameFlowController extends ChangeNotifier {
       _checkMistressTrigger(target);
       _tonightSlaughteredIds.add(target.id);
       mossadAssassinationResultMessage = '«${target.name}» با ترورِ موساد از بازی خارج شد.';
+      _award(leader, 3, 'ترورِ رهبرِ تیمِ مستقل');
     } else {
       mossadAssassinationResultMessage = 'ترورِ موساد بی‌اثر بود؛ هیچ‌کس متوجه نشد.';
     }
@@ -1786,10 +1969,13 @@ class GameFlowController extends ChangeNotifier {
       guardCounterResultMessage =
           '«${leader.name}» (زودیاک) شاتِ عملیاتِ سری رو رویِ محافظ («${guard.name}») امتحان کرد '
           'و خودش همون‌لحظه حذف شد.';
+      _award(leader, -3, 'شاتِ اشتباه (افتادن تو تله‌ی محافظ)');
       notifyListeners();
       return;
     }
     _pendingHits[targetId] = (_pendingHits[targetId] ?? 0) + 1;
+    _pendingHitAttributions
+        .add(_PendingHitAttribution(leader.id, targetId, 'شاتِ سریِ رهبرِ تیمِ مستقل'));
     notifyListeners();
   }
 
@@ -1874,6 +2060,12 @@ class GameFlowController extends ChangeNotifier {
   void recordGuardSacrificeAnswer(bool willing) {
     if (!shouldAskGuardForBomb || guardSacrificeAnswer != null) return;
     guardSacrificeAnswer = willing;
+    if (willing) {
+      final guard = guardPlayer;
+      // خودِ تصمیمِ داوطلبانه‌ی فداکاری امتیاز داره، صرف‌نظر از شانسیِ
+      // درست‌بودنِ رمز (اون قسمت کاملاً بختیه، نه مهارت).
+      if (guard != null) _award(guard, 2, 'فداکاریِ محافظ');
+    }
     notifyListeners();
   }
 
@@ -1882,11 +2074,14 @@ class GameFlowController extends ChangeNotifier {
     if (bombTargetId == null || _bombCodeChecked) return;
     final target = bombTargetPlayer!;
     final guard = guardPlayer;
+    final bomber = bomberPlayer;
     final guardSacrificed = shouldAskGuardForBomb && guardSacrificeAnswer == true;
     final success = chosenCode == _bombDefusalCode;
 
     if (success) {
       bombOutcomeMessage = '💣 بمبِ «${target.name}» با رمزِ درست خنثی شد.';
+      // خنثی‌شدن صرفاً شانسیه (حدسِ رمز)، نه اشتباهِ بمب‌گذار؛ امتیازِ
+      // خاصی نمی‌گیره (۰).
     } else if (guardSacrificed && guard != null) {
       // محافظ به‌جایِ هدف فدا شده و رمز رو غلط زده — فقط خودِ محافظ
       // حذف می‌شه (کاملاً و برگشت‌ناپذیر، نه از مسیرِ نیمه‌جان)؛ هدفِ
@@ -1896,9 +2091,13 @@ class GameFlowController extends ChangeNotifier {
       _checkZhinaTrigger(guard);
       bombOutcomeMessage = '💣 «${guard.name}» به‌جایِ «${target.name}» فدا شده بود و رمز رو غلط زد؛ '
           'نقشِ محافظش افشا شد و کاملاً از بازی خارج شد. «${target.name}» زنده موند.';
+      // هدفِ اصلیِ بمب‌گذار زنده موند (محافظ جاش فدا شد)؛ برایِ بمب‌گذار
+      // هم مثلِ خنثی‌شدنِ عادی حساب می‌شه — ۰.
     } else {
+      final opposing = bomber != null && _isOpposingTeam(bomber.teamId, target.teamId);
       _eliminatePlayer(target);
       bombOutcomeMessage = '💣 بمبِ «${target.name}» با رمزِ غلط ترکید و از بازی خارج شد.';
+      if (bomber != null) _award(bomber, opposing ? 2 : -3, 'بمب‌گذاری');
     }
     _bombCodeChecked = true;
     _skipDeadSpeakers();
@@ -1944,12 +2143,14 @@ class GameFlowController extends ChangeNotifier {
 
   void politicalAnalystInvestigate(int targetId) {
     if (!canPoliticalAnalystActTonight) return;
+    final analyst = politicalAnalystPlayer!;
     final target = playerById(targetId);
-    lastIndependentInvestigationResult = _isIndependentTeamMember(target)
-        ? InvestigationResult.like
-        : InvestigationResult.dislike;
+    final isIndependent = _isIndependentTeamMember(target);
+    lastIndependentInvestigationResult =
+        isIndependent ? InvestigationResult.like : InvestigationResult.dislike;
     lastIndependentInvestigationTargetName = target.name;
     _politicalAnalystUsedTonight = true;
+    _award(analyst, isIndependent ? 2 : 0, 'استعلامِ تحلیلگرِ سیاسی/شرلوک');
     notifyListeners();
   }
 
@@ -2017,6 +2218,8 @@ class GameFlowController extends ChangeNotifier {
   /// ثبتِ انتخابِ رأی‌دهنده‌ی فعلی برای یه کاندیدا، و فوراً رفتن به
   /// رأی‌دهنده‌ی بعدی — تک‌انتخابیه (برخلافِ چندانتخابیِ رأی‌گیریِ حذف).
   void castReferendumVoteAndAdvance(int candidateId) {
+    final voter = currentReferendumVoter;
+    if (voter != null) _referendumVoterChoices[voter.id] = candidateId;
     castReferendumVote(candidateId, 1);
     referendumVoterIndex += 1;
     notifyListeners();
@@ -2061,6 +2264,26 @@ class GameFlowController extends ChangeNotifier {
 
   void confirmCommunityLeader(int playerId) {
     communityLeaderId = playerId;
+    final winner = playerById(playerId);
+
+    // امتیازدهیِ رأیِ رهبری — هر رأی‌دهنده بر اساسِ تیمِ واقعیِ همون
+    // کاندیدایی که خودش انتخاب کرده (نه لزوماً برنده‌ی نهایی).
+    for (final entry in _referendumVoterChoices.entries) {
+      final voter = playerById(entry.key);
+      final candidate = playerById(entry.value);
+      final opposing = _isOpposingTeam(voter.teamId, candidate.teamId);
+      _award(voter, opposing ? -1 : 1, 'رأیِ رهبری');
+    }
+    _referendumVoterChoices.clear();
+
+    // امتیازدهیِ خودِ تحریک‌کننده‌ی رفراندوم: نتیجه‌ی نهایی (رهبرِ
+    // منتخب، غیرِخودی بود یا خودی) بهترین شاخصِ قابل‌محاسبه برایِ «آیا
+    // این ابتکار به‌موقع بود» است.
+    final activist = civicActivistPlayer;
+    if (activist != null) {
+      final opposing = _isOpposingTeam(activist.teamId, winner.teamId);
+      _award(activist, opposing ? -1 : 2, 'تحریکِ رفراندوم');
+    }
     notifyListeners();
   }
 
@@ -2074,6 +2297,7 @@ class GameFlowController extends ChangeNotifier {
     final target = playerById(targetId);
     if (!target.isAlive) return;
     final teamName = SarkoobTeams.byId(target.teamId)?.name ?? target.teamId;
+    final opposing = _isOpposingTeam(leader.teamId, target.teamId);
     target.isAlive = false;
     target.isHalfAlive = false;
     _checkZhinaTrigger(target);
@@ -2082,6 +2306,11 @@ class GameFlowController extends ChangeNotifier {
     _skipDeadSpeakers();
     communityLeaderExpulsionMessage =
         '«${target.name}» توسطِ رهبرِ جامعه («${leader.name}») از جامعه اخراج شد؛ تیمش: $teamName.';
+    // اخراج‌شده مثلِ یه تنبیهِ انضباطی حساب می‌شه (تقصیرِ خودش نیست که
+    // رهبرِ جامعه انتخابش کرد)؛ خودِ رهبر بر اساسِ کیفیتِ انتخابش امتیاز
+    // می‌گیره.
+    _award(target, -2, 'اخراج توسطِ رفراندوم');
+    _award(leader, opposing ? 2 : -2, 'انتخابِ اخراجِ رهبرِ جامعه');
 
     referendumScheduledToday = false;
     communityLeaderId = null;
@@ -2123,6 +2352,7 @@ class GameFlowController extends ChangeNotifier {
 
     if (target.teamId == SarkoobTeams.suppression.id || target.teamId == SarkoobTeams.mafiaGang.id) {
       _pendingHits[targetId] = (_pendingHits[targetId] ?? 0) + 1;
+      _pendingHitAttributions.add(_PendingHitAttribution(fighter.id, targetId, 'اعدامِ انقلابی'));
       revolutionaryResultMessage =
           'اعدامِ انقلابیِ «${fighter.name}» روی «${target.name}» ثبت شد؛ نتیجه‌ی نهایی صبح مشخص می‌شه.';
     } else if (target.teamId == SarkoobTeams.citizen.id || target.teamId == SarkoobTeams.mafiaTown.id) {
@@ -2130,6 +2360,7 @@ class GameFlowController extends ChangeNotifier {
       _tonightEliminatedIds.add(fighter.id);
       revolutionaryResultMessage =
           'هدفِ «${fighter.name}» عضوِ تیمِ شهروند بود! خودِ مبارزِ انقلابی همون‌لحظه از بازی خارج شد.';
+      _award(fighter, -3, 'اعدامِ انقلابیِ اشتباه (خودحذفی)');
     } else {
       revolutionaryResultMessage = 'هدفِ «${fighter.name}» عضوِ یه تیمِ مستقل بود؛ هیچ اتفاقی نیفتاد.';
     }
@@ -2155,6 +2386,7 @@ class GameFlowController extends ChangeNotifier {
       _checkMistressTrigger(target);
       _tonightSlaughteredIds.add(target.id);
       revolutionaryResultMessage = '«${target.name}» با سلاخیِ مبارزِ انقلابی از بازی خارج شد.';
+      _award(fighter, 3, 'سلاخیِ مبارزِ انقلابی/حرفه‌ای');
     } else {
       fighter.canStillSlaughter = false;
       revolutionaryResultMessage =
@@ -2350,6 +2582,7 @@ class GameFlowController extends ChangeNotifier {
   /// برای اعلامِ عمومی (سه دسته‌ی ثابت)، یکی برای یادداشتِ خصوصیِ گرداننده.
   void finishNight() {
     final privateNotes = <String>[];
+    final Map<int, bool> diedTonightFromHit = {}; // targetId -> آیا نهایتاً حذف شد؟
     _pendingHits.forEach((targetId, hitCount) {
       final target = playerById(targetId);
       if (!target.isAlive) return;
@@ -2357,7 +2590,10 @@ class GameFlowController extends ChangeNotifier {
       if (_savedPlayerIds.contains(targetId) && remaining > 0) {
         remaining -= 1; // نجاتِ دکتر فقط جلوی یکی از ضربه‌ها رو می‌گیره
       }
-      if (remaining <= 0) return;
+      if (remaining <= 0) {
+        diedTonightFromHit[targetId] = false;
+        return;
+      }
       final targetRole = target.roleId != null ? SarkoobRoles.byId(target.roleId!) : null;
       if (targetRole?.hasPermanentNightArmor == true) {
         // زره‌ی همیشگی (رهبرِ موساد در سرکوب، زودیاک در مافیا): هیچ‌وقت
@@ -2365,6 +2601,7 @@ class GameFlowController extends ChangeNotifier {
         // targetRole می‌گیریم، نه هاردکد، چون این پرچم رو دو نقشِ متفاوت
         // (بسته به سناریو) دارن.
         privateNotes.add('«${target.name}» (${targetRole!.name}) با زره‌ی همیشگی‌ش شاتِ شب رو خنثی کرد.');
+        diedTonightFromHit[targetId] = false;
         return;
       }
       if (target.hasArmor) {
@@ -2374,10 +2611,43 @@ class GameFlowController extends ChangeNotifier {
       if (remaining > 0) {
         _eliminatePlayer(target);
         _tonightEliminatedIds.add(target.id);
+        diedTonightFromHit[targetId] = true;
       } else {
         privateNotes.add('«${target.name}» زره‌اش رو از دست داد، ولی زنده موند.');
+        diedTonightFromHit[targetId] = false;
       }
     });
+
+    // امتیازدهیِ کشتار (شاتِ رهبر / شاتِ سریِ موساد-زودیاک / اعدامِ
+    // انقلابی): حالا که سرنوشتِ نهاییِ هر هدف مشخصه.
+    for (final attribution in _pendingHitAttributions) {
+      final actor = playerById(attribution.actorId);
+      final target = playerById(attribution.targetId);
+      final died = diedTonightFromHit[attribution.targetId] ?? false;
+      final opposing = _isOpposingTeam(actor.teamId, target.teamId);
+      int points;
+      if (opposing && died) {
+        points = 2;
+      } else if (!opposing && died) {
+        points = -3; // خودی‌زنی
+      } else {
+        points = 0; // بی‌اثر بود (نجات/زره) — نه اشتباهِ آشکار
+      }
+      _award(actor, points, attribution.mechanism);
+    }
+    _pendingHitAttributions.clear();
+
+    // امتیازدهیِ نجاتِ دکتر: «معنی‌دار» یعنی هدف امشب واقعاً تویِ
+    // _pendingHits بوده (صرف‌نظر از اینکه نهایتاً زنده موند یا هرچند
+    // ضربه‌ی هم‌زمانِ دیگه‌ای غلبه کرد)؛ تشخیصِ درستِ هدف، مهارتِ خودِ دکتره.
+    final doctor = doctorPlayer;
+    if (doctor != null) {
+      for (final savedId in _savedPlayerIds) {
+        if (!_pendingHits.containsKey(savedId)) continue; // نجاتِ بی‌مصرف = ۰
+        final isSelfSave = savedId == doctor.id;
+        _award(doctor, isSelfSave ? 2 : 3, 'نجاتِ شبانه‌ی دکتر');
+      }
+    }
 
     // اگه کسی که امشب اسلحه‌ی جنگی گرفته بود اصلاً به روزِ بعد نرسید (شات/
     // سلاخی/اعدامِ انقلابی — هرکدوم)، فرصتِ استفاده نداشت. این «استفاده»

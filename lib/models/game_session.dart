@@ -1,4 +1,5 @@
 import 'role.dart';
+import 'score_event.dart';
 
 /// برچسبِ فارسیِ هر مرحله‌ی تنبیهِ انضباطیِ گرداننده — هم تو خودِ بازی
 /// (دیالوگِ تنبیه) و هم تو آمار/تاریخچه (بعدِ تمومِ بازی) استفاده می‌شه،
@@ -117,6 +118,10 @@ class SessionPlayer {
   int? silencedRoundNumber; // فقط برای مرحله‌ی ۳: کدوم روز باید نوبتِ صحبتش رد بشه
   int? noVoteRightsRoundNumber; // کدوم روز حقِ رأی نداره (اکتِ دفاعیه یا تنبیه)
 
+  // ---- سیستمِ امتیازدهیِ بهترین/بدترین بازیکن (سندِ طراحی:
+  // sarkoob-scoring-system-design.md) ----
+  final List<ScoreEvent> scoreEvents = [];
+
   SessionPlayer({
     required this.id,
     required this.name,
@@ -157,4 +162,7 @@ class SessionPlayer {
   });
 
   bool get isSorkoobTeam => teamId == 'team_sorkoob';
+
+  /// جمعِ امتیازِ این بازیکن در همین بازی (طبقِ سندِ طراحیِ امتیازدهی).
+  int get scoreTotal => scoreEvents.fold(0, (sum, e) => sum + e.points);
 }

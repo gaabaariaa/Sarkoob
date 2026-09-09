@@ -24,6 +24,7 @@ class GameHistoryPlayerRecord {
   final bool survived; // تا آخرِ بازی زنده موند؟
   final bool wasOnWinningSide;
   final int disciplineStage; // ۰-۴؛ آخرین مرحله‌ی تنبیهِ انضباطیِ این بازیکن تو این بازی
+  final int totalScore; // جمعِ امتیازِ این بازیکن تو این بازی (سندِ طراحیِ امتیازدهی)
 
   GameHistoryPlayerRecord({
     this.rosterId,
@@ -33,6 +34,7 @@ class GameHistoryPlayerRecord {
     required this.survived,
     required this.wasOnWinningSide,
     this.disciplineStage = 0,
+    this.totalScore = 0,
   });
 
   Map<String, dynamic> toJson() => {
@@ -43,6 +45,7 @@ class GameHistoryPlayerRecord {
         'survived': survived,
         'wasOnWinningSide': wasOnWinningSide,
         'disciplineStage': disciplineStage,
+        'totalScore': totalScore,
       };
 
   factory GameHistoryPlayerRecord.fromJson(Map<String, dynamic> json) {
@@ -55,6 +58,7 @@ class GameHistoryPlayerRecord {
       wasOnWinningSide: json['wasOnWinningSide'] as bool,
       // فیلدِ جدید؛ رکوردهای قدیمی‌ترِ ذخیره‌شده این کلید رو ندارن، پس صفر.
       disciplineStage: json['disciplineStage'] as int? ?? 0,
+      totalScore: json['totalScore'] as int? ?? 0,
     );
   }
 }
