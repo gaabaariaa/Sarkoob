@@ -4,6 +4,7 @@ import '../models/role.dart';
 import '../models/team.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/jalali_date.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -34,7 +35,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   String _teamName(String teamId) => SarkoobTeams.byId(teamId)?.name ?? teamId;
 
   String _formatDate(DateTime dt) =>
-      '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')} '
+      '${formatJalali(dt)} '
       '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
 
   @override

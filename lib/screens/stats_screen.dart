@@ -6,6 +6,7 @@ import '../models/role_success_metric.dart';
 import '../models/team.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/jalali_date.dart';
 
 class StatsScreen extends StatefulWidget {
   const StatsScreen({super.key});
@@ -50,16 +51,20 @@ class _PlayerGameRow {
   });
 }
 
-class _RoleBest {
-  final String roleName;
+class _RoleRanking {
   final String playerName;
   final int count;
+  const _RoleRanking({required this.playerName, required this.count});
+}
+
+class _RoleBest {
+  final String roleName;
   final String unitLabel;
+  final List<_RoleRanking> rankings; // مرتب‌شده، بیشترین اول
   const _RoleBest({
     required this.roleName,
-    required this.playerName,
-    required this.count,
     required this.unitLabel,
+    required this.rankings,
   });
 }
 
@@ -69,26 +74,72 @@ class _RoleBestRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
+    final top = best.rankings.first;
+    return Card(
+      color: AppColors.surfaceCard,
+      margin: const EdgeInsets.only(bottom: 6),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: ExpansionTile(
+        iconColor: AppColors.gold,
+        collapsedIconColor: Colors.white38,
+        tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+        leading: const Icon(Icons.military_tech, color: AppColors.goldLight, size: 20),
+        title: RichText(
+          text: TextSpan(
+            style: const TextStyle(color: Colors.white, fontSize: 13),
+            children: [
+              TextSpan(
+                text: 'بهترین ${best.roleName}: ',
+                style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+              ),
+              TextSpan(text: '${top.playerName} با ${top.count} ${best.unitLabel}'),
+            ],
+          ),
+        ),
+        subtitle: best.rankings.length > 1
+            ? Text(
+                '${best.rankings.length} بازیکن این نقش رو بازی کرده‌ن — بزن تا بقیه‌ی رتبه‌ها رو ببینی',
+                style: const TextStyle(color: Colors.white38, fontSize: 11),
+              )
+            : null,
         children: [
-          const Icon(Icons.military_tech, color: AppColors.goldLight, size: 18),
-          const SizedBox(width: 8),
-          Expanded(
-            child: RichText(
-              text: TextSpan(
-                style: const TextStyle(color: Colors.white, fontSize: 13),
+          const Divider(color: Colors.white24, height: 1),
+          ...best.rankings.asMap().entries.map((entry) {
+            final rank = entry.key + 1;
+            final r = entry.value;
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Row(
                 children: [
-                  TextSpan(
-                    text: 'بهترین ${best.roleName}: ',
-                    style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+                  SizedBox(
+                    width: 22,
+                    child: Text(
+                      '$rank.',
+                      style: const TextStyle(color: Colors.white60, fontSize: 12),
+                    ),
                   ),
-                  TextSpan(text: '${best.playerName} با ${best.count} ${best.unitLabel}'),
+                  Expanded(
+                    child: Text(
+                      r.playerName,
+                      style: TextStyle(
+                        color: rank == 1 ? AppColors.goldLight : Colors.white70,
+                        fontSize: 13,
+                        fontWeight: rank == 1 ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '${r.count} ${best.unitLabel}',
+                    style: TextStyle(
+                      color: rank == 1 ? AppColors.goldLight : Colors.white60,
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
-            ),
-          ),
+            );
+          }),
+          const SizedBox(height: 8),
         ],
       ),
     );
@@ -173,14 +224,16 @@ class _StatsScreenState extends State<StatsScreen> {
     final result = <_RoleBest>[];
     for (final roleEntry in counts.entries) {
       if (roleEntry.value.isEmpty) continue;
-      final best = roleEntry.value.entries.reduce((a, b) => b.value > a.value ? b : a);
       final role = SarkoobRoles.byId(roleEntry.key);
       if (role == null) continue;
+      final rankings = roleEntry.value.entries
+          .map((e) => _RoleRanking(playerName: displayNames[e.key] ?? e.key, count: e.value))
+          .toList()
+        ..sort((a, b) => b.count.compareTo(a.count));
       result.add(_RoleBest(
         roleName: role.name,
-        playerName: displayNames[best.key] ?? best.key,
-        count: best.value,
         unitLabel: roleSuccessMetrics[roleEntry.key]!.unitLabel,
+        rankings: rankings,
       ));
     }
     result.sort((a, b) => a.roleName.compareTo(b.roleName));
@@ -427,7 +480,7 @@ class _StatsScreenState extends State<StatsScreen> {
                         child: Align(
                           alignment: Alignment.centerRight,
                           child: Text(
-                            '${row.playedAt.year}/${row.playedAt.month}/${row.playedAt.day} — '
+                            '${formatJalali(row.playedAt)} — '
                             'نقش: ${row.roleName ?? row.teamName}، تیم: ${row.teamName}، '
                             '${row.won ? 'برنده' : 'بازنده'}'
                             '${row.disciplineStage > 0 ? '، ${disciplineStageLabel(row.disciplineStage)}' : ''}'
