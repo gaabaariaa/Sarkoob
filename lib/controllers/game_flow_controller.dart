@@ -344,8 +344,27 @@ class GameFlowController extends ChangeNotifier {
   List<int> _speakingOrder = [];
   int _speakerPointer = 0;
 
-  void _rebuildSpeakingOrder() {
-    _speakingOrder = alivePlayers.map((p) => p.id).toList();
+  /// شروع‌کننده‌ی نوبتِ صحبتِ آخرین دوری که ساخته شده (معارفه یا یه روزِ
+  /// عادی) — مبنایِ محاسبه‌ی شروع‌کننده‌ی روزِ بعد.
+  int? _lastRoundStarterId;
+
+  /// اگه [forceStarterId] داده بشه (و بینِ زنده‌ها باشه)، نوبتِ صحبت از
+  /// همون نفر شروع می‌شه؛ وگرنه (مثلِ قبل) از اولین بازیکنِ زنده‌ی لیست.
+  void _rebuildSpeakingOrder({int? forceStarterId}) {
+    final aliveIds = alivePlayers.map((p) => p.id).toList();
+    if (aliveIds.isEmpty) {
+      _speakingOrder = [];
+      _speakerPointer = 0;
+      return;
+    }
+    final startIdx =
+        forceStarterId != null ? aliveIds.indexOf(forceStarterId) : -1;
+    final effectiveStart = startIdx == -1 ? 0 : startIdx;
+    _speakingOrder = [
+      ...aliveIds.sublist(effectiveStart),
+      ...aliveIds.sublist(0, effectiveStart),
+    ];
+    _lastRoundStarterId = _speakingOrder.first;
     _speakerPointer = 0;
     _todaysChallenges.clear();
     for (final p in players) {
@@ -357,6 +376,30 @@ class GameFlowController extends ChangeNotifier {
     // قرار باشه امروز سکوتش فعال بشه، نباید اولین نفرِ نوبتِ صحبتِ امروز
     // بشه — وگرنه _skipDeadSpeakers هیچ‌وقت صداش نمی‌زنه که ردش کنه.
     _skipDeadSpeakers();
+  }
+
+  /// شروع‌کننده‌ی صحبتِ روزِ بعد رو حساب می‌کنه: [steps] نفرِ زنده‌ی بعدی
+  /// رو، به ترتیبِ ثابتِ صندلیِ اصلیِ بازی (نه ترتیبِ نوبتِ روزِ قبل)،
+  /// از رویِ بازیکنِ [fromId] می‌شمره (مرده‌ها رد می‌شن، حتی اگه خودِ
+  /// [fromId] هم الان مرده باشه — چون فقط به‌عنوانِ نقطه‌ی مرجعِ شمارش
+  /// استفاده می‌شه). اگه [fromId] پیدا نشه یا کسی زنده نباشه، اولین
+  /// بازیکنِ زنده رو برمی‌گردونه.
+  int? _computeNextStarterId(int fromId, int steps) {
+    if (alivePlayers.isEmpty) return null;
+    final order = players;
+    final startIdx = order.indexWhere((p) => p.id == fromId);
+    if (startIdx == -1) return alivePlayers.first.id;
+    int idx = startIdx;
+    int counted = 0;
+    final maxIterations = order.length * (steps + 2);
+    for (int i = 0; i < maxIterations; i++) {
+      idx = (idx + 1) % order.length;
+      if (order[idx].isAlive) {
+        counted++;
+        if (counted >= steps) return order[idx].id;
+      }
+    }
+    return alivePlayers.first.id;
   }
 
   SessionPlayer? get currentSpeaker =>
@@ -500,7 +543,13 @@ class GameFlowController extends ChangeNotifier {
     _phaseHistory.add(_PhaseSnapshot(phase, roundNumber));
     phase = GamePhaseType.day;
     roundNumber = dayNumber;
-    _rebuildSpeakingOrder();
+    // شروع‌کننده‌ی صحبت ثابت نیست: روزِ اول همون شروع‌کننده‌ی روزِ
+    // معارفه‌ست؛ از روزِ دوم به بعد، هر روز سه نفرِ زنده‌یِ بعد از
+    // شروع‌کننده‌ی روزِ قبل (طبقِ ترتیبِ ثابتِ صندلی، ردکردنِ مرده‌ها).
+    final int? starterId = dayNumber <= 1
+        ? _lastRoundStarterId
+        : _computeNextStarterId(_lastRoundStarterId ?? players.first.id, 3);
+    _rebuildSpeakingOrder(forceStarterId: starterId);
     votingStarted = false;
     _defenseCandidateIds = [];
     _defensePointer = 0;
