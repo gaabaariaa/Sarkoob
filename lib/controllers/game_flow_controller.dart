@@ -541,9 +541,8 @@ class GameFlowController extends ChangeNotifier {
   bool votingStarted = false;
 
   void startVoting() {
-    // اول: اسلحه‌ی جنگیِ استفاده‌نشده منفجر می‌شه و صاحبش حذف می‌شه — این
-    // هم مثلِ شلیکِ واقعی «استفاده» حساب می‌شه (شورشی دیگه بیدار نمی‌شه)،
-    // چون گیرنده فرصتِ کاملِ یه روز رو داشت و به‌کارش نبرد. اسلحه‌ی مشقیِ
+    // اول: اسلحه‌ی جنگیِ استفاده‌نشده منفجر می‌شه و صاحبش حذف می‌شه (این
+    // سهمیه مصرف‌شده حساب می‌شه، برنمی‌گرده به شورشی). اسلحه‌ی مشقیِ
     // استفاده‌نشده هم فقط بی‌سروصدا پاک می‌شه.
     final explosions = <String>[];
     for (final p in players) {
@@ -553,7 +552,6 @@ class GameFlowController extends ChangeNotifier {
           '«${p.name}» تا شروعِ رأی‌گیری شلیک نکرد؛ اسلحه‌ی جنگی دستِ خودش منفجر شد و از بازی خارج شد.',
         );
         _eliminatePlayer(p);
-        rebelWarGunUsed = true;
         _award(p, -1, 'عدمِ استفاده از اسلحه‌ی جنگی تا پایانِ فرصت');
       }
       p.heldGunType = null;
@@ -1609,16 +1607,13 @@ class GameFlowController extends ChangeNotifier {
     return !isPlayerDetained(rebel.id);
   }
 
-  /// آیا تا الان یه اسلحه‌ی جنگی به «نتیجه» رسیده — چه واقعاً شلیک شده چه
-  /// گیرنده تا شروعِ رأی‌گیریِ فردا استفاده‌ش نکرده و خودش دستِ صاحبش
-  /// منفجر شده (`startVoting`)؟ هر دو حالت «استفاده» حساب می‌شن، چون
-  /// گیرنده فرصتِ یه روزِ کامل رو داشت. همین که یه‌بار این اتفاق بیفته،
-  /// کارِ شورشی تمومه: دیگه هیچ شبی بیدار نمی‌شه (حتی با سهمیه‌ی بیشتر).
-  /// استثنا: اگه گیرنده همون‌شبی که اسلحه رو گرفته از بازی خارج بشه (شات/
-  /// سلاخی/اعدامِ انقلابی) و اصلاً به روزِ بعد نرسه، اصلاً فرصتی نداشته —
-  /// این «استفاده» حساب نمی‌شه؛ اسلحه به سهمیه‌ی شورشی برمی‌گرده
-  /// (`finishNight`ی پایینِ همین فایل) و می‌تونه شبِ دیگه به یکی دیگه بده.
-  bool rebelWarGunUsed = false;
+  /// شورشی تا وقتی `warGunsRemaining` صفر نشده هر شب بیدار می‌مونه — هر
+  /// اسلحه‌ای که «به نتیجه می‌رسه» (شلیک می‌شه یا استفاده‌نشده منفجر
+  /// می‌شه) فقط همون یه سهمیه رو مصرفِ‌شده حساب می‌کنه، نه کلِ قابلیتش
+  /// رو. سهمیه از `giveGun` کم می‌شه (نه از اینجا)؛ فقط استثنا: اگه
+  /// گیرنده همون‌شبی که اسلحه رو گرفته از بازی خارج بشه (شات/سلاخی/
+  /// اعدامِ انقلابی) و اصلاً به روزِ بعد نرسه، فرصتِ استفاده نداشته —
+  /// اسلحه به سهمیه برمی‌گرده (`finishNight`ی پایینِ همین فایل).
 
   // ---------- خرابکار: خرابکاریِ روی تفنگ، هر شب (فقط سناریوی مافیا) ----------
 
@@ -1691,7 +1686,6 @@ class GameFlowController extends ChangeNotifier {
         // خرابکاری کرده: تیر به خودِ شلیک‌کننده برمی‌گرده، نه به هدفِ
         // موردنظرش.
         _eliminatePlayer(shooter);
-        rebelWarGunUsed = true;
         gunFireResultMessage =
             '«${shooter.name}» شلیک کرد، ولی تفنگش خراب‌کاری‌شده بود؛ تیر به خودش برگشت و از بازی خارج شد.';
         final saboteur = saboteurPlayer;
@@ -1704,7 +1698,6 @@ class GameFlowController extends ChangeNotifier {
       final teamName = SarkoobTeams.byId(target.teamId)?.name ?? target.teamId;
       final shooterOpposing = _isOpposingTeam(shooter.teamId, target.teamId);
       _eliminatePlayer(target);
-      rebelWarGunUsed = true;
       gunFireResultMessage =
           '«${target.name}» با شلیکِ «${shooter.name}» (اسلحه‌ی جنگی) از بازی خارج شد؛ تیمش: $teamName.';
       _award(shooter, shooterOpposing ? 2 : -3, 'شلیکِ اسلحه‌ی جنگی');
@@ -2422,7 +2415,8 @@ class GameFlowController extends ChangeNotifier {
   /// حذف‌شدنِ خودِ مرحله از ترتیبِ شب لو می‌ده که اون نقش مرده. سه‌تا
   /// استثنا داریم — هرکدوم چون همه از قبل (تویِ روز) با خبر شدن، پس دیگه
   /// لازم نیست تو ترتیب بیان: وکیل، وقتی قابلیتش رو علنی مصرف کرد (یکی
-  /// رو برگردوند)؛ شورشی، وقتی یکی از اسلحه‌های جنگیش عملاً به‌نتیجه‌رسیده؛
+  /// رو برگردوند)؛ شورشی، وقتی کلِ سهمیه‌ی اسلحه‌ی جنگیش تموم شده (نه
+  /// صرفاً وقتی یکیش به‌نتیجه رسیده — تا وقتی سهمیه داره هر شب بیدار می‌مونه)؛
   /// فعال مدنی، وقتی درخواستِ رفراندومش رو مصرف کرده. جدا از اون‌ها،
   /// رهبرِ موساد و تحلیلگرِ سیاسی هم فقط شب‌های خاصی (اولی هم شبِ اول هم
   /// زوج، دومی فقط زوج) وارد ترتیب می‌شن — این یه قاعده‌ی عمومی و از قبل
@@ -2450,7 +2444,8 @@ class GameFlowController extends ChangeNotifier {
       case NightStepKind.doctor:
         return doctorPlayer != null;
       case NightStepKind.rebel:
-        return rebelPlayer != null && !rebelWarGunUsed;
+        final rebel = rebelPlayer;
+        return rebel != null && (rebel.warGunsRemaining ?? 0) > 0;
       case NightStepKind.nationalHero:
         return nationalHeroPlayer != null;
       case NightStepKind.revolutionary:
@@ -2654,7 +2649,7 @@ class GameFlowController extends ChangeNotifier {
     // اگه کسی که امشب اسلحه‌ی جنگی گرفته بود اصلاً به روزِ بعد نرسید (شات/
     // سلاخی/اعدامِ انقلابی — هرکدوم)، فرصتِ استفاده نداشت. این «استفاده»
     // حساب نمی‌شه: اسلحه به سهمیه‌ی شورشی برمی‌گرده تا شبِ دیگه به یکی
-    // دیگه بده، و rebelWarGunUsed دست‌نخورده می‌مونه.
+    // دیگه بده.
     for (final p in players) {
       if (!p.isAlive && p.heldGunType == GunType.war) {
         final rebel = rebelPlayer;
