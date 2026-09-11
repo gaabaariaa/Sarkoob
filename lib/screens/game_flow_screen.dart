@@ -159,39 +159,55 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             child: SafeArea(
               top: false,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _bottomBarAction(
-                    icon: Icons.groups,
-                    label: 'بازیکنان',
-                    onPressed: _showRosterDialog,
+                  Expanded(
+                    child: _bottomBarAction(
+                      icon: Icons.groups,
+                      label: 'بازیکنان',
+                      onPressed: _showRosterDialog,
+                    ),
                   ),
-                  _bottomBarAction(
-                    icon: Icons.swap_vert,
-                    label: 'جابه‌جایی',
-                    onPressed: _showReorderDialog,
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: _bottomBarAction(
+                      icon: Icons.swap_vert,
+                      label: 'جابه‌جایی',
+                      onPressed: _showReorderDialog,
+                    ),
                   ),
-                  _bottomBarAction(
-                    icon: Icons.gavel,
-                    label: 'تنبیه',
-                    onPressed: _showDisciplineDialog,
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: _bottomBarAction(
+                      icon: Icons.gavel,
+                      label: 'تنبیه',
+                      onPressed: _showDisciplineDialog,
+                    ),
                   ),
-                  _bottomBarAction(
-                    icon: _showTeamCounts ? Icons.pie_chart : Icons.pie_chart_outline,
-                    label: 'تعدادِ زنده',
-                    active: _showTeamCounts,
-                    onPressed: () => setState(() => _showTeamCounts = !_showTeamCounts),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: _bottomBarAction(
+                      icon: _showTeamCounts ? Icons.pie_chart : Icons.pie_chart_outline,
+                      label: 'تعدادِ زنده',
+                      active: _showTeamCounts,
+                      onPressed: () => setState(() => _showTeamCounts = !_showTeamCounts),
+                    ),
                   ),
-                  _bottomBarAction(
-                    icon: _moderatorNotes.trim().isEmpty ? Icons.note_add_outlined : Icons.note_alt,
-                    label: 'یادداشت',
-                    active: _moderatorNotes.trim().isNotEmpty,
-                    onPressed: _showNotesDialog,
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: _bottomBarAction(
+                      icon: _moderatorNotes.trim().isEmpty ? Icons.note_add_outlined : Icons.note_alt,
+                      label: 'یادداشت',
+                      active: _moderatorNotes.trim().isNotEmpty,
+                      onPressed: _showNotesDialog,
+                    ),
                   ),
-                  _bottomBarAction(
-                    icon: Icons.flag,
-                    label: 'پایانِ بازی',
-                    onPressed: _showEndGameDialog,
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: _bottomBarAction(
+                      icon: Icons.flag,
+                      label: 'پایانِ بازی',
+                      onPressed: _showEndGameDialog,
+                    ),
                   ),
                 ],
               ),
