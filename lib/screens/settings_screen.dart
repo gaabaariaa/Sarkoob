@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +22,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   List<String> _trackPaths = [];
   bool _busy = false;
   bool _previewing = false;
+  bool _backupBusy = false;
 
   @override
   void initState() {
@@ -140,6 +143,137 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() => _previewing = !_previewing);
   }
 
+  void _showBackupError(String message) {
+    if (!mounted) return;
+    setState(() => _backupBusy = false);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  String _timestampForFilename() {
+    final now = DateTime.now();
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${now.year}${two(now.month)}${two(now.day)}_${two(now.hour)}${two(now.minute)}';
+  }
+
+  /// خروجی‌گرفتنِ روستر + تاریخچه به یه فایلِ JSON که کاربر مسیرِ ذخیره‌ش
+  /// رو خودش انتخاب می‌کنه (اشتراک‌گذاری/انتقال به گوشیِ دیگه دستِ خودشه).
+  Future<void> _exportBackup() async {
+    setState(() => _backupBusy = true);
+    try {
+      final json = await _storage.exportBackupJson();
+      final bytes = Uint8List.fromList(utf8.encode(json));
+      final savedPath = await FilePicker.platform.saveFile(
+        dialogTitle: 'ذخیره‌ی فایلِ بک‌آپ',
+        fileName: 'sarkoob_backup_${_timestampForFilename()}.json',
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        bytes: bytes,
+      );
+      if (!mounted) return;
+      setState(() => _backupBusy = false);
+      if (savedPath == null) return; // کاربر انصراف داد
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('✅ بک‌آپ ذخیره شد.')),
+      );
+    } catch (e) {
+      _showBackupError('خطا تو گرفتنِ خروجی: $e');
+    }
+  }
+
+  /// وارد‌کردنِ یه فایلِ بک‌آپ. اول می‌پرسه merge کنه یا کاملاً جایگزین کنه،
+  /// بعدِ جایگزینیِ کامل هم یه تأییدِ دومِ صریح می‌گیره چون برگشت‌ناپذیره.
+  Future<void> _importBackup() async {
+    final mode = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceCard,
+        title: const Text('وارد کردنِ بک‌آپ'),
+        content: const Text(
+          'داده‌هایِ فایل به داده‌هایِ فعلیِ این گوشی اضافه بشن (بدونِ حذفِ '
+          'چیزی)، یا کاملاً جایگزینِ داده‌هایِ فعلی بشن؟',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, null),
+            child: const Text('انصراف'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('افزودن به داده‌ی فعلی'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'جایگزینیِ کامل',
+              style: TextStyle(color: AppColors.bloodRedLight),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (mode == null || !mounted) return;
+
+    if (mode == false) {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: AppColors.surfaceCard,
+          title: const Text('مطمئنی؟'),
+          content: const Text(
+            'جایگزینیِ کامل یعنی روستر و تاریخچه‌ی فعلیِ همین گوشی پاک می‌شه '
+            'و با محتوایِ فایل عوض می‌شه. این کار برگشت‌ناپذیره.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('انصراف'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(
+                'جایگزین کن',
+                style: TextStyle(color: AppColors.bloodRedLight),
+              ),
+            ),
+          ],
+        ),
+      );
+      if (confirm != true || !mounted) return;
+    }
+
+    setState(() => _backupBusy = true);
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+      final path = result?.files.single.path;
+      if (path == null) {
+        if (mounted) setState(() => _backupBusy = false);
+        return;
+      }
+      final raw = await File(path).readAsString();
+      final imported = await _storage.importBackupJson(raw, merge: mode);
+      if (!mounted) return;
+      setState(() => _backupBusy = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            mode
+                ? '✅ ${imported.rosterCount} بازیکنِ جدید و ${imported.historyCount} '
+                    'بازیِ جدید اضافه شد.'
+                : '✅ بازیابی شد: ${imported.rosterCount} بازیکن، '
+                    '${imported.historyCount} بازی.',
+          ),
+        ),
+      );
+    } on FormatException catch (e) {
+      _showBackupError(e.message);
+    } catch (e) {
+      _showBackupError('فایل خونده نشد یا خرابه: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -221,6 +355,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                   if (_busy) ...[
+                    const SizedBox(height: 12),
+                    const LinearProgressIndicator(),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+          Text('💾 بک‌آپ و بازیابی', style: AppTheme.headingFont(size: 20)),
+          const SizedBox(height: 8),
+          const Text(
+            'روستر (لیستِ دائمیِ بازیکن‌ها) و تاریخچه‌ی بازی‌ها (شاملِ آمار و '
+            'امتیازها) رو تو یه فایل ذخیره کن تا بشه به گوشیِ دیگه منتقلش کرد، '
+            'یا از یه فایلِ قبلی برشون‌گردون.',
+            style: TextStyle(color: Colors.white60, fontSize: 13),
+          ),
+          const SizedBox(height: 16),
+          Card(
+            color: AppColors.surfaceCard,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.upload_file),
+                        label: const Text('خروجی گرفتن (بک‌آپ)'),
+                        onPressed: _backupBusy ? null : _exportBackup,
+                      ),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.download_outlined),
+                        label: const Text('وارد کردن (بازیابی)'),
+                        onPressed: _backupBusy ? null : _importBackup,
+                      ),
+                    ],
+                  ),
+                  if (_backupBusy) ...[
                     const SizedBox(height: 12),
                     const LinearProgressIndicator(),
                   ],
