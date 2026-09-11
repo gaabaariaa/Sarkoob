@@ -33,7 +33,7 @@ class RoleRevealScreen extends StatefulWidget {
 }
 
 class _RoleRevealScreenState extends State<RoleRevealScreen> {
-  final Set<String> _seenIds = {};
+  final Set<int> _seenIds = {};
 
   Future<void> _openPlayer(SessionPlayer player) async {
     final confirmed = await Navigator.of(context).push<bool>(
