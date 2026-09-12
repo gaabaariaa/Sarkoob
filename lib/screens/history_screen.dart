@@ -69,11 +69,25 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           _formatDate(entry.playedAt),
                           style: const TextStyle(color: Colors.white),
                         ),
-                        subtitle: Text(
-                          entry.winningTeamId == 'unknown'
-                              ? 'نتیجه: نامشخص'
-                              : 'برنده: ${_teamName(entry.winningTeamId)}',
-                          style: const TextStyle(color: AppColors.goldLight),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              entry.winningTeamId == 'unknown'
+                                  ? 'نتیجه: نامشخص'
+                                  : 'برنده: ${_teamName(entry.winningTeamId)}',
+                              style: const TextStyle(color: AppColors.goldLight),
+                            ),
+                            if (entry.location.trim().isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2),
+                                child: Text(
+                                  '📍 ${entry.location.trim()}',
+                                  style: const TextStyle(color: Colors.white54, fontSize: 12),
+                                ),
+                              ),
+                          ],
                         ),
                         iconColor: AppColors.gold,
                         collapsedIconColor: AppColors.gold,

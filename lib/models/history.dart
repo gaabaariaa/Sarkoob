@@ -87,12 +87,14 @@ class GameHistoryEntry {
   final String id;
   final DateTime playedAt;
   final String winningTeamId; // شناسه‌ی تیمِ برنده، یا 'unknown'
+  final String location; // محلِ برگزاری — رکوردهای قدیمی‌تر خالیه
   final List<GameHistoryPlayerRecord> players;
 
   GameHistoryEntry({
     required this.id,
     required this.playedAt,
     required this.winningTeamId,
+    this.location = '',
     required this.players,
   });
 
@@ -100,6 +102,7 @@ class GameHistoryEntry {
         'id': id,
         'playedAt': playedAt.toIso8601String(),
         'winningTeamId': winningTeamId,
+        'location': location,
         'players': players.map((p) => p.toJson()).toList(),
       };
 
@@ -108,6 +111,7 @@ class GameHistoryEntry {
       id: json['id'] as String,
       playedAt: DateTime.parse(json['playedAt'] as String),
       winningTeamId: json['winningTeamId'] as String,
+      location: json['location'] as String? ?? '',
       players: (json['players'] as List)
           .map((p) => GameHistoryPlayerRecord.fromJson(p as Map<String, dynamic>))
           .toList(),

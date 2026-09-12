@@ -37,15 +37,23 @@ class GameSettings {
   /// چندبار در کلِ بازی دکتر می‌تونه خودش رو نجات بده (پیش‌فرض ۲).
   final int doctorMaxSelfSaves;
 
-  const GameSettings({this.speakSeconds = 60, this.doctorMaxSelfSaves = 2});
+  /// محلِ برگزاریِ بازی — متنِ آزادِ گرداننده، می‌تونه خالی بمونه.
+  final String location;
+
+  const GameSettings({
+    this.speakSeconds = 60,
+    this.doctorMaxSelfSaves = 2,
+    this.location = '',
+  });
 
   int get introSeconds => (speakSeconds / 2).round();
   int get challengeSeconds => (speakSeconds / 2).round();
 
-  GameSettings copyWith({int? speakSeconds, int? doctorMaxSelfSaves}) {
+  GameSettings copyWith({int? speakSeconds, int? doctorMaxSelfSaves, String? location}) {
     return GameSettings(
       speakSeconds: speakSeconds ?? this.speakSeconds,
       doctorMaxSelfSaves: doctorMaxSelfSaves ?? this.doctorMaxSelfSaves,
+      location: location ?? this.location,
     );
   }
 }

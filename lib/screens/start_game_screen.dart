@@ -15,6 +15,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   final Map<String, String> _draftRosterLinks = {}; // اسم -> آی‌دیِ لیستِ دائمی
   List<SavedPlayerProfile> _roster = [];
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
   int _speakSeconds = 60;
   int _doctorMaxSelfSaves = 2;
 
@@ -98,6 +99,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _locationController.dispose();
     super.dispose();
   }
 
@@ -542,6 +544,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final settings = GameSettings(
       speakSeconds: _speakSeconds,
       doctorMaxSelfSaves: _doctorMaxSelfSaves,
+      location: _locationController.text.trim(),
     );
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
@@ -696,6 +699,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final settings = GameSettings(
       speakSeconds: _speakSeconds,
       doctorMaxSelfSaves: _doctorMaxSelfSaves,
+      location: _locationController.text.trim(),
     );
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
@@ -871,6 +875,28 @@ class _StartGameScreenState extends State<StartGameScreen> {
                 onPressed: () => setState(() => _doctorMaxSelfSaves++),
               ),
             ],
+          ),
+
+          const SizedBox(height: 24),
+          Text('محلِ بازی', style: AppTheme.headingFont(size: 20)),
+          const SizedBox(height: 4),
+          const Text(
+            'اختیاریه — بعداً تو تاریخچه‌ی بازی‌ها هم نشون داده می‌شه.',
+            style: TextStyle(color: Colors.white60, fontSize: 12),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _locationController,
+            style: const TextStyle(color: Colors.white),
+            decoration: const InputDecoration(
+              hintText: 'مثلاً: خونه‌ی سارا، کافه X',
+              hintStyle: TextStyle(color: Colors.white38),
+              filled: true,
+              fillColor: AppColors.surfaceDark,
+              border: OutlineInputBorder(borderSide: BorderSide(color: AppColors.goldDark)),
+              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppColors.goldDark)),
+              focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: AppColors.gold)),
+            ),
           ),
 
           const SizedBox(height: 24),

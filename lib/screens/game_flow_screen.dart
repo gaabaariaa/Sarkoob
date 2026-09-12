@@ -675,6 +675,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       playedAt: DateTime.now(),
       winningTeamId: winnerId,
+      location: controller.settings.location,
       players: controller.players
           .map(
             (p) => GameHistoryPlayerRecord(
