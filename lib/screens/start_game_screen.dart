@@ -889,7 +889,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
             controller: _locationController,
             style: const TextStyle(color: Colors.white),
             decoration: const InputDecoration(
-              hintText: 'مثلاً: خونه‌ی سارا، کافه X',
+              hintText: 'مثلاً: خونه‌ی سهیل، کافه X',
               hintStyle: TextStyle(color: Colors.white38),
               filled: true,
               fillColor: AppColors.surfaceDark,
