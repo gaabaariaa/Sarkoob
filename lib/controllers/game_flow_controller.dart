@@ -2175,8 +2175,9 @@ class GameFlowController extends ChangeNotifier {
 
     if (success) {
       bombOutcomeMessage = '💣 بمبِ «${target.name}» با رمزِ درست خنثی شد.';
-      // خنثی‌شدن صرفاً شانسیه (حدسِ رمز)، نه اشتباهِ بمب‌گذار؛ امتیازِ
-      // خاصی نمی‌گیره (۰).
+      // طبقِ sarkoob-action-scoring-template.xlsx (ردیفِ bomb_defuse):
+      // خنثی‌شدنِ موفقِ بمب برایِ خودِ بمب‌گذار -۳ه.
+      if (bomber != null) _award(bomber, -3, 'بمب‌گذاری');
     } else if (guardSacrificed && guard != null) {
       // محافظ به‌جایِ هدف فدا شده و رمز رو غلط زده — فقط خودِ محافظ
       // حذف می‌شه (کاملاً و برگشت‌ناپذیر، نه از مسیرِ نیمه‌جان)؛ هدفِ
@@ -2186,8 +2187,8 @@ class GameFlowController extends ChangeNotifier {
       _checkZhinaTrigger(guard);
       bombOutcomeMessage = '💣 «${guard.name}» به‌جایِ «${target.name}» فدا شده بود و رمز رو غلط زد؛ '
           'نقشِ محافظش افشا شد و کاملاً از بازی خارج شد. «${target.name}» زنده موند.';
-      // هدفِ اصلیِ بمب‌گذار زنده موند (محافظ جاش فدا شد)؛ برایِ بمب‌گذار
-      // هم مثلِ خنثی‌شدنِ عادی حساب می‌شه — ۰.
+      // این هم از نگاهِ بمب‌گذار یه خنثی‌شدنِ کاملِ بمبه — همون -۳.
+      if (bomber != null) _award(bomber, -3, 'بمب‌گذاری');
     } else {
       final opposing = bomber != null && _isOpposingTeam(bomber.teamId, target.teamId);
       _eliminatePlayer(target);
