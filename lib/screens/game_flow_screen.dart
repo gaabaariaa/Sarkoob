@@ -754,6 +754,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               onPressed: selectedTeamId != null
                   ? () async {
                       final winnerId = selectedTeamId!;
+                      if (controller.autoDetectedWinnerTeamId == null) {
+                        controller.awardSurvivalBonus(winnerId);
+                      }
                       await _saveGameHistoryEntry(winnerId);
                       if (!dialogContext.mounted) return;
                       Navigator.of(dialogContext).pop();

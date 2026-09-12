@@ -141,6 +141,25 @@ class GameFlowController extends ChangeNotifier {
     return !simpleRoleIds.contains(p.roleId);
   }
 
+  /// ضریبِ امتیازِ رأی‌دهیِ نقش (طبقِ sarkoob-action-scoring-template.xlsx،
+  /// شیتِ «ضریبِ نقش‌ها»). نقش‌هایِ بدونِ‌قابلیت فقط از رأی/رفراندوم امتیاز
+  /// می‌گیرن، پس رأیِ درستِ اون‌ها سخت‌تر و باارزش‌تره — ضریبش بیشتره.
+  /// نقش‌هایِ فعال (با قابلیتِ شبانه) ضریبشون همیشه ۱ه. فقط رویِ
+  /// «رأیِ خروج» و «رأیِ رهبری» اثر می‌ذاره، نه رویِ اکشن‌هایِ اختصاصی
+  /// (چون نقش‌هایِ ساده اصلاً اکشنِ اختصاصی ندارن).
+  double _voteScoreMultiplier(SessionPlayer p) {
+    if (p.roleId == SarkoobRoles.grayCitizen.id || p.roleId == SarkoobRoles.simpleCitizen.id) {
+      return 2.0;
+    }
+    if (p.roleId == SarkoobRoles.suppressor.id || p.roleId == SarkoobRoles.simpleMafia.id) {
+      return 1.5;
+    }
+    if (p.roleId == SarkoobRoles.mossadLeader.id || p.roleId == SarkoobRoles.zodiacRole.id) {
+      return 0.5;
+    }
+    return 1.0;
+  }
+
   int get aliveCount => alivePlayers.length;
   int get majorityThreshold => (aliveCount / 2).ceil();
 
@@ -748,7 +767,7 @@ class GameFlowController extends ChangeNotifier {
         final hero = nationalHeroPlayer;
         if (hero != null) {
           final opposing = _isOpposingTeam(hero.teamId, guaranteed.teamId);
-          _award(hero, opposing ? -2 : 3, 'تضمینِ قهرمانِ ملی/ریش‌سفید');
+          _award(hero, opposing ? -2 : 2, 'تضمینِ قهرمانِ ملی/ریش‌سفید');
         }
       }
     }
@@ -769,7 +788,8 @@ class GameFlowController extends ChangeNotifier {
       for (final voterId in entry.value) {
         final voter = playerById(voterId);
         final opposing = _isOpposingTeam(voter.teamId, subject.teamId);
-        _award(voter, opposing ? 1 : -1, 'رأیِ خروج');
+        final base = opposing ? 1 : -1;
+        _award(voter, (base * _voteScoreMultiplier(voter)).round(), 'رأیِ خروج');
       }
       _voteHistoryThisRound.remove(entry.key);
     }
@@ -808,12 +828,10 @@ class GameFlowController extends ChangeNotifier {
   }
 
   void resolveSecondVoteRound() {
-    int? eliminatedIdForScoring;
     if (_defenseCandidateIds.length == 1) {
       final only = playerById(_defenseCandidateIds.first);
       if (only.votes >= majorityThreshold) {
         _eliminatePlayer(only);
-        eliminatedIdForScoring = only.id;
         lastResolution = VoteResolution('«${only.name}» با رأی کافی حذف شد.');
       } else {
         only.recordCount++;
@@ -837,7 +855,6 @@ class GameFlowController extends ChangeNotifier {
 
       if (eliminated != null) {
         final eliminatedId = eliminated.id;
-        eliminatedIdForScoring = eliminatedId;
         _eliminatePlayer(eliminated);
         for (final p in candidates) {
           if (p.id != eliminatedId) p.recordCount++;
@@ -851,25 +868,16 @@ class GameFlowController extends ChangeNotifier {
       }
     }
 
-    // امتیازدهیِ رأیِ خروج — زاویه‌ی رأی‌دهنده، برایِ نفراتِ دفاعیه: حالا
-    // نتیجه‌ی نهایی مشخصه.
+    // امتیازدهیِ رأیِ خروج — زاویه‌ی رأی‌دهنده، برایِ نفراتِ دفاعیه: طبقِ
+    // sarkoob-action-scoring-template.xlsx فقط تیمِ سوژه مهمه، نه اینکه
+    // نهایتاً حذف شد یا نه.
     for (final entry in _voteHistoryThisRound.entries) {
       final subject = playerById(entry.key);
-      final wasEliminated = entry.key == eliminatedIdForScoring;
       for (final voterId in entry.value) {
         final voter = playerById(voterId);
         final opposing = _isOpposingTeam(voter.teamId, subject.teamId);
-        int points;
-        if (opposing && wasEliminated) {
-          points = 2;
-        } else if (opposing && !wasEliminated) {
-          points = 1;
-        } else if (!opposing && wasEliminated) {
-          points = -2;
-        } else {
-          points = -1;
-        }
-        _award(voter, points, 'رأیِ خروج');
+        final base = opposing ? 2 : -2;
+        _award(voter, (base * _voteScoreMultiplier(voter)).round(), 'رأیِ خروج');
       }
     }
     _voteHistoryThisRound.clear();
@@ -980,7 +988,7 @@ class GameFlowController extends ChangeNotifier {
       _award(minister, 2, 'مذاکره‌ی موفق');
     } else {
       negotiateResultMessage = 'مذاکره با شکست مواجه شد.';
-      _award(minister, -1, 'مذاکره‌ی ناموفق');
+      _award(minister, -2, 'مذاکره‌ی ناموفق');
     }
     minister.negotiateUsed = true; // یک‌بارمصرف: چه موفق چه ناموفق، دیگه تکرار نمی‌شه
     _nightActionTaken = true;
@@ -1010,7 +1018,8 @@ class GameFlowController extends ChangeNotifier {
       _checkZhinaTrigger(target);
       _tonightSlaughteredIds.add(target.id);
       slaughterResultMessage = '«${target.name}» با سلاخی از بازی خارج شد.';
-      _award(leader, 3, 'سلاخیِ رهبر');
+      final opposing = _isOpposingTeam(leader.teamId, target.teamId);
+      _award(leader, opposing ? 2 : -2, 'سلاخیِ رهبر');
     } else {
       if ((leader.slaughterChargesRemaining ?? 0) > 0) {
         leader.slaughterChargesRemaining = leader.slaughterChargesRemaining! - 1;
@@ -1043,6 +1052,19 @@ class GameFlowController extends ChangeNotifier {
     autoDetectedWinnerTeamId = teamId;
     gameEndMessage = reason;
     chaosPhaseActive = false;
+    awardSurvivalBonus(teamId);
+  }
+
+  /// امتیازِ «بقا/بردن» (ردیفِ survive_to_end تویِ
+  /// sarkoob-action-scoring-template.xlsx): هرکسی که تیمش برنده شد +۱.
+  /// خودِ `_declareWinner` (مسیرِ خودکار/فازِ آشوب) این رو صدا می‌زنه؛
+  /// مسیرِ دستیِ ثبتِ نتیجه (دکمه‌ی 🏁، بدونِ autoDetectedWinnerTeamId)
+  /// جدا تو game_flow_screen.dart صداش می‌زنه، چون از _declareWinner رد
+  /// نمی‌شه.
+  void awardSurvivalBonus(String winnerId) {
+    for (final p in players) {
+      if (p.teamId == winnerId) _award(p, 1, 'بقا/بردن');
+    }
   }
 
   /// طبقِ سه حالتِ تعدادِ زنده‌ها (بیشتر از ۳ / دقیقاً ۳ / کمتر از ۳) چک
@@ -1138,24 +1160,44 @@ class GameFlowController extends ChangeNotifier {
     final independentTeamId = isMafiaGame ? SarkoobTeams.zodiac.id : SarkoobTeams.mossad.id;
     final p1 = playerById(player1Id);
     final p2 = playerById(player2Id);
+    final String winnerTeamId;
     if (p1.teamId == independentTeamId || p2.teamId == independentTeamId) {
+      winnerTeamId = independentTeamId;
       _declareWinner(
         independentTeamId,
         '«${p1.name}» و «${p2.name}» با هم دست دادن و ${SarkoobTeams.byId(independentTeamId)!.name} '
         'جزوِ این دو نفره.',
       );
     } else if (p1.teamId == p2.teamId) {
+      winnerTeamId = p1.teamId;
       _declareWinner(
         p1.teamId,
         '«${p1.name}» و «${p2.name}» (هردو ${SarkoobTeams.byId(p1.teamId)?.name}) با هم دست دادن.',
       );
     } else {
+      winnerTeamId = leaderTeamId;
       _declareWinner(
         leaderTeamId,
         '«${p1.name}» و «${p2.name}» با هم دست دادن (${SarkoobTeams.byId(townTeamId)!.name}+'
         '${SarkoobTeams.byId(leaderTeamId)!.name})؛ ${SarkoobTeams.byId(independentTeamId)!.name} بیرون موند.',
       );
     }
+
+    // امتیازدهیِ فازِ آشوب (طبقِ sarkoob-action-scoring-template.xlsx، شیتِ
+    // «فازِ آشوب»): دو نفری که با هم دست دادن، اگه تیمِ خودشون برنده شد
+    // یعنی توافقشون درست بود (+۳ برایِ هرکدوم)؛ اگه تیمِ خودشون نبرد یعنی
+    // اشتباهی به سودِ حریف توافق کردن (-۳). نفرِ سوم که بیرون موند، اگه
+    // تیمش به‌خاطرِ همین بیرون‌موندن باخت (-۱) — عملاً همیشه همینه، چون
+    // فازِ آشوب فقط وقتی فعال می‌شه که سه‌تا تیمِ متفاوت رو بازیکنانِ آخر
+    // باشه.
+    for (final p in [p1, p2]) {
+      _award(p, p.teamId == winnerTeamId ? 3 : -3, 'توافقِ آشوب');
+    }
+    final excluded = chaosPhasePlayers.firstWhere(
+      (p) => p.id != player1Id && p.id != player2Id,
+    );
+    _award(excluded, excluded.teamId == winnerTeamId ? 0 : -1, 'توافقِ آشوب (عدمِ توافق)');
+
     notifyListeners();
   }
 
@@ -1386,7 +1428,7 @@ class GameFlowController extends ChangeNotifier {
     final target = playerById(targetId);
     final opposing = _isOpposingTeam(commander.teamId, target.teamId);
     final meaningful = opposing && _hasActiveRole(target);
-    _award(commander, meaningful ? 2 : -1, 'بازداشتِ شبانه');
+    _award(commander, meaningful ? 1 : -1, 'بازداشتِ شبانه');
     notifyListeners();
   }
 
@@ -1437,7 +1479,7 @@ class GameFlowController extends ChangeNotifier {
     _skipDeadSpeakers();
     assassinationResultMessage =
         '«${merc.name}» (مزدورِ لباس‌شخصی) «${target.name}» رو ترور کرد و خودش هم لو رفت و همون‌لحظه حذف شد.';
-    _award(merc, _isOpposingTeam(merc.teamId, target.teamId) ? 3 : -3, 'ترورِ مزدور/تروریست');
+    _award(merc, _isOpposingTeam(merc.teamId, target.teamId) ? 2 : -2, 'ترورِ مزدور/تروریست');
     notifyListeners();
   }
 
@@ -1494,7 +1536,7 @@ class GameFlowController extends ChangeNotifier {
     }
 
     lawyer.revivalUsed = true;
-    _award(lawyer, _isOpposingTeam(lawyer.teamId, target.teamId) ? -2 : 3, 'احیایِ وکیل/کنستانتین');
+    _award(lawyer, _isOpposingTeam(lawyer.teamId, target.teamId) ? -2 : 2, 'احیایِ وکیل/کنستانتین');
     notifyListeners();
   }
 
@@ -1568,10 +1610,10 @@ class GameFlowController extends ChangeNotifier {
     final isMafia = target.teamId == SarkoobTeams.mafiaGang.id;
     discloserAnnouncement =
         '📢 افشاگر قبلِ خروج افشا کرد: «${target.name}» ${isMafia ? "عضوِ مافیاست" : "عضوِ مافیا نیست"}.';
-    // افشا همیشه راسته (دروغ‌گفتن امکان‌پذیر نیست)؛ پس امتیازدهی رو
-    // اینکه کیو انتخاب کرد: افشایِ یه هم‌تیمیِ واقعی به ضررِ تیمِ خودشه،
-    // افشایِ یه شهروند صرفاً یه اطلاعِ خنثی/کم‌ارزشه.
-    _award(discloser, isMafia ? -2 : 1, 'افشایِ عمومیِ تیم');
+    // افشا همیشه راسته (دروغ‌گفتن امکان‌پذیر نیست)؛ امتیازدهی طبقِ
+    // sarkoob-action-scoring-template.xlsx: افشایِ دشمنِ واقعی (مافیا) به
+    // سودِ تیمِ افشاگره، افشایِ یه هم‌تیمی به ضررشه.
+    _award(discloser, isMafia ? 3 : -2, 'افشایِ عمومیِ تیم');
     pendingDiscloserPlayerId = null;
     notifyListeners();
   }
@@ -1621,7 +1663,7 @@ class GameFlowController extends ChangeNotifier {
     if (target.teamId == SarkoobTeams.citizen.id || target.teamId == SarkoobTeams.mafiaTown.id) {
       target.isActiveResistanceMember = true;
       rapperResultMessage = '«${target.name}» به $resistanceTeamPhrase پیوست.';
-      _award(rapper, 3, 'جذبِ مقاومتِ موفق');
+      _award(rapper, 2, 'جذبِ مقاومتِ موفق');
     } else if (isSleeperStillHidden) {
       target.isActiveResistanceMember = true;
       rapperResultMessage = '«${target.name}» (که هنوز به‌عنوانِ $leaderTeamLabel فعال نشده) '
@@ -1636,7 +1678,7 @@ class GameFlowController extends ChangeNotifier {
       _eliminatePlayer(rapper);
       _tonightEliminatedIds.add(rapper.id);
       rapperResultMessage = 'انتخاب اشتباه بود! خودِ «${rapper.name}» همون‌لحظه حذف شد.';
-      _award(rapper, -3, 'جذبِ اشتباه (خودحذفی)');
+      _award(rapper, -2, 'جذبِ اشتباه (خودحذفی)');
     }
     notifyListeners();
   }
@@ -1677,6 +1719,12 @@ class GameFlowController extends ChangeNotifier {
   /// هر شب از نو انتخاب می‌شه (اگه خرابکار امشب کسی رو انتخاب نکنه،
   /// خرابکاریِ قبلی هم منقضی می‌شه).
   int? saboteurTargetPlayerId;
+
+  /// آیا خرابکاریِ امشب واقعاً به مرحلهٔ شلیک رسید (یعنی هدفِ خرابکار
+  /// همون کسی بود که شلیک کرد)؟ برایِ امتیازدهیِ «انتخابِ اشتباهِ فردِ
+  /// اسلحه‌دار» — اگه امشب یه هدف انتخاب شده بود ولی هیچ‌وقت به این حالت
+  /// نرسید، خرابکار امتیازِ منفی می‌گیره (پایینِ همین فایل، moveToNight).
+  bool _saboteurTriggeredTonight = false;
 
   bool get canSaboteurActTonight {
     final saboteur = saboteurPlayer;
@@ -1738,7 +1786,10 @@ class GameFlowController extends ChangeNotifier {
         gunFireResultMessage =
             '«${shooter.name}» شلیک کرد، ولی تفنگش خراب‌کاری‌شده بود؛ تیر به خودش برگشت و از بازی خارج شد.';
         final saboteur = saboteurPlayer;
-        // شوتر تقصیری نداره (تصمیمِ خرابکار بوده)؛ فقط خرابکار امتیاز می‌گیره.
+        // طبقِ اکسل، خرابکاری‌شدن هم جزوِ حالتِ منفیِ «شلیکِ اسلحه‌ی
+        // جنگی»ه (شوتر) — جدا از امتیازِ خودِ خرابکار.
+        _award(shooter, -3, 'شلیکِ اسلحه‌ی جنگی');
+        _saboteurTriggeredTonight = true;
         if (saboteur != null) _award(saboteur, 2, 'خرابکاریِ موفق');
         notifyListeners();
         return;
@@ -1749,9 +1800,9 @@ class GameFlowController extends ChangeNotifier {
       _eliminatePlayer(target);
       gunFireResultMessage =
           '«${target.name}» با شلیکِ «${shooter.name}» (اسلحه‌ی جنگی) از بازی خارج شد؛ تیمش: $teamName.';
-      _award(shooter, shooterOpposing ? 2 : -3, 'شلیکِ اسلحه‌ی جنگی');
+      _award(shooter, shooterOpposing ? 3 : -3, 'شلیکِ اسلحه‌ی جنگی');
       if (rebel != null && rebel.id != shooter.id) {
-        _award(rebel, shooterOpposing ? 2 : -1, 'توزیعِ اسلحه‌ی جنگی');
+        _award(rebel, shooterOpposing ? 2 : -2, 'توزیعِ اسلحه‌ی جنگی');
       }
     } else {
       gunFireResultMessage = '«${shooter.name}» شلیک کرد ولی اسلحه‌ش مشقی بود؛ هیچ اتفاقی نیفتاد.';
@@ -1856,7 +1907,7 @@ class GameFlowController extends ChangeNotifier {
     final chief = judiciaryChiefPlayer;
     if (chief != null) {
       final opposing = _isOpposingTeam(chief.teamId, player.teamId);
-      _award(chief, opposing ? 2 : -2, 'حکمِ کلمه‌ی ممنوع');
+      _award(chief, opposing ? 2 : -3, 'حکمِ کلمه‌ی ممنوع');
     }
     _eliminatePlayer(player);
     // توجه: activeExecutionWord اینجا reset نمی‌شه — کلمه تا شروعِ رأی‌گیریِ
@@ -1911,7 +1962,7 @@ class GameFlowController extends ChangeNotifier {
     lastInvestigationResult = investigationResultFor(targetId);
     lastInvestigationTargetName = playerById(targetId).name;
     _hackerUsedTonight = true;
-    _award(hacker, lastInvestigationResult == InvestigationResult.like ? 2 : 0, 'استعلامِ هکر/کارآگاه');
+    _award(hacker, lastInvestigationResult == InvestigationResult.like ? 2 : -1, 'استعلامِ هکر/کارآگاه');
     notifyListeners();
   }
 
@@ -1986,7 +2037,7 @@ class GameFlowController extends ChangeNotifier {
       _checkMistressTrigger(target);
       _tonightSlaughteredIds.add(target.id);
       mossadAssassinationResultMessage = '«${target.name}» با ترورِ موساد از بازی خارج شد.';
-      _award(leader, 3, 'ترورِ رهبرِ تیمِ مستقل');
+      _award(leader, 2, 'ترورِ رهبرِ تیمِ مستقل');
     } else {
       mossadAssassinationResultMessage = 'ترورِ موساد بی‌اثر بود؛ هیچ‌کس متوجه نشد.';
     }
@@ -2194,7 +2245,7 @@ class GameFlowController extends ChangeNotifier {
         isIndependent ? InvestigationResult.like : InvestigationResult.dislike;
     lastIndependentInvestigationTargetName = target.name;
     _politicalAnalystUsedTonight = true;
-    _award(analyst, isIndependent ? 2 : 0, 'استعلامِ تحلیلگرِ سیاسی/شرلوک');
+    _award(analyst, isIndependent ? 3 : -1, 'استعلامِ تحلیلگرِ سیاسی/شرلوک');
     notifyListeners();
   }
 
@@ -2316,7 +2367,8 @@ class GameFlowController extends ChangeNotifier {
       final voter = playerById(entry.key);
       final candidate = playerById(entry.value);
       final opposing = _isOpposingTeam(voter.teamId, candidate.teamId);
-      _award(voter, opposing ? -1 : 1, 'رأیِ رهبری');
+      final base = opposing ? -1 : 1;
+      _award(voter, (base * _voteScoreMultiplier(voter)).round(), 'رأیِ رهبری');
     }
     _referendumVoterChoices.clear();
 
@@ -2587,6 +2639,14 @@ class GameFlowController extends ChangeNotifier {
     godfatherEnragedTonight = godfatherEnragedNextNight;
     godfatherEnragedNextNight = false;
     leaderActionsUsedTonight = 0;
+    // امتیازدهیِ «انتخابِ اشتباهِ فردِ اسلحه‌دار» — طبقِ اکسل: اگه دیشب
+    // خرابکار یه هدف انتخاب کرده بود ولی اون هدف هیچ‌وقت شلیک نکرد (پس
+    // خرابکاری هیچ‌وقت به‌ثمر ننشست)، -۱.
+    if (saboteurTargetPlayerId != null && !_saboteurTriggeredTonight) {
+      final saboteur = saboteurPlayer;
+      if (saboteur != null) _award(saboteur, -1, 'خرابکاریِ ناموفق');
+    }
+    _saboteurTriggeredTonight = false;
     saboteurTargetPlayerId = null;
     _natashaSilencedTonightId = null;
     _nightActionTaken = false;
@@ -2665,14 +2725,26 @@ class GameFlowController extends ChangeNotifier {
     });
 
     // امتیازدهیِ کشتار (شاتِ رهبر / شاتِ سریِ موساد-زودیاک / اعدامِ
-    // انقلابی): حالا که سرنوشتِ نهاییِ هر هدف مشخصه.
+    // انقلابی): حالا که سرنوشتِ نهاییِ هر هدف مشخصه. «شاتِ رهبر» طبقِ
+    // sarkoob-action-scoring-template.xlsx (ردیفِ leader_shoot) فرمولِ
+    // خودشو داره؛ بقیه‌ی مکانیزم‌هایی که تویِ همین صف‌بندی می‌شینن
+    // (موساد/زودیاک، مبارزِ انقلابی) چون تو اکسل جداگونه نیومدن، فرمولِ
+    // قبلی‌شون دست‌نخورده می‌مونه.
     for (final attribution in _pendingHitAttributions) {
       final actor = playerById(attribution.actorId);
       final target = playerById(attribution.targetId);
       final died = diedTonightFromHit[attribution.targetId] ?? false;
       final opposing = _isOpposingTeam(actor.teamId, target.teamId);
       int points;
-      if (opposing && died) {
+      if (attribution.mechanism == 'شاتِ رهبر') {
+        if (opposing && died) {
+          points = 2;
+        } else if (opposing && !died) {
+          points = -2; // دشمن بود ولی نجات پیدا کرد (زره/دکتر)
+        } else {
+          points = -2; // هدفِ اشتباه (هم‌تیمی)، چه بمیره چه نه
+        }
+      } else if (opposing && died) {
         points = 2;
       } else if (!opposing && died) {
         points = -3; // خودی‌زنی
@@ -2683,15 +2755,29 @@ class GameFlowController extends ChangeNotifier {
     }
     _pendingHitAttributions.clear();
 
-    // امتیازدهیِ نجاتِ دکتر: «معنی‌دار» یعنی هدف امشب واقعاً تویِ
-    // _pendingHits بوده (صرف‌نظر از اینکه نهایتاً زنده موند یا هرچند
-    // ضربه‌ی هم‌زمانِ دیگه‌ای غلبه کرد)؛ تشخیصِ درستِ هدف، مهارتِ خودِ دکتره.
+    // امتیازدهیِ نجاتِ دکتر — طبقِ sarkoob-action-scoring-template.xlsx:
+    // چهار حالت، بر اساسِ اینکه هدف واقعاً امشب موردِ حمله بوده یا نه
+    // («معنی‌دار»بودنِ نجات) و اینکه هدف هم‌تیمیِ دکتر بوده یا دشمن —
+    // نجاتِ دشمن (چه لازم بوده چه نه) منفیه، چون به سودِ حریفه؛ خودِ
+    // دکتر هم مثلِ هر هم‌تیمیِ دیگه حساب می‌شه (تخفیفِ قدیمیِ خودنجاتی
+    // حذف شد).
     final doctor = doctorPlayer;
     if (doctor != null) {
       for (final savedId in _savedPlayerIds) {
-        if (!_pendingHits.containsKey(savedId)) continue; // نجاتِ بی‌مصرف = ۰
-        final isSelfSave = savedId == doctor.id;
-        _award(doctor, isSelfSave ? 2 : 3, 'نجاتِ شبانه‌ی دکتر');
+        final saved = playerById(savedId);
+        final wasNeeded = _pendingHits.containsKey(savedId);
+        final opposing = _isOpposingTeam(doctor.teamId, saved.teamId);
+        int points;
+        if (wasNeeded && !opposing) {
+          points = 3;
+        } else if (wasNeeded && opposing) {
+          points = -3;
+        } else if (!wasNeeded && !opposing) {
+          points = 1;
+        } else {
+          points = -1;
+        }
+        _award(doctor, points, 'نجاتِ شبانه‌ی دکتر');
       }
     }
 
