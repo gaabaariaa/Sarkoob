@@ -28,6 +28,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   // بقیه‌ی نقش‌ها اختیاری، دو شمارشگر برای اعضای سادهٔ هر تیم. ----
   bool _includeZodiac = false;
 
+  bool _includeGodfather = false;
   bool _includeNegotiator = false;
   bool _includeEnchanter = false;
   bool _includeSpy = false;
@@ -55,9 +56,10 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
   bool _includeMossad = false;
 
-  // کدوم نقش‌های اختیاری تو این بازی فعالن؛ ولی‌فقیه همیشه اجباری و
-  // فعاله. این‌که کدوم نقش‌ها اصلاً تو بازی باشن دستیه، ولی این‌که کدوم
-  // بازیکنِ خاص هرکدوم رو بگیره، کاملاً تصادفیه.
+  // کدوم نقش‌های اختیاری تو این بازی فعالن. این‌که کدوم نقش‌ها اصلاً تو
+  // بازی باشن دستیه، ولی این‌که کدوم بازیکنِ خاص هرکدوم رو بگیره، کاملاً
+  // تصادفیه.
+  bool _includeValiFaghih = false;
   bool _includeForeignMinister = false;
   bool _includeJudiciaryChief = false;
   bool _includeCelebrity = false;
@@ -239,7 +241,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   bool get _includeIndependent => _includeMossad;
 
   int get _sorkoobRoleSlotsEnabled =>
-      1 +
+      (_includeValiFaghih ? 1 : 0) +
       (_includeForeignMinister ? 1 : 0) +
       (_includeJudiciaryChief ? 1 : 0) +
       (_includeCelebrity ? 1 : 0) +
@@ -269,7 +271,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
   // ---- جمعِ نقش‌بندی‌شده‌ی سناریوی «مافیا» (کاملاً موازیِ بالا) ----
   int get _mafiaGangRoleSlotsEnabled =>
-      1 + // پدرخوانده، همیشه اجباری
+      (_includeGodfather ? 1 : 0) +
       (_includeNegotiator ? 1 : 0) +
       (_includeEnchanter ? 1 : 0) +
       (_includeSpy ? 1 : 0) +
@@ -410,7 +412,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
         allShuffled.skip(sorkoobCount).take(independentCount).toSet();
 
     final sorkoobShuffled = sorkoobIndices.toList()..shuffle();
-    final valiFaghihIndex = sorkoobShuffled.isNotEmpty ? sorkoobShuffled[0] : null;
+    final valiFaghihIndex =
+        (_includeValiFaghih && sorkoobShuffled.isNotEmpty) ? sorkoobShuffled[0] : null;
 
     // یکی از اعضای تیمِ مستقل (اگه موساد فعال باشه) رهبرِ موساد می‌شه —
     // درست مثلِ ولی‌فقیهِ سرکوب.
@@ -418,7 +421,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final mossadLeaderIndex =
         (_includeMossad && independentShuffled.isNotEmpty) ? independentShuffled[0] : null;
 
-    var sorkoobCursor = 1; // اندیسِ ۰ همیشه ولی‌فقیه‌ست
+    var sorkoobCursor = _includeValiFaghih ? 1 : 0; // اندیسِ ۰ فقط اگه ولی‌فقیه فعال باشه رزرو می‌شه
     int? nextSorkoobIndex(bool enabled) {
       if (!enabled || sorkoobCursor >= sorkoobShuffled.length) return null;
       return sorkoobShuffled[sorkoobCursor++];
@@ -566,12 +569,13 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final independentIndices = allShuffled.skip(mafiaGangCount).take(independentCount).toSet();
 
     final mafiaGangShuffled = mafiaGangIndices.toList()..shuffle();
-    final godfatherIndex = mafiaGangShuffled.isNotEmpty ? mafiaGangShuffled[0] : null;
+    final godfatherIndex =
+        (_includeGodfather && mafiaGangShuffled.isNotEmpty) ? mafiaGangShuffled[0] : null;
 
     final independentShuffled = independentIndices.toList()..shuffle();
     final zodiacIndex = (_includeZodiac && independentShuffled.isNotEmpty) ? independentShuffled[0] : null;
 
-    var mafiaGangCursor = 1; // اندیسِ ۰ همیشه پدرخوانده‌ست
+    var mafiaGangCursor = _includeGodfather ? 1 : 0; // اندیسِ ۰ فقط اگه پدرخوانده فعال باشه رزرو می‌شه
     int? nextMafiaGangIndex(bool enabled) {
       if (!enabled || mafiaGangCursor >= mafiaGangShuffled.length) return null;
       return mafiaGangShuffled[mafiaGangCursor++];
@@ -1141,7 +1145,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
               style: TextStyle(color: Colors.white60, fontSize: 12),
             ),
             const SizedBox(height: 8),
-            _mandatoryRoleRow(SarkoobRoles.valiFaghih),
+            _roleToggle(
+              role: SarkoobRoles.valiFaghih,
+              value: _includeValiFaghih,
+              onChanged: (v) => setSheetState(() => _includeValiFaghih = v),
+            ),
             _roleToggle(
               role: SarkoobRoles.foreignMinister,
               value: _includeForeignMinister,
@@ -1299,7 +1307,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
               style: TextStyle(color: Colors.white60, fontSize: 12),
             ),
             const SizedBox(height: 8),
-            _mandatoryRoleRow(SarkoobRoles.godfather),
+            _roleToggle(
+              role: SarkoobRoles.godfather,
+              value: _includeGodfather,
+              onChanged: (v) => setSheetState(() => _includeGodfather = v),
+            ),
             _roleToggle(
               role: SarkoobRoles.negotiator,
               value: _includeNegotiator,
