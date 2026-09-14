@@ -4,6 +4,13 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// اسمِ فایلِ خروجیِ APK/AAB — بجایِ نامِ پیش‌فرضِ ماژولِ گریدل («app»)، خروجی‌ها
+// چیزی مثلِ HandOfGod-arm64-v8a-release.apk می‌شن (فقط اسمِ فایل؛ اسمِ نصب‌شده
+// رو در AndroidManifest.xml با android:label تنظیم کردیم).
+base {
+    archivesName.set("HandOfGod")
+}
+
 android {
     namespace = "com.example.hidden_role_flutter"
     compileSdk = flutter.compileSdkVersion

@@ -45,13 +45,16 @@ class RoleInfoCard extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           if (role.imageAsset != null)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: Image.asset(
-                role.imageAsset!,
-                fit: BoxFit.cover,
-                height: 260,
-                width: double.infinity,
+            AspectRatio(
+              aspectRatio: 1,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Image.asset(
+                  role.imageAsset!,
+                  fit: BoxFit.contain,
+                  alignment: Alignment.topCenter,
+                  width: double.infinity,
+                ),
               ),
             )
           else
