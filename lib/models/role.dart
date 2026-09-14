@@ -516,6 +516,7 @@ class SarkoobRoles {
   /// معادلِ ولی‌فقیه. رهبرِ تیمِ مافیا؛ هر شب یا شاتِ تیمی یا سلاخی.
   static final godfather = GameRole(
     id: 'role_godfather',
+    imageAsset: 'assets/roles/godfather.webp',
     name: 'پدرخوانده',
     teamId: SarkoobTeams.mafiaGang.id,
     description:
@@ -534,6 +535,7 @@ class SarkoobRoles {
   /// معادلِ وزیر امور خارجه.
   static final negotiator = GameRole(
     id: 'role_negotiator',
+    imageAsset: 'assets/roles/negotiator.webp',
     name: 'مذاکره‌کننده',
     teamId: SarkoobTeams.mafiaGang.id,
     description:
@@ -552,6 +554,7 @@ class SarkoobRoles {
   /// تبدیل می‌شه؛ و نقشِ پرشماره‌ترینِ عضوِ سادهٔ تیمِ مافیا.
   static final simpleMafia = GameRole(
     id: 'role_simple_mafia',
+    imageAsset: 'assets/roles/simpleMafia.webp',
     name: 'مافیا ساده',
     teamId: SarkoobTeams.mafiaGang.id,
     description:
@@ -566,6 +569,7 @@ class SarkoobRoles {
   /// معادلِ رئیس قوه قضاییه.
   static final enchanter = GameRole(
     id: 'role_enchanter',
+    imageAsset: 'assets/roles/enchanter.webp',
     name: 'افسونگر',
     teamId: SarkoobTeams.mafiaGang.id,
     description:
@@ -580,6 +584,7 @@ class SarkoobRoles {
   /// معادلِ دکتر (اسمِ نمایشی یکیه؛ id فرق داره چون سناریوی جداگونه‌ست).
   static final mafiaDoctor = GameRole(
     id: 'role_mafia_doctor',
+    imageAsset: 'assets/roles/mafiaDoctor.webp',
     name: 'دکتر',
     teamId: SarkoobTeams.mafiaTown.id,
     description:
@@ -596,6 +601,7 @@ class SarkoobRoles {
   /// معادلِ هکر.
   static final detective = GameRole(
     id: 'role_detective',
+    imageAsset: 'assets/roles/detective.webp',
     name: 'کارآگاه',
     teamId: SarkoobTeams.mafiaTown.id,
     description:
@@ -610,6 +616,7 @@ class SarkoobRoles {
   /// معادلِ مبارز انقلابی.
   static final professional = GameRole(
     id: 'role_professional',
+    imageAsset: 'assets/roles/professional.webp',
     name: 'حرفه‌ای',
     teamId: SarkoobTeams.mafiaTown.id,
     description:
@@ -633,6 +640,7 @@ class SarkoobRoles {
   /// معادلِ وکیل.
   static final konstantin = GameRole(
     id: 'role_konstantin',
+    imageAsset: 'assets/roles/constantine.webp',
     name: 'کنستانتین',
     teamId: SarkoobTeams.mafiaTown.id,
     description:
@@ -648,6 +656,7 @@ class SarkoobRoles {
   /// معادلِ رپر معترض.
   static final ocean = GameRole(
     id: 'role_ocean',
+    imageAsset: 'assets/roles/ocean.webp',
     name: 'اوشن',
     teamId: SarkoobTeams.mafiaTown.id,
     description:
@@ -667,6 +676,7 @@ class SarkoobRoles {
   /// اوله — نفوذش دائمی و همیشگیه (`alwaysInfiltratesResistance`).
   static final spy = GameRole(
     id: 'role_spy',
+    imageAsset: 'assets/roles/spy.webp',
     name: 'جاسوس',
     teamId: SarkoobTeams.mafiaGang.id,
     description:
@@ -683,6 +693,7 @@ class SarkoobRoles {
   /// معادلِ شورشی.
   static final gunman = GameRole(
     id: 'role_gunman',
+    imageAsset: 'assets/roles/gunman.webp',
     name: 'تفنگدار',
     teamId: SarkoobTeams.mafiaTown.id,
     description:
@@ -698,6 +709,7 @@ class SarkoobRoles {
   /// معادلِ فرمانده نیروی انتظامی.
   static final kidnapper = GameRole(
     id: 'role_kidnapper',
+    imageAsset: 'assets/roles/kidnapper.webp',
     name: 'گروگانگیر',
     teamId: SarkoobTeams.mafiaGang.id,
     description:
@@ -710,6 +722,7 @@ class SarkoobRoles {
   /// معادلِ مزدور لباس شخصی.
   static final terrorist = GameRole(
     id: 'role_terrorist',
+    imageAsset: 'assets/roles/terrorist.webp',
     name: 'تروریست',
     teamId: SarkoobTeams.mafiaGang.id,
     description:
@@ -724,6 +737,7 @@ class SarkoobRoles {
   /// معادلِ شهروند خاکستری.
   static final simpleCitizen = GameRole(
     id: 'role_simple_citizen',
+    imageAsset: 'assets/roles/simpleCitizen.webp',
     name: 'شهروند ساده',
     teamId: SarkoobTeams.mafiaTown.id,
     description:
@@ -737,6 +751,7 @@ class SarkoobRoles {
   /// زوج، یه شاتِ سادهٔ صف‌بندی‌شده تو همون _pendingHits.
   static final zodiacRole = GameRole(
     id: 'role_zodiac',
+    imageAsset: 'assets/roles/zodiac.webp',
     name: 'زودیاک',
     teamId: SarkoobTeams.zodiac.id,
     description:
@@ -753,6 +768,7 @@ class SarkoobRoles {
   /// معادلِ فعال مدنی.
   static final leader = GameRole(
     id: 'role_leader',
+    imageAsset: 'assets/roles/leader.webp',
     name: 'لیدر',
     teamId: SarkoobTeams.mafiaTown.id,
     description:
@@ -767,6 +783,7 @@ class SarkoobRoles {
   /// معادلِ تحلیلگر سیاسی.
   static final sherlock = GameRole(
     id: 'role_sherlock',
+    imageAsset: 'assets/roles/sherlock.webp',
     name: 'شرلوک',
     teamId: SarkoobTeams.mafiaTown.id,
     description:
@@ -783,6 +800,7 @@ class SarkoobRoles {
   /// بخشِ «بمب‌گذار / محافظ»).
   static final bomber = GameRole(
     id: 'role_bomber',
+    imageAsset: 'assets/roles/bomber.webp',
     name: 'بمب‌گذار',
     teamId: SarkoobTeams.mafiaGang.id,
     description:
@@ -802,6 +820,7 @@ class SarkoobRoles {
   /// نقشِ جدید، معادلی تو سرکوب نداره — فقط سناریوی مافیا.
   static final guard = GameRole(
     id: 'role_guard',
+    imageAsset: 'assets/roles/protector.webp',
     name: 'محافظ',
     teamId: SarkoobTeams.mafiaTown.id,
     description:
@@ -819,6 +838,7 @@ class SarkoobRoles {
   /// نقشِ جدید، معادلی تو سرکوب نداره — فقط سناریوی مافیا.
   static final mistress = GameRole(
     id: 'role_mistress',
+    imageAsset: 'assets/roles/lover.webp',
     name: 'معشوقه',
     teamId: SarkoobTeams.mafiaGang.id,
     description:
@@ -833,6 +853,7 @@ class SarkoobRoles {
   /// نقشِ جدید، معادلی تو سرکوب نداره — فقط سناریوی مافیا.
   static final natasha = GameRole(
     id: 'role_natasha',
+    imageAsset: 'assets/roles/natasha.webp',
     name: 'ناتاشا',
     teamId: SarkoobTeams.mafiaGang.id,
     description:
@@ -846,6 +867,7 @@ class SarkoobRoles {
   /// نقشِ جدید، معادلی تو سرکوب نداره — فقط سناریوی مافیا.
   static final saboteur = GameRole(
     id: 'role_saboteur',
+    imageAsset: 'assets/roles/saboteur.webp',
     name: 'خرابکار',
     teamId: SarkoobTeams.mafiaGang.id,
     description:
@@ -859,6 +881,7 @@ class SarkoobRoles {
   /// نقشِ جدید، معادلی تو سرکوب نداره — فقط سناریوی مافیا.
   static final discloser = GameRole(
     id: 'role_discloser',
+    imageAsset: 'assets/roles/discloser.webp',
     name: 'افشاگر',
     teamId: SarkoobTeams.mafiaTown.id,
     description:
@@ -873,6 +896,7 @@ class SarkoobRoles {
   /// اسمِ دیگه برای سناریوی مافیا.
   static final whiteBeard = GameRole(
     id: 'role_white_beard',
+    imageAsset: 'assets/roles/elder.webp',
     name: 'ریش‌سفید',
     teamId: SarkoobTeams.mafiaTown.id,
     description:
