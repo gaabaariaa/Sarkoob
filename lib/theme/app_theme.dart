@@ -55,15 +55,4 @@ class AppTheme {
       color: color ?? AppColors.goldLight,
     );
   }
-
-  /// استایلِ لیبلِ زیرِ آیکون در کارت‌های شیشه‌ایِ منویِ صفحه‌ی اصلی
-  /// (این نسخه، برایِ بازطراحیِ صفحه‌ی اصلی اضافه شد).
-  static TextStyle menuLabel({double size = 15}) {
-    return GoogleFonts.vazirmatn(
-      fontSize: size,
-      fontWeight: FontWeight.w700,
-      color: AppColors.goldLight,
-      height: 1.15,
-    );
-  }
 }
