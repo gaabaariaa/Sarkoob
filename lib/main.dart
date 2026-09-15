@@ -12,7 +12,7 @@ class HiddenRoleApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'نقش پنهان',
+      title: 'دست خدا',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkGoldTheme,
       // کل اپ همیشه راست‌به‌چپه، صرف‌نظر از لوکیل سیستم

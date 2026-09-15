@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// پالت رنگی اصلی اپ: تم تیره‌ی تجملی با لهجه‌ی طلایی، الهام‌گرفته از
-/// حس‌وحال فیلم‌های مافیایی کلاسیک — بدون استفاده از هیچ تصویر یا
-/// کاراکتر کپی‌رایتی خاصی.
+/// حس‌وحال بازی‌های نقش مخفی — بدون وابستگی به هویت بصری سناریو.
 class AppColors {
   static const background = Color(0xFF0B0B0D);
   static const surfaceDark = Color(0xFF19160F);
@@ -38,17 +37,55 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.background,
       colorScheme: colorScheme,
       textTheme: bodyFont,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.background,
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppColors.background.withOpacity(0.92),
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         foregroundColor: AppColors.goldLight,
+        titleTextStyle: GoogleFonts.lalezar(
+          fontSize: 22,
+          color: AppColors.goldLight,
+        ),
+        iconTheme: const IconThemeData(color: AppColors.goldLight),
+      ),
+      cardTheme: CardThemeData(
+        color: AppColors.surfaceCard,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: AppColors.gold.withOpacity(0.18)),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.surfaceCard.withOpacity(0.85),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: AppColors.gold.withOpacity(0.22)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: AppColors.gold.withOpacity(0.22)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.gold, width: 1.4),
+        ),
+        labelStyle: TextStyle(color: AppColors.goldLight.withOpacity(0.72)),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.surfaceDark,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        titleTextStyle: GoogleFonts.lalezar(fontSize: 22, color: AppColors.goldLight),
       ),
       dividerColor: AppColors.gold.withOpacity(0.3),
     );
   }
 
-  /// فونت تزئینی برای عنوان‌های بزرگ (اسم سناریو، تیتر صفحه‌ها)
+  /// فونت تزئینی برای عنوان‌های بزرگ (اسم بازی، سناریو و تیتر صفحه‌ها)
   static TextStyle headingFont({double size = 28, Color? color}) {
     return GoogleFonts.lalezar(
       fontSize: size,
