@@ -71,3 +71,64 @@ class OrnateDivider extends StatelessWidget {
     );
   }
 }
+
+/// قابِ تزئینیِ سبک برایِ رویِ کلِ صفحه: فقط خط‌ها و نشانِ گوشه‌ها،
+/// بدونِ جعبه‌ی دورِ یه child خاص. برخلافِ [OrnateFrame] بالا (که یه
+/// child می‌گیره و دورش قاب می‌کشه)، این یکی با Positioned.fill رویِ
+/// همه‌چیزِ دیگه‌ی صفحه کشیده می‌شه — برایِ بازطراحیِ صفحه‌ی اصلی اضافه شد.
+class OrnateCornerOverlay extends StatelessWidget {
+  const OrnateCornerOverlay({super.key});
+
+  @override
+  Widget build(BuildContext context) =>
+      IgnorePointer(child: CustomPaint(painter: _CornerOverlayPainter()));
+}
+
+class _CornerOverlayPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final linePaint = Paint()
+      ..color = AppColors.gold.withOpacity(.38)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = .8;
+    const inset = 12.0;
+    const corner = 27.0;
+    final path = Path()
+      ..moveTo(inset + corner, inset)
+      ..lineTo(size.width - inset - corner, inset)
+      ..moveTo(inset, inset + corner)
+      ..lineTo(inset, size.height - inset - corner)
+      ..moveTo(size.width - inset, inset + corner)
+      ..lineTo(size.width - inset, size.height - inset - corner)
+      ..moveTo(inset + corner, size.height - inset)
+      ..lineTo(size.width - inset - corner, size.height - inset);
+    canvas.drawPath(path, linePaint);
+
+    final ornamentPaint = Paint()
+      ..color = AppColors.gold.withOpacity(.78)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    for (final alignment in const [
+      Alignment.topLeft,
+      Alignment.topRight,
+      Alignment.bottomLeft,
+      Alignment.bottomRight,
+    ]) {
+      final x = alignment.x < 0 ? inset : size.width - inset;
+      final y = alignment.y < 0 ? inset : size.height - inset;
+      final sx = alignment.x < 0 ? 1.0 : -1.0;
+      final sy = alignment.y < 0 ? 1.0 : -1.0;
+      final ornament = Path()
+        ..moveTo(x, y + sy * 21)
+        ..quadraticBezierTo(x + sx * 2, y + sy * 7, x + sx * 15, y)
+        ..moveTo(x + sx * 3, y + sy * 12)
+        ..quadraticBezierTo(x + sx * 9, y + sy * 9, x + sx * 11, y + sy * 3)
+        ..moveTo(x + sx * 9, y + sy * 18)
+        ..quadraticBezierTo(x + sx * 15, y + sy * 14, x + sx * 19, y + sy * 7);
+      canvas.drawPath(ornament, ornamentPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
