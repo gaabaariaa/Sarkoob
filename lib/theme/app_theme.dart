@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// پالت پایه‌ی رابط کاربری: تیره، سینمایی و طلایی.
-/// صفحات قدیمی پروژه هنوز از این مقادیر ثابت استفاده می‌کنند؛ برای همین
-/// اعمال تمِ انتخاب‌شده در ریشه‌ی اپ انجام می‌شود تا کل UI یکدست بماند.
+/// رنگ‌های ثابتِ هویت بازی.
+/// این پالت مخصوص نقش‌ها، تیم‌ها و رنگ‌های معنایی سناریو است و با تم UI تغییر نمی‌کند.
 class AppColors {
   static const background = Color(0xFF08090B);
   static const surfaceDark = Color(0xFF111318);
@@ -87,20 +86,6 @@ class AppTheme {
         return midnightTheme;
       case AppThemeId.crimson:
         return crimsonTheme;
-    }
-  }
-
-  /// رنگ‌گذاری سراسری برای ویجت‌های قدیمی که هنوز AppColors ثابت دارند.
-  /// BlendMode.color تُن را عوض می‌کند ولی روشنایی متن سفید و ساختار UI را
-  /// تا حد زیادی حفظ می‌کند؛ بنابراین تم جدید با صفحه‌های قدیمی همخوان می‌شود.
-  static ColorFilter? visualFilter(AppThemeId id) {
-    switch (id) {
-      case AppThemeId.darkGold:
-        return null;
-      case AppThemeId.midnight:
-        return const ColorFilter.mode(Color(0xFF6F8FAF), BlendMode.color);
-      case AppThemeId.crimson:
-        return const ColorFilter.mode(Color(0xFF9D3D48), BlendMode.color);
     }
   }
 
