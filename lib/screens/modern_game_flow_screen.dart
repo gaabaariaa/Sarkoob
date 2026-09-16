@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/game_session.dart';
 import '../theme/app_theme.dart';
 import 'game_flow_screen.dart';
 
@@ -7,8 +8,8 @@ import 'game_flow_screen.dart';
 /// اکشن‌ها، تایمرها و وضعیت بازی همان قبلی باشد؛ این کلاس فقط زبان بصری
 /// مشترک «دست خدا» را روی کنترل‌های متریال اعمال می‌کند.
 class ModernGameFlowScreen extends StatelessWidget {
-  final List<dynamic> players;
-  final dynamic settings;
+  final List<SessionPlayer> players;
+  final GameSettings settings;
 
   const ModernGameFlowScreen({
     super.key,
@@ -61,17 +62,13 @@ class ModernGameFlowScreen extends StatelessWidget {
           foregroundColor: AppColors.goldLight,
           minimumSize: const Size.fromHeight(46),
           side: BorderSide(color: AppColors.gold.withOpacity(.28)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.goldLight,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
       inputDecorationTheme: base.inputDecorationTheme.copyWith(
@@ -105,10 +102,7 @@ class ModernGameFlowScreen extends StatelessWidget {
       child: Stack(
         children: [
           const _GameAmbient(),
-          GameFlowScreen(
-            players: players.cast(),
-            settings: settings,
-          ),
+          GameFlowScreen(players: players, settings: settings),
         ],
       ),
     );
