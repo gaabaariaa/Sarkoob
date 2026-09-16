@@ -14,10 +14,6 @@ GameTeam _teamOf(SessionPlayer p) {
   return SarkoobTeams.citizen;
 }
 
-/// هابِ نمایشِ نقش‌ها: به‌جایِ ترتیبِ ثابت، اسمِ همه‌ی بازیکن‌ها به‌صورتِ
-/// دکمه نشون داده می‌شه؛ هرکس با زدنِ روی اسمِ خودش نقش (یا تیمش) رو
-/// می‌بینه، به هر ترتیبی که خواست. دکمه‌ی «شروعِ بازی» فقط وقتی فعال
-/// می‌شه که همه دیده باشن.
 class RoleRevealScreen extends StatefulWidget {
   final List<SessionPlayer> players;
   final GameSettings settings;
@@ -41,9 +37,7 @@ class _RoleRevealScreenState extends State<RoleRevealScreen> {
         builder: (_) => _PlayerRevealScreen(player: player, team: _teamOf(player)),
       ),
     );
-    if (confirmed == true && mounted) {
-      setState(() => _seenIds.add(player.id));
-    }
+    if (confirmed == true && mounted) setState(() => _seenIds.add(player.id));
   }
 
   void _startGame() {
@@ -57,59 +51,86 @@ class _RoleRevealScreenState extends State<RoleRevealScreen> {
   @override
   Widget build(BuildContext context) {
     final allSeen = _seenIds.length == widget.players.length;
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+    final primaryLight = theme.colorScheme.secondary;
+
     return Scaffold(
       appBar: AppBar(title: const Text('نمایش نقش‌ها')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            const Text(
-              'گوشی رو بچرخونین؛ هر بازیکن روی اسمِ خودش بزنه تا نقشش رو ببینه.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white70),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: GridView.builder(
-                itemCount: widget.players.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 1.05,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: Column(
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: primary.withOpacity(0.2)),
                 ),
-                itemBuilder: (context, index) {
-                  final player = widget.players[index];
-                  final seen = _seenIds.contains(player.id);
-                  return _PlayerRevealTile(
-                    name: player.name,
-                    seen: seen,
-                    onTap: seen ? null : () => _openPlayer(player),
-                  );
-                },
+                child: Column(
+                  children: [
+                    Icon(Icons.visibility_outlined, color: primaryLight, size: 25),
+                    const SizedBox(height: 6),
+                    Text(
+                      'هر بازیکن فقط نقش خودش را ببیند',
+                      textAlign: TextAlign.center,
+                      style: AppTheme.headingFont(size: 18, color: primaryLight),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'روی اسم خودت بزن، نقش را ببین و بعد گوشی را به نفر بعدی بده.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white.withOpacity(0.62), fontSize: 12),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'دیده‌شده: ${_seenIds.length} از ${widget.players.length}',
-              style: const TextStyle(color: Colors.white54, fontSize: 13),
-            ),
-            const SizedBox(height: 10),
-            Game3DButton(
-              label: 'شروع بازی',
-              icon: Icons.play_arrow,
-              onPressed: allSeen ? _startGame : null,
-            ),
-          ],
+              const SizedBox(height: 14),
+              Expanded(
+                child: GridView.builder(
+                  itemCount: widget.players.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 1.05,
+                  ),
+                  itemBuilder: (context, index) {
+                    final player = widget.players[index];
+                    final seen = _seenIds.contains(player.id);
+                    return _PlayerRevealTile(
+                      name: player.name,
+                      seen: seen,
+                      onTap: seen ? null : () => _openPlayer(player),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'دیده‌شده: ${_seenIds.length} از ${widget.players.length}',
+                style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: Game3DButton(
+                  label: 'شروع بازی',
+                  icon: Icons.play_arrow_rounded,
+                  onPressed: allSeen ? _startGame : null,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-/// کاشیِ اسمِ یه بازیکن تو گریدِ هاب. مثلِ `Game3DTile` ولی برخلافِ اون،
-/// `onTap` می‌تونه null باشه (بازیکنی که قبلاً نقشش رو دیده) تا خودکار
-/// به‌شکلِ غیرفعال/طوسی دربیاد و دیگه قابلِ‌لمس نباشه.
 class _PlayerRevealTile extends StatelessWidget {
   final String name;
   final bool seen;
@@ -158,10 +179,6 @@ class _PlayerRevealTile extends StatelessWidget {
   }
 }
 
-/// صفحه‌ی نمایشِ نقشِ یه بازیکنِ تک: کارتِ مخفی، لمس برای دیدن، و دکمه‌ی
-/// تأیید که فقط بعدِ دیدنِ نقش فعال می‌شه و با `pop(true)` به هاب خبر
-/// می‌ده این بازیکن دیده. برگشتنِ بدونِ تأیید (دکمه‌ی بازِ اپ‌بار یا
-/// بک‌ِ گوشی) چیزی رو «دیده‌شده» علامت نمی‌زنه.
 class _PlayerRevealScreen extends StatefulWidget {
   final SessionPlayer player;
   final GameTeam team;
@@ -182,36 +199,41 @@ class _PlayerRevealScreenState extends State<_PlayerRevealScreen> {
     final role = player.roleId != null ? SarkoobRoles.byId(player.roleId!) : null;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('نمایشِ نقش')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            const Text('گوشی دستِ:', style: TextStyle(color: Colors.white70)),
-            const SizedBox(height: 4),
-            Text(player.name, style: AppTheme.headingFont(size: 28)),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Center(
-                child: GestureDetector(
-                  onTap: () => setState(() => _revealed = !_revealed),
-                  child: _revealed
-                      ? SingleChildScrollView(
-                          child: role != null
-                              ? RoleInfoCard(role: role, team: team)
-                              : _GenericTeamCard(team: team),
-                        )
-                      : const _HiddenCard(),
+      appBar: AppBar(title: const Text('نمایش نقش')),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: Column(
+            children: [
+              Text('گوشی دستِ:', style: TextStyle(color: Colors.white.withOpacity(0.58))),
+              const SizedBox(height: 2),
+              Text(player.name, style: AppTheme.headingFont(size: 28)),
+              const SizedBox(height: 14),
+              Expanded(
+                child: Center(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _revealed = !_revealed),
+                    child: _revealed
+                        ? SingleChildScrollView(
+                            child: role != null
+                                ? RoleInfoCard(role: role, team: team)
+                                : _GenericTeamCard(team: team),
+                          )
+                        : const _HiddenCard(),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Game3DButton(
-              label: 'دیدم، برگرد',
-              icon: Icons.check,
-              onPressed: _revealed ? () => Navigator.of(context).pop(true) : null,
-            ),
-          ],
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: Game3DButton(
+                  label: 'دیدم، برگرد',
+                  icon: Icons.check_rounded,
+                  onPressed: _revealed ? () => Navigator.of(context).pop(true) : null,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -223,21 +245,30 @@ class _HiddenCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
-      width: 240,
-      height: 320,
+      width: 250,
+      height: 330,
       decoration: BoxDecoration(
-        color: AppColors.surfaceCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.gold, width: 1.4),
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: theme.colorScheme.primary.withOpacity(0.75), width: 1.4),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.25), blurRadius: 18, offset: const Offset(0, 10)),
+        ],
       ),
       alignment: Alignment.center,
-      child: const Column(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.help_outline, size: 56, color: AppColors.gold),
-          SizedBox(height: 12),
-          Text('برای دیدن نقش لمس کن', style: TextStyle(color: Colors.white70)),
+          Icon(Icons.lock_outline_rounded, size: 56, color: theme.colorScheme.secondary),
+          const SizedBox(height: 12),
+          Text(
+            'برای دیدن نقش لمس کن',
+            style: TextStyle(color: Colors.white.withOpacity(0.72), fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 5),
+          Text('اطلاعات نقش مخفی است', style: TextStyle(color: Colors.white.withOpacity(0.38), fontSize: 11)),
         ],
       ),
     );
@@ -250,18 +281,21 @@ class _GenericTeamCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // team.color عمداً ثابت می‌ماند؛ تم فقط قاب و سطح کارت را کنترل می‌کند.
+    final theme = Theme.of(context);
     return Container(
-      width: 260,
-      padding: const EdgeInsets.all(20),
+      width: 280,
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: AppColors.surfaceCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: team.color, width: 1.6),
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: team.color, width: 1.7),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.25), blurRadius: 18, offset: const Offset(0, 10))],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.shield, size: 48, color: team.color),
+          Icon(Icons.shield_rounded, size: 50, color: team.color),
           const SizedBox(height: 12),
           Text(
             team.name,
@@ -271,7 +305,7 @@ class _GenericTeamCard extends StatelessWidget {
           Text(
             team.description,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white70),
+            style: TextStyle(color: Colors.white.withOpacity(0.68)),
           ),
         ],
       ),
