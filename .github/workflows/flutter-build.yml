@@ -23,8 +23,13 @@ jobs:
           cache: true
 
       - name: Apply ModernSpeakingPanel integration
-        if: "github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[speaking-panel]')"
-        run: python3 tool/integrate_modern_speaking.py
+        shell: bash
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF" == "refs/heads/main" ]]; then
+            python3 tool/integrate_modern_speaking.py
+          else
+            echo 'Skipping one-time integration on non-main push.'
+          fi
 
       - name: Install dependencies
         run: flutter pub get
@@ -36,11 +41,18 @@ jobs:
         run: flutter build apk --release --split-per-abi
 
       - name: Commit integrated UI and restore original CI
-        if: "github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[speaking-panel]')"
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          if [[ "$GITHUB_EVENT_NAME" != "push" || "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo 'Skipping integration commit on non-main push.'
+            exit 0
+          fi
+          if git log -1 --pretty=%B | grep -q '\[speaking-panel\]'; then
+            echo 'Integration commit already created; nothing to do.'
+            exit 0
+          fi
           cat > .github/workflows/flutter-build.yml <<'YAML'
 name: Flutter CI
 
