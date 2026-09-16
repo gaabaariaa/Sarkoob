@@ -26,6 +26,7 @@ flutter:
   assets:
     - assets/roles/
     - assets/sounds/
+    - assets/home_reference.webp
 
 dependency_overrides:
   jni: ^1.0.2
