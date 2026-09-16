@@ -66,7 +66,7 @@ class ModernSpeakingPanel extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 22),
-                Text(
+                const Text(
                   'نوبتِ',
                   style: TextStyle(color: AppColors.mutedText, fontSize: 13, fontWeight: FontWeight.w600),
                 ),
@@ -92,7 +92,7 @@ class ModernSpeakingPanel extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(color: AppColors.gold.withOpacity(.28), width: 1.5),
-                      gradient: RadialGradient(
+                      gradient: const RadialGradient(
                         colors: [AppColors.surfaceElevated, AppColors.surfaceDark],
                       ),
                     ),
@@ -102,7 +102,7 @@ class ModernSpeakingPanel extends StatelessWidget {
                         border: Border.all(color: AppColors.gold.withOpacity(.58), width: 2),
                       ),
                       alignment: Alignment.center,
-                      child: CountdownTimerWidget(seconds: seconds!),
+                      child: CountdownTimerWidget(totalSeconds: seconds!),
                     ),
                   ),
                 const SizedBox(height: 22),
@@ -159,14 +159,14 @@ class ModernSpeakingPanel extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.white.withOpacity(.06)),
             ),
-            child: Row(
+            child: const Row(
               children: [
-                const Icon(Icons.info_outline, color: AppColors.mutedText, size: 18),
-                const SizedBox(width: 9),
+                Icon(Icons.info_outline, color: AppColors.mutedText, size: 18),
+                SizedBox(width: 9),
                 Expanded(
                   child: Text(
                     'گرداننده، وضعیت و زمان را از این پنل کنترل می‌کند.',
-                    style: const TextStyle(color: AppColors.mutedText, fontSize: 12.5, height: 1.4),
+                    style: TextStyle(color: AppColors.mutedText, fontSize: 12.5, height: 1.4),
                   ),
                 ),
               ],
