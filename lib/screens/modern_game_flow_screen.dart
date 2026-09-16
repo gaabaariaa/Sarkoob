@@ -4,9 +4,8 @@ import '../theme/app_theme.dart';
 import 'game_flow_screen.dart';
 
 /// پوسته‌ی بصری مرحله‌ی گردانندگی.
-/// GameFlowScreen اصلی عمداً بدون دستکاری باقی می‌ماند تا تمام منطق سناریو،
-/// اکشن‌ها، تایمرها و وضعیت بازی همان قبلی باشد؛ این کلاس فقط زبان بصری
-/// مشترک «دست خدا» را روی کنترل‌های متریال اعمال می‌کند.
+/// منطق GameFlowScreen و سناریو عمداً دست‌نخورده می‌ماند؛ این کلاس فقط
+/// زبان بصری مشترک «دست خدا» را روی تمام کنترل‌های فازهای بازی اعمال می‌کند.
 class ModernGameFlowScreen extends StatelessWidget {
   final List<SessionPlayer> players;
   final GameSettings settings;
@@ -23,6 +22,12 @@ class ModernGameFlowScreen extends StatelessWidget {
     final themed = base.copyWith(
       scaffoldBackgroundColor: AppColors.background,
       canvasColor: AppColors.background,
+      colorScheme: base.colorScheme.copyWith(
+        primary: AppColors.gold,
+        secondary: AppColors.goldLight,
+        surface: AppColors.surfaceCard,
+        onSurface: Colors.white,
+      ),
       appBarTheme: base.appBarTheme.copyWith(
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.goldLight,
@@ -32,6 +37,7 @@ class ModernGameFlowScreen extends StatelessWidget {
           color: AppColors.goldLight,
           fontWeight: FontWeight.w800,
         ),
+        iconTheme: const IconThemeData(color: AppColors.goldLight),
       ),
       cardTheme: base.cardTheme.copyWith(
         color: AppColors.surfaceCard,
@@ -42,15 +48,27 @@ class ModernGameFlowScreen extends StatelessWidget {
           side: BorderSide(color: AppColors.gold.withOpacity(.10)),
         ),
       ),
+      listTileTheme: base.listTileTheme.copyWith(
+        tileColor: AppColors.surfaceCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        iconColor: AppColors.goldLight,
+        textColor: Colors.white,
+        subtitleTextStyle: const TextStyle(color: AppColors.mutedText, fontSize: 12),
+      ),
       dividerTheme: base.dividerTheme.copyWith(
         color: AppColors.gold.withOpacity(.10),
+        thickness: 1,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           minimumSize: const Size.fromHeight(48),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
           backgroundColor: AppColors.surfaceElevated,
           foregroundColor: AppColors.goldLight,
+          disabledBackgroundColor: AppColors.surfaceDark,
+          disabledForegroundColor: AppColors.subtleText,
           elevation: 0,
+          textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
             side: BorderSide(color: AppColors.gold.withOpacity(.28)),
@@ -61,13 +79,23 @@ class ModernGameFlowScreen extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.goldLight,
           minimumSize: const Size.fromHeight(46),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
           side: BorderSide(color: AppColors.gold.withOpacity(.28)),
+          textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.goldLight,
+          textStyle: const TextStyle(fontWeight: FontWeight.w700),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          foregroundColor: AppColors.goldLight,
+          backgroundColor: AppColors.surfaceDark.withOpacity(.72),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
@@ -91,8 +119,38 @@ class ModernGameFlowScreen extends StatelessWidget {
           borderSide: const BorderSide(color: AppColors.gold),
         ),
       ),
+      dialogTheme: base.dialogTheme.copyWith(
+        backgroundColor: AppColors.surfaceDark,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+          side: BorderSide(color: AppColors.gold.withOpacity(.14)),
+        ),
+        titleTextStyle: AppTheme.headingFont(size: 19).copyWith(
+          color: AppColors.goldLight,
+          fontWeight: FontWeight.w800,
+        ),
+        contentTextStyle: const TextStyle(color: Colors.white70, fontSize: 13),
+      ),
+      snackBarTheme: base.snackBarTheme.copyWith(
+        backgroundColor: AppColors.surfaceElevated,
+        contentTextStyle: const TextStyle(color: Colors.white),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+      progressIndicatorTheme: base.progressIndicatorTheme.copyWith(
+        color: AppColors.gold,
+        circularTrackColor: AppColors.goldDark.withOpacity(.20),
+      ),
       bottomAppBarTheme: base.bottomAppBarTheme.copyWith(
         color: AppColors.background,
+        elevation: 0,
+      ),
+      bottomNavigationBarTheme: base.bottomNavigationBarTheme.copyWith(
+        backgroundColor: AppColors.surfaceDark,
+        selectedItemColor: AppColors.goldLight,
+        unselectedItemColor: AppColors.subtleText,
+        type: BottomNavigationBarType.fixed,
         elevation: 0,
       ),
     );
