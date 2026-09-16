@@ -23,12 +23,11 @@ jobs:
           cache: true
 
       - name: Integrate ModernSpeakingPanel
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[speaking-panel]')
+        if: "github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[speaking-panel]')"
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
 
           path = Path('lib/screens/game_flow_screen.dart')
           text = path.read_text(encoding='utf-8')
@@ -191,7 +190,7 @@ jobs:
         run: flutter build apk --release --split-per-abi
 
       - name: Commit integrated UI and restore CI
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[speaking-panel]')
+        if: "github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[speaking-panel]')"
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
