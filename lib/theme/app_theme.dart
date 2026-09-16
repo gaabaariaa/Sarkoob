@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// پالت اصلی رابط کاربری.
+/// پالت پایه‌ی رابط کاربری: تیره، سینمایی و طلایی.
+/// صفحات قدیمی پروژه هنوز از این مقادیر ثابت استفاده می‌کنند؛ برای همین
+/// اعمال تمِ انتخاب‌شده در ریشه‌ی اپ انجام می‌شود تا کل UI یکدست بماند.
 class AppColors {
   static const background = Color(0xFF08090B);
   static const surfaceDark = Color(0xFF111318);
@@ -24,7 +26,8 @@ enum AppThemeId { darkGold, midnight, crimson }
 
 class AppThemeController {
   static const _key = 'app_theme';
-  static final ValueNotifier<AppThemeId> current = ValueNotifier(AppThemeId.darkGold);
+  static final ValueNotifier<AppThemeId> current =
+      ValueNotifier(AppThemeId.darkGold);
 
   static Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
@@ -84,6 +87,20 @@ class AppTheme {
         return midnightTheme;
       case AppThemeId.crimson:
         return crimsonTheme;
+    }
+  }
+
+  /// رنگ‌گذاری سراسری برای ویجت‌های قدیمی که هنوز AppColors ثابت دارند.
+  /// BlendMode.color تُن را عوض می‌کند ولی روشنایی متن سفید و ساختار UI را
+  /// تا حد زیادی حفظ می‌کند؛ بنابراین تم جدید با صفحه‌های قدیمی همخوان می‌شود.
+  static ColorFilter? visualFilter(AppThemeId id) {
+    switch (id) {
+      case AppThemeId.darkGold:
+        return null;
+      case AppThemeId.midnight:
+        return const ColorFilter.mode(Color(0xFF6F8FAF), BlendMode.color);
+      case AppThemeId.crimson:
+        return const ColorFilter.mode(Color(0xFF9D3D48), BlendMode.color);
     }
   }
 
