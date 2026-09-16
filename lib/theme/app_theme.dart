@@ -25,8 +25,7 @@ enum AppThemeId { darkGold, midnight, crimson }
 
 class AppThemeController {
   static const _key = 'app_theme';
-  static final ValueNotifier<AppThemeId> current =
-      ValueNotifier(AppThemeId.darkGold);
+  static final ValueNotifier<AppThemeId> current = ValueNotifier(AppThemeId.darkGold);
 
   static Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
@@ -107,6 +106,7 @@ class AppTheme {
       primary: primary,
       onPrimary: Colors.black,
       secondary: primaryLight,
+      onSecondary: Colors.black,
       surface: surface,
       error: AppColors.bloodRedLight,
       onSurface: Colors.white,
@@ -129,6 +129,8 @@ class AppTheme {
         centerTitle: true,
         foregroundColor: primaryLight,
         scrolledUnderElevation: 0,
+        titleTextStyle: GoogleFonts.lalezar(fontSize: 21, color: primaryLight, height: 1.15),
+        iconTheme: IconThemeData(color: primaryLight),
       ),
       cardTheme: CardThemeData(
         color: card,
@@ -139,6 +141,63 @@ class AppTheme {
           side: BorderSide(color: primary.withOpacity(0.12)),
         ),
       ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: surface,
+        modalBackgroundColor: surface,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: surface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        titleTextStyle: GoogleFonts.lalezar(fontSize: 21, color: primaryLight),
+        contentTextStyle: bodyFont.bodyMedium,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primary,
+          foregroundColor: Colors.black,
+          minimumSize: const Size(0, 50),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: BorderSide(color: primaryLight.withOpacity(0.25)),
+          ),
+          textStyle: const TextStyle(fontWeight: FontWeight.w800),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: primaryLight,
+          minimumSize: const Size(0, 48),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+          side: BorderSide(color: primary.withOpacity(0.55)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          textStyle: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: primaryLight,
+          textStyle: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+      ),
+      checkboxTheme: CheckboxThemeData(
+        fillColor: WidgetStateProperty.resolveWith((states) =>
+            states.contains(WidgetState.selected) ? primary : Colors.transparent),
+        checkColor: WidgetStateProperty.all(Colors.black),
+        side: BorderSide(color: primary.withOpacity(0.55)),
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) =>
+            states.contains(WidgetState.selected) ? primary : Colors.white38),
+        trackColor: WidgetStateProperty.resolveWith((states) =>
+            states.contains(WidgetState.selected) ? primary.withOpacity(0.35) : Colors.white12),
+      ),
       dividerTheme: DividerThemeData(
         color: primary.withOpacity(0.14),
         thickness: 1,
@@ -147,6 +206,7 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: card,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide(color: primary.withOpacity(0.12)),
@@ -159,6 +219,7 @@ class AppTheme {
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide(color: primary, width: 1.2),
         ),
+        hintStyle: TextStyle(color: Colors.white.withOpacity(0.38)),
       ),
     );
   }
