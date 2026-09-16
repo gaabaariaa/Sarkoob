@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-/// پالت اصلی رابط کاربری: تیره، سینمایی و طلایی؛ با کنتراست کافی برای استفاده‌ی طولانی.
+/// پالت اصلی رابط کاربری.
 class AppColors {
   static const background = Color(0xFF08090B);
   static const surfaceDark = Color(0xFF111318);
@@ -19,74 +20,147 @@ class AppColors {
   static const subtleText = Color(0xFF686B73);
 }
 
-class AppTheme {
-  static ThemeData get darkGoldTheme {
-    final base = ThemeData.dark(useMaterial3: true);
+enum AppThemeId { darkGold, midnight, crimson }
 
+class AppThemeController {
+  static const _key = 'app_theme';
+  static final ValueNotifier<AppThemeId> current = ValueNotifier(AppThemeId.darkGold);
+
+  static Future<void> load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final value = prefs.getString(_key);
+    current.value = AppThemeId.values.firstWhere(
+      (theme) => theme.name == value,
+      orElse: () => AppThemeId.darkGold,
+    );
+  }
+
+  static Future<void> set(AppThemeId theme) async {
+    current.value = theme;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_key, theme.name);
+  }
+}
+
+class AppTheme {
+  static ThemeData get darkGoldTheme => _build(
+        seed: AppColors.gold,
+        background: AppColors.background,
+        surface: AppColors.surfaceDark,
+        card: AppColors.surfaceCard,
+        elevated: AppColors.surfaceElevated,
+        primary: AppColors.gold,
+        primaryLight: AppColors.goldLight,
+        primaryDark: AppColors.goldDark,
+      );
+
+  static ThemeData get midnightTheme => _build(
+        seed: const Color(0xFF7895B2),
+        background: const Color(0xFF070B10),
+        surface: const Color(0xFF0F151D),
+        card: const Color(0xFF151D27),
+        elevated: const Color(0xFF1C2733),
+        primary: const Color(0xFF9DB9D5),
+        primaryLight: const Color(0xFFD7E6F4),
+        primaryDark: const Color(0xFF5D7690),
+      );
+
+  static ThemeData get crimsonTheme => _build(
+        seed: const Color(0xFFB84A4A),
+        background: const Color(0xFF0B0809),
+        surface: const Color(0xFF171013),
+        card: const Color(0xFF211519),
+        elevated: const Color(0xFF2A191E),
+        primary: const Color(0xFFB84A4A),
+        primaryLight: const Color(0xFFE58A8A),
+        primaryDark: const Color(0xFF7D2929),
+      );
+
+  static ThemeData forId(AppThemeId id) {
+    switch (id) {
+      case AppThemeId.darkGold:
+        return darkGoldTheme;
+      case AppThemeId.midnight:
+        return midnightTheme;
+      case AppThemeId.crimson:
+        return crimsonTheme;
+    }
+  }
+
+  static ThemeData _build({
+    required Color seed,
+    required Color background,
+    required Color surface,
+    required Color card,
+    required Color elevated,
+    required Color primary,
+    required Color primaryLight,
+    required Color primaryDark,
+  }) {
+    final base = ThemeData.dark(useMaterial3: true);
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: AppColors.gold,
+      seedColor: seed,
       brightness: Brightness.dark,
     ).copyWith(
-      primary: AppColors.gold,
-      onPrimary: const Color(0xFF241A04),
-      secondary: AppColors.goldLight,
-      surface: AppColors.surfaceDark,
+      primary: primary,
+      onPrimary: Colors.black,
+      secondary: primaryLight,
+      surface: surface,
       error: AppColors.bloodRedLight,
       onSurface: Colors.white,
     );
 
     final bodyFont = GoogleFonts.vazirmatnTextTheme(base.textTheme).apply(
       bodyColor: Colors.white,
-      displayColor: AppColors.goldLight,
+      displayColor: primaryLight,
     );
 
     return base.copyWith(
-      scaffoldBackgroundColor: AppColors.background,
+      scaffoldBackgroundColor: background,
       colorScheme: colorScheme,
       textTheme: bodyFont,
       visualDensity: VisualDensity.standard,
       splashFactory: InkRipple.splashFactory,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.background,
+      appBarTheme: AppBarTheme(
+        backgroundColor: background,
         elevation: 0,
         centerTitle: true,
-        foregroundColor: AppColors.goldLight,
+        foregroundColor: primaryLight,
         scrolledUnderElevation: 0,
       ),
       cardTheme: CardThemeData(
-        color: AppColors.surfaceCard,
+        color: card,
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: BorderSide(color: AppColors.gold.withOpacity(0.12)),
+          side: BorderSide(color: primary.withOpacity(0.12)),
         ),
       ),
       dividerTheme: DividerThemeData(
-        color: AppColors.gold.withOpacity(0.14),
+        color: primary.withOpacity(0.14),
         thickness: 1,
         space: 1,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surfaceCard,
+        fillColor: card,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: AppColors.gold.withOpacity(0.12)),
+          borderSide: BorderSide(color: primary.withOpacity(0.12)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: AppColors.gold.withOpacity(0.12)),
+          borderSide: BorderSide(color: primary.withOpacity(0.12)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: AppColors.gold, width: 1.2),
+          borderSide: BorderSide(color: primary, width: 1.2),
         ),
       ),
     );
   }
 
-  /// فونت تزئینی برای عنوان‌های بزرگ.
   static TextStyle headingFont({double size = 28, Color? color}) {
     return GoogleFonts.lalezar(
       fontSize: size,
