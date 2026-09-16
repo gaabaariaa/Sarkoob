@@ -9,14 +9,11 @@ class AppColors {
   static const surfaceDark = Color(0xFF111318);
   static const surfaceCard = Color(0xFF171A20);
   static const surfaceElevated = Color(0xFF1D1A16);
-
   static const gold = Color(0xFFD4AF37);
   static const goldLight = Color(0xFFF1D989);
   static const goldDark = Color(0xFF8A6D1D);
-
   static const bloodRed = Color(0xFF3D0C0C);
   static const bloodRedLight = Color(0xFF6B1414);
-
   static const mutedText = Color(0xFF9B9DA4);
   static const subtleText = Color(0xFF686B73);
 }
@@ -136,10 +133,19 @@ class AppTheme {
         color: card,
         elevation: 0,
         margin: EdgeInsets.zero,
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
           side: BorderSide(color: primary.withOpacity(0.12)),
         ),
+      ),
+      listTileTheme: ListTileThemeData(
+        tileColor: card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        iconColor: primaryLight,
+        textColor: Colors.white,
+        subtitleColor: Colors.white60,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
       ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: surface,
@@ -153,8 +159,6 @@ class AppTheme {
         backgroundColor: surface,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-        titleTextStyle: GoogleFonts.lalezar(fontSize: 21, color: primaryLight),
-        contentTextStyle: bodyFont.bodyMedium,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -163,10 +167,7 @@ class AppTheme {
           minimumSize: const Size(0, 50),
           padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
           elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-            side: BorderSide(color: primaryLight.withOpacity(0.25)),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           textStyle: const TextStyle(fontWeight: FontWeight.w800),
         ),
       ),
@@ -186,22 +187,30 @@ class AppTheme {
           textStyle: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) =>
+            states.contains(WidgetState.selected) ? primary : Colors.white38),
+        trackColor: WidgetStateProperty.resolveWith((states) =>
+            states.contains(WidgetState.selected) ? primary.withOpacity(0.35) : Colors.white12),
+        trackOutlineColor: WidgetStateProperty.all(primary.withOpacity(0.18)),
+      ),
+      radioTheme: RadioThemeData(
+        fillColor: WidgetStateProperty.resolveWith((states) =>
+            states.contains(WidgetState.selected) ? primary : Colors.white38),
+      ),
       checkboxTheme: CheckboxThemeData(
         fillColor: WidgetStateProperty.resolveWith((states) =>
             states.contains(WidgetState.selected) ? primary : Colors.transparent),
         checkColor: WidgetStateProperty.all(Colors.black),
         side: BorderSide(color: primary.withOpacity(0.55)),
       ),
-      switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((states) =>
-            states.contains(WidgetState.selected) ? primary : Colors.white38),
-        trackColor: WidgetStateProperty.resolveWith((states) =>
-            states.contains(WidgetState.selected) ? primary.withOpacity(0.35) : Colors.white12),
-      ),
-      dividerTheme: DividerThemeData(
-        color: primary.withOpacity(0.14),
-        thickness: 1,
-        space: 1,
+      iconTheme: IconThemeData(color: primaryLight),
+      dividerTheme: DividerThemeData(color: primary.withOpacity(0.14), thickness: 1, space: 1),
+      sliderTheme: SliderThemeData(
+        activeTrackColor: primary,
+        inactiveTrackColor: primary.withOpacity(0.18),
+        thumbColor: primaryLight,
+        overlayColor: primary.withOpacity(0.12),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -219,6 +228,8 @@ class AppTheme {
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide(color: primary, width: 1.2),
         ),
+        labelStyle: TextStyle(color: primaryLight.withOpacity(0.78)),
+        floatingLabelStyle: TextStyle(color: primaryLight),
         hintStyle: TextStyle(color: Colors.white.withOpacity(0.38)),
       ),
     );
