@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'theme/app_theme.dart';
 import 'screens/home_screen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AppThemeController.load();
   runApp(const HiddenRoleApp());
 }
 
@@ -11,18 +13,22 @@ class HiddenRoleApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'نقش پنهان',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkGoldTheme,
-      // کل اپ همیشه راست‌به‌چپه، صرف‌نظر از لوکیل سیستم
-      builder: (context, child) {
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: child ?? const SizedBox.shrink(),
+    return ValueListenableBuilder<AppThemeId>(
+      valueListenable: AppThemeController.current,
+      builder: (context, themeId, _) {
+        return MaterialApp(
+          title: 'دست خدا',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.forId(themeId),
+          builder: (context, child) {
+            return Directionality(
+              textDirection: TextDirection.rtl,
+              child: child ?? const SizedBox.shrink(),
+            );
+          },
+          home: const HomeScreen(),
         );
       },
-      home: const HomeScreen(),
     );
   }
 }
