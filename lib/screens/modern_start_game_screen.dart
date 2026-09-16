@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../widgets/game_3d_button.dart';
-import 'start_game_screen.dart';
+import 'modern_role_setup_screen.dart';
 
 /// لایه‌ی جدید شروع بازی؛ منطق سناریو و نقش‌ها در StartGameScreen اصلی
 /// باقی می‌ماند تا رنگ‌ها و رفتار نقش‌ها/تیم‌ها تغییر نکند.
@@ -33,7 +33,7 @@ class _ModernStartGameScreenState extends State<ModernStartGameScreen> {
 
   void _continue() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const StartGameScreen()),
+      MaterialPageRoute(builder: (_) => ModernRoleSetupScreen(players: List.unmodifiable(_players))),
     );
   }
 
