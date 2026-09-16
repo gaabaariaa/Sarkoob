@@ -2,8 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-/// یه تایمر شمارش معکوس با دکمه‌ی شروع/توقف/ریست. با تغییرِ `key` از
-/// بیرون (مثلاً ValueKey(speakerId))، کاملاً از نو ساخته می‌شه.
+/// تایمر اصلیِ بازی. منطقِ شمارش معکوس دست‌نخورده است؛ این ویجت فقط
+/// ظاهرِ میز بازی را مدرن‌تر می‌کند و از رنگ‌های هویتیِ ثابت استفاده می‌کند.
 class CountdownTimerWidget extends StatefulWidget {
   final int totalSeconds;
   final VoidCallback? onFinished;
@@ -66,33 +66,94 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
   Widget build(BuildContext context) {
     final minutes = (_remaining ~/ 60).toString().padLeft(2, '0');
     final seconds = (_remaining % 60).toString().padLeft(2, '0');
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          '$minutes:$seconds',
-          style: const TextStyle(
-            fontSize: 40,
-            fontWeight: FontWeight.bold,
-            color: AppColors.goldLight,
+    final progress = widget.totalSeconds <= 0
+        ? 0.0
+        : (_remaining / widget.totalSeconds).clamp(0.0, 1.0);
+    final urgent = _remaining <= 10;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: (urgent ? AppColors.bloodRedLight : AppColors.gold).withOpacity(0.72),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.32),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: _running ? _pause : _start,
-              child: Text(_running ? 'توقف' : 'شروع'),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                _running ? Icons.timer_outlined : Icons.pause_circle_outline,
+                size: 17,
+                color: urgent ? AppColors.bloodRedLight : AppColors.goldLight,
+              ),
+              const SizedBox(width: 7),
+              Text(
+                _running ? 'زمانِ صحبت' : 'تایمر متوقف است',
+                style: const TextStyle(
+                  color: AppColors.mutedText,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '$minutes:$seconds',
+            style: TextStyle(
+              fontSize: 52,
+              height: 1,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 2,
+              color: urgent ? AppColors.bloodRedLight : AppColors.goldLight,
             ),
-            const SizedBox(width: 8),
-            OutlinedButton(
-              onPressed: _reset,
-              child: const Text('ریست'),
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(99),
+            child: LinearProgressIndicator(
+              minHeight: 5,
+              value: progress,
+              backgroundColor: AppColors.background,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                urgent ? AppColors.bloodRedLight : AppColors.gold,
+              ),
             ),
-          ],
-        ),
-      ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _running ? _pause : _start,
+                  icon: Icon(_running ? Icons.pause : Icons.play_arrow, size: 18),
+                  label: Text(_running ? 'توقف' : 'شروع'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              OutlinedButton.icon(
+                onPressed: _reset,
+                icon: const Icon(Icons.restart_alt, size: 18),
+                label: const Text('ریست'),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
