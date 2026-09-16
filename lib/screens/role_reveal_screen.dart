@@ -5,7 +5,7 @@ import '../models/team.dart';
 import '../theme/app_theme.dart';
 import '../widgets/game_3d_button.dart';
 import '../widgets/role_info_card.dart';
-import 'game_flow_screen.dart';
+import 'modern_game_flow_screen.dart';
 
 GameTeam _teamOf(SessionPlayer p) {
   for (final t in SarkoobTeams.all) {
@@ -43,7 +43,7 @@ class _RoleRevealScreenState extends State<RoleRevealScreen> {
   void _startGame() {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (_) => GameFlowScreen(players: widget.players, settings: widget.settings),
+        builder: (_) => ModernGameFlowScreen(players: widget.players, settings: widget.settings),
       ),
     );
   }
