@@ -144,7 +144,6 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         iconColor: primaryLight,
         textColor: Colors.white,
-        subtitleColor: Colors.white60,
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
       ),
       bottomSheetTheme: BottomSheetThemeData(
