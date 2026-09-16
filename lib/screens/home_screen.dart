@@ -7,7 +7,7 @@ import 'stats_screen.dart';
 import 'history_screen.dart';
 import 'rules_screen.dart';
 import 'settings_screen.dart';
-import 'start_game_screen.dart';
+import 'modern_start_game_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -39,7 +39,7 @@ class HomeScreen extends StatelessWidget {
                           const SizedBox(height: 18),
                           const _HeroPanel(),
                           const SizedBox(height: 20),
-                          _StartButton(onTap: () => _open(context, const StartGameScreen())),
+                          _StartButton(onTap: () => _open(context, const ModernStartGameScreen())),
                           const SizedBox(height: 22),
                           const _SectionTitle(title: 'مدیریت بازی'),
                           const SizedBox(height: 10),
