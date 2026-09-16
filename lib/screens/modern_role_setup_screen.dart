@@ -128,7 +128,7 @@ class _Badge extends StatelessWidget {
 }
 
 class _TeamCard extends StatelessWidget {
-  final Team team;
+  final GameTeam team;
   final IconData icon;
   final String subtitle;
   const _TeamCard({required this.team, required this.icon, required this.subtitle});
