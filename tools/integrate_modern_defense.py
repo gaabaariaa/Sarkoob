@@ -1,0 +1,87 @@
+from pathlib import Path
+import re
+
+p = Path('lib/screens/game_flow_screen.dart')
+s = p.read_text()
+
+if "modern_defense_panel.dart" not in s:
+    s = s.replace("import '../widgets/modern_speaking_panel.dart';\n", "import '../widgets/modern_speaking_panel.dart';\nimport '../widgets/modern_defense_panel.dart';\n", 1)
+
+announcement = '''  Widget _buildDefenseAnnouncement() {
+    final candidates = controller.defenseCandidates;
+    return Center(
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(22),
+        decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: AppColors.gold.withOpacity(0.28))),
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Container(width: 58, height: 58, decoration: BoxDecoration(color: AppColors.bloodRed.withOpacity(0.35), shape: BoxShape.circle), child: const Icon(Icons.gavel_rounded, color: AppColors.goldLight, size: 30)),
+          const SizedBox(height: 16),
+          Text('دفاعیه شروع شد', textAlign: TextAlign.center, style: AppTheme.headingFont(size: 24)),
+          const SizedBox(height: 7),
+          const Text('این بازیکنان وارد مرحله دفاع می‌شوند. هر نفر به‌ترتیب فرصت صحبت دارد.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white60, fontSize: 12, height: 1.5)),
+          const SizedBox(height: 16),
+          ...candidates.asMap().entries.map((entry) => Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(color: Colors.white.withOpacity(0.04), borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.white.withOpacity(0.07))),
+            child: Row(children: [
+              Container(width: 30, height: 30, alignment: Alignment.center, decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(0.25), shape: BoxShape.circle), child: Text('${entry.key + 1}', style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w800, fontSize: 12))),
+              const SizedBox(width: 10),
+              Expanded(child: Text(entry.value.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
+            ]),
+          )),
+          const SizedBox(height: 8),
+          Game3DButton(label: 'شروع دفاعیه', icon: Icons.arrow_back_rounded, onPressed: controller.acknowledgeDefenseAnnouncement),
+        ]),
+      ),
+    );
+  }
+'''
+
+s, n = re.subn(r"  Widget _buildDefenseAnnouncement\(\) \{.*?\n  Widget _buildDefensePhase\(\) \{", announcement + "\n  Widget _buildDefensePhase() {", s, count=1, flags=re.S)
+if n != 1:
+    raise SystemExit(f'announcement replacement count={n}')
+
+defense = '''  Widget _buildDefensePhase() {
+    final speaker = controller.currentDefenseSpeaker;
+    final candidates = controller.defenseCandidates;
+    if (speaker == null) {
+      return Center(
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: AppColors.gold.withOpacity(0.28))),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Container(width: 62, height: 62, decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(0.24), shape: BoxShape.circle), child: const Icon(Icons.how_to_vote_rounded, color: AppColors.goldLight, size: 31)),
+            const SizedBox(height: 14),
+            Text('دفاعیه تمام شد', style: AppTheme.headingFont(size: 23)),
+            const SizedBox(height: 7),
+            const Text('دفاع همه‌ی افراد ثبت شد. حالا وارد رأی‌گیری نهایی شو.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white60, fontSize: 12, height: 1.5)),
+            const SizedBox(height: 18),
+            SizedBox(width: double.infinity, child: Game3DButton(label: 'شروع رأی‌گیری نهایی', icon: Icons.arrow_back_rounded, onPressed: controller.startSecondVoteRound)),
+          ]),
+        ),
+      );
+    }
+    final index = candidates.indexWhere((p) => p.id == speaker.id) + 1;
+    return ModernDefensePanel(
+      key: ValueKey('modern-defense-${speaker.id}'),
+      speakerName: speaker.name,
+      currentIndex: index.clamp(1, candidates.length),
+      totalCandidates: candidates.length,
+      seconds: widget.settings.speakSeconds,
+      onNext: () {
+        MusicService.instance.stopAlert();
+        controller.advanceDefenseSpeaker();
+      },
+      onTimerFinished: () => MusicService.instance.playAlertLoop(),
+    );
+  }
+'''
+s, n = re.subn(r"  Widget _buildDefensePhase\(\) \{.*?\n  // ----------", defense + "\n  // ----------", s, count=1, flags=re.S)
+if n != 1:
+    raise SystemExit(f'defense replacement count={n}')
+
+p.write_text(s)
+print('modern defense UI integrated')
