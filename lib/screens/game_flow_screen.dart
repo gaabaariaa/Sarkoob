@@ -1363,118 +1363,56 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   // ---------- رأی‌گیریِ دورِ اول، نفربه‌نفر ----------
 
+  // VOTING_UI_V2 — ظاهرِ مدرنِ رأی‌گیری؛ منطقِ Controller دست‌نخورده است.
   Widget _buildEliminationVoteSequence() {
     final subject = controller.currentVoteSequenceSubject;
-
     if (subject == null) {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.how_to_vote_rounded, color: AppColors.gold, size: 48),
+      return Center(child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: AppColors.gold.withOpacity(0.35))),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(width: 64, height: 64, decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(0.25), shape: BoxShape.circle), child: const Icon(Icons.how_to_vote_rounded, color: AppColors.goldLight, size: 32)),
           const SizedBox(height: 16),
-          const Text('رأیِ همه‌ی بازیکنان شمرده شد.', style: TextStyle(color: Colors.white, fontSize: 16)),
+          Text('رأی‌گیری تمام شد', style: AppTheme.headingFont(size: 22)),
+          const SizedBox(height: 6),
+          const Text('رأی همه‌ی بازیکنان ثبت شده؛ نتیجه را محاسبه کن.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white60, fontSize: 13)),
           const SizedBox(height: 20),
-          Game3DButton(
-            label: 'محاسبه‌ی نتیجه',
-            icon: Icons.checklist_rounded,
-            onPressed: controller.isSecondVoteRound
-                ? controller.resolveSecondVoteRound
-                : controller.resolveFirstVoteRound,
-          ),
-        ],
-      );
+          SizedBox(width: double.infinity, child: Game3DButton(label: 'محاسبه‌ی نتیجه', icon: Icons.checklist_rounded, onPressed: controller.isSecondVoteRound ? controller.resolveSecondVoteRound : controller.resolveFirstVoteRound)),
+        ]),
+      ));
     }
-
     final electors = controller.voteSequenceElectors;
     final totalSubjects = controller.voteSequenceSubjects.length;
-
-    return Column(
-      children: [
-        if (controller.gunExplosionSummary != null) ...[
-          Text(
-            controller.gunExplosionSummary!,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.bloodRedLight),
-          ),
-          const SizedBox(height: 8),
-        ],
-        Text('رأی‌گیری برای «${subject.name}»', style: AppTheme.headingFont(size: 20), textAlign: TextAlign.center),
-        const SizedBox(height: 4),
-        Text(
-          'نفرِ ${controller.voteSequenceIndex + 1} از $totalSubjects   —   ${subject.votes} رأی',
-          style: const TextStyle(color: AppColors.goldLight, fontSize: 13),
-        ),
-        const SizedBox(height: 4),
-        const Text(
-          'بزن رو هرکی که علیهِ این بازیکن رأی داد',
-          style: TextStyle(color: Colors.white54, fontSize: 12),
-        ),
-        const SizedBox(height: 10),
-        Expanded(
-          child: GridView.count(
-            crossAxisCount: 3,
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 1.3,
-            children: electors.map((e) {
-              final isSelected = controller.votersAgainstCurrentSubject.contains(e.id);
-              final enabled = controller.electorCanActOnCurrentSubject(e);
-              return _voteCandidateButton(
-                e,
-                isSelected: isSelected,
-                enabled: enabled,
-                onTap: () => controller.toggleVoterForCurrentSubject(e.id),
-              );
-            }).toList(),
-          ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: Game3DButton(
-            label: 'بعدی',
-            icon: Icons.arrow_forward_rounded,
-            onPressed: controller.advanceVoteSequence,
-          ),
-        ),
-      ],
-    );
+    final currentIndex = controller.voteSequenceIndex + 1;
+    final progress = totalSubjects == 0 ? 0.0 : currentIndex / totalSubjects;
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      if (controller.gunExplosionSummary != null) Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        decoration: BoxDecoration(color: AppColors.bloodRed.withOpacity(0.35), borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.bloodRedLight.withOpacity(0.8))),
+        child: Row(children: [const Icon(Icons.warning_amber_rounded, color: AppColors.bloodRedLight, size: 20), const SizedBox(width: 9), Expanded(child: Text(controller.gunExplosionSummary!, textAlign: TextAlign.right, style: const TextStyle(color: Colors.white, fontSize: 12, height: 1.35)))]),
+      ),
+      Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(22), border: Border.all(color: AppColors.gold.withOpacity(0.28))), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Row(children: [Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), decoration: BoxDecoration(color: controller.isSecondVoteRound ? AppColors.bloodRed.withOpacity(0.45) : AppColors.goldDark.withOpacity(0.28), borderRadius: BorderRadius.circular(20)), child: Text(controller.isSecondVoteRound ? 'دور دوم' : 'رأی‌گیری حذف', style: TextStyle(color: controller.isSecondVoteRound ? AppColors.bloodRedLight : AppColors.goldLight, fontWeight: FontWeight.w800, fontSize: 11))), const Spacer(), Text('$currentIndex / $totalSubjects', style: const TextStyle(color: Colors.white54, fontWeight: FontWeight.w700, fontSize: 12))]),
+        const SizedBox(height: 12), ClipRRect(borderRadius: BorderRadius.circular(20), child: LinearProgressIndicator(value: progress.clamp(0.0, 1.0), minHeight: 6, backgroundColor: Colors.white10, valueColor: const AlwaysStoppedAnimation<Color>(AppColors.gold))),
+        const SizedBox(height: 18), const Text('موضوعِ رأی', style: TextStyle(color: Colors.white45, fontSize: 11)), const SizedBox(height: 4), Text(subject.name, textAlign: TextAlign.right, style: AppTheme.headingFont(size: 25)), const SizedBox(height: 8),
+        Row(children: [const Icon(Icons.how_to_vote_rounded, color: AppColors.goldLight, size: 18), const SizedBox(width: 7), Text('${subject.votes} رأی', style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w800)), const SizedBox(width: 8), const Text('•', style: TextStyle(color: Colors.white24)), const SizedBox(width: 8), const Expanded(child: Text('رأی‌دهنده‌هایی را که علیه این بازیکن رأی داده‌اند انتخاب کن.', style: TextStyle(color: Colors.white54, fontSize: 11)))]),
+      ])),
+      const SizedBox(height: 12),
+      Expanded(child: electors.isEmpty ? const Center(child: Text('رأی‌دهنده‌ای برای ثبت وجود ندارد.', style: TextStyle(color: Colors.white38))) : GridView.builder(padding: const EdgeInsets.only(bottom: 4), gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 190, mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: 1.45), itemCount: electors.length, itemBuilder: (context, index) { final e=electors[index]; final isSelected=controller.votersAgainstCurrentSubject.contains(e.id); final enabled=controller.electorCanActOnCurrentSubject(e); return _voteCandidateButton(e, isSelected: isSelected, enabled: enabled, onTap: () => controller.toggleVoterForCurrentSubject(e.id)); })),
+      const SizedBox(height: 10), SafeArea(top: false, child: SizedBox(width: double.infinity, child: Game3DButton(label: 'نفر بعدی', icon: Icons.arrow_back_rounded, onPressed: controller.advanceVoteSequence))),
+    ]);
   }
 
-  Widget _voteCandidateButton(
-    SessionPlayer c, {
-    required bool isSelected,
-    required bool enabled,
-    required VoidCallback onTap,
-  }) {
-    final palette = isSelected ? Game3DPalette.danger : Game3DPalette.gold;
-    final colors = Game3DColors.of(palette);
-    return Game3DSurface(
-      onPressed: enabled ? onTap : null,
-      palette: palette,
-      depth: 5,
-      borderRadius: BorderRadius.circular(14),
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-      semanticLabel: c.name,
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (isSelected) ...[
-              Icon(Icons.check_circle, color: colors.text, size: 16),
-              const SizedBox(height: 2),
-            ],
-            Text(
-              c.name,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: colors.text, fontWeight: FontWeight.w800, fontSize: 13),
-            ),
-          ],
-        ),
-      ),
-    );
+  Widget _voteCandidateButton(SessionPlayer c, {required bool isSelected, required bool enabled, required VoidCallback onTap}) {
+    final isLocked=!enabled; final palette=isSelected ? Game3DPalette.danger : Game3DPalette.gold; final colors=Game3DColors.of(palette);
+    return Game3DSurface(onPressed: enabled ? onTap : null, palette: palette, depth: enabled ? 5 : 2, borderRadius: BorderRadius.circular(18), padding: const EdgeInsets.all(3), semanticLabel: c.name, child: Container(
+      decoration: BoxDecoration(color: isSelected ? AppColors.bloodRed.withOpacity(0.35) : Colors.black.withOpacity(0.12), borderRadius: BorderRadius.circular(15), border: Border.all(color: isSelected ? AppColors.bloodRedLight : Colors.white.withOpacity(enabled ? 0.08 : 0.04), width: isSelected ? 1.4 : 1)),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9), child: Row(children: [
+        Container(width: 38, height: 38, decoration: BoxDecoration(color: isSelected ? AppColors.bloodRedLight.withOpacity(0.28) : Colors.white.withOpacity(0.05), shape: BoxShape.circle), child: Icon(isSelected ? Icons.check_rounded : (isLocked ? Icons.lock_outline_rounded : Icons.person_outline_rounded), color: isSelected ? AppColors.bloodRedLight : (isLocked ? Colors.white24 : colors.text), size: 20)),
+        const SizedBox(width: 9), Expanded(child: Text(c.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: isLocked ? Colors.white30 : Colors.white, fontWeight: FontWeight.w800, fontSize: 13, height: 1.2))),
+      ])));
   }
 
   // ---------- رفراندومِ فعالِ مدنی (روزِ بعد از درخواست، قبل از رأی‌گیریِ حذف) ----------
