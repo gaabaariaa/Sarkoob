@@ -13,6 +13,7 @@ import '../widgets/game_3d_button.dart';
 import '../widgets/role_card.dart';
 import '../widgets/modern_speaking_panel.dart';
 import '../widgets/modern_defense_panel.dart';
+import '../widgets/modern_night_panel.dart';
 
 class GameFlowScreen extends StatefulWidget {
   final List<SessionPlayer> players;
@@ -1310,53 +1311,70 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   // ---------- شب معارفه ----------
 
   Widget _buildIntroNight() {
-    // چه سناریوی سرکوب چه مافیا، شبِ معارفه یعنی «تیمِ توطئه‌گر» با هم
-    // بیدار بشن و همدیگه رو ببینن — فقط بسته به این بازیِ خاص کدوم سناریو
-    // بوده، اون تیم فرق می‌کنه.
     final isMafiaGame = controller.players.any((p) => p.teamId == SarkoobTeams.mafiaGang.id);
     final conspiracyTeamId = isMafiaGame ? SarkoobTeams.mafiaGang.id : SarkoobTeams.suppression.id;
     final wakingMembers = controller.players
         .where((p) => p.teamId == conspiracyTeamId && !p.isModiri)
         .toList();
-    return Column(
-      children: [
-        Text(
-          isMafiaGame
-              ? 'اعضای مافیا بیدار بشن و همدیگه رو ببینن:'
-              : 'اعضای تیم سرکوب بیدار بشن و همدیگه رو ببینن:',
-          style: const TextStyle(color: Colors.white70),
-        ),
-        const SizedBox(height: 16),
-        Expanded(
-          child: ListView(
-            children: wakingMembers
-                .map(
-                  (p) => Card(
-                    color: AppColors.bloodRed.withOpacity(0.35),
-                    child: ListTile(
-                      title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                      trailing: Text(
-                        p.roleId != null ? (SarkoobRoles.byId(p.roleId!)?.name ?? '') : '',
-                        style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
-                      ),
+
+    return ModernNightPanel(
+      eyebrow: 'شب معارفه',
+      title: isMafiaGame ? 'اعضای مافیا بیدار شوند' : 'اعضای تیم سرکوب بیدار شوند',
+      icon: Icons.groups_rounded,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            isMafiaGame
+                ? 'اعضای مافیا بیدار بشن و همدیگه رو ببینن:'
+                : 'اعضای تیم سرکوب بیدار بشن و همدیگه رو ببینن:',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white60, fontSize: 12),
+          ),
+          const SizedBox(height: 14),
+          ...wakingMembers.asMap().entries.map(
+            (entry) => Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
+              decoration: BoxDecoration(
+                color: AppColors.bloodRed.withOpacity(.24),
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(color: AppColors.bloodRedLight.withOpacity(.35)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.bloodRedLight.withOpacity(.20),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '${entry.key + 1}',
+                      style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w800, fontSize: 12),
                     ),
                   ),
-                )
-                .toList(),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text(entry.value.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
+                  if (entry.value.roleId != null)
+                    Text(
+                      SarkoobRoles.byId(entry.value.roleId!)?.name ?? '',
+                      style: const TextStyle(color: AppColors.goldLight, fontSize: 11, fontWeight: FontWeight.w700),
+                    ),
+                ],
+              ),
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'فرصت برای مشورت',
-          style: TextStyle(color: Colors.white38, fontSize: 12),
-        ),
-        const SizedBox(height: 12),
-        ElevatedButton(
-          onPressed: () => controller.moveToDay(1),
-          style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-          child: const Text('ادامه به روز اول'),
-        ),
-      ],
+          const SizedBox(height: 6),
+          const Center(
+            child: Text('فرصت برای مشورت', style: TextStyle(color: Colors.white38, fontSize: 11)),
+          ),
+        ],
+      ),
+      actionLabel: 'ادامه به روز اول',
+      onAction: () => controller.moveToDay(1),
     );
   }
 
@@ -2460,39 +2478,14 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     String? playerName,
     bool canAdvance = true,
   }) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          Text(
-            '🔓 $wakeLabel',
-            textAlign: TextAlign.center,
-            style: AppTheme.headingFont(size: 22),
-          ),
-          if (playerName != null) ...[
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceCard,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.gold.withOpacity(0.4)),
-              ),
-              child: Text(
-                '👤 این نقش: $playerName',
-                style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-          const SizedBox(height: 16),
-          body,
-          const SizedBox(height: 32),
-          ElevatedButton(
-            onPressed: canAdvance ? controller.advanceNightStep : null,
-            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-            child: Text('🌑 $sleepLabel'),
-          ),
-        ],
-      ),
+    return ModernNightPanel(
+      eyebrow: 'شب ${controller.roundNumber}',
+      title: wakeLabel.replaceFirst('🔓 ', ''),
+      playerName: playerName,
+      icon: Icons.visibility_rounded,
+      body: body,
+      actionLabel: sleepLabel,
+      onAction: canAdvance ? controller.advanceNightStep : null,
     );
   }
 
