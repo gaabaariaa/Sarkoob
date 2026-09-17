@@ -2173,92 +2173,89 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }
 
   Widget _buildSorkoobTeamStep() {
-    return SingleChildScrollView(
-      child: Column(
+    final teamLabel = _leaderTeamName;
+    return ModernNightPanel(
+      eyebrow: 'شب ${controller.roundNumber}',
+      title: 'اعضای $teamLabel بیدار شوند',
+      icon: Icons.groups_rounded,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('شب ${controller.roundNumber}', style: AppTheme.headingFont(size: 24)),
-          const SizedBox(height: 8),
-          Text(
-            '🔴 اعضای $_leaderTeamName بیدار بشن',
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
           _buildSorkoobRoster(),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           if (controller.sorkoobDisabledTonight)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Text(
-                'امشب (به‌خاطرِ حذف‌شدنِ ژینا دیشب) تیمِ سرکوب هیچ قابلیتی '
-                'نداره — فقط برو به مرحله‌ی بعد.',
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(.035),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white.withOpacity(.08)),
+              ),
+              child: const Text(
+                'امشب تیمِ رهبر قابلیتی ندارد؛ فقط به مرحله‌ی بعد برو.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white54),
+                style: TextStyle(color: Colors.white54, height: 1.5),
               ),
             )
           else ...[
             _buildLeaderDecisionSection(),
             if (controller.canIssueExecutionOrder) ...[
-              const SizedBox(height: 24),
-              const Divider(color: AppColors.gold),
-              const SizedBox(height: 8),
+              const SizedBox(height: 18),
+              const Divider(color: Colors.white12),
+              const SizedBox(height: 10),
               _buildJudiciarySection(),
             ],
             if (controller.interrogatorPlayer != null) ...[
-              const SizedBox(height: 24),
-              const Divider(color: AppColors.gold),
-              const SizedBox(height: 8),
+              const SizedBox(height: 18),
+              const Divider(color: Colors.white12),
+              const SizedBox(height: 10),
               _buildInterrogatorSection(),
             ],
             if (controller.intelligenceMinisterPlayer != null) ...[
-              const SizedBox(height: 24),
-              const Divider(color: AppColors.gold),
-              const SizedBox(height: 8),
+              const SizedBox(height: 18),
+              const Divider(color: Colors.white12),
+              const SizedBox(height: 10),
               _buildIntelQuestionSection(),
             ],
             if (controller.policeCommanderPlayer != null) ...[
-              const SizedBox(height: 24),
-              const Divider(color: AppColors.gold),
-              const SizedBox(height: 8),
+              const SizedBox(height: 18),
+              const Divider(color: Colors.white12),
+              const SizedBox(height: 10),
               _buildDetentionSection(),
             ],
             if (controller.mercenaryPlayer != null &&
                 controller.isStillActiveTonight(controller.mercenaryPlayer!)) ...[
-              const SizedBox(height: 24),
-              const Divider(color: AppColors.gold),
-              const SizedBox(height: 8),
+              const SizedBox(height: 18),
+              const Divider(color: Colors.white12),
+              const SizedBox(height: 10),
               _buildMercenaryNightSection(),
             ],
             if (controller.natashaPlayer != null &&
                 controller.isStillActiveTonight(controller.natashaPlayer!) &&
                 !controller.natashaPlayer!.natashaSilenceUsed) ...[
-              const SizedBox(height: 24),
-              const Divider(color: AppColors.gold),
-              const SizedBox(height: 8),
+              const SizedBox(height: 18),
+              const Divider(color: Colors.white12),
+              const SizedBox(height: 10),
               _buildNatashaSection(),
             ],
             if (controller.saboteurPlayer != null &&
                 controller.isStillActiveTonight(controller.saboteurPlayer!)) ...[
-              const SizedBox(height: 24),
-              const Divider(color: AppColors.gold),
-              const SizedBox(height: 8),
+              const SizedBox(height: 18),
+              const Divider(color: Colors.white12),
+              const SizedBox(height: 10),
               _buildSaboteurSection(),
             ],
             if (controller.bomberPlayer != null) ...[
-              const SizedBox(height: 24),
-              const Divider(color: AppColors.gold),
-              const SizedBox(height: 8),
+              const SizedBox(height: 18),
+              const Divider(color: Colors.white12),
+              const SizedBox(height: 10),
               _buildBomberSection(),
             ],
           ],
-          const SizedBox(height: 32),
-          ElevatedButton(
-            onPressed: controller.canAdvancePastSorkoobTeamStep ? controller.advanceNightStep : null,
-            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-            child: Text('🌑 اعضای $_leaderTeamName چشم‌هاشون رو ببندن'),
-          ),
         ],
       ),
+      actionLabel: 'اعضای $teamLabel چشم‌هاشون رو ببندن',
+      onAction: controller.canAdvancePastSorkoobTeamStep ? controller.advanceNightStep : null,
     );
   }
 
