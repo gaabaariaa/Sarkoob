@@ -75,9 +75,9 @@ class ModernRoleSetupScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 Game3DButton(
-                  label: 'باز کردن تنظیمات کامل نقش‌ها',
+                  label: 'ادامه در تنظیمات نقش‌ها',
                   icon: Icons.tune_rounded,
-                  onPressed: () => Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => StartGameScreen(initialScenario: scenario, initialPlayers: players))),
+                  onPressed: () => Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const StartGameScreen())),
                 ),
               ],
             ),
