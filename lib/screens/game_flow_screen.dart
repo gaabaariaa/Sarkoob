@@ -1848,42 +1848,64 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
 
   Widget _buildDayResolved() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+    return ModernNightPanel(
+      eyebrow: 'روز ${controller.roundNumber} • نتیجه',
+      title: 'نتیجه‌ی رأی‌گیری',
+      icon: Icons.gavel_rounded,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Icon(Icons.gavel, size: 48, color: AppColors.gold),
-          const SizedBox(height: 16),
-          Text(
-            controller.lastResolution?.message ?? '',
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontSize: 16),
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceDark,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: AppColors.gold.withOpacity(.22)),
+            ),
+            child: Text(
+              controller.lastResolution?.message ?? '',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white, fontSize: 16, height: 1.55, fontWeight: FontWeight.w700),
+            ),
           ),
           if (controller.discloserAnnouncement != null) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                border: Border.all(color: AppColors.gold),
-                borderRadius: BorderRadius.circular(8),
+                color: AppColors.goldDark.withOpacity(.16),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.gold.withOpacity(.45)),
               ),
-              child: Text(
-                controller.discloserAnnouncement!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.campaign_rounded, color: AppColors.goldLight, size: 20),
+                  const SizedBox(width: 9),
+                  Expanded(
+                    child: Text(
+                      controller.discloserAnnouncement!,
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w700, height: 1.5),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () {
-              controller.discloserAnnouncement = null;
-              controller.moveToNight(controller.roundNumber);
-            },
-            child: const Text('ورود به شب'),
+          const SizedBox(height: 10),
+          const Text(
+            'نتیجه ثبت شد و منطق بازی آماده‌ی ورود به مرحله‌ی بعد است.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white38, fontSize: 11),
           ),
         ],
       ),
+      actionLabel: 'ورود به شب',
+      onAction: () {
+        controller.discloserAnnouncement = null;
+        controller.moveToNight(controller.roundNumber);
+      },
     );
   }
 
