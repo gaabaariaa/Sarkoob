@@ -1695,45 +1695,44 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Widget _buildGameOverScreen() {
     final teamId = controller.autoDetectedWinnerTeamId!;
     final team = SarkoobTeams.byId(teamId);
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('🏆', style: TextStyle(fontSize: 48)),
-            const SizedBox(height: 12),
-            Text('بازی تموم شد!', style: AppTheme.headingFont(size: 26)),
-            const SizedBox(height: 8),
-            Text(
-              '«${team?.name ?? teamId}» برنده شد',
-              style: TextStyle(
-                color: team?.color ?? AppColors.goldLight,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+    return ModernNightPanel(
+      eyebrow: 'پایان بازی • نتیجه نهایی',
+      title: 'بازی تموم شد!',
+      icon: Icons.emoji_events_rounded,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: (team?.color ?? AppColors.gold).withOpacity(.12),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: (team?.color ?? AppColors.gold).withOpacity(.35)),
             ),
-            if (controller.gameEndMessage != null) ...[
-              const SizedBox(height: 16),
-              Text(
-                controller.gameEndMessage!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white70, fontSize: 13),
-              ),
-            ],
-            const SizedBox(height: 24),
-            _bestWorstRow(controller.players),
-            const SizedBox(height: 12),
-            _scoreDetailButton(context, controller.players),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => _confirmAutoGameOver(teamId),
-              style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-              child: const Text('تأیید و بازگشت به منو'),
+            child: Column(
+              children: [
+                Icon(Icons.emoji_events_rounded, color: team?.color ?? AppColors.goldLight, size: 42),
+                const SizedBox(height: 10),
+                Text(
+                  '«' + (team?.name ?? teamId) + '» برنده شد',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: team?.color ?? AppColors.goldLight, fontSize: 20, fontWeight: FontWeight.w800),
+                ),
+              ],
             ),
+          ),
+          if (controller.gameEndMessage != null) ...[
+            const SizedBox(height: 12),
+            Text(controller.gameEndMessage!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white70, height: 1.5)),
           ],
-        ),
+          const SizedBox(height: 14),
+          _bestWorstRow(controller.players),
+          const SizedBox(height: 10),
+          _scoreDetailButton(context, controller.players),
+        ],
       ),
+      actionLabel: 'تأیید و بازگشت به منو',
+      onAction: () => _confirmAutoGameOver(teamId),
     );
   }
 
