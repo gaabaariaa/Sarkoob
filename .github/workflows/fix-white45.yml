@@ -1,0 +1,36 @@
+name: Fix unsupported Flutter color
+on:
+  push:
+    branches: [ main ]
+permissions:
+  contents: write
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace unsupported color constant
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('lib/screens/game_flow_screen.dart')
+          s = p.read_text()
+          old = 'Colors.white45'
+          new = 'Colors.white54'
+          if old not in s:
+              raise SystemExit('Colors.white45 not found')
+          p.write_text(s.replace(old, new))
+          PY
+      - name: Verify and build release APK
+        run: |
+          flutter pub get
+          flutter analyze || true
+          flutter build apk --release --split-per-abi
+      - name: Commit fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/screens/game_flow_screen.dart
+          git commit -m 'fix: replace unsupported Colors.white45' || exit 0
+          git push
