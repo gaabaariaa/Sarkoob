@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/scenario.dart';
 import '../theme/app_theme.dart';
 import '../widgets/game_3d_button.dart';
 import 'modern_role_setup_screen.dart';
@@ -13,6 +14,7 @@ class ModernStartGameScreen extends StatefulWidget {
 class _ModernStartGameScreenState extends State<ModernStartGameScreen> {
   final _controller = TextEditingController();
   final _players = <String>[];
+  GameScenario _scenario = SarkoobScenarios.mafia;
 
   @override
   void dispose() { _controller.dispose(); super.dispose(); }
@@ -41,7 +43,7 @@ class _ModernStartGameScreenState extends State<ModernStartGameScreen> {
 
   void _continue() {
     Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => ModernRoleSetupScreen(players: List.unmodifiable(_players)),
+      builder: (_) => ModernRoleSetupScreen(players: List.unmodifiable(_players), scenario: _scenario),
     ));
   }
 
@@ -65,7 +67,9 @@ class _ModernStartGameScreenState extends State<ModernStartGameScreen> {
             children: [
               _Header(onBack: () => Navigator.of(context).pop()),
               const SizedBox(height: 18),
-              _Hero(total: total),
+              _ScenarioSelector(value: _scenario, onChanged: (value) => setState(() => _scenario = value)),
+              const SizedBox(height: 14),
+              _Hero(total: total, scenario: _scenario),
               const SizedBox(height: 14),
               _PlayerComposer(controller: _controller, onAdd: _addPlayer, onRoster: _pickSavedPlayers),
               const SizedBox(height: 14),
@@ -79,7 +83,7 @@ class _ModernStartGameScreenState extends State<ModernStartGameScreen> {
               const SizedBox(height: 18),
               Game3DButton(label: ready ? 'ادامه و تنظیم نقش‌ها' : 'حداقل ۹ بازیکن لازم است', icon: ready ? Icons.arrow_back_rounded : Icons.lock_outline_rounded, onPressed: ready ? _continue : null),
               const SizedBox(height: 10),
-              Text('رنگ و هویت تیم‌ها و نقش‌ها در مرحله‌ی بعدی بدون تغییر باقی می‌ماند.', textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: theme.subtleText)),
+              Text('سناریوی انتخاب‌شده تعیین می‌کند چه تیم‌ها و نقش‌هایی در مرحله‌ی بعد نمایش داده شوند.', textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: theme.subtleText)),
             ],
           )));
         }))
@@ -99,16 +103,42 @@ class _Header extends StatelessWidget {
       const SizedBox(width: 4),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text('شروع بازی', style: AppTheme.headingFont(size: 26, color: t.accentLight)),
-        Text('میز بازی را آماده کن', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: t.mutedText)),
+        Text('سناریو و میز بازی را آماده کن', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: t.mutedText)),
       ])),
       Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7), decoration: BoxDecoration(color: t.accent.withOpacity(.08), borderRadius: BorderRadius.circular(20), border: Border.all(color: t.accent.withOpacity(.18))), child: Text('دست خدا', style: Theme.of(context).textTheme.labelMedium?.copyWith(color: t.accentLight, fontWeight: FontWeight.w800))),
     ]);
   }
 }
 
+class _ScenarioSelector extends StatelessWidget {
+  final GameScenario value;
+  final ValueChanged<GameScenario> onChanged;
+  const _ScenarioSelector({required this.value, required this.onChanged});
+  @override
+  Widget build(BuildContext context) {
+    final t = AppThemeExtension.of(context);
+    return Card(child: Padding(padding: const EdgeInsets.all(14), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text('سناریوی بازی', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: t.accentLight, fontWeight: FontWeight.w900)),
+      const SizedBox(height: 4),
+      Text('سناریو مستقل انتخاب کن؛ تیم‌ها و نقش‌ها از همان سناریو می‌آیند.', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: t.mutedText)),
+      const SizedBox(height: 10),
+      DropdownButtonFormField<GameScenario>(
+        value: value,
+        decoration: const InputDecoration(prefixIcon: Icon(Icons.theater_comedy_rounded), labelText: 'انتخاب سناریو'),
+        dropdownColor: t.surfaceDark,
+        items: SarkoobScenarios.all.map((scenario) => DropdownMenuItem<GameScenario>(value: scenario, child: Text('${scenario.emoji}  ${scenario.name}'))).toList(),
+        onChanged: (scenario) { if (scenario != null) onChanged(scenario); },
+      ),
+      const SizedBox(height: 8),
+      Text(value.description, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: t.mutedText, height: 1.5)),
+    ])));
+  }
+}
+
 class _Hero extends StatelessWidget {
   final int total;
-  const _Hero({required this.total});
+  final GameScenario scenario;
+  const _Hero({required this.total, required this.scenario});
   @override
   Widget build(BuildContext context) {
     final t = AppThemeExtension.of(context);
@@ -118,9 +148,9 @@ class _Hero extends StatelessWidget {
       border: Border.all(color: t.accent.withOpacity(.20)),
       boxShadow: [BoxShadow(color: Colors.black.withOpacity(.30), blurRadius: 24, offset: const Offset(0, 12))],
     ), child: Row(children: [
-      Container(width: 62, height: 62, decoration: BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(colors: [t.accentLight, t.accent]), boxShadow: [BoxShadow(color: t.accent.withOpacity(.55), blurRadius: 22)]), child: Icon(Icons.groups_rounded, color: t.background, size: 31)),
+      Container(width: 62, height: 62, decoration: BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(colors: [t.accentLight, t.accent]), boxShadow: [BoxShadow(color: t.accent.withOpacity(.55), blurRadius: 22)]), child: Text(scenario.emoji, style: const TextStyle(fontSize: 29))),
       const SizedBox(width: 15),
-      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('بازیکن‌های این میز', style: AppTheme.headingFont(size: 22, color: t.accentLight)), const SizedBox(height: 3), Text(total == 0 ? 'بازیکن‌ها را اضافه کن تا میز آماده شود.' : '$total نفر برای بازی ثبت شده‌اند.', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: t.mutedText))])),
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(scenario.name, style: AppTheme.headingFont(size: 22, color: t.accentLight)), const SizedBox(height: 3), Text(total == 0 ? 'بازیکن‌ها را اضافه کن تا میز آماده شود.' : '$total نفر برای بازی ثبت شده‌اند.', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: t.mutedText))])),
       Text('$total', style: AppTheme.headingFont(size: 30, color: t.accentLight)),
     ]));
   }
