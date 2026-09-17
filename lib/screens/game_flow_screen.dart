@@ -1031,68 +1031,86 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }
 
   Widget _buildStartVoteButton() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+    final notices = <Widget>[];
+    if (controller.guaranteedPlayerId != null) {
+      final player = controller.playerById(controller.guaranteedPlayerId!);
+      final roleName = SarkoobRoles.byId(player.roleId!)?.name ?? 'قهرمانِ ملی';
+      notices.add(_modernNotice(
+        icon: Icons.shield_rounded,
+        text: '«' + player.name + '» تضمینِ ' + roleName + ' رو داره؛ امروز نمی‌تونه رأی بیاره و در امانه.',
+      ));
+    }
+    if (controller.assassinationResultMessage != null) {
+      notices.add(_modernNotice(icon: Icons.gavel_rounded, text: controller.assassinationResultMessage!, danger: true));
+    }
+    if (controller.gunFireResultMessage != null) {
+      notices.add(_modernNotice(icon: Icons.gps_fixed_rounded, text: controller.gunFireResultMessage!));
+    }
+    if (controller.communityLeaderExpulsionMessage != null) {
+      notices.add(_modernNotice(icon: Icons.person_remove_rounded, text: controller.communityLeaderExpulsionMessage!));
+    }
+    if (controller.discloserAnnouncement != null) {
+      notices.add(_modernNotice(icon: Icons.visibility_rounded, text: controller.discloserAnnouncement!));
+    }
+
+    return ModernNightPanel(
+      eyebrow: 'روز ' + controller.roundNumber.toString() + ' • آماده‌سازی',
+      title: 'همه صحبت کردند',
+      icon: Icons.how_to_vote_rounded,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (controller.guaranteedPlayerId != null) ...[
-            Text(
-              '🛡️ «${controller.playerById(controller.guaranteedPlayerId!).name}» تضمینِ ${SarkoobRoles.byId(controller.playerById(controller.guaranteedPlayerId!).roleId!)?.name ?? "قهرمانِ ملی"} رو داره؛ '
-              'امروز نمی‌تونه رأی بیاره و در امانه.',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-          ],
-          if (controller.assassinationResultMessage != null) ...[
-            Text(
-              controller.assassinationResultMessage!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.bloodRedLight, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-          ],
-          if (controller.gunFireResultMessage != null) ...[
-            Text(
-              controller.gunFireResultMessage!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-          ],
-          if (controller.communityLeaderExpulsionMessage != null) ...[
-            Text(
-              controller.communityLeaderExpulsionMessage!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-          ],
-          if (controller.discloserAnnouncement != null) ...[
-            Text(
-              controller.discloserAnnouncement!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
+          const Text(
+            'مرحله‌ی صحبت تمام شده. قبل از رأی‌گیری، رویدادهای فعال امروز رو مرور کن.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white70, height: 1.5),
+          ),
+          if (notices.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            ...notices.map((w) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: w,
+            )),
           ],
           if (controller.armedPlayers.isNotEmpty) ...[
+            const SizedBox(height: 4),
             _buildGunBanner(),
-            const SizedBox(height: 12),
           ],
           if (controller.canAssassinateNow) ...[
+            const SizedBox(height: 8),
             _buildMercenaryDayBanner(),
-            const SizedBox(height: 12),
           ],
           if (controller.activeExecutionWord != null) ...[
+            const SizedBox(height: 8),
             _buildExecutionWordBanner(),
-            const SizedBox(height: 12),
           ],
-          const Text('همه صحبت کردن.', style: TextStyle(color: Colors.white70)),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: controller.startVoting,
-            child: const Text('شروع رأی‌گیری'),
+        ],
+      ),
+      actionLabel: 'شروع رأی‌گیری',
+      onAction: controller.startVoting,
+    );
+  }
+
+  Widget _modernNotice({required IconData icon, required String text, bool danger = false}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: (danger ? AppColors.bloodRed : AppColors.goldDark).withOpacity(.16),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: (danger ? AppColors.bloodRedLight : AppColors.gold).withOpacity(.30),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: danger ? AppColors.bloodRedLight : AppColors.goldLight, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              textAlign: TextAlign.right,
+              style: const TextStyle(color: Colors.white, fontSize: 12, height: 1.45),
+            ),
           ),
         ],
       ),
@@ -1100,18 +1118,17 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }
 
   Widget _buildStartIntroNightButton() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text('همه معارفه کردن.', style: TextStyle(color: Colors.white70)),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: controller.moveToIntroNight,
-            child: const Text('ادامه به شب معارفه'),
-          ),
-        ],
+    return ModernNightPanel(
+      eyebrow: 'معارفه • پایان مرحله',
+      title: 'همه معارفه کردند',
+      icon: Icons.nightlight_round,
+      body: const Text(
+        'معارفه‌ی بازیکنان تمام شد. حالا گرداننده می‌تونه وارد شب معارفه بشه.',
+        textAlign: TextAlign.center,
+        style: TextStyle(color: Colors.white70, height: 1.5),
       ),
+      actionLabel: 'ادامه به شب معارفه',
+      onAction: controller.moveToIntroNight,
     );
   }
 
