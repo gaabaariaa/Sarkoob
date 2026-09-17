@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// رنگ‌های ثابتِ هویت بازی.
-/// این پالت مخصوص نقش‌ها، تیم‌ها و رنگ‌های معنایی سناریو است و با تم UI تغییر نمی‌کند.
+/// رنگ‌های ثابتِ هویت بازی. این پالت مخصوص نقش‌ها، تیم‌ها و رنگ‌های معنایی سناریو است و با تم UI تغییر نمی‌کند.
 class AppColors {
   static const background = Color(0xFF08090B);
   static const surfaceDark = Color(0xFF111318);
@@ -27,10 +26,7 @@ class AppThemeController {
   static Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
     final value = prefs.getString(_key);
-    current.value = AppThemeId.values.firstWhere(
-      (theme) => theme.name == value,
-      orElse: () => AppThemeId.darkGold,
-    );
+    current.value = AppThemeId.values.firstWhere((theme) => theme.name == value, orElse: () => AppThemeId.darkGold);
   }
 
   static Future<void> set(AppThemeId theme) async {
@@ -41,204 +37,89 @@ class AppThemeController {
 }
 
 class AppTheme {
-  static ThemeData get darkGoldTheme => _build(
-        seed: AppColors.gold,
-        background: AppColors.background,
-        surface: AppColors.surfaceDark,
-        card: AppColors.surfaceCard,
-        elevated: AppColors.surfaceElevated,
-        primary: AppColors.gold,
-        primaryLight: AppColors.goldLight,
-        primaryDark: AppColors.goldDark,
-      );
+  static Color get uiBackground => switch (AppThemeController.current.value) {
+    AppThemeId.darkGold => AppColors.background,
+    AppThemeId.midnight => const Color(0xFF070B10),
+    AppThemeId.crimson => const Color(0xFF0B0809),
+  };
+  static Color get uiSurface => switch (AppThemeController.current.value) {
+    AppThemeId.darkGold => AppColors.surfaceDark,
+    AppThemeId.midnight => const Color(0xFF0F151D),
+    AppThemeId.crimson => const Color(0xFF171013),
+  };
+  static Color get uiCard => switch (AppThemeController.current.value) {
+    AppThemeId.darkGold => AppColors.surfaceCard,
+    AppThemeId.midnight => const Color(0xFF151D27),
+    AppThemeId.crimson => const Color(0xFF211519),
+  };
+  static Color get uiElevated => switch (AppThemeController.current.value) {
+    AppThemeId.darkGold => AppColors.surfaceElevated,
+    AppThemeId.midnight => const Color(0xFF1C2733),
+    AppThemeId.crimson => const Color(0xFF2A191E),
+  };
+  static Color get uiPrimary => switch (AppThemeController.current.value) {
+    AppThemeId.darkGold => AppColors.gold,
+    AppThemeId.midnight => const Color(0xFF9DB9D5),
+    AppThemeId.crimson => const Color(0xFFB84A4A),
+  };
+  static Color get uiPrimaryLight => switch (AppThemeController.current.value) {
+    AppThemeId.darkGold => AppColors.goldLight,
+    AppThemeId.midnight => const Color(0xFFD7E6F4),
+    AppThemeId.crimson => const Color(0xFFE58A8A),
+  };
+  static Color get uiPrimaryDark => switch (AppThemeController.current.value) {
+    AppThemeId.darkGold => AppColors.goldDark,
+    AppThemeId.midnight => const Color(0xFF5D7690),
+    AppThemeId.crimson => const Color(0xFF7D2929),
+  };
+  static Color get uiMutedText => switch (AppThemeController.current.value) {
+    AppThemeId.darkGold => AppColors.mutedText,
+    AppThemeId.midnight => const Color(0xFFAAB7C6),
+    AppThemeId.crimson => const Color(0xFFB5A5A8),
+  };
+  static Color get uiSubtleText => switch (AppThemeController.current.value) {
+    AppThemeId.darkGold => AppColors.subtleText,
+    AppThemeId.midnight => const Color(0xFF68788A),
+    AppThemeId.crimson => const Color(0xFF75656A),
+  };
 
-  static ThemeData get midnightTheme => _build(
-        seed: const Color(0xFF7895B2),
-        background: const Color(0xFF070B10),
-        surface: const Color(0xFF0F151D),
-        card: const Color(0xFF151D27),
-        elevated: const Color(0xFF1C2733),
-        primary: const Color(0xFF9DB9D5),
-        primaryLight: const Color(0xFFD7E6F4),
-        primaryDark: const Color(0xFF5D7690),
-      );
+  static ThemeData get darkGoldTheme => _build(seed: AppColors.gold, background: AppColors.background, surface: AppColors.surfaceDark, card: AppColors.surfaceCard, elevated: AppColors.surfaceElevated, primary: AppColors.gold, primaryLight: AppColors.goldLight, primaryDark: AppColors.goldDark);
+  static ThemeData get midnightTheme => _build(seed: const Color(0xFF7895B2), background: const Color(0xFF070B10), surface: const Color(0xFF0F151D), card: const Color(0xFF151D27), elevated: const Color(0xFF1C2733), primary: const Color(0xFF9DB9D5), primaryLight: const Color(0xFFD7E6F4), primaryDark: const Color(0xFF5D7690));
+  static ThemeData get crimsonTheme => _build(seed: const Color(0xFFB84A4A), background: const Color(0xFF0B0809), surface: const Color(0xFF171013), card: const Color(0xFF211519), elevated: const Color(0xFF2A191E), primary: const Color(0xFFB84A4A), primaryLight: const Color(0xFFE58A8A), primaryDark: const Color(0xFF7D2929));
 
-  static ThemeData get crimsonTheme => _build(
-        seed: const Color(0xFFB84A4A),
-        background: const Color(0xFF0B0809),
-        surface: const Color(0xFF171013),
-        card: const Color(0xFF211519),
-        elevated: const Color(0xFF2A191E),
-        primary: const Color(0xFFB84A4A),
-        primaryLight: const Color(0xFFE58A8A),
-        primaryDark: const Color(0xFF7D2929),
-      );
+  static ThemeData forId(AppThemeId id) => switch (id) {
+    AppThemeId.darkGold => darkGoldTheme,
+    AppThemeId.midnight => midnightTheme,
+    AppThemeId.crimson => crimsonTheme,
+  };
 
-  static ThemeData forId(AppThemeId id) {
-    switch (id) {
-      case AppThemeId.darkGold:
-        return darkGoldTheme;
-      case AppThemeId.midnight:
-        return midnightTheme;
-      case AppThemeId.crimson:
-        return crimsonTheme;
-    }
-  }
-
-  static ThemeData _build({
-    required Color seed,
-    required Color background,
-    required Color surface,
-    required Color card,
-    required Color elevated,
-    required Color primary,
-    required Color primaryLight,
-    required Color primaryDark,
-  }) {
+  static ThemeData _build({required Color seed, required Color background, required Color surface, required Color card, required Color elevated, required Color primary, required Color primaryLight, required Color primaryDark}) {
     final base = ThemeData.dark(useMaterial3: true);
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: seed,
-      brightness: Brightness.dark,
-    ).copyWith(
-      primary: primary,
-      onPrimary: Colors.black,
-      secondary: primaryLight,
-      onSecondary: Colors.black,
-      surface: surface,
-      error: AppColors.bloodRedLight,
-      onSurface: Colors.white,
-    );
-
-    final bodyFont = GoogleFonts.vazirmatnTextTheme(base.textTheme).apply(
-      bodyColor: Colors.white,
-      displayColor: primaryLight,
-    );
-
+    final colorScheme = ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.dark).copyWith(primary: primary, onPrimary: Colors.black, secondary: primaryLight, onSecondary: Colors.black, surface: surface, error: AppColors.bloodRedLight, onSurface: Colors.white);
+    final bodyFont = GoogleFonts.vazirmatnTextTheme(base.textTheme).apply(bodyColor: Colors.white, displayColor: primaryLight);
     return base.copyWith(
       scaffoldBackgroundColor: background,
       colorScheme: colorScheme,
       textTheme: bodyFont,
       visualDensity: VisualDensity.standard,
       splashFactory: InkRipple.splashFactory,
-      appBarTheme: AppBarTheme(
-        backgroundColor: background,
-        elevation: 0,
-        centerTitle: true,
-        foregroundColor: primaryLight,
-        scrolledUnderElevation: 0,
-        titleTextStyle: GoogleFonts.lalezar(fontSize: 21, color: primaryLight, height: 1.15),
-        iconTheme: IconThemeData(color: primaryLight),
-      ),
-      cardTheme: CardThemeData(
-        color: card,
-        elevation: 0,
-        margin: EdgeInsets.zero,
-        surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-          side: BorderSide(color: primary.withOpacity(0.12)),
-        ),
-      ),
-      listTileTheme: ListTileThemeData(
-        tileColor: card,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        iconColor: primaryLight,
-        textColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
-      ),
-      bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: surface,
-        modalBackgroundColor: surface,
-        surfaceTintColor: Colors.transparent,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
-        ),
-      ),
-      dialogTheme: DialogThemeData(
-        backgroundColor: surface,
-        surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primary,
-          foregroundColor: Colors.black,
-          minimumSize: const Size(0, 50),
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          textStyle: const TextStyle(fontWeight: FontWeight.w800),
-        ),
-      ),
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: primaryLight,
-          minimumSize: const Size(0, 48),
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-          side: BorderSide(color: primary.withOpacity(0.55)),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          textStyle: const TextStyle(fontWeight: FontWeight.w700),
-        ),
-      ),
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: primaryLight,
-          textStyle: const TextStyle(fontWeight: FontWeight.w700),
-        ),
-      ),
-      switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((states) =>
-            states.contains(WidgetState.selected) ? primary : Colors.white38),
-        trackColor: WidgetStateProperty.resolveWith((states) =>
-            states.contains(WidgetState.selected) ? primary.withOpacity(0.35) : Colors.white12),
-        trackOutlineColor: WidgetStateProperty.all(primary.withOpacity(0.18)),
-      ),
-      radioTheme: RadioThemeData(
-        fillColor: WidgetStateProperty.resolveWith((states) =>
-            states.contains(WidgetState.selected) ? primary : Colors.white38),
-      ),
-      checkboxTheme: CheckboxThemeData(
-        fillColor: WidgetStateProperty.resolveWith((states) =>
-            states.contains(WidgetState.selected) ? primary : Colors.transparent),
-        checkColor: WidgetStateProperty.all(Colors.black),
-        side: BorderSide(color: primary.withOpacity(0.55)),
-      ),
+      appBarTheme: AppBarTheme(backgroundColor: background, elevation: 0, centerTitle: true, foregroundColor: primaryLight, scrolledUnderElevation: 0, titleTextStyle: GoogleFonts.lalezar(fontSize: 21, color: primaryLight, height: 1.15), iconTheme: IconThemeData(color: primaryLight)),
+      cardTheme: CardThemeData(color: card, elevation: 0, margin: EdgeInsets.zero, surfaceTintColor: Colors.transparent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18), side: BorderSide(color: primary.withOpacity(0.12)))),
+      listTileTheme: ListTileThemeData(tileColor: card, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), iconColor: primaryLight, textColor: Colors.white, contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3)),
+      bottomSheetTheme: BottomSheetThemeData(backgroundColor: surface, modalBackgroundColor: surface, surfaceTintColor: Colors.transparent, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(26)))),
+      dialogTheme: DialogThemeData(backgroundColor: surface, surfaceTintColor: Colors.transparent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22))),
+      elevatedButtonTheme: ElevatedButtonThemeData(style: ElevatedButton.styleFrom(backgroundColor: primary, foregroundColor: Colors.black, minimumSize: const Size(0, 50), padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14), elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), textStyle: const TextStyle(fontWeight: FontWeight.w800))),
+      outlinedButtonTheme: OutlinedButtonThemeData(style: OutlinedButton.styleFrom(foregroundColor: primaryLight, minimumSize: const Size(0, 48), padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12), side: BorderSide(color: primary.withOpacity(0.55)), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), textStyle: const TextStyle(fontWeight: FontWeight.w700))),
+      textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: primaryLight, textStyle: const TextStyle(fontWeight: FontWeight.w700))),
+      switchTheme: SwitchThemeData(thumbColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? primary : Colors.white38), trackColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? primary.withOpacity(0.35) : Colors.white12), trackOutlineColor: WidgetStateProperty.all(primary.withOpacity(0.18))),
+      radioTheme: RadioThemeData(fillColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? primary : Colors.white38)),
+      checkboxTheme: CheckboxThemeData(fillColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? primary : Colors.transparent), checkColor: WidgetStateProperty.all(Colors.black), side: BorderSide(color: primary.withOpacity(0.55))),
       iconTheme: IconThemeData(color: primaryLight),
       dividerTheme: DividerThemeData(color: primary.withOpacity(0.14), thickness: 1, space: 1),
-      sliderTheme: SliderThemeData(
-        activeTrackColor: primary,
-        inactiveTrackColor: primary.withOpacity(0.18),
-        thumbColor: primaryLight,
-        overlayColor: primary.withOpacity(0.12),
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: card,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: primary.withOpacity(0.12)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: primary.withOpacity(0.12)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: primary, width: 1.2),
-        ),
-        labelStyle: TextStyle(color: primaryLight.withOpacity(0.78)),
-        floatingLabelStyle: TextStyle(color: primaryLight),
-        hintStyle: TextStyle(color: Colors.white.withOpacity(0.38)),
-      ),
+      sliderTheme: SliderThemeData(activeTrackColor: primary, inactiveTrackColor: primary.withOpacity(0.18), thumbColor: primaryLight, overlayColor: primary.withOpacity(0.12)),
+      inputDecorationTheme: InputDecorationTheme(filled: true, fillColor: card, contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14), border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: primary.withOpacity(0.12))), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: primary.withOpacity(0.12))), focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: primary, width: 1.2)), labelStyle: TextStyle(color: primaryLight.withOpacity(0.78)), floatingLabelStyle: TextStyle(color: primaryLight), hintStyle: TextStyle(color: Colors.white.withOpacity(0.38))),
     );
   }
 
-  static TextStyle headingFont({double size = 28, Color? color}) {
-    return GoogleFonts.lalezar(
-      fontSize: size,
-      color: color ?? AppColors.goldLight,
-      height: 1.15,
-    );
-  }
+  static TextStyle headingFont({double size = 28, Color? color}) => GoogleFonts.lalezar(fontSize: size, color: color ?? uiPrimaryLight, height: 1.15);
 }
