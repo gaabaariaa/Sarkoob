@@ -11,6 +11,7 @@ import '../theme/app_theme.dart';
 import '../widgets/countdown_timer_widget.dart';
 import '../widgets/game_3d_button.dart';
 import '../widgets/role_card.dart';
+import '../widgets/modern_speaking_panel.dart';
 
 class GameFlowScreen extends StatefulWidget {
   final List<SessionPlayer> players;
@@ -902,38 +903,22 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             _buildBombDayBanner(),
           if (!isIntro && controller.activeExecutionWord != null) _buildExecutionWordBanner(),
           if (isIntro)
-            const Text(
-              'هر بازیکن به ترتیب، خودش رو معرفی می‌کنه.',
-              style: TextStyle(color: Colors.white60),
-            ),
-          const SizedBox(height: 16),
-          if (isChallenge)
-            Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppColors.bloodRed.withOpacity(0.4),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.bloodRedLight),
-              ),
-              child: const Text(
-                '⚡ این یه چالشه؛ بعدش نوبتِ عادی ادامه پیدا می‌کنه.',
-                style: TextStyle(color: Colors.white),
+            const Padding(
+              padding: EdgeInsets.only(bottom: 4),
+              child: Text(
+                'هر بازیکن به ترتیب، خودش رو معرفی می‌کنه.',
+                style: TextStyle(color: Colors.white60),
               ),
             ),
-          Text(
-            speaker.name,
-            style: AppTheme.headingFont(size: 30),
-          ),
-          const SizedBox(height: 16),
-          CountdownTimerWidget(
+          ModernSpeakingPanel(
             key: ValueKey('${speaker.id}-$isChallenge'),
-            totalSeconds: controller.currentTurnSeconds,
-            onFinished: () => MusicService.instance.playAlertLoop(),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () {
+            speakerName: speaker.name,
+            remainingPlayers: controller.alivePlayers
+                .where((p) => !p.hasSpokenThisRound)
+                .length,
+            seconds: controller.currentTurnSeconds,
+            challengeActive: isChallenge,
+            onNext: () {
               MusicService.instance.stopAlert();
               if (isChallenge) {
                 controller.finishChallenge();
@@ -941,26 +926,23 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 controller.advanceSpeaker();
               }
             },
-            child: Text(isChallenge ? 'پایان چالش' : 'نفر بعدی'),
-          ),
-          if (!isIntro && !isChallenge) ...[
-            const SizedBox(height: 12),
-            OutlinedButton.icon(
-              onPressed: (controller.challengeEligiblePlayers.isEmpty ||
-                      !controller.canCurrentSpeakerGiveChallenge)
-                  ? null
-                  : () {
-                      MusicService.instance.stopAlert();
-                      _showChallengePicker();
-                    },
-              icon: const Icon(Icons.bolt),
-              label: const Text('چالش گرفتن یه بازیکن دیگه'),
-            ),
-          ],
-          const SizedBox(height: 16),
-          Text(
-            'ترتیب باقی‌مانده: ${controller.alivePlayers.where((p) => !p.hasSpokenThisRound).length} نفر',
-            style: const TextStyle(color: Colors.white38, fontSize: 12),
+            onFinishChallenge: isChallenge
+                ? () {
+                    MusicService.instance.stopAlert();
+                    controller.finishChallenge();
+                  }
+                : null,
+            onChooseChallenge: (!isIntro &&
+                    !isChallenge &&
+                    controller.challengeEligiblePlayers.isNotEmpty &&
+                    controller.canCurrentSpeakerGiveChallenge)
+                ? () {
+                    MusicService.instance.stopAlert();
+                    _showChallengePicker();
+                  }
+                : null,
+            nextLabel: isChallenge ? 'پایان چالش' : 'نفر بعدی',
+            eyebrow: isIntro ? 'معارفه' : 'نوبت صحبت',
           ),
           if (controller.todaysChallenges.isNotEmpty) ...[
             const SizedBox(height: 8),

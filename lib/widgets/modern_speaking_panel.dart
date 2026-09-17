@@ -13,6 +13,7 @@ class ModernSpeakingPanel extends StatelessWidget {
   final VoidCallback onNext;
   final VoidCallback? onFinishChallenge;
   final VoidCallback? onChooseChallenge;
+  final VoidCallback? onTimerFinished;
   final String nextLabel;
   final String? eyebrow;
 
@@ -25,6 +26,7 @@ class ModernSpeakingPanel extends StatelessWidget {
     required this.onNext,
     this.onFinishChallenge,
     this.onChooseChallenge,
+    this.onTimerFinished,
     this.nextLabel = 'نفر بعدی',
     this.eyebrow,
   });
@@ -102,7 +104,7 @@ class ModernSpeakingPanel extends StatelessWidget {
                         border: Border.all(color: AppColors.gold.withOpacity(.58), width: 2),
                       ),
                       alignment: Alignment.center,
-                      child: CountdownTimerWidget(totalSeconds: seconds!),
+                      child: CountdownTimerWidget(totalSeconds: seconds!, onFinished: onTimerFinished),
                     ),
                   ),
                 const SizedBox(height: 22),
