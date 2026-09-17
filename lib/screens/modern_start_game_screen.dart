@@ -44,6 +44,14 @@ class _ModernStartGameScreenState extends State<ModernStartGameScreen> {
     });
   }
 
+  void _reorderPlayers(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) newIndex -= 1;
+      final player = _players.removeAt(oldIndex);
+      _players.insert(newIndex, player);
+    });
+  }
+
   void _continue() {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => ModernRoleSetupScreen(players: List.unmodifiable(_players))),
@@ -78,7 +86,11 @@ class _ModernStartGameScreenState extends State<ModernStartGameScreen> {
                         if (_players.isEmpty)
                           const _EmptyPlayers()
                         else
-                          _PlayerList(players: _players, onRemove: (index) => setState(() => _players.removeAt(index))),
+                          _PlayerList(
+                            players: _players,
+                            onRemove: (index) => setState(() => _players.removeAt(index)),
+                            onReorder: _reorderPlayers,
+                          ),
                         const SizedBox(height: 14),
                         _StatusCard(total: total, ready: ready),
                         const SizedBox(height: 18),
@@ -158,13 +170,55 @@ class _EmptyPlayers extends StatelessWidget {
 class _PlayerList extends StatelessWidget {
   final List<String> players;
   final ValueChanged<int> onRemove;
-  const _PlayerList({required this.players, required this.onRemove});
+  final void Function(int oldIndex, int newIndex) onReorder;
+  const _PlayerList({required this.players, required this.onRemove, required this.onReorder});
+
   @override
-  Widget build(BuildContext context) => Card(child: Padding(padding: const EdgeInsets.fromLTRB(14, 12, 14, 8), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-    Row(children: [Text('لیست بازیکنان', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.goldLight, fontWeight: FontWeight.w800)), const Spacer(), Text('${players.length} نفر', style: Theme.of(context).textTheme.labelMedium?.copyWith(color: AppColors.mutedText))]),
-    const SizedBox(height: 8),
-    ...players.asMap().entries.map((entry) => Container(margin: const EdgeInsets.only(bottom: 7), decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.gold.withOpacity(0.08))), child: ListTile(dense: true, leading: CircleAvatar(radius: 17, backgroundColor: AppColors.gold.withOpacity(0.10), child: Text('${entry.key + 1}', style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w800))), title: Text(entry.value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)), trailing: IconButton(onPressed: () => onRemove(entry.key), icon: const Icon(Icons.close_rounded), color: AppColors.mutedText, tooltip: 'حذف')))),
-  ])));
+  Widget build(BuildContext context) => Card(
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Text('لیست بازیکنان', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.goldLight, fontWeight: FontWeight.w800)),
+            const Spacer(),
+            Text('برای تغییر ترتیب بکشید', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.subtleText)),
+            const SizedBox(width: 8),
+            Text('${players.length} نفر', style: Theme.of(context).textTheme.labelMedium?.copyWith(color: AppColors.mutedText)),
+          ]),
+          const SizedBox(height: 8),
+          ReorderableListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            buildDefaultDragHandles: false,
+            itemCount: players.length,
+            onReorder: onReorder,
+            proxyDecorator: (child, index, animation) => Material(
+              color: Colors.transparent,
+              elevation: 8,
+              borderRadius: BorderRadius.circular(14),
+              child: child,
+            ),
+            itemBuilder: (context, index) => Container(
+              key: ValueKey(players[index]),
+              margin: const EdgeInsets.only(bottom: 7),
+              decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.gold.withOpacity(0.08))),
+              child: ListTile(
+                dense: true,
+                leading: ReorderableDragStartListener(
+                  index: index,
+                  child: const SizedBox(width: 34, child: Icon(Icons.drag_handle_rounded, color: AppColors.goldLight)),
+                ),
+                title: Text(players[index], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                trailing: IconButton(onPressed: () => onRemove(index), icon: const Icon(Icons.close_rounded), color: AppColors.mutedText, tooltip: 'حذف'),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _StatusCard extends StatelessWidget {
