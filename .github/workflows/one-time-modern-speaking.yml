@@ -1,0 +1,43 @@
+name: One-time modern speaking integration
+on:
+  push:
+    branches: [ main ]
+permissions:
+  contents: write
+jobs:
+  integrate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply integration
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('lib/screens/game_flow_screen.dart')
+          s=p.read_text()
+          if "../widgets/modern_speaking_panel.dart" not in s:
+              s=s.replace("import '../widgets/role_card.dart';", "import '../widgets/role_card.dart';\nimport '../widgets/modern_speaking_panel.dart';")
+          pattern=r"          if \(isIntro\)\n            const Text\(\n              'هر بازیکن به ترتیب، خودش رو معرفی می‌کنه\.',\n              style: TextStyle\(color: Colors\.white60\),\n            \),\n          const SizedBox\(height: 16\),\n          if \(isChallenge\).*?          const SizedBox\(height: 16\),\n          Text\(\n            'ترتیب باقی‌مانده:.*?\n            style: const TextStyle\(color: Colors\.white38, fontSize: 12\),\n          \),\n"
+          replacement="""          if (isIntro)\n            const Padding(\n              padding: EdgeInsets.only(bottom: 4),\n              child: Text(\n                'هر بازیکن به ترتیب، خودش رو معرفی می‌کنه.',\n                style: TextStyle(color: Colors.white60),\n              ),\n            ),\n          ModernSpeakingPanel(\n            key: ValueKey('${speaker.id}-$isChallenge'),\n            speakerName: speaker.name,\n            remainingPlayers: controller.alivePlayers\n                .where((p) => !p.hasSpokenThisRound)\n                .length,\n            seconds: controller.currentTurnSeconds,\n            challengeActive: isChallenge,\n            onNext: () {\n              MusicService.instance.stopAlert();\n              if (isChallenge) {\n                controller.finishChallenge();\n              } else {\n                controller.advanceSpeaker();\n              }\n            },\n            onFinishChallenge: isChallenge\n                ? () {\n                    MusicService.instance.stopAlert();\n                    controller.finishChallenge();\n                  }\n                : null,\n            onChooseChallenge: (!isIntro &&\n                    !isChallenge &&\n                    controller.challengeEligiblePlayers.isNotEmpty &&\n                    controller.canCurrentSpeakerGiveChallenge)\n                ? () {\n                    MusicService.instance.stopAlert();\n                    _showChallengePicker();\n                  }\n                : null,\n            nextLabel: isChallenge ? 'پایان چالش' : 'نفر بعدی',\n            eyebrow: isIntro ? 'معارفه' : 'نوبت صحبت',\n          ),\n"""
+          ns,n=re.subn(pattern,replacement,s,flags=re.S)
+          if n!=1: raise SystemExit(f'game_flow replacement count={n}')
+          p.write_text(ns)
+          q=Path('lib/widgets/modern_speaking_panel.dart')
+          w=q.read_text()
+          if 'onTimerFinished' not in w:
+              w=w.replace('  final VoidCallback? onChooseChallenge;\n', '  final VoidCallback? onChooseChallenge;\n  final VoidCallback? onTimerFinished;\n')
+              w=w.replace('    this.onChooseChallenge,\n', '    this.onChooseChallenge,\n    this.onTimerFinished,\n')
+              w=w.replace('CountdownTimerWidget(totalSeconds: seconds!)', 'CountdownTimerWidget(totalSeconds: seconds!, onFinished: onTimerFinished)')
+              q.write_text(w)
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/screens/game_flow_screen.dart lib/widgets/modern_speaking_panel.dart .github/workflows/one-time-modern-speaking.yml
+          git rm .github/workflows/one-time-modern-speaking.yml
+          git commit -m "feat: integrate modern speaking panel" || exit 0
+          git push
