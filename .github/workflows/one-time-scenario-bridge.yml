@@ -1,5 +1,7 @@
 name: Apply scenario setup bridge
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
