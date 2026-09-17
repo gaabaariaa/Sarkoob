@@ -1,0 +1,162 @@
+name: One-time modern intro night redesign
+on:
+  push:
+    branches: [ main ]
+permissions:
+  contents: write
+jobs:
+  integrate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply redesign
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('lib/screens/game_flow_screen.dart')
+          s=p.read_text()
+          pattern=r"  Widget _buildIntroNight\(\) \{.*?\n  \}\n\n  // ---------- رأی‌گیری"
+          replacement="""  Widget _buildIntroNight() {
+    final isMafiaGame = controller.players.any((p) => p.teamId == SarkoobTeams.mafiaGang.id);
+    final conspiracyTeamId = isMafiaGame ? SarkoobTeams.mafiaGang.id : SarkoobTeams.suppression.id;
+    final wakingMembers = controller.players
+        .where((p) => p.teamId == conspiracyTeamId && !p.isModiri)
+        .toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: AppColors.bloodRed.withOpacity(.22),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.bloodRedLight.withOpacity(.45)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.bloodRed.withOpacity(.55),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.bloodRedLight),
+                ),
+                child: const Icon(Icons.nights_stay_rounded, color: AppColors.goldLight),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('شبِ معارفه', style: AppTheme.headingFont(size: 21)),
+                    const SizedBox(height: 4),
+                    Text(
+                      isMafiaGame
+                          ? 'اعضای مافیا بیدار بشن و همدیگه رو ببینن.'
+                          : 'اعضای تیم سرکوب بیدار بشن و همدیگه رو ببینن.',
+                      style: const TextStyle(color: AppColors.mutedText, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+        Expanded(
+          child: ListView.separated(
+            padding: const EdgeInsets.only(bottom: 8),
+            itemCount: wakingMembers.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 9),
+            itemBuilder: (_, index) {
+              final p = wakingMembers[index];
+              final roleName = p.roleId != null ? (SarkoobRoles.byId(p.roleId!)?.name ?? '') : '';
+              return Game3DSurface(
+                palette: Game3DPalette.danger,
+                depth: 4,
+                borderRadius: BorderRadius.circular(16),
+                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 13),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceDark,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.gold.withOpacity(.2)),
+                      ),
+                      child: const Icon(Icons.person_rounded, color: AppColors.goldLight, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        p.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15),
+                      ),
+                    ),
+                    if (roleName.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: AppColors.bloodRed.withOpacity(.35),
+                          borderRadius: BorderRadius.circular(9),
+                          border: Border.all(color: AppColors.bloodRedLight.withOpacity(.55)),
+                        ),
+                        child: Text(
+                          roleName,
+                          style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w700, fontSize: 11),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceDark.withOpacity(.72),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.gold.withOpacity(.10)),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.groups_rounded, color: AppColors.goldLight, size: 18),
+              SizedBox(width: 9),
+              Expanded(child: Text('فرصت برای مشورت و هماهنگی تیم', style: TextStyle(color: AppColors.mutedText, fontSize: 12))),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Game3DButton(
+          label: 'ادامه به روز اول',
+          icon: Icons.wb_sunny_rounded,
+          onPressed: () => controller.moveToDay(1),
+        ),
+      ],
+    );
+  }
+
+  // ---------- رأی‌گیری"""
+          ns,n=re.subn(pattern,replacement,s,flags=re.S)
+          if n!=1: raise SystemExit(f'expected one intro-night replacement, got {n}')
+          p.write_text(ns)
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/screens/game_flow_screen.dart .github/workflows/one-time-modern-intro-night.yml
+          git rm .github/workflows/one-time-modern-intro-night.yml
+          git commit -m "feat: modernize intro night phase" || exit 0
+          git push
