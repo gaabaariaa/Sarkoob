@@ -28,7 +28,7 @@ class _ModernStartGameScreenState extends State<ModernStartGameScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          const _Ambient(),
+          _Ambient(color: _scenario.color),
           SafeArea(
             child: Center(
               child: ConstrainedBox(
@@ -133,19 +133,21 @@ class _SectionCard extends StatelessWidget {
 }
 
 class _Ambient extends StatelessWidget {
-  const _Ambient();
+  final Color color;
+
+  const _Ambient({required this.color});
 
   @override
   Widget build(BuildContext context) {
-    return const Positioned.fill(
+    return Positioned.fill(
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: AppColors.background,
           gradient: RadialGradient(
-            center: Alignment(0, -.8),
+            center: const Alignment(0, -.8),
             radius: 1.2,
-            colors: [AppColors.gold, AppColors.background],
-            stops: [0, .72],
+            colors: [color.withOpacity(.09), AppColors.background],
+            stops: const [0, .72],
           ),
         ),
       ),
