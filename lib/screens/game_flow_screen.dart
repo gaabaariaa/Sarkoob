@@ -12,6 +12,7 @@ import '../widgets/countdown_timer_widget.dart';
 import '../widgets/game_3d_button.dart';
 import '../widgets/role_card.dart';
 import '../widgets/modern_speaking_panel.dart';
+import '../widgets/modern_defense_panel.dart';
 
 class GameFlowScreen extends StatefulWidget {
   final List<SessionPlayer> players;
@@ -1577,72 +1578,69 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }
 
   Widget _buildDefenseAnnouncement() {
-    final names = controller.defenseCandidates.map((p) => p.name).join('، ');
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Icon(Icons.gavel_rounded, color: AppColors.gold, size: 48),
-        const SizedBox(height: 16),
-        const Text('وارد دفاعیه شدن:', style: TextStyle(color: Colors.white70, fontSize: 14)),
-        const SizedBox(height: 8),
-        Text(names, textAlign: TextAlign.center, style: AppTheme.headingFont(size: 22)),
-        const SizedBox(height: 28),
-        Game3DButton(
-          label: 'شروعِ دفاعیه',
-          icon: Icons.arrow_forward_rounded,
-          onPressed: controller.acknowledgeDefenseAnnouncement,
-        ),
-      ],
+    final candidates = controller.defenseCandidates;
+    return Center(
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(22),
+        decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: AppColors.gold.withOpacity(0.28))),
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Container(width: 58, height: 58, decoration: BoxDecoration(color: AppColors.bloodRed.withOpacity(0.35), shape: BoxShape.circle), child: const Icon(Icons.gavel_rounded, color: AppColors.goldLight, size: 30)),
+          const SizedBox(height: 16),
+          Text('دفاعیه شروع شد', textAlign: TextAlign.center, style: AppTheme.headingFont(size: 24)),
+          const SizedBox(height: 7),
+          const Text('این بازیکنان وارد مرحله دفاع می‌شوند. هر نفر به‌ترتیب فرصت صحبت دارد.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white60, fontSize: 12, height: 1.5)),
+          const SizedBox(height: 16),
+          ...candidates.asMap().entries.map((entry) => Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(color: Colors.white.withOpacity(0.04), borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.white.withOpacity(0.07))),
+            child: Row(children: [
+              Container(width: 30, height: 30, alignment: Alignment.center, decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(0.25), shape: BoxShape.circle), child: Text('${entry.key + 1}', style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w800, fontSize: 12))),
+              const SizedBox(width: 10),
+              Expanded(child: Text(entry.value.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
+            ]),
+          )),
+          const SizedBox(height: 8),
+          Game3DButton(label: 'شروع دفاعیه', icon: Icons.arrow_back_rounded, onPressed: controller.acknowledgeDefenseAnnouncement),
+        ]),
+      ),
     );
   }
 
   Widget _buildDefensePhase() {
     final speaker = controller.currentDefenseSpeaker;
+    final candidates = controller.defenseCandidates;
     if (speaker == null) {
       return Center(
-        child: ElevatedButton(
-          onPressed: controller.startSecondVoteRound,
-          child: const Text('شروع رأی‌گیری نهایی'),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: AppColors.gold.withOpacity(0.28))),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Container(width: 62, height: 62, decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(0.24), shape: BoxShape.circle), child: const Icon(Icons.how_to_vote_rounded, color: AppColors.goldLight, size: 31)),
+            const SizedBox(height: 14),
+            Text('دفاعیه تمام شد', style: AppTheme.headingFont(size: 23)),
+            const SizedBox(height: 7),
+            const Text('دفاع همه‌ی افراد ثبت شد. حالا وارد رأی‌گیری نهایی شو.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white60, fontSize: 12, height: 1.5)),
+            const SizedBox(height: 18),
+            SizedBox(width: double.infinity, child: Game3DButton(label: 'شروع رأی‌گیری نهایی', icon: Icons.arrow_back_rounded, onPressed: controller.startSecondVoteRound)),
+          ]),
         ),
       );
     }
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Text('در حال دفاعیه:', style: TextStyle(color: Colors.white70)),
-        const SizedBox(height: 8),
-        Text(speaker.name, style: AppTheme.headingFont(size: 28)),
-        const SizedBox(height: 16),
-        CountdownTimerWidget(
-          key: ValueKey('defense-${speaker.id}'),
-          totalSeconds: widget.settings.speakSeconds,
-          onFinished: () => MusicService.instance.playAlertLoop(),
-        ),
-        const SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: () {
-            MusicService.instance.stopAlert();
-            controller.advanceDefenseSpeaker();
-          },
-          child: const Text('پایان دفاعیه‌ی این نفر'),
-        ),
-        const SizedBox(height: 12),
-        TextButton.icon(
-          icon: const Icon(Icons.block, color: AppColors.bloodRedLight, size: 18),
-          label: const Text(
-            'یکی حینِ دفاعیه اکت داد (حذف/لایک‌ودیس‌لایک/...)',
-            style: TextStyle(color: AppColors.bloodRedLight, fontSize: 12),
-          ),
-          onPressed: () => _showPlayerListPicker(
-            title: 'کی حینِ دفاعیه اکت داد؟',
-            targets: controller.alivePlayers.where((p) => p.id != speaker.id).toList(),
-            onSelected: (p) {
-              final msg = controller.revokeVotingRights(p.id, 'اکت در حینِ دفاعیه‌ی «${speaker.name}»');
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-            },
-          ),
-        ),
-      ],
+    final index = candidates.indexWhere((p) => p.id == speaker.id) + 1;
+    return ModernDefensePanel(
+      key: ValueKey('modern-defense-${speaker.id}'),
+      speakerName: speaker.name,
+      currentIndex: index.clamp(1, candidates.length),
+      totalCandidates: candidates.length,
+      seconds: widget.settings.speakSeconds,
+      onNext: () {
+        MusicService.instance.stopAlert();
+        controller.advanceDefenseSpeaker();
+      },
+      onTimerFinished: () => MusicService.instance.playAlertLoop(),
     );
   }
 
