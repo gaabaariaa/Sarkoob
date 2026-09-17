@@ -12,7 +12,6 @@ import 'modern_start_game_screen.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
   void _open(BuildContext context, Widget page) => Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
-
   @override
   Widget build(BuildContext context) {
     final primary = AppTheme.uiPrimary, light = AppTheme.uiPrimaryLight, dark = AppTheme.uiPrimaryDark;
@@ -30,10 +29,10 @@ class HomeScreen extends StatelessWidget {
             _HomeTile(title: 'بازیکنان', subtitle: 'لیست و نقش‌ها', icon: Icons.groups_rounded, onTap: () => _open(context, const RosterScreen()), primary: primary, dark: dark, card: card, muted: muted),
             _HomeTile(title: 'آمار', subtitle: 'نتایج و عملکرد', icon: Icons.insights_rounded, onTap: () => _open(context, const StatsScreen()), primary: primary, dark: dark, card: card, muted: muted),
             _HomeTile(title: 'تاریخچه', subtitle: 'بازی‌های قبلی', icon: Icons.history_rounded, onTap: () => _open(context, const HistoryScreen()), primary: primary, dark: dark, card: card, muted: muted),
-            _HomeTile(title: 'قوانین', subtitle: 'راهنمای سناریو', icon: Icons.menu_book_rounded, onTap: () => _open(context, const RulesScreen()), primary: primary, dark: dark, card: card, muted: muted),
+            _HomeTile(title: 'سناریوها', subtitle: 'قوانین و سناریوهای بازی', icon: Icons.menu_book_rounded, onTap: () => _open(context, const RulesScreen()), primary: primary, dark: dark, card: card, muted: muted),
           ]), const SizedBox(height: 12),
           _SettingsButton(onTap: () => _open(context, const SettingsScreen()), primary: primary, light: light, dark: dark, muted: muted), const SizedBox(height: 18),
-          Text('دست خدا  •  سناریوی سرکوب', textAlign: TextAlign.center, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: dark, letterSpacing: .2)),
+          Text('دست خدا  •  گرداننده‌ی بازی نقش مخفی', textAlign: TextAlign.center, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: dark, letterSpacing: .2)),
         ]))));
       }))
     ]));
@@ -55,7 +54,7 @@ class _TopBar extends StatelessWidget {
 class _HeroPanel extends StatelessWidget {
   final Color primary, light, surface, muted;
   const _HeroPanel({required this.primary, required this.light, required this.surface, required this.muted});
-  @override Widget build(BuildContext context) => Container(padding: const EdgeInsets.fromLTRB(22, 25, 22, 22), decoration: BoxDecoration(borderRadius: BorderRadius.circular(26), gradient: LinearGradient(begin: Alignment.topRight, end: Alignment.bottomLeft, colors: [AppTheme.uiElevated, surface]), border: Border.all(color: primary.withOpacity(.24)), boxShadow: [BoxShadow(color: Colors.black.withOpacity(.35), blurRadius: 24, offset: const Offset(0, 12))]), child: Column(children: [Container(width: 76, height: 76, decoration: BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [light, primary]), boxShadow: [BoxShadow(color: primary.withOpacity(.18), blurRadius: 26, spreadRadius: 2)]), child: const Icon(Icons.theater_comedy_rounded, color: Color(0xFF151515), size: 38)), const SizedBox(height: 16), Text('میز بازی', style: AppTheme.headingFont(size: 31, color: light)), const SizedBox(height: 4), Text('همه‌چیز برای اجرای یک شب پرتنش آماده است.', textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: muted, height: 1.7)), const SizedBox(height: 17), Row(mainAxisAlignment: MainAxisAlignment.center, children: [_HeroTag(icon: Icons.shield_outlined, text: 'نقش مخفی', primary: primary, light: light), const SizedBox(width: 8), _HeroTag(icon: Icons.nights_stay_outlined, text: 'سناریوی سرکوب', primary: primary, light: light)])]));
+  @override Widget build(BuildContext context) => Container(padding: const EdgeInsets.fromLTRB(22, 25, 22, 22), decoration: BoxDecoration(borderRadius: BorderRadius.circular(26), gradient: LinearGradient(begin: Alignment.topRight, end: Alignment.bottomLeft, colors: [AppTheme.uiElevated, surface]), border: Border.all(color: primary.withOpacity(.24)), boxShadow: [BoxShadow(color: Colors.black.withOpacity(.35), blurRadius: 24, offset: const Offset(0, 12))]), child: Column(children: [Container(width: 76, height: 76, decoration: BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [light, primary]), boxShadow: [BoxShadow(color: primary.withOpacity(.18), blurRadius: 26, spreadRadius: 2)]), child: const Icon(Icons.theater_comedy_rounded, color: Color(0xFF151515), size: 38)), const SizedBox(height: 16), Text('میز بازی', style: AppTheme.headingFont(size: 31, color: light)), const SizedBox(height: 4), Text('همه‌چیز برای اجرای یک شب پرتنش آماده است.', textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: muted, height: 1.7)), const SizedBox(height: 17), Row(mainAxisAlignment: MainAxisAlignment.center, children: [_HeroTag(icon: Icons.shield_outlined, text: 'نقش مخفی', primary: primary, light: light), const SizedBox(width: 8), _HeroTag(icon: Icons.theater_comedy_rounded, text: 'چند سناریو', primary: primary, light: light)])]));
 }
 
 class _HeroTag extends StatelessWidget {
@@ -67,7 +66,7 @@ class _HeroTag extends StatelessWidget {
 class _StartButton extends StatelessWidget {
   final VoidCallback onTap; final Color primary, light;
   const _StartButton({required this.onTap, required this.primary, required this.light});
-  @override Widget build(BuildContext context) => Game3DSurface(onPressed: onTap, customColors: Game3DColors.fromColor(primary), depth: 6, borderRadius: BorderRadius.circular(19), padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18), semanticLabel: 'شروع بازی', child: Row(children: [Container(width: 48, height: 48, decoration: BoxDecoration(color: Colors.black.withOpacity(.12), borderRadius: BorderRadius.circular(15)), child: Icon(Icons.play_arrow_rounded, size: 31, color: light)), const SizedBox(width: 14), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('شروع بازی', style: AppTheme.headingFont(size: 23, color: light)), Text('بازیکنان را انتخاب کن و وارد سناریو شو', style: TextStyle(color: light.withOpacity(.72), fontWeight: FontWeight.w600, fontSize: 12))])), Icon(Icons.arrow_back_rounded, color: light)]));
+  @override Widget build(BuildContext context) => Game3DSurface(onPressed: onTap, customColors: Game3DColors.fromColor(primary), depth: 6, borderRadius: BorderRadius.circular(19), padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18), semanticLabel: 'شروع بازی', child: Row(children: [Container(width: 48, height: 48, decoration: BoxDecoration(color: Colors.black.withOpacity(.12), borderRadius: BorderRadius.circular(15)), child: Icon(Icons.play_arrow_rounded, size: 31, color: light)), const SizedBox(width: 14), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('شروع بازی', style: AppTheme.headingFont(size: 23, color: light)), Text('بازیکنان را انتخاب کن و سناریو را مشخص کن', style: TextStyle(color: light.withOpacity(.72), fontWeight: FontWeight.w600, fontSize: 12))])), Icon(Icons.arrow_back_rounded, color: light)]));
 }
 
 class _SettingsButton extends StatelessWidget {
