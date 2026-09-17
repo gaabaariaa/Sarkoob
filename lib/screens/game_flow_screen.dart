@@ -1891,127 +1891,162 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   Widget _buildNightPhase() {
     if (controller.lastNightSummary != null) {
-      return Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.nightlight_round, size: 48, color: AppColors.gold),
-              const SizedBox(height: 16),
-              const Text(
-                'این متن رو عیناً به جمع اعلام کن:',
+      return ModernNightPanel(
+        eyebrow: 'شب ${controller.roundNumber} • خلاصه',
+        title: 'نتیجه‌ی شب آماده است',
+        icon: Icons.wb_twilight_rounded,
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'این متن رو عیناً به جمع اعلام کن:',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.goldLight, fontSize: 12, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(.14),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: AppColors.gold.withOpacity(.35)),
+              ),
+              child: Text(
+                controller.lastNightSummary!,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.goldLight, fontSize: 12, fontWeight: FontWeight.bold),
+                style: const TextStyle(color: Colors.white, fontSize: 16, height: 1.55, fontWeight: FontWeight.w600),
               ),
-              const SizedBox(height: 8),
+            ),
+            if (controller.nightPrivateNotes != null) ...[
+              const SizedBox(height: 14),
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(13),
                 decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.gold),
-                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.white.withOpacity(.035),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white.withOpacity(.08)),
                 ),
-                child: Text(
-                  controller.lastNightSummary!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
-                ),
-              ),
-              if (controller.nightPrivateNotes != null) ...[
-                const SizedBox(height: 20),
-                const Text(
-                  'یادداشتِ خصوصیِ گرداننده (این رو اعلام نکن):',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white38, fontSize: 11),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  controller.nightPrivateNotes!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white54, fontSize: 13),
-                ),
-              ],
-              if (controller.statusInquiryChargesRemaining > 0 ||
-                  controller.statusInquiryResultMessage != null) ...[
-                const SizedBox(height: 24),
-                const Divider(color: Colors.white24),
-                const SizedBox(height: 8),
-                if (controller.statusInquiryResultMessage != null) ...[
-                  if (controller.statusInquiryLastVotePassed == true) ...[
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                     const Text(
-                      'استعلامِ وضعیت رأی آورد — این رو عیناً اعلام کن:',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppColors.goldLight,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      'یادداشت خصوصی گرداننده',
+                      textAlign: TextAlign.right,
+                      style: TextStyle(color: Colors.white38, fontSize: 11, fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 6),
+                    Text(
+                      controller.nightPrivateNotes!,
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(color: Colors.white60, fontSize: 12, height: 1.5),
+                    ),
                   ],
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: controller.statusInquiryLastVotePassed == true
-                            ? AppColors.gold
-                            : Colors.white24,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      controller.statusInquiryResultMessage!,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                    ),
-                  ),
-                ] else if (controller.statusInquiryVoteOpen) ...[
-                  Text(
-                    'کی‌ها موافقِ استعلامِ وضعیت‌ان؟ (${controller.statusInquiryYesVotes} از ${controller.aliveCount} نفرِ زنده)',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white70, fontSize: 13),
-                  ),
-                  const SizedBox(height: 10),
-                  GridView.count(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: 3,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 1.3,
-                    children: controller.alivePlayers.map((p) {
-                      final isSelected = controller.statusInquiryYesVoters.contains(p.id);
-                      return _voteCandidateButton(
-                        p,
-                        isSelected: isSelected,
-                        enabled: true,
-                        onTap: () => controller.toggleStatusInquiryVoter(p.id),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 12),
-                  ElevatedButton(
-                    onPressed: controller.resolveStatusInquiryVote,
-                    child: const Text('ثبتِ نتیجه‌ی رأی'),
-                  ),
-                ] else ...[
-                  OutlinedButton(
-                    onPressed: controller.openStatusInquiryVote,
-                    child: Text(
-                      'آیا استعلامِ وضعیت می‌خواید؟ '
-                      '(${controller.statusInquiryChargesRemaining} تا مونده)',
-                    ),
-                  ),
-                ],
-              ],
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () => controller.moveToDay(controller.roundNumber + 1),
-                child: Text('ادامه به روز ${controller.roundNumber + 1}'),
+                ),
               ),
             ],
-          ),
+            if (controller.statusInquiryChargesRemaining > 0 ||
+                controller.statusInquiryResultMessage != null) ...[
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceDark,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppColors.gold.withOpacity(.16)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.fact_check_rounded, color: AppColors.goldLight, size: 19),
+                        const SizedBox(width: 7),
+                        const Expanded(
+                          child: Text('استعلام وضعیت', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                        ),
+                        Text(
+                          '${controller.statusInquiryChargesRemaining} تا باقی مانده',
+                          style: const TextStyle(color: AppColors.goldLight, fontSize: 10, fontWeight: FontWeight.w700),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    if (controller.statusInquiryResultMessage != null) ...[
+                      if (controller.statusInquiryLastVotePassed == true) ...[
+                        const Text(
+                          'استعلام رأی آورد — این رو عیناً اعلام کن:',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: AppColors.goldLight, fontSize: 11, fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 7),
+                      ],
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: controller.statusInquiryLastVotePassed == true
+                              ? AppColors.goldDark.withOpacity(.16)
+                              : Colors.white.withOpacity(.025),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: controller.statusInquiryLastVotePassed == true
+                                ? AppColors.gold.withOpacity(.55)
+                                : Colors.white24,
+                          ),
+                        ),
+                        child: Text(
+                          controller.statusInquiryResultMessage!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: Colors.white, fontSize: 13, height: 1.45),
+                        ),
+                      ),
+                    ] else if (controller.statusInquiryVoteOpen) ...[
+                      Text(
+                        'موافق‌های استعلام: ${controller.statusInquiryYesVotes} از ${controller.aliveCount} نفر زنده',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.white60, fontSize: 12),
+                      ),
+                      const SizedBox(height: 10),
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 190,
+                          mainAxisSpacing: 9,
+                          crossAxisSpacing: 9,
+                          childAspectRatio: 1.45,
+                        ),
+                        itemCount: controller.alivePlayers.length,
+                        itemBuilder: (context, index) {
+                          final p = controller.alivePlayers[index];
+                          final isSelected = controller.statusInquiryYesVoters.contains(p.id);
+                          return _voteCandidateButton(
+                            p,
+                            isSelected: isSelected,
+                            enabled: true,
+                            onTap: () => controller.toggleStatusInquiryVoter(p.id),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      Game3DButton(
+                        label: 'ثبت نتیجه‌ی رأی',
+                        icon: Icons.check_rounded,
+                        onPressed: controller.resolveStatusInquiryVote,
+                      ),
+                    ] else
+                      OutlinedButton.icon(
+                        onPressed: controller.openStatusInquiryVote,
+                        icon: const Icon(Icons.how_to_vote_rounded),
+                        label: Text('شروع استعلام وضعیت • ${controller.statusInquiryChargesRemaining} بار'),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ],
         ),
+        actionLabel: 'ادامه به روز ${controller.roundNumber + 1}',
+        onAction: () => controller.moveToDay(controller.roundNumber + 1),
       );
     }
 
