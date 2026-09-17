@@ -34,7 +34,7 @@ class HomeScreen extends StatelessWidget {
           ]), const SizedBox(height: 12),
           _SettingsButton(onTap: () => _open(context, const SettingsScreen()), primary: primary, light: light, dark: dark, muted: muted), const SizedBox(height: 18),
           Text('دست خدا  •  سناریوی سرکوب', textAlign: TextAlign.center, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: dark, letterSpacing: .2)),
-        ])));
+        ]))));
       }))
     ]));
   }
