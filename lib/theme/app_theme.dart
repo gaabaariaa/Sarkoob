@@ -123,3 +123,41 @@ class AppTheme {
 
   static TextStyle headingFont({double size = 28, Color? color}) => GoogleFonts.lalezar(fontSize: size, color: color ?? uiPrimaryLight, height: 1.15);
 }
+
+/// Compatibility facade for the modern screens. It reads the same dynamic UI palette
+/// without touching the fixed role/team colors in AppColors.
+class AppThemeExtension {
+  final Color background;
+  final Color surfaceDark;
+  final Color surfaceCard;
+  final Color surfaceElevated;
+  final Color accent;
+  final Color accentLight;
+  final Color accentDark;
+  final Color mutedText;
+  final Color subtleText;
+
+  const AppThemeExtension({
+    required this.background,
+    required this.surfaceDark,
+    required this.surfaceCard,
+    required this.surfaceElevated,
+    required this.accent,
+    required this.accentLight,
+    required this.accentDark,
+    required this.mutedText,
+    required this.subtleText,
+  });
+
+  static AppThemeExtension of(BuildContext context) => AppThemeExtension(
+    background: AppTheme.uiBackground,
+    surfaceDark: AppTheme.uiSurface,
+    surfaceCard: AppTheme.uiCard,
+    surfaceElevated: AppTheme.uiElevated,
+    accent: AppTheme.uiPrimary,
+    accentLight: AppTheme.uiPrimaryLight,
+    accentDark: AppTheme.uiPrimaryDark,
+    mutedText: AppTheme.uiMutedText,
+    subtleText: AppTheme.uiSubtleText,
+  );
+}
