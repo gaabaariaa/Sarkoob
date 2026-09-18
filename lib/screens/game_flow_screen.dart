@@ -1129,7 +1129,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             key: ValueKey('${speaker.id}-$isChallenge'),
             speakerName: speaker.name,
             remainingPlayers: controller.alivePlayers
-                .where((p) => !p.hasSpokenThisRound)
+                .where((p) => !p.hasSpokenThisRound && p.id != speaker.id)
                 .length,
             seconds: controller.currentTurnSeconds,
             challengeActive: isChallenge,
