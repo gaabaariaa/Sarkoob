@@ -9,7 +9,7 @@ class OrnateFrame extends StatelessWidget {
   const OrnateFrame({
     super.key,
     required this.child,
-    this.borderRadius = 4,
+    this.borderRadius = 18,
   });
 
   @override
@@ -19,8 +19,15 @@ class OrnateFrame extends StatelessWidget {
       children: [
         Container(
           decoration: BoxDecoration(
-            border: Border.all(color: AppColors.gold.withOpacity(0.85), width: 1.2),
+            border: Border.all(color: AppColors.gold.withOpacity(0.55), width: 1.2),
             borderRadius: BorderRadius.circular(borderRadius),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.28),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: child,
         ),
@@ -39,8 +46,8 @@ class _CornerMark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 12,
-      height: 12,
+      width: 14,
+      height: 14,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(color: AppColors.gold, width: 1.2),
