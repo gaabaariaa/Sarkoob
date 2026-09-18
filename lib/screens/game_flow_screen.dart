@@ -3079,8 +3079,13 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         children: [
           _playerBadge(isSelf ? '👤 این نقش (هدف)' : '👤 این نقش (محافظ)', guesser.name),
           const SizedBox(height: 14),
-          Text(isSelf ? '«${guesser.name}» باید رمز خنثی‌سازی را حدس بزند:' : '«${guesser.name}» به‌جایِ «${forTarget.name}» رمز را حدس می‌زند:',
-            textAlign: TextAlign.center, style: const TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.5)),
+          Text(
+            isSelf
+                ? '«${guesser.name}» باید رمز خنثی‌سازی را حدس بزند:'
+                : '«${guesser.name}» به‌جایِ «${forTarget.name}» رمز را حدس می‌زند:',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.5),
+          ),
           const SizedBox(height: 14),
           _buildBombCodeGrid((code) => controller.resolveBombCode(code)),
         ],
@@ -3088,24 +3093,6 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       actionLabel: 'رمز را انتخاب کن',
       actionIcon: Icons.password_rounded,
       onAction: null,
-    );
-  }
-) {
-    final isSelf = guesser.id == forTarget.id;
-    return Column(
-      children: [
-        _playerBadge(isSelf ? '👤 این نقش (هدف)' : '👤 این نقش (محافظ)', guesser.name),
-        const SizedBox(height: 16),
-        Text(
-          isSelf
-              ? 'حالا «${guesser.name}» باید رمزِ خنثی‌سازی رو حدس بزنه:'
-              : '«${guesser.name}» به‌جایِ «${forTarget.name}» رمز رو حدس می‌زنه:',
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white70),
-        ),
-        const SizedBox(height: 16),
-        _buildBombCodeGrid((code) => controller.resolveBombCode(code)),
-      ],
     );
   }
 
