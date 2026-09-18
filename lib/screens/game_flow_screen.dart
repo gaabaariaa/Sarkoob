@@ -1406,65 +1406,103 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) {
-          final targets =
-              controller.alivePlayers.where((p) => p.id != selectedShooter?.id).toList();
-          return AlertDialog(
-            backgroundColor: AppColors.surfaceDark,
-            title: const Text('اعلامِ اسلحه', style: TextStyle(color: AppColors.goldLight)),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButton<SessionPlayer>(
-                  isExpanded: true,
-                  hint: const Text('کی اعلامِ اسلحه می‌کنه؟', style: TextStyle(color: Colors.white70)),
-                  dropdownColor: AppColors.surfaceDark,
-                  value: selectedShooter,
-                  items: shooters
-                      .map(
-                        (p) => DropdownMenuItem(
-                          value: p,
-                          child: Text(p.name, style: const TextStyle(color: Colors.white)),
+          final targets = controller.alivePlayers
+              .where((p) => p.id != selectedShooter?.id)
+              .toList();
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceCard,
+                borderRadius: BorderRadius.circular(26),
+                border: Border.all(color: AppColors.gold.withOpacity(.22)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      color: AppColors.bloodRed.withOpacity(.28),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.gps_fixed_rounded, color: AppColors.goldLight, size: 29),
+                  ),
+                  const SizedBox(height: 14),
+                  Text('اعلامِ اسلحه', style: AppTheme.headingFont(size: 22)),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'شلیک‌کننده و هدف را مشخص کن.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: AppColors.mutedText, fontSize: 12),
+                  ),
+                  const SizedBox(height: 18),
+                  DropdownButtonFormField<SessionPlayer>(
+                    value: selectedShooter,
+                    isExpanded: true,
+                    dropdownColor: AppColors.surfaceCard,
+                    decoration: InputDecoration(
+                      labelText: 'شلیک‌کننده',
+                      prefixIcon: const Icon(Icons.person_rounded, color: AppColors.goldLight),
+                      filled: true,
+                      fillColor: AppColors.surfaceDark,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    items: shooters
+                        .map((p) => DropdownMenuItem(value: p, child: Text(p.name)))
+                        .toList(),
+                    onChanged: (v) => setDialogState(() {
+                      selectedShooter = v;
+                      selectedTarget = null;
+                    }),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<SessionPlayer>(
+                    value: selectedTarget,
+                    isExpanded: true,
+                    dropdownColor: AppColors.surfaceCard,
+                    decoration: InputDecoration(
+                      labelText: 'هدف',
+                      prefixIcon: const Icon(Icons.my_location_rounded, color: AppColors.goldLight),
+                      filled: true,
+                      fillColor: AppColors.surfaceDark,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    items: targets
+                        .map((p) => DropdownMenuItem(value: p, child: Text(p.name)))
+                        .toList(),
+                    onChanged: (v) => setDialogState(() => selectedTarget = v),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () => Navigator.of(dialogContext).pop(),
+                          child: const Text('انصراف'),
                         ),
-                      )
-                      .toList(),
-                  onChanged: (v) => setDialogState(() {
-                    selectedShooter = v;
-                    selectedTarget = null;
-                  }),
-                ),
-                const SizedBox(height: 8),
-                DropdownButton<SessionPlayer>(
-                  isExpanded: true,
-                  hint: const Text('روی کی شلیک کنه؟', style: TextStyle(color: Colors.white70)),
-                  dropdownColor: AppColors.surfaceDark,
-                  value: selectedTarget,
-                  items: targets
-                      .map(
-                        (p) => DropdownMenuItem(
-                          value: p,
-                          child: Text(p.name, style: const TextStyle(color: Colors.white)),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Game3DButton(
+                          label: 'شلیک',
+                          icon: Icons.local_fire_department_rounded,
+                          onPressed: (selectedShooter != null && selectedTarget != null)
+                              ? () {
+                                  controller.fireGun(selectedShooter!.id, selectedTarget!.id);
+                                  Navigator.of(dialogContext).pop();
+                                }
+                              : null,
                         ),
-                      )
-                      .toList(),
-                  onChanged: (v) => setDialogState(() => selectedTarget = v),
-                ),
-              ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('انصراف'),
-              ),
-              ElevatedButton(
-                onPressed: (selectedShooter != null && selectedTarget != null)
-                    ? () {
-                        controller.fireGun(selectedShooter!.id, selectedTarget!.id);
-                        Navigator.of(dialogContext).pop();
-                      }
-                    : null,
-                child: const Text('شلیک'),
-              ),
-            ],
           );
         },
       ),
