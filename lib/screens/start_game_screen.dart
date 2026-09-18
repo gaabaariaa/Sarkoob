@@ -90,6 +90,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   @override
   void initState() {
     super.initState();
+    _selectedScenario = widget.initialScenario;
     _loadRoster();
   }
 
@@ -1588,7 +1589,12 @@ class _StartGameScreenState extends State<StartGameScreen> {
 }
 
 class StartGameScreen extends StatefulWidget {
-  const StartGameScreen({super.key});
+  final GameScenario? initialScenario;
+
+  const StartGameScreen({
+    super.key,
+    this.initialScenario,
+  });
 
   @override
   State<StartGameScreen> createState() => _StartGameScreenState();
