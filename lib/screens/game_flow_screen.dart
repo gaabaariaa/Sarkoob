@@ -1570,40 +1570,47 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   Widget _buildDiscloserPrompt() {
     final discloser = controller.playerById(controller.pendingDiscloserPlayerId!);
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Icon(Icons.campaign_rounded, color: AppColors.gold, size: 48),
-        const SizedBox(height: 16),
-        Text(
-          '«${discloser.name}» (افشاگر) در روز از بازی خارج شد.',
-          textAlign: TextAlign.center,
-          style: AppTheme.headingFont(size: 18),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'می‌خواد قبلِ رفتن، مافیابودن/نبودنِ یه نفر رو علناً افشا کنه؟',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white70),
-        ),
-        const SizedBox(height: 28),
-        SizedBox(
-          width: double.infinity,
-          child: Game3DButton(
-            label: 'بله، افشا کنه',
-            icon: Icons.campaign,
-            onPressed: () => _showDiscloserPicker(discloser),
+    return ModernNightPanel(
+      eyebrow: 'روز • افشاگری',
+      title: 'افشاگر از بازی خارج شد',
+      icon: Icons.campaign_rounded,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.goldDark.withOpacity(.14),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: AppColors.gold.withOpacity(.28)),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  '«'+discloser.name+'»',
+                  textAlign: TextAlign.center,
+                  style: AppTheme.headingFont(size: 20),
+                ),
+                const SizedBox(height: 5),
+                const Text(
+                  'افشاگر از بازی خارج شد.',
+                  style: TextStyle(color: AppColors.goldLight, fontSize: 12, fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-        TextButton(
-          onPressed: controller.dismissDiscloserPrompt,
-          child: const Text('نه، رد کن', style: TextStyle(color: Colors.white54)),
-        ),
-      ],
+          const SizedBox(height: 14),
+          const Text(
+            'قبل از رفتن، می‌تونه مافیابودن یا نبودنِ یک نفر رو علناً افشا کنه.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white70, height: 1.5),
+          ),
+        ],
+      ),
+      actionLabel: 'بله، افشا کنه',
+      onAction: () => _showDiscloserPicker(discloser),
     );
   }
-
   void _showDiscloserPicker(SessionPlayer discloser) {
     _showPlayerListPicker(
       title: 'افشاگر کی رو افشا کنه؟',
