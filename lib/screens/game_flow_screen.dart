@@ -512,20 +512,54 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           final nextStage = selectedTarget == null ? 0 : selectedTarget!.disciplineStage + 1;
           return AlertDialog(
             backgroundColor: AppColors.surfaceDark,
-            title: const Text('تنبیهِ انضباطی', style: TextStyle(color: AppColors.bloodRedLight)),
+            insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+            titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+            contentPadding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+            actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            title: Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: AppColors.bloodRed.withOpacity(0.32),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.gavel_rounded, color: AppColors.bloodRedLight),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text('تنبیهِ انضباطی', style: AppTheme.headingFont(size: 20)),
+                ),
+              ],
+            ),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'مستقل از قوانینِ عادیِ بازیه؛ برای رفتارِ خارج از نظمِ جلسه.',
-                    style: TextStyle(color: Colors.white54, fontSize: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceCard,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.gold.withOpacity(0.12)),
+                    ),
+                    child: const Text(
+                      'مستقل از قوانینِ عادیِ بازیه؛ برای رفتارِ خارج از نظمِ جلسه.',
+                      style: TextStyle(color: Colors.white54, fontSize: 12, height: 1.45),
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  DropdownButton<SessionPlayer>(
+                  DropdownButtonFormField<SessionPlayer>(
                     isExpanded: true,
-                    hint: const Text('انتخابِ بازیکن', style: TextStyle(color: Colors.white70)),
+                    decoration: const InputDecoration(
+                      labelText: 'بازیکن',
+                      prefixIcon: Icon(Icons.person_outline_rounded),
+                      border: OutlineInputBorder(),
+                    ),
                     dropdownColor: AppColors.surfaceDark,
                     value: selectedTarget,
                     items: controller.alivePlayers
