@@ -1684,32 +1684,81 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   Widget _buildDefenseAnnouncement() {
     final candidates = controller.defenseCandidates;
-    return Center(
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(22),
-        decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: AppColors.gold.withOpacity(0.28))),
-        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Container(width: 58, height: 58, decoration: BoxDecoration(color: AppColors.bloodRed.withOpacity(0.35), shape: BoxShape.circle), child: const Icon(Icons.gavel_rounded, color: AppColors.goldLight, size: 30)),
-          const SizedBox(height: 16),
-          Text('دفاعیه شروع شد', textAlign: TextAlign.center, style: AppTheme.headingFont(size: 24)),
-          const SizedBox(height: 7),
-          const Text('این بازیکنان وارد مرحله دفاع می‌شوند. هر نفر به‌ترتیب فرصت صحبت دارد.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white60, fontSize: 12, height: 1.5)),
-          const SizedBox(height: 16),
-          ...candidates.asMap().entries.map((entry) => Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(color: Colors.white.withOpacity(0.04), borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.white.withOpacity(0.07))),
-            child: Row(children: [
-              Container(width: 30, height: 30, alignment: Alignment.center, decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(0.25), shape: BoxShape.circle), child: Text('${entry.key + 1}', style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w800, fontSize: 12))),
-              const SizedBox(width: 10),
-              Expanded(child: Text(entry.value.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
-            ]),
-          )),
-          const SizedBox(height: 8),
-          Game3DButton(label: 'شروع دفاعیه', icon: Icons.arrow_back_rounded, onPressed: controller.acknowledgeDefenseAnnouncement),
-        ]),
+    return ModernNightPanel(
+      eyebrow: 'رأی‌گیری • دفاعیه',
+      title: 'دفاعیه شروع شد',
+      icon: Icons.gavel_rounded,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'این بازیکنان وارد مرحله دفاع می‌شوند. هر نفر به‌ترتیب فرصت صحبت دارد.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white70, height: 1.5),
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            decoration: BoxDecoration(
+              color: AppColors.bloodRed.withOpacity(.14),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.bloodRedLight.withOpacity(.28)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.record_voice_over_rounded, color: AppColors.bloodRedLight, size: 19),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '${candidates.length} نفر برای دفاعیه انتخاب شده‌اند',
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(color: Colors.white60, fontSize: 11, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...candidates.asMap().entries.map(
+            (entry) => Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(.04),
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(color: Colors.white.withOpacity(.07)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.goldDark.withOpacity(.25),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '${entry.key + 1}',
+                      style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w800, fontSize: 12),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      entry.value.name,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                  const Icon(Icons.mic_none_rounded, color: Colors.white30, size: 18),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
+      actionLabel: 'شروع دفاعیه',
+      onAction: controller.acknowledgeDefenseAnnouncement,
     );
   }
 
