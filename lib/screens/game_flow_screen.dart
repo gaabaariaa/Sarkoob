@@ -2810,30 +2810,60 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   /// چون یک‌بارمصرفِ کلِ بازیه، نه یه تصمیمِ هرشبه.
   Widget _buildBomberSection() {
     if (controller.bomberChargeUsed) {
-      return const Text(
-        'بمب‌گذار قبلاً بمبش رو کار گذاشته (یک‌بارمصرفه؛ اگه هنوز حل نشده، '
-        'فردا صبح و آخرِ روز خودکار پیگیری می‌شه).',
-        textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.white38),
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceDark,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.bloodRedLight.withOpacity(.28)),
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.lock_rounded, color: AppColors.mutedText),
+            SizedBox(width: 12),
+            Expanded(child: Text(
+              'بمب‌گذار قبلاً بمبش رو کار گذاشته؛ این قابلیت یک‌بارمصرفه و تا حل‌شدنش پیگیری می‌شه.',
+              style: TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.45),
+            )),
+          ],
+        ),
       );
     }
-    return Column(
-      children: [
-        const Text(
-          'بمب‌گذار می‌تونه امشب، یک‌بار برای همیشه، جلوی یه بازیکن بمب '
-          'بذاره و یه رمزِ خنثی‌سازی (۱ تا ۴) انتخاب کنه.',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white70),
-        ),
-        const SizedBox(height: 8),
-        OutlinedButton.icon(
-          icon: const Icon(Icons.local_fire_department),
-          label: const Text('کارگذاریِ بمب'),
-          onPressed: controller.canPlantBombTonight ? _showBomberPicker : null,
-        ),
-      ],
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppColors.gold.withOpacity(.18)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 58, height: 58,
+            decoration: BoxDecoration(color: AppColors.bloodRed.withOpacity(.28), shape: BoxShape.circle),
+            child: const Icon(Icons.local_fire_department_rounded, color: AppColors.goldLight, size: 30),
+          ),
+          const SizedBox(height: 12),
+          Text('کارگذاری بمب', style: AppTheme.headingFont(size: 19)),
+          const SizedBox(height: 7),
+          const Text(
+            'امشب یک‌بار برای همیشه جلوی یک بازیکن بمب بگذار و رمز خنثی‌سازی ۱ تا ۴ را انتخاب کن.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.5),
+          ),
+          const SizedBox(height: 14),
+          Game3DButton(
+            label: 'کارگذاریِ بمب',
+            icon: Icons.local_fire_department_rounded,
+            onPressed: controller.canPlantBombTonight ? _showBomberPicker : null,
+          ),
+        ],
+      ),
     );
   }
+
 
   void _showBomberPicker() {
     _showPlayerListPicker(
@@ -2847,16 +2877,40 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.surfaceDark,
-        title: const Text('رمزِ خنثی‌سازی رو انتخاب کن', style: TextStyle(color: Colors.white)),
-        content: _buildBombCodeGrid((code) {
-          Navigator.of(dialogContext).pop();
-          controller.plantBomb(target.id, code);
-        }),
+      builder: (dialogContext) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceCard,
+            borderRadius: BorderRadius.circular(26),
+            border: Border.all(color: AppColors.gold.withOpacity(.22)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 52, height: 52,
+                decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(.25), shape: BoxShape.circle),
+                child: const Icon(Icons.password_rounded, color: AppColors.goldLight, size: 28),
+              ),
+              const SizedBox(height: 12),
+              Text('رمزِ خنثی‌سازی', style: AppTheme.headingFont(size: 20)),
+              const SizedBox(height: 5),
+              const Text('یکی از چهار رمز را برای این بمب انتخاب کن.', style: TextStyle(color: AppColors.mutedText, fontSize: 12)),
+              const SizedBox(height: 16),
+              _buildBombCodeGrid((code) {
+                Navigator.of(dialogContext).pop();
+                controller.plantBomb(target.id, code);
+              }),
+            ],
+          ),
+        ),
       ),
     );
   }
+
 
   /// فازِ «خواب نیمروزی»: آخرِ روز، قبل از رأی‌گیری، اگه بمبی هنوز حل‌نشده
   /// باشه. سه شاخه‌ی مکالمه‌ای (هدف=محافظ / پرسیدن از محافظ / حدسِ خودِ
