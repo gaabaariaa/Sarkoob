@@ -10,6 +10,7 @@ class ModernNightPanel extends StatelessWidget {
   final String actionLabel;
   final VoidCallback? onAction;
   final IconData icon;
+  final IconData actionIcon;
 
   const ModernNightPanel({
     super.key,
@@ -20,6 +21,7 @@ class ModernNightPanel extends StatelessWidget {
     required this.onAction,
     this.playerName,
     this.icon = Icons.nightlight_round,
+    this.actionIcon = Icons.arrow_back_rounded,
   });
 
   @override
@@ -94,7 +96,7 @@ class ModernNightPanel extends StatelessWidget {
               width: double.infinity,
               child: Game3DButton(
                 label: actionLabel,
-                icon: Icons.arrow_back_rounded,
+                icon: actionIcon,
                 onPressed: onAction,
               ),
             ),
