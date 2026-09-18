@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/scenario.dart';
 import '../theme/app_theme.dart';
 import '../widgets/game_3d_button.dart';
-import 'start_game_screen.dart';
+import 'modern_role_setup_screen.dart';
 
 class ModernStartGameScreen extends StatefulWidget {
   const ModernStartGameScreen({super.key});
@@ -17,7 +17,7 @@ class _ModernStartGameScreenState extends State<ModernStartGameScreen> {
   void _continue() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => StartGameScreen(initialScenario: _scenario),
+        builder: (_) => ModernRoleSetupScreen(scenario: _scenario),
       ),
     );
   }
