@@ -75,10 +75,13 @@ class _RoleBestRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final top = best.rankings.first;
-    return Card(
-      color: AppColors.surfaceCard,
-      margin: const EdgeInsets.only(bottom: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.gold.withOpacity(.16)),
+      ),
       child: ExpansionTile(
         iconColor: AppColors.gold,
         collapsedIconColor: Colors.white38,
@@ -288,11 +291,24 @@ class _StatsScreenState extends State<StatsScreen> {
     final bestPerRole = _bestPerRole;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('آمار')),
+      appBar: AppBar(
+        title: const Text('آمار و عملکرد'),
+        actions: [
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 14),
+            child: Center(
+              child: Text('${_history.length} بازی',
+                style: const TextStyle(color: AppColors.mutedText, fontSize: 12)),
+            ),
+          ),
+        ],
+      ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
         children: [
-          Text('نتیجه‌ی آخرین بازی', style: AppTheme.headingFont(size: 20)),
+          _StatsHero(historyCount: _history.length, playerCount: aggregates.length),
+          const SizedBox(height: 18),
+          _sectionTitle('نتیجه‌ی آخرین بازی'),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -347,7 +363,8 @@ class _StatsScreenState extends State<StatsScreen> {
             ),
           ],
           const SizedBox(height: 28),
-          Text('آمارِ کلِ بازی‌ها', style: AppTheme.headingFont(size: 20)),
+          const SizedBox(height: 14),
+          _sectionTitle('آمارِ کلِ بازی‌ها'),
           const SizedBox(height: 4),
           Text(
             'روی مجموعِ ${_history.length} بازیِ ثبت‌شده.',
@@ -433,11 +450,13 @@ class _StatsScreenState extends State<StatsScreen> {
             ...bestPerRole.map((r) => _RoleBestRow(best: r)),
           ],
           const SizedBox(height: 28),
-          Text('جدول رتبه‌بندی', style: AppTheme.headingFont(size: 20)),
+          const SizedBox(height: 14),
+          _sectionTitle('جدول رتبه‌بندی'),
           const SizedBox(height: 10),
           ...aggregates.map((agg) => _LeaderboardRow(agg: agg)),
           const SizedBox(height: 28),
-          Text('بهترین/بدترین بازیکنان (میانگینِ امتیاز)', style: AppTheme.headingFont(size: 20)),
+          const SizedBox(height: 14),
+          _sectionTitle('میانگینِ امتیاز بازیکنان'),
           const SizedBox(height: 4),
           const Text(
             'میانگینِ امتیازِ هر بازیکن رو کلِ بازی‌هاش (طبقِ سیستمِ امتیازدهیِ رأی/شات/'
@@ -447,7 +466,8 @@ class _StatsScreenState extends State<StatsScreen> {
           const SizedBox(height: 10),
           ...scoreLeaderboard.map((agg) => _ScoreLeaderboardRow(agg: agg)),
           const SizedBox(height: 28),
-          Text('تاریخچه‌ی کامل هر بازیکن', style: AppTheme.headingFont(size: 20)),
+          const SizedBox(height: 14),
+          _sectionTitle('تاریخچه‌ی کامل هر بازیکن'),
           const SizedBox(height: 4),
           const Text(
             'با زدن روی هر بازیکن، لیستِ همه‌ی بازی‌هاش و نتیجه‌ی هرکدوم نشون داده می‌شه.',
@@ -499,6 +519,52 @@ class _StatsScreenState extends State<StatsScreen> {
     );
   }
 }
+
+class _StatsHero extends StatelessWidget {
+  final int historyCount;
+  final int playerCount;
+  const _StatsHero({required this.historyCount, required this.playerCount});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: AppColors.surfaceCard,
+      borderRadius: BorderRadius.circular(26),
+      border: Border.all(color: AppColors.gold.withOpacity(.2)),
+      gradient: LinearGradient(
+        colors: [AppColors.surfaceCard, AppColors.surfaceElevated],
+        begin: Alignment.topRight,
+        end: Alignment.bottomLeft,
+      ),
+    ),
+    child: Row(children: [
+      Container(
+        width: 54, height: 54,
+        decoration: BoxDecoration(
+          color: AppColors.goldDark.withOpacity(.2),
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(Icons.insights_rounded, color: AppColors.goldLight, size: 28),
+      ),
+      const SizedBox(width: 14),
+      Expanded(child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('مرکز آمار', style: AppTheme.headingFont(size: 21)),
+          const SizedBox(height: 4),
+          Text('$historyCount بازی ثبت‌شده • $playerCount بازیکن',
+            style: const TextStyle(color: AppColors.mutedText, fontSize: 12)),
+        ],
+      )),
+    ]),
+  );
+}
+
+Widget _sectionTitle(String text) => Padding(
+  padding: const EdgeInsetsDirectional.only(start: 2),
+  child: Text(text, style: AppTheme.headingFont(size: 20)),
+);
 
 class _HighlightCard extends StatelessWidget {
   final IconData icon;
