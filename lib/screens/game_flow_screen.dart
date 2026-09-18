@@ -3989,61 +3989,89 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surfaceDark,
+      backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
-            return SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) => SafeArea(
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceCard,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+              border: Border(top: BorderSide(color: AppColors.gold.withOpacity(.22))),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(width: 44, height: 5, decoration: BoxDecoration(color: AppColors.gold.withOpacity(.3), borderRadius: BorderRadius.circular(10))),
+                const SizedBox(height: 16),
+                Row(
                   children: [
-                    const Text('سلاخی: هدف + حدسِ نقش', style: TextStyle(color: AppColors.goldLight)),
-                    const SizedBox(height: 12),
-                    DropdownButton<SessionPlayer>(
-                      hint: const Text('انتخاب هدف', style: TextStyle(color: Colors.white70)),
-                      dropdownColor: AppColors.surfaceDark,
-                      value: selectedTarget,
-                      items: targets
-                          .map((p) => DropdownMenuItem(
-                                value: p,
-                                child: Text(p.name, style: const TextStyle(color: Colors.white)),
-                              ))
-                          .toList(),
-                      onChanged: (v) => setSheetState(() => selectedTarget = v),
+                    Container(
+                      width: 46, height: 46,
+                      decoration: BoxDecoration(color: AppColors.bloodRed.withOpacity(.35), shape: BoxShape.circle),
+                      child: const Icon(Icons.warning_amber_rounded, color: AppColors.goldLight),
                     ),
-                    const SizedBox(height: 8),
-                    DropdownButton<String>(
-                      hint: const Text('حدسِ نقش', style: TextStyle(color: Colors.white70)),
-                      dropdownColor: AppColors.surfaceDark,
-                      value: selectedRoleId,
-                      items: controller.rolesInPlay
-                          .map((r) => DropdownMenuItem(
-                                value: r.id,
-                                child: Text(r.name, style: const TextStyle(color: Colors.white)),
-                              ))
-                          .toList(),
-                      onChanged: (v) => setSheetState(() => selectedRoleId = v),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: (selectedTarget != null && selectedRoleId != null)
-                          ? () {
-                              controller.revolutionarySlaughter(selectedTarget!.id, selectedRoleId!);
-                              Navigator.of(context).pop();
-                            }
-                          : null,
-                      child: const Text('تایید سلاخی'),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('سلاخی', style: AppTheme.headingFont(size: 20)),
+                          const SizedBox(height: 3),
+                          const Text('هدف و حدسِ نقش را مشخص کن', style: TextStyle(color: AppColors.mutedText, fontSize: 12)),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ),
-            );
-          },
-        );
-      },
+                const SizedBox(height: 18),
+                DropdownButtonFormField<SessionPlayer>(
+                  value: selectedTarget,
+                  isExpanded: true,
+                  dropdownColor: AppColors.surfaceCard,
+                  decoration: InputDecoration(
+                    labelText: 'هدف',
+                    prefixIcon: const Icon(Icons.person_search_rounded, color: AppColors.goldLight),
+                    filled: true, fillColor: AppColors.surfaceDark,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  items: targets.map((p) => DropdownMenuItem(value: p, child: Text(p.name))).toList(),
+                  onChanged: (v) => setSheetState(() => selectedTarget = v),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: selectedRoleId,
+                  isExpanded: true,
+                  dropdownColor: AppColors.surfaceCard,
+                  decoration: InputDecoration(
+                    labelText: 'حدسِ نقش',
+                    prefixIcon: const Icon(Icons.badge_rounded, color: AppColors.goldLight),
+                    filled: true, fillColor: AppColors.surfaceDark,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  items: controller.rolesInPlay.map((r) => DropdownMenuItem(value: r.id, child: Text(r.name))).toList(),
+                  onChanged: (v) => setSheetState(() => selectedRoleId = v),
+                ),
+                const SizedBox(height: 18),
+                SizedBox(
+                  width: double.infinity,
+                  child: Game3DButton(
+                    label: 'تأیید سلاخی',
+                    icon: Icons.flash_on_rounded,
+                    onPressed: (selectedTarget != null && selectedRoleId != null)
+                        ? () {
+                            controller.revolutionarySlaughter(selectedTarget!.id, selectedRoleId!);
+                            Navigator.of(context).pop();
+                          }
+                        : null,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
