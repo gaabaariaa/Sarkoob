@@ -73,13 +73,13 @@ class _PlayerRevealScreen extends StatefulWidget {
   @override State<_PlayerRevealScreen> createState() => _PlayerRevealScreenState();
 }
 class _PlayerRevealScreenState extends State<_PlayerRevealScreen> {
-  bool _revealed = false;
+  bool _revealed = true;
   @override Widget build(BuildContext context) {
     final player = widget.player; final team = widget.team; final role = player.roleId != null ? SarkoobRoles.byId(player.roleId!) : null;
     return Scaffold(appBar: AppBar(title: const Text('نمایش نقش')), body: SafeArea(child: Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 16), child: Column(children: [
       Container(width: double.infinity, padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppColors.gold.withOpacity(.14))), child: Column(children: [const Text('گوشی دستِ:', style: TextStyle(color: AppColors.mutedText, fontSize: 12)), const SizedBox(height: 3), Text(player.name, style: AppTheme.headingFont(size: 26), textAlign: TextAlign.center)])),
-      const SizedBox(height: 14), Expanded(child: Center(child: GestureDetector(onTap: () => setState(() => _revealed = !_revealed), child: _revealed ? SingleChildScrollView(child: role != null ? RoleInfoCard(role: role, team: team) : _GenericTeamCard(team: team)) : const _HiddenCard()))),
-      const SizedBox(height: 12), SizedBox(width: double.infinity, child: Game3DButton(label: 'دیدم، برگرد', icon: Icons.check_rounded, onPressed: _revealed ? () => Navigator.of(context).pop(true) : null)),
+      const SizedBox(height: 14), Expanded(child: Center(child: SingleChildScrollView(child: role != null ? RoleInfoCard(role: role, team: team) : _GenericTeamCard(team: team)))),
+      const SizedBox(height: 12), SizedBox(width: double.infinity, child: Game3DButton(label: 'دیدم، برگرد', icon: Icons.check_rounded, onPressed: () => Navigator.of(context).pop(true))),
     ]))));
   }
 }
