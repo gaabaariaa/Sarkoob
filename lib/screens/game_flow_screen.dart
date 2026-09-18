@@ -1821,32 +1821,116 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final a = trio[0];
     final b = trio[1];
     final c = trio[2];
+
     return SingleChildScrollView(
-      child: Column(
-        children: [
-          const Text('🌪️', style: TextStyle(fontSize: 40)),
-          const SizedBox(height: 8),
-          Text('فازِ آشوب', style: AppTheme.headingFont(size: 24)),
-          const SizedBox(height: 8),
-          const Text(
-            'فقط ۳ نفر باقی موندن. دو نفر از این سه نفر باید تو زمانِ زیر با '
-            'هم به توافق برسن و متحد بشن؛ نفرِ سوم طرفِ مقابله‌ست.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white70, fontSize: 13),
-          ),
-          const SizedBox(height: 16),
-          CountdownTimerWidget(totalSeconds: controller.settings.speakSeconds * 2),
-          const SizedBox(height: 24),
-          const Text(
-            'بعدِ توافق، مشخص کن کدوم دو نفر با هم دست دادن:',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white70, fontSize: 13),
-          ),
-          const SizedBox(height: 12),
-          _chaosPairButton(a, b),
-          _chaosPairButton(a, c),
-          _chaosPairButton(b, c),
-        ],
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceCard,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: AppColors.gold.withOpacity(.24)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(.18),
+              blurRadius: 22,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    color: AppColors.goldDark.withOpacity(.22),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.gold.withOpacity(.28)),
+                  ),
+                  child: const Icon(
+                    Icons.cyclone_rounded,
+                    color: AppColors.goldLight,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'مرحله ویژه',
+                        style: TextStyle(
+                          color: AppColors.goldLight,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'فازِ آشوب',
+                        style: AppTheme.headingFont(size: 23),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.bloodRed.withOpacity(.20),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.bloodRedLight.withOpacity(.35)),
+                  ),
+                  child: const Text(
+                    '۳ نفر',
+                    style: TextStyle(
+                      color: AppColors.bloodRedLight,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(.12),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white.withOpacity(.07)),
+              ),
+              child: const Text(
+                'فقط ۳ نفر باقی موندن. دو نفر باید در زمانِ مشخص با هم به توافق برسن و متحد بشن؛ نفرِ سوم طرفِ مقابله‌ست.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.55),
+              ),
+            ),
+            const SizedBox(height: 16),
+            CountdownTimerWidget(
+              totalSeconds: controller.settings.speakSeconds * 2,
+            ),
+            const SizedBox(height: 18),
+            const Text(
+              'بعدِ توافق، مشخص کن کدوم دو نفر با هم دست دادن:',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: AppColors.goldLight,
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 10),
+            _chaosPairButton(a, b),
+            _chaosPairButton(a, c),
+            _chaosPairButton(b, c),
+          ],
+        ),
       ),
     );
   }
