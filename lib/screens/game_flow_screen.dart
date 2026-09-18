@@ -3318,26 +3318,52 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.surfaceDark,
-        title: const Text('کلمه‌ی حکم اعدام', style: TextStyle(color: AppColors.goldLight)),
+        backgroundColor: AppColors.surfaceCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: AppColors.bloodRed.withOpacity(.22),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.gavel_rounded, color: AppColors.goldLight),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(child: Text('کلمه‌ی حکم اعدام')),
+          ],
+        ),
         content: TextField(
           controller: wordController,
+          autofocus: true,
           style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(hintText: 'کلمه رو وارد کن'),
+          decoration: InputDecoration(
+            hintText: 'کلمه رو وارد کن',
+            prefixIcon: const Icon(Icons.key_rounded),
+            filled: true,
+            fillColor: AppColors.surfaceDark,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: AppColors.gold.withOpacity(.18)),
+            ),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('انصراف'),
           ),
-          ElevatedButton(
+          Game3DButton(
+            label: 'ثبت حکم',
+            icon: Icons.check_rounded,
             onPressed: () {
               if (wordController.text.trim().isNotEmpty) {
                 controller.issueExecutionOrder(wordController.text);
                 Navigator.of(dialogContext).pop();
               }
             },
-            child: const Text('ثبت'),
           ),
         ],
       ),
