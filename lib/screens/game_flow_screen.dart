@@ -604,8 +604,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 borderRadius: BorderRadius.circular(26),
                 border: Border.all(color: AppColors.gold.withOpacity(.22)),
               ),
-              child:
-            child: Column(
+              child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
