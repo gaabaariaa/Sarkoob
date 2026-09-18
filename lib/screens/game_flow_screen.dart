@@ -3660,67 +3660,49 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final targets = controller.alivePlayers;
     SessionPlayer? selectedTarget;
     GunType selectedType = GunType.blank;
-
     showDialog(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) => AlertDialog(
-          backgroundColor: AppColors.surfaceDark,
-          title: const Text('دادنِ اسلحه', style: TextStyle(color: AppColors.goldLight)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButton<SessionPlayer>(
-                isExpanded: true,
-                hint: const Text('انتخابِ بازیکن', style: TextStyle(color: Colors.white70)),
-                dropdownColor: AppColors.surfaceDark,
-                value: selectedTarget,
-                items: targets
-                    .map(
-                      (p) => DropdownMenuItem(
-                        value: p,
-                        child: Text(p.name, style: const TextStyle(color: Colors.white)),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (v) => setDialogState(() => selectedTarget = v),
-              ),
-              const SizedBox(height: 8),
-              RadioListTile<GunType>(
-                value: GunType.blank,
-                groupValue: selectedType,
-                activeColor: AppColors.gold,
-                onChanged: (v) => setDialogState(() => selectedType = v!),
-                title: const Text('مشقی', style: TextStyle(color: Colors.white)),
-              ),
-              RadioListTile<GunType>(
-                value: GunType.war,
-                groupValue: selectedType,
-                activeColor: AppColors.bloodRedLight,
-                onChanged: (rebel.warGunsRemaining ?? 0) > 0
-                    ? (v) => setDialogState(() => selectedType = v!)
-                    : null,
-                title: Text(
-                  'جنگی (${rebel.warGunsRemaining ?? 0} باقیمانده)',
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
-          ),
+          backgroundColor: AppColors.surfaceCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Row(children: [
+            Container(width: 42, height: 42,
+              decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(.22), shape: BoxShape.circle),
+              child: const Icon(Icons.front_hand_rounded, color: AppColors.goldLight)),
+            const SizedBox(width: 12), const Text('دادنِ اسلحه'),
+          ]),
+          content: Column(mainAxisSize: MainAxisSize.min, children: [
+            DropdownButtonFormField<SessionPlayer>(
+              isExpanded: true, value: selectedTarget, dropdownColor: AppColors.surfaceCard,
+              decoration: InputDecoration(labelText: 'بازیکن دریافت‌کننده', prefixIcon: const Icon(Icons.person_rounded),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16))),
+              items: targets.map((p) => DropdownMenuItem(value: p, child: Text(p.name))).toList(),
+              onChanged: (v) => setDialogState(() => selectedTarget = v),
+            ),
+            const SizedBox(height: 12),
+            RadioListTile<GunType>(
+              value: GunType.blank, groupValue: selectedType, activeColor: AppColors.gold,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              onChanged: (v) => setDialogState(() => selectedType = v!),
+              title: const Text('مشقی', style: TextStyle(color: Colors.white)),
+              subtitle: const Text('برای تمرین؛ شلیک واقعی ندارد.', style: TextStyle(color: AppColors.mutedText, fontSize: 11)),
+            ),
+            RadioListTile<GunType>(
+              value: GunType.war, groupValue: selectedType, activeColor: AppColors.bloodRedLight,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              onChanged: (rebel.warGunsRemaining ?? 0) > 0 ? (v) => setDialogState(() => selectedType = v!) : null,
+              title: Text('جنگی (${rebel.warGunsRemaining ?? 0} باقیمانده)', style: const TextStyle(color: Colors.white)),
+              subtitle: const Text('گلوله واقعی و قابل شلیک.', style: TextStyle(color: AppColors.mutedText, fontSize: 11)),
+            ),
+          ]),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('انصراف'),
-            ),
-            ElevatedButton(
-              onPressed: selectedTarget != null
-                  ? () {
-                      controller.giveGun(selectedTarget!.id, selectedType);
-                      Navigator.of(dialogContext).pop();
-                    }
-                  : null,
-              child: const Text('تایید'),
-            ),
+            TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('انصراف')),
+            Game3DButton(label: 'تحویل اسلحه', icon: Icons.check_rounded,
+              onPressed: selectedTarget != null ? () {
+                controller.giveGun(selectedTarget!.id, selectedType);
+                Navigator.of(dialogContext).pop();
+              } : null),
           ],
         ),
       ),
