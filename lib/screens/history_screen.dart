@@ -35,84 +35,231 @@ class _HistoryScreenState extends State<HistoryScreen> {
   String _teamName(String teamId) => SarkoobTeams.byId(teamId)?.name ?? teamId;
 
   String _formatDate(DateTime dt) =>
-      '${formatJalali(dt)} '
-      '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+      '${formatJalali(dt)} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('تاریخچه بازی‌ها')),
+      appBar: AppBar(
+        title: const Text('تاریخچه بازی‌ها'),
+        actions: [
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 14),
+            child: Center(
+              child: Text(
+                '${_history.length} بازی',
+                style: const TextStyle(color: AppColors.mutedText, fontSize: 12),
+              ),
+            ),
+          ),
+        ],
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _history.isEmpty
-              ? const Center(
-                  child: Text(
-                    'هنوز هیچ بازی‌ای ثبت نشده.\n(از دکمه‌ی «پایانِ بازی» تو صفحه‌ی خودِ بازی، بعدِ تمام‌شدنش ثبتش کن.)',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white38),
-                  ),
-                )
+              ? _buildEmptyState()
               : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _history.length,
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 28),
+                  itemCount: _history.length + 1,
                   itemBuilder: (context, index) {
-                    final entry = _history[index];
-                    return Card(
-                      color: AppColors.surfaceCard,
-                      margin: const EdgeInsets.only(bottom: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        side: BorderSide(color: AppColors.gold.withOpacity(0.3)),
-                      ),
-                      child: ExpansionTile(
-                        title: Text(
-                          _formatDate(entry.playedAt),
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              entry.winningTeamId == 'unknown'
-                                  ? 'نتیجه: نامشخص'
-                                  : 'برنده: ${_teamName(entry.winningTeamId)}',
-                              style: const TextStyle(color: AppColors.goldLight),
-                            ),
-                            if (entry.location.trim().isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 2),
-                                child: Text(
-                                  '📍 ${entry.location.trim()}',
-                                  style: const TextStyle(color: Colors.white54, fontSize: 12),
-                                ),
-                              ),
-                          ],
-                        ),
-                        iconColor: AppColors.gold,
-                        collapsedIconColor: AppColors.gold,
-                        children: entry.players.map((p) {
-                          final role = p.roleId != null ? SarkoobRoles.byId(p.roleId!) : null;
-                          return ListTile(
-                            dense: true,
-                            title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                            subtitle: Text(
-                              '${_teamName(p.teamId)}${role != null ? ' — ${role.name}' : ''}',
-                              style: const TextStyle(color: Colors.white54, fontSize: 12),
-                            ),
-                            trailing: Text(
-                              p.wasOnWinningSide ? '🏆 برنده' : (p.survived ? 'زنده ماند' : 'حذف شد'),
-                              style: TextStyle(
-                                color: p.wasOnWinningSide ? AppColors.goldLight : Colors.white38,
-                                fontSize: 12,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    );
+                    if (index == 0) {
+                      return _buildHero();
+                    }
+                    final entry = _history[index - 1];
+                    return _buildHistoryCard(entry);
                   },
                 ),
+    );
+  }
+
+  Widget _buildHero() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.gold.withOpacity(0.24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.24),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(
+              color: AppColors.goldDark.withOpacity(0.22),
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.gold.withOpacity(0.28)),
+            ),
+            child: const Icon(Icons.history_rounded, color: AppColors.goldLight, size: 29),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('مرکز تاریخچه', style: AppTheme.headingFont(size: 21)),
+                const SizedBox(height: 5),
+                Text(
+                  'نتایج بازی‌ها و عملکرد بازیکنان را مرور کن.',
+                  style: const TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.45),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHistoryCard(GameHistoryEntry entry) {
+    final isUnknown = entry.winningTeamId == 'unknown';
+    final winner = isUnknown ? 'نتیجه نامشخص' : _teamName(entry.winningTeamId);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.gold.withOpacity(0.20)),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(
+          dividerColor: Colors.transparent,
+          splashColor: AppColors.gold.withOpacity(0.06),
+        ),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.fromLTRB(18, 8, 12, 8),
+          childrenPadding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+          title: Text(
+            _formatDate(entry.playedAt),
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+          ),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Row(
+              children: [
+                Icon(
+                  isUnknown ? Icons.help_outline_rounded : Icons.emoji_events_rounded,
+                  color: isUnknown ? AppColors.mutedText : AppColors.goldLight,
+                  size: 16,
+                ),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    winner,
+                    style: const TextStyle(color: AppColors.goldLight, fontSize: 12),
+                  ),
+                ),
+                if (entry.location.trim().isNotEmpty) ...[
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Text(
+                      entry.location.trim(),
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: AppColors.mutedText, fontSize: 11),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          iconColor: AppColors.gold,
+          collapsedIconColor: AppColors.gold,
+          children: entry.players.map((p) {
+            final role = p.roleId != null ? SarkoobRoles.byId(p.roleId!) : null;
+            final status = p.wasOnWinningSide
+                ? 'برنده'
+                : (p.survived ? 'زنده ماند' : 'حذف شد');
+            final statusColor = p.wasOnWinningSide ? AppColors.goldLight : AppColors.mutedText;
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 7),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceDark,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: ListTile(
+                dense: true,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                leading: CircleAvatar(
+                  radius: 18,
+                  backgroundColor: AppColors.goldDark.withOpacity(0.18),
+                  child: Text(
+                    p.name.isEmpty ? '?' : p.name.characters.first,
+                    style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                title: Text(
+                  p.name,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(
+                  '${_teamName(p.teamId)}${role != null ? ' — ${role.name}' : ''}',
+                  style: const TextStyle(color: AppColors.mutedText, fontSize: 11),
+                ),
+                trailing: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.10),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    status,
+                    style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(28),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 440),
+          padding: const EdgeInsets.all(26),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceCard,
+            borderRadius: BorderRadius.circular(26),
+            border: Border.all(color: AppColors.gold.withOpacity(0.22)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 74,
+                height: 74,
+                decoration: BoxDecoration(
+                  color: AppColors.goldDark.withOpacity(0.18),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.history_toggle_off_rounded, color: AppColors.goldLight, size: 36),
+              ),
+              const SizedBox(height: 18),
+              Text('هنوز بازی‌ای ثبت نشده', style: AppTheme.headingFont(size: 22)),
+              const SizedBox(height: 8),
+              const Text(
+                'بعد از پایان یک بازی، نتیجه را ثبت کن تا اینجا برای مرور و آمار نگه‌داری شود.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.6),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
