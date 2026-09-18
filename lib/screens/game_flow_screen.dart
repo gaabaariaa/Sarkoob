@@ -770,95 +770,179 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
-        builder: (dialogContext, setDialogState) => AlertDialog(
-          backgroundColor: AppColors.surfaceDark,
-          title: const Text('پایانِ بازی و ثبت', style: TextStyle(color: AppColors.goldLight)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'کدوم تیم برنده شد؟ این نتیجه تو تاریخچه و آمار ثبت می‌شه.',
-                style: TextStyle(color: Colors.white70, fontSize: 12),
-              ),
-              const SizedBox(height: 8),
-              DropdownButton<String>(
-                isExpanded: true,
-                hint: const Text('انتخابِ تیمِ برنده', style: TextStyle(color: Colors.white70)),
-                dropdownColor: AppColors.surfaceDark,
-                value: selectedTeamId,
-                items: [
-                  ...presentTeamIds.map(
-                    (teamId) => DropdownMenuItem(
-                      value: teamId,
-                      child: Text(
-                        SarkoobTeams.byId(teamId)?.name ?? teamId,
-                        style: const TextStyle(color: Colors.white),
-                      ),
+        builder: (dialogContext, setDialogState) => Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 520),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceCard,
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(color: AppColors.gold.withOpacity(.22)),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(.35), blurRadius: 28, offset: const Offset(0, 14)),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 58, height: 58,
+                  decoration: BoxDecoration(
+                    color: AppColors.goldDark.withOpacity(.22),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.gold.withOpacity(.25)),
+                  ),
+                  child: const Icon(Icons.flag_rounded, color: AppColors.goldLight, size: 29),
+                ),
+                const SizedBox(height: 14),
+                Text('پایانِ بازی و ثبت', style: AppTheme.headingFont(size: 22)),
+                const SizedBox(height: 7),
+                const Text(
+                  'تیم برنده را مشخص کن. نتیجه در تاریخچه و آمار ثبت می‌شود.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.5),
+                ),
+                const SizedBox(height: 18),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Text('تیمِ برنده', style: AppTheme.headingFont(size: 14)),
+                ),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  value: selectedTeamId,
+                  isExpanded: true,
+                  dropdownColor: AppColors.surfaceCard,
+                  decoration: InputDecoration(
+                    hintText: 'انتخابِ تیمِ برنده',
+                    prefixIcon: const Icon(Icons.emoji_events_rounded, color: AppColors.goldLight),
+                    filled: true,
+                    fillColor: AppColors.surfaceDark,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: AppColors.gold.withOpacity(.16)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: AppColors.gold.withOpacity(.16)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: AppColors.gold, width: 1.2),
                     ),
                   ),
-                  const DropdownMenuItem(
-                    value: 'unknown',
-                    child: Text('نامشخص', style: TextStyle(color: Colors.white)),
-                  ),
-                ],
-                onChanged: (v) => setDialogState(() => selectedTeamId = v),
-              ),
-            ],
+                  items: [
+                    ...presentTeamIds.map(
+                      (teamId) => DropdownMenuItem(
+                        value: teamId,
+                        child: Text(SarkoobTeams.byId(teamId)?.name ?? teamId),
+                      ),
+                    ),
+                    const DropdownMenuItem(value: 'unknown', child: Text('نامشخص')),
+                  ],
+                  onChanged: (v) => setDialogState(() => selectedTeamId = v),
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        child: const Text('انصراف'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Game3DButton(
+                        label: 'ثبت نتیجه',
+                        icon: Icons.check_rounded,
+                        onPressed: selectedTeamId == null
+                            ? null
+                            : () async {
+                                final winnerId = selectedTeamId!;
+                                if (controller.autoDetectedWinnerTeamId == null) {
+                                  controller.awardSurvivalBonus(winnerId);
+                                }
+                                await _saveGameHistoryEntry(winnerId);
+                                if (!dialogContext.mounted) return;
+                                Navigator.of(dialogContext).pop();
+                                if (!mounted) return;
+                                final team = SarkoobTeams.byId(winnerId);
+                                await showDialog<void>(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (confirmContext) => Dialog(
+                                    backgroundColor: Colors.transparent,
+                                    insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(22),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.surfaceCard,
+                                        borderRadius: BorderRadius.circular(26),
+                                        border: Border.all(color: AppColors.gold.withOpacity(.22)),
+                                      ),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            width: 64, height: 64,
+                                            decoration: BoxDecoration(
+                                              color: (team?.color ?? AppColors.gold).withOpacity(.16),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Icon(
+                                              Icons.emoji_events_rounded,
+                                              color: team?.color ?? AppColors.goldLight,
+                                              size: 34,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 14),
+                                          Text('بازی تموم شد', style: AppTheme.headingFont(size: 23)),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'بردِ تیمِ ${team?.name ?? 'نامشخص'} ثبت شد.',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              color: team?.color ?? Colors.white70,
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          const Text(
+                                            'نتیجه در تاریخچه ذخیره شد.',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(color: AppColors.mutedText, fontSize: 12),
+                                          ),
+                                          const SizedBox(height: 16),
+                                          _bestWorstRow(controller.players),
+                                          const SizedBox(height: 12),
+                                          _scoreDetailButton(confirmContext, controller.players),
+                                          const SizedBox(height: 16),
+                                          SizedBox(
+                                            width: double.infinity,
+                                            child: Game3DButton(
+                                              label: 'تأیید و بازگشت به منو',
+                                              icon: Icons.home_rounded,
+                                              onPressed: () => Navigator.of(confirmContext).pop(),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                                if (!mounted) return;
+                                Navigator.of(context).popUntil((route) => route.isFirst);
+                              },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('انصراف'),
-            ),
-            ElevatedButton(
-              onPressed: selectedTeamId != null
-                  ? () async {
-                      final winnerId = selectedTeamId!;
-                      if (controller.autoDetectedWinnerTeamId == null) {
-                        controller.awardSurvivalBonus(winnerId);
-                      }
-                      await _saveGameHistoryEntry(winnerId);
-                      if (!dialogContext.mounted) return;
-                      Navigator.of(dialogContext).pop();
-                      if (!mounted) return;
-                      final team = SarkoobTeams.byId(winnerId);
-                      await showDialog<void>(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (confirmContext) => AlertDialog(
-                          backgroundColor: AppColors.surfaceDark,
-                          title: const Text('🏆 بازی تموم شد', style: TextStyle(color: AppColors.goldLight)),
-                          content: SingleChildScrollView(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'بازی با بردِ تیمِ ${team?.name ?? 'نامشخص'} تموم شد و نتیجه تو '
-                                  'تاریخچه ثبت شد.',
-                                  style: TextStyle(color: team?.color ?? Colors.white70, fontSize: 15),
-                                ),
-                                const SizedBox(height: 16),
-                                _bestWorstRow(controller.players),
-                                const SizedBox(height: 12),
-                                _scoreDetailButton(confirmContext, controller.players),
-                              ],
-                            ),
-                          ),
-                          actions: [
-                            ElevatedButton(
-                              onPressed: () => Navigator.of(confirmContext).pop(),
-                              child: const Text('تأیید'),
-                            ),
-                          ],
-                        ),
-                      );
-                      if (!mounted) return;
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                    }
-                  : null,
-              child: const Text('ثبت'),
-            ),
-          ],
         ),
       ),
     );
