@@ -760,11 +760,16 @@ class _StartGameScreenState extends State<StartGameScreen> {
                         border: Border.all(color: _selectedScenario!.color.withOpacity(.25)),
                         boxShadow: [BoxShadow(color: Colors.black.withOpacity(.22), blurRadius: 24, offset: const Offset(0, 10))],
                       ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 54,
-                            height: 54,
+                      child: LayoutBuilder(
+                        builder: (context, headerConstraints) {
+                          final compact = headerConstraints.maxWidth < 430;
+                          if (compact) {
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 48,
+                                  height: 48,
                             decoration: BoxDecoration(
                               color: _selectedScenario!.color.withOpacity(.14),
                               borderRadius: BorderRadius.circular(17),
@@ -788,8 +793,50 @@ class _StartGameScreenState extends State<StartGameScreen> {
                           ),
                           const SizedBox(width: 8),
                           Text('$total نفر', style: AppTheme.headingFont(size: 17, color: AppColors.goldLight)),
-                        ],
-                      ),
+                              const SizedBox(width: 11),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(_selectedScenario!.name, style: AppTheme.headingFont(size: 20)),
+                                    const SizedBox(height: 3),
+                                    Text(_selectedScenario!.description, maxLines: 3, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.mutedText, fontSize: 11, height: 1.4)),
+                                    const SizedBox(height: 4),
+                                    Text('$total نفر', style: AppTheme.headingFont(size: 15, color: AppColors.goldLight)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+                        return Row(
+                          children: [
+                            Container(
+                              width: 54,
+                              height: 54,
+                              decoration: BoxDecoration(
+                                color: _selectedScenario!.color.withOpacity(.14),
+                                borderRadius: BorderRadius.circular(17),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(_selectedScenario!.emoji, style: const TextStyle(fontSize: 29)),
+                            ),
+                            const SizedBox(width: 13),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(_selectedScenario!.name, style: AppTheme.headingFont(size: 22)),
+                                  const SizedBox(height: 3),
+                                  Text(_selectedScenario!.description, style: const TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.45)),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text('$total نفر', style: AppTheme.headingFont(size: 17, color: AppColors.goldLight)),
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 16),
                     _buildSetupSection(
@@ -999,16 +1046,19 @@ class _StartGameScreenState extends State<StartGameScreen> {
     required VoidCallback onMinus,
     required VoidCallback onPlus,
   }) {
-    return Row(
-      children: [
-        Icon(icon, color: AppColors.goldLight, size: 22),
-        const SizedBox(width: 10),
-        Expanded(child: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
-        IconButton(onPressed: onMinus, icon: const Icon(Icons.remove_circle_outline_rounded), color: AppColors.gold),
-        Text(value, style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w900)),
-        IconButton(onPressed: onPlus, icon: const Icon(Icons.add_circle_outline_rounded), color: AppColors.gold),
-      ],
-    );
+return LayoutBuilder(builder: (context, constraints) {
+      final compact = constraints.maxWidth < 360;
+      return Row(
+        children: [
+          Icon(icon, color: AppColors.goldLight, size: 22),
+          const SizedBox(width: 8),
+          Expanded(child: Text(title, maxLines: compact ? 2 : 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
+          IconButton(onPressed: onMinus, visualDensity: compact ? VisualDensity.compact : VisualDensity.standard, padding: EdgeInsets.zero, constraints: const BoxConstraints(minWidth: 36, minHeight: 36), icon: const Icon(Icons.remove_circle_outline_rounded), color: AppColors.gold),
+          Padding(padding: const EdgeInsets.symmetric(horizontal: 2), child: Text(value, style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w900))),
+          IconButton(onPressed: onPlus, visualDensity: compact ? VisualDensity.compact : VisualDensity.standard, padding: EdgeInsets.zero, constraints: const BoxConstraints(minWidth: 36, minHeight: 36), icon: const Icon(Icons.add_circle_outline_rounded), color: AppColors.gold),
+        ],
+      );
+    });
   }
 
   /// دکمه‌ی رنگیِ هر تیم — رنگِ خودِ تیم، اسمِ تیم، تعدادِ اعضا روش.
