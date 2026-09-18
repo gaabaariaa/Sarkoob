@@ -4450,3 +4450,4 @@ class _PlayerScoreDetailScreen extends StatelessWidget {
     );
   }
 }
+
