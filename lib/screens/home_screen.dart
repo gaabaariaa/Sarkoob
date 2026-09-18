@@ -48,7 +48,23 @@ class _GlowOrb extends StatelessWidget {
 class _TopBar extends StatelessWidget {
   final Color primary, light, card, muted;
   const _TopBar({required this.primary, required this.light, required this.card, required this.muted});
-  @override Widget build(BuildContext context) => Row(children: [Container(width: 44, height: 44, decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: card, border: Border.all(color: primary.withOpacity(.28))), child: Icon(Icons.auto_awesome, color: light, size: 22)), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('دست خدا', style: AppTheme.headingFont(size: 25, color: light)), Text('دستیار گرداننده بازی نقش مخفی', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: muted))])), Container(padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7), decoration: BoxDecoration(color: primary.withOpacity(.08), borderRadius: BorderRadius.circular(20), border: Border.all(color: primary.withOpacity(.2))), child: Row(mainAxisSize: MainAxisSize.min, children: [Container(width: 6, height: 6, decoration: BoxDecoration(color: primary, shape: BoxShape.circle)), const SizedBox(width: 6), Text('آماده', style: Theme.of(context).textTheme.labelMedium?.copyWith(color: light, fontWeight: FontWeight.w700))]))]);
+  @override Widget build(BuildContext context) => LayoutBuilder(builder: (context, constraints) {
+  final compact = constraints.maxWidth < 380;
+  return Row(children: [
+    Container(width: compact ? 40 : 44, height: compact ? 40 : 44, decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: card, border: Border.all(color: primary.withOpacity(.28))), child: Icon(Icons.auto_awesome, color: light, size: compact ? 20 : 22)),
+    SizedBox(width: compact ? 8 : 12),
+    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text('دست خدا', style: AppTheme.headingFont(size: compact ? 22 : 25, color: light)),
+      Text('دستیار گرداننده بازی نقش مخفی', maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: muted)),
+    ])),
+    SizedBox(width: compact ? 6 : 10),
+    Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7), decoration: BoxDecoration(color: primary.withOpacity(.08), borderRadius: BorderRadius.circular(20), border: Border.all(color: primary.withOpacity(.2))), child: Row(mainAxisSize: MainAxisSize.min, children: [
+      Container(width: 6, height: 6, decoration: BoxDecoration(color: primary, shape: BoxShape.circle)),
+      const SizedBox(width: 5),
+      Text('آماده', style: Theme.of(context).textTheme.labelMedium?.copyWith(color: light, fontWeight: FontWeight.w700)),
+    ])),
+  ]);
+});
 }
 
 class _HeroPanel extends StatelessWidget {
