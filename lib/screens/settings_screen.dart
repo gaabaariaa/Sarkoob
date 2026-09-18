@@ -227,13 +227,68 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 8),
           const Text('روستر و تاریخچه‌ی بازی‌ها را در یک فایل ذخیره کن تا بتوانی به گوشی دیگر منتقل یا از فایل قبلی بازیابی کنی.', style: TextStyle(color: Colors.white60, fontSize: 13)),
           const SizedBox(height: 16),
-          Card(child: Padding(padding: const EdgeInsets.all(12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Wrap(spacing: 8, runSpacing: 8, children: [
-              ElevatedButton.icon(icon: const Icon(Icons.upload_file), label: const Text('خروجی گرفتن (بک‌آپ)'), onPressed: _backupBusy ? null : _exportBackup),
-              OutlinedButton.icon(icon: const Icon(Icons.download_outlined), label: const Text('وارد کردن (بازیابی)'), onPressed: _backupBusy ? null : _importBackup),
-            ]),
-            if (_backupBusy) ...[const SizedBox(height: 12), const LinearProgressIndicator()],
-          ]))),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceCard,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.gold.withOpacity(0.22)),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 46,
+                      height: 46,
+                      decoration: BoxDecoration(
+                        color: AppColors.goldDark.withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(Icons.cloud_sync_rounded, color: AppColors.goldLight),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text(
+                        'نسخه پشتیبان اطلاعات',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Game3DButton(
+                        label: 'خروجی گرفتن',
+                        icon: Icons.upload_rounded,
+                        onPressed: _backupBusy ? null : _exportBackup,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Game3DButton(
+                        label: 'بازیابی',
+                        icon: Icons.download_rounded,
+                        palette: Game3DPalette.dark,
+                        onPressed: _backupBusy ? null : _importBackup,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+                if (_backupBusy) ...[
+                  const SizedBox(height: 14),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: const LinearProgressIndicator(minHeight: 5),
+                  ),
+                ],
+              ],
+            ),
+          ),
           const SizedBox(height: 32),
           _buildSectionHeader(Icons.tune_rounded, 'بقیه‌ی تنظیمات', 'گزینه‌های بیشتر در نسخه‌های بعدی'),
           const SizedBox(height: 8),
