@@ -288,38 +288,99 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final notesController = TextEditingController(text: _moderatorNotes);
     showDialog<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.surfaceDark,
-        title: const Text('یادداشتِ گرداننده', style: TextStyle(color: AppColors.goldLight)),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: TextField(
-            controller: notesController,
-            autofocus: true,
-            maxLines: 10,
-            minLines: 6,
-            textDirection: TextDirection.rtl,
-            style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(
-              hintText: 'مثلاً: مظنون‌ها، حساب‌وکتابِ رأی، هر نکته‌ای...',
-              hintStyle: TextStyle(color: Colors.white38),
-              border: OutlineInputBorder(),
-            ),
+      builder: (dialogContext) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceCard,
+            borderRadius: BorderRadius.circular(26),
+            border: Border.all(color: AppColors.gold.withOpacity(.22)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppColors.goldDark.withOpacity(.22),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.note_alt_rounded, color: AppColors.goldLight),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('یادداشتِ گرداننده', style: AppTheme.headingFont(size: 20)),
+                        const SizedBox(height: 3),
+                        const Text('نکته‌های مهم میز بازی را ثبت کن.', style: TextStyle(color: AppColors.mutedText, fontSize: 11)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: notesController,
+                autofocus: true,
+                maxLines: 10,
+                minLines: 6,
+                textDirection: TextDirection.rtl,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'مثلاً: مظنون‌ها، حساب‌وکتابِ رأی، هر نکته‌ای...',
+                  hintStyle: const TextStyle(color: Colors.white38),
+                  filled: true,
+                  fillColor: AppColors.surfaceDark,
+                  prefixIcon: const Padding(
+                    padding: EdgeInsets.only(bottom: 86),
+                    child: Icon(Icons.edit_note_rounded, color: AppColors.goldLight),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(color: AppColors.gold.withOpacity(.16)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(color: AppColors.gold.withOpacity(.16)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: AppColors.gold, width: 1.2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      child: const Text('انصراف'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Game3DButton(
+                      label: 'ذخیره',
+                      icon: Icons.save_rounded,
+                      onPressed: () {
+                        setState(() => _moderatorNotes = notesController.text);
+                        Navigator.of(dialogContext).pop();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('انصراف'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              setState(() => _moderatorNotes = notesController.text);
-              Navigator.of(dialogContext).pop();
-            },
-            child: const Text('ذخیره'),
-          ),
-        ],
       ),
     );
   }
