@@ -3407,55 +3407,42 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final targets = controller.alivePlayers;
     SessionPlayer? selectedTarget;
     final questionController = TextEditingController();
-
     showDialog(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) => AlertDialog(
-          backgroundColor: AppColors.surfaceDark,
-          title: const Text('بازجویی', style: TextStyle(color: AppColors.goldLight)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButton<SessionPlayer>(
-                isExpanded: true,
-                hint: const Text('انتخابِ هدف', style: TextStyle(color: Colors.white70)),
-                dropdownColor: AppColors.surfaceDark,
-                value: selectedTarget,
-                items: targets
-                    .map(
-                      (p) => DropdownMenuItem(
-                        value: p,
-                        child: Text(p.name, style: const TextStyle(color: Colors.white)),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (v) => setDialogState(() => selectedTarget = v),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: questionController,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  hintText: 'سوال (اختیاری، فقط یادآوریِ خودت)',
-                ),
-              ),
-            ],
-          ),
+          backgroundColor: AppColors.surfaceCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Row(children: [
+            Container(width: 42, height: 42,
+              decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(.22), shape: BoxShape.circle),
+              child: const Icon(Icons.record_voice_over_rounded, color: AppColors.goldLight)),
+            const SizedBox(width: 12), const Text('بازجویی'),
+          ]),
+          content: Column(mainAxisSize: MainAxisSize.min, children: [
+            const Text('هدف و سؤال اختیاری را برای ثبت این بازجویی انتخاب کن.',
+                style: TextStyle(color: AppColors.mutedText, fontSize: 12)),
+            const SizedBox(height: 14),
+            DropdownButtonFormField<SessionPlayer>(
+              isExpanded: true, value: selectedTarget, dropdownColor: AppColors.surfaceCard,
+              decoration: InputDecoration(labelText: 'هدف بازجویی', prefixIcon: const Icon(Icons.person_search_rounded),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16))),
+              items: targets.map((p) => DropdownMenuItem(value: p, child: Text(p.name))).toList(),
+              onChanged: (v) => setDialogState(() => selectedTarget = v),
+            ),
+            const SizedBox(height: 10),
+            TextField(controller: questionController, style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(labelText: 'سؤال (اختیاری)', hintText: 'فقط برای یادآوری خودت',
+                prefixIcon: const Icon(Icons.help_outline_rounded),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)))),
+          ]),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('انصراف'),
-            ),
-            ElevatedButton(
-              onPressed: selectedTarget != null
-                  ? () {
-                      controller.interrogate(selectedTarget!.id, question: questionController.text);
-                      Navigator.of(dialogContext).pop();
-                    }
-                  : null,
-              child: const Text('ثبت'),
-            ),
+            TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('انصراف')),
+            Game3DButton(label: 'ثبت بازجویی', icon: Icons.check_rounded,
+              onPressed: selectedTarget != null ? () {
+                controller.interrogate(selectedTarget!.id, question: questionController.text);
+                Navigator.of(dialogContext).pop();
+              } : null),
           ],
         ),
       ),
@@ -3496,54 +3483,46 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   void _showIntelQuestionDialog() {
     final targets = controller.alivePlayers;
     final selected = <int>{};
-
     showDialog(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) => AlertDialog(
-          backgroundColor: AppColors.surfaceDark,
-          title: const Text('سؤالِ اطلاعاتی', style: TextStyle(color: AppColors.goldLight)),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'انتخاب کن این سؤال دقیقاً درباره‌ی کدوم بازیکن‌هاست:',
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
+          backgroundColor: AppColors.surfaceCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Row(children: [
+            Container(width: 42, height: 42,
+              decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(.22), shape: BoxShape.circle),
+              child: const Icon(Icons.psychology_rounded, color: AppColors.goldLight)),
+            const SizedBox(width: 12), const Expanded(child: Text('سؤال اطلاعاتی')),
+          ]),
+          content: SizedBox(width: double.maxFinite,
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              const Text('بازیکن‌های مورد سؤال را انتخاب کن.',
+                style: TextStyle(color: AppColors.mutedText, fontSize: 12)),
+              const SizedBox(height: 10),
+              ...targets.map((p) => Material(
+                color: selected.contains(p.id) ? AppColors.goldDark.withOpacity(.16) : AppColors.surfaceDark,
+                borderRadius: BorderRadius.circular(14),
+                child: CheckboxListTile(
+                  dense: true, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  value: selected.contains(p.id), activeColor: AppColors.gold,
+                  onChanged: (v) => setDialogState(() {
+                    if (v ?? false) { selected.add(p.id); } else { selected.remove(p.id); }
+                  }),
+                  title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                  secondary: CircleAvatar(radius: 16, backgroundColor: AppColors.goldDark.withOpacity(.24),
+                    child: Text('\${targets.indexOf(p) + 1}',
+                      style: const TextStyle(color: AppColors.goldLight, fontSize: 12))),
                 ),
-                ...targets.map(
-                  (p) => CheckboxListTile(
-                    dense: true,
-                    value: selected.contains(p.id),
-                    activeColor: AppColors.gold,
-                    onChanged: (v) => setDialogState(() {
-                      if (v ?? false) {
-                        selected.add(p.id);
-                      } else {
-                        selected.remove(p.id);
-                      }
-                    }),
-                    title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                  ),
-                ),
-              ],
-            ),
-          ),
+              )),
+            ])),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('انصراف'),
-            ),
-            ElevatedButton(
-              onPressed: selected.isNotEmpty
-                  ? () {
-                      controller.askIntelQuestion(selected.toList());
-                      Navigator.of(dialogContext).pop();
-                    }
-                  : null,
-              child: const Text('پرسیدن'),
-            ),
+            TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('انصراف')),
+            Game3DButton(label: 'پرسیدن سؤال', icon: Icons.arrow_back_rounded,
+              onPressed: selected.isNotEmpty ? () {
+                controller.askIntelQuestion(selected.toList());
+                Navigator.of(dialogContext).pop();
+              } : null),
           ],
         ),
       ),
