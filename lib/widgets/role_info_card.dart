@@ -3,11 +3,7 @@ import '../models/role.dart';
 import '../models/role_scoring_info.dart';
 import '../models/team.dart';
 import '../theme/app_theme.dart';
-import 'ornate_frame.dart';
 
-/// کارت نمایش کامل یه نقش — نوار عنوانِ تیم بالا، عکس نقش (اگه باشه) وسط،
-/// نوار اسمِ نقش پایینش، توضیح زیرش. اگه showScoringInfo فعال باشه (فقط
-/// تو صفحه‌ی قوانین)، یه بخشِ «امتیازدهی» هم زیرِ توضیح اضافه می‌شه.
 class RoleInfoCard extends StatelessWidget {
   final GameRole role;
   final GameTeam team;
@@ -28,91 +24,118 @@ class RoleInfoCard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          OrnateFrame(
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              alignment: Alignment.center,
-              child: Text(
-                team.name,
-                style: TextStyle(
-                  color: team.color,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 22,
+          _panel(
+            borderColor: team.color.withOpacity(0.55),
+            child: Row(
+              children: [
+                Container(
+                  width: 10,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: team.color,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    team.name,
+                    style: TextStyle(
+                      color: team.color,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
+                Icon(Icons.groups_rounded, color: team.color, size: 23),
+              ],
             ),
           ),
           const SizedBox(height: 14),
-          if (role.imageAsset != null)
-            AspectRatio(
-              aspectRatio: 1,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: Image.asset(
-                  role.imageAsset!,
-                  fit: BoxFit.contain,
-                  alignment: Alignment.topCenter,
-                  width: double.infinity,
-                ),
-              ),
-            )
-          else
-            Container(
-              height: 180,
-              width: double.infinity,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceCard,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: team.color.withOpacity(0.5)),
-              ),
-              child: Icon(Icons.badge, size: 64, color: team.color),
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceCard,
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: team.color.withOpacity(0.28)),
             ),
+            clipBehavior: Clip.antiAlias,
+            child: role.imageAsset != null
+                ? AspectRatio(
+                    aspectRatio: 1,
+                    child: Image.asset(
+                      role.imageAsset!,
+                      fit: BoxFit.contain,
+                      alignment: Alignment.topCenter,
+                    ),
+                  )
+                : SizedBox(
+                    height: 180,
+                    child: Center(
+                      child: Icon(Icons.badge_rounded, size: 64, color: team.color),
+                    ),
+                  ),
+          ),
           const SizedBox(height: 14),
-          OrnateFrame(
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              alignment: Alignment.center,
-              child: Text(
-                role.name,
-                style: AppTheme.headingFont(size: 24),
-              ),
+          _panel(
+            borderColor: AppColors.gold.withOpacity(0.22),
+            child: Center(
+              child: Text(role.name, style: AppTheme.headingFont(size: 23)),
             ),
           ),
           const SizedBox(height: 12),
-          Text(
-            role.description,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white70, height: 1.6),
+          _panel(
+            color: AppColors.surfaceDark,
+            borderColor: Colors.transparent,
+            child: Text(
+              role.description,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white70, height: 1.7, fontSize: 13),
+            ),
           ),
           if (showScoringInfo && roleScoringInfo[role.id] != null) ...[
-            const SizedBox(height: 16),
-            OrnateFrame(
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                alignment: Alignment.center,
-                child: const Text(
-                  '🏆 امتیازدهی',
-                  style: TextStyle(
-                    color: AppColors.goldLight,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+            const SizedBox(height: 14),
+            _panel(
+              borderColor: AppColors.gold.withOpacity(0.28),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.emoji_events_rounded, color: AppColors.goldLight, size: 20),
+                      const SizedBox(width: 8),
+                      Text('امتیازدهی', style: AppTheme.headingFont(size: 17)),
+                    ],
                   ),
-                ),
+                  const SizedBox(height: 10),
+                  Text(
+                    roleScoringInfo[role.id]!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white60, height: 1.7, fontSize: 12),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              roleScoringInfo[role.id]!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white60, height: 1.6, fontSize: 13),
             ),
           ],
         ],
       ),
+    );
+  }
+
+  Widget _panel({
+    required Widget child,
+    Color? color,
+    Color borderColor = AppColors.gold,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: color ?? AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: borderColor),
+      ),
+      child: child,
     );
   }
 }
