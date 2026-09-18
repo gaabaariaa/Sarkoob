@@ -21,12 +21,15 @@ class _RulesScreenState extends State<RulesScreen> {
     final teams = SarkoobTeams.selectableForScenario(_selectedScenario.id);
 
     return Scaffold(
-      appBar: AppBar(title: Text('قوانین — سناریوی ${_selectedScenario.name}')),
+      appBar: AppBar(title: const Text('قوانین و نقش‌ها'), actions: [Padding(padding: const EdgeInsetsDirectional.only(end: 14), child: Center(child: Text(_selectedScenario.name, style: const TextStyle(color: AppColors.mutedText, fontSize: 12))))],),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          Container(
+            margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppColors.gold.withOpacity(0.18))),
             child: SegmentedButton<GameScenario>(
+              showSelectedIcon: false,
               segments: SarkoobScenarios.all
                   .map(
                     (s) => ButtonSegment<GameScenario>(
@@ -44,7 +47,8 @@ class _RulesScreenState extends State<RulesScreen> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Text('تیم‌ها و نقش‌ها', style: AppTheme.headingFont(size: 22)),
+                Container(padding: const EdgeInsets.all(20), margin: const EdgeInsets.only(bottom: 14), decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: _selectedScenario.color.withOpacity(0.4))), child: Row(children: [Container(width: 56, height: 56, decoration: BoxDecoration(color: _selectedScenario.color.withOpacity(0.18), shape: BoxShape.circle), child: Center(child: Text(_selectedScenario.emoji, style: const TextStyle(fontSize: 26)))), const SizedBox(width: 14), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('راهنمای سناریو', style: AppTheme.headingFont(size: 21)), const SizedBox(height: 5), Text(_selectedScenario.description, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.mutedText, fontSize: 11, height: 1.45))]))]),),
+                Row(children: [const Icon(Icons.groups_rounded, color: AppColors.goldLight, size: 19), const SizedBox(width: 8), Text('تیم‌ها و نقش‌ها', style: AppTheme.headingFont(size: 19))]),
                 const SizedBox(height: 4),
                 const Text(
                   'نقش‌ها به‌مرور اضافه می‌شن. روی اسم تیم بزن تا کارت پیش‌نمایش '
@@ -85,7 +89,7 @@ class _TeamSection extends StatelessWidget {
     return Card(
       color: AppColors.surfaceCard,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(20),
         side: BorderSide(color: team.color.withOpacity(0.6)),
       ),
       margin: const EdgeInsets.only(bottom: 12),
@@ -95,13 +99,13 @@ class _TeamSection extends StatelessWidget {
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => _TeamPreviewScreen(team: team)),
             ),
-            leading: CircleAvatar(backgroundColor: team.color),
+            leading: Container(width: 44, height: 44, decoration: BoxDecoration(color: team.color.withOpacity(0.18), shape: BoxShape.circle, border: Border.all(color: team.color.withOpacity(0.45))), child: Icon(Icons.groups_rounded, color: team.color)),
             title: Text(
               team.name,
               style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
             ),
             subtitle: Text(team.description, style: const TextStyle(color: Colors.white60)),
-            trailing: const Icon(Icons.chevron_left, color: AppColors.gold),
+            trailing: const Icon(Icons.chevron_left_rounded, color: AppColors.gold),
           ),
           if (roles.isEmpty)
             const Padding(
@@ -117,7 +121,7 @@ class _TeamSection extends StatelessWidget {
               (role) => ListTile(
                 dense: true,
                 title: Text(role.name, style: const TextStyle(color: Colors.white)),
-                trailing: const Icon(Icons.badge, color: AppColors.gold, size: 18),
+                trailing: const Icon(Icons.chevron_left_rounded, color: AppColors.gold, size: 19),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => _RolePreviewScreen(role: role, team: team),
