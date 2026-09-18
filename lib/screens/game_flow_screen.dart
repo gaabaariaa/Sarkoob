@@ -1533,36 +1533,99 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Widget _buildCommunityLeaderChoice() {
     final leader = controller.playerById(controller.communityLeaderId!);
     final targets = controller.alivePlayers.where((p) => p.id != leader.id).toList();
-    return Column(
-      children: [
-        Text('رهبرِ جامعه: ${leader.name}', style: AppTheme.headingFont(size: 20)),
-        const SizedBox(height: 8),
-        const Text(
-          'رهبرِ جامعه یه نفر رو انتخاب می‌کنه تا از جامعه اخراج بشه. این حذف قطعیه.',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white70),
-        ),
-        const SizedBox(height: 16),
-        Expanded(
-          child: ListView(
-            children: targets
-                .map(
-                  (p) => Card(
-                    color: AppColors.surfaceCard,
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: ListTile(
-                      title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                      trailing: ElevatedButton(
-                        onPressed: () => controller.communityLeaderExpel(p.id),
-                        child: const Text('اخراج'),
-                      ),
+
+    return ModernNightPanel(
+      eyebrow: 'رفراندوم • تصمیم رهبر',
+      title: 'اخراج از جامعه',
+      icon: Icons.person_remove_rounded,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.goldDark.withOpacity(.16),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.gold.withOpacity(.26)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.workspace_premium_rounded, color: AppColors.goldLight, size: 22),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'رهبر جامعه: ${leader.name}',
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'رهبر جامعه یک نفر را برای اخراج انتخاب می‌کند. این حذف قطعی است.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white70, height: 1.5),
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            decoration: BoxDecoration(
+              color: AppColors.bloodRed.withOpacity(.16),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.bloodRedLight.withOpacity(.28)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.warning_amber_rounded, color: AppColors.bloodRedLight, size: 18),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'بعد از انتخاب، اخراج بدون رأی‌گیری انجام می‌شود.',
+                    textAlign: TextAlign.right,
+                    style: TextStyle(color: Colors.white60, fontSize: 11),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          if (targets.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(18),
+              child: Text('بازیکن دیگری برای اخراج باقی نمانده.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38)),
+            )
+          else
+            ...targets.map(
+              (p) => Padding(
+                padding: const EdgeInsets.only(bottom: 9),
+                child: Game3DSurface(
+                  onPressed: () => controller.communityLeaderExpel(p.id),
+                  palette: Game3DPalette.gold,
+                  depth: 4,
+                  borderRadius: BorderRadius.circular(17),
+                  padding: const EdgeInsets.all(3),
+                  semanticLabel: 'اخراج ${p.name}',
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
+                    decoration: BoxDecoration(color: Colors.black.withOpacity(.12), borderRadius: BorderRadius.circular(14)),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.person_outline_rounded, color: AppColors.goldLight, size: 21),
+                        const SizedBox(width: 10),
+                        Expanded(child: Text(p.name, textAlign: TextAlign.right, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800))),
+                        const Icon(Icons.arrow_back_rounded, color: AppColors.goldLight, size: 18),
+                      ],
                     ),
                   ),
-                )
-                .toList(),
-          ),
-        ),
-      ],
+                ),
+              ),
+            ),
+        ],
+      ),
+      actionLabel: 'بازگشت به مرحله قبل',
+      onAction: null,
     );
   }
 
