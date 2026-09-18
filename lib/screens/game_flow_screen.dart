@@ -1470,71 +1470,91 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final isRunoff = controller.isReferendumRunoff;
 
     if (voter == null) {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.how_to_vote_rounded, color: AppColors.gold, size: 48),
-          const SizedBox(height: 16),
-          const Text('رأیِ همه‌ی بازیکنان ثبت شد.', style: TextStyle(color: Colors.white, fontSize: 16)),
-          const SizedBox(height: 20),
-          Game3DButton(
-            label: 'تعیینِ رهبر',
-            icon: Icons.checklist_rounded,
-            onPressed: controller.resolveReferendumRound,
-          ),
-        ],
+      return ModernNightPanel(
+        eyebrow: 'رفراندوم • پایان رأی‌گیری',
+        title: 'رأی‌گیری رهبر تمام شد',
+        icon: Icons.how_to_vote_rounded,
+        body: const Text(
+          'رأی همه‌ی بازیکنان ثبت شده. نتیجه را محاسبه کن تا رهبر جامعه مشخص شود.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white70, height: 1.5),
+        ),
+        actionLabel: 'تعیینِ رهبر',
+        onAction: controller.resolveReferendumRound,
       );
     }
 
     final candidates = controller.referendumCandidates;
+    final currentIndex = controller.referendumVoterIndex + 1;
+    final totalVoters = controller.referendumVoters.length;
+    final progress = totalVoters == 0 ? 0.0 : currentIndex / totalVoters;
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          isRunoff ? 'رفراندوم: رأی‌گیریِ مجدد (تساوی)' : 'رفراندوم: انتخابِ رهبرِ جامعه',
-          style: AppTheme.headingFont(size: 18),
-          textAlign: TextAlign.center,
-        ),
-        if (isRunoff) ...[
-          const SizedBox(height: 4),
-          const Text(
-            'رأی‌ها مساوی شد؛ این‌بار فقط بینِ همین نفرات دوباره رأی می‌گیریم.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white60, fontSize: 12),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceCard,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: AppColors.gold.withOpacity(.28)),
           ),
-        ],
-        const SizedBox(height: 10),
-        Text(
-          'انتخابِ رهبری برای «${voter.name}» چیه؟',
-          style: AppTheme.headingFont(size: 20),
-          textAlign: TextAlign.center,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isRunoff ? AppColors.bloodRed.withOpacity(.35) : AppColors.goldDark.withOpacity(.28),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(isRunoff ? 'رأی‌گیری مجدد' : 'انتخاب رهبر', style: TextStyle(color: isRunoff ? AppColors.bloodRedLight : AppColors.goldLight, fontWeight: FontWeight.w800, fontSize: 11)),
+                ),
+                const Spacer(),
+                Text('$currentIndex / $totalVoters', style: const TextStyle(color: Colors.white54, fontWeight: FontWeight.w700, fontSize: 12)),
+              ]),
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: LinearProgressIndicator(value: progress.clamp(0.0, 1.0), minHeight: 6, backgroundColor: Colors.white10, valueColor: const AlwaysStoppedAnimation<Color>(AppColors.gold)),
+              ),
+              const SizedBox(height: 16),
+              Text(isRunoff ? 'رفراندومِ مجدد به‌دلیل تساوی' : 'رفراندوم: انتخابِ رهبرِ جامعه', textAlign: TextAlign.center, style: AppTheme.headingFont(size: 19)),
+              if (isRunoff) ...[
+                const SizedBox(height: 5),
+                const Text('فقط بین نامزدهای مساوی دوباره رأی می‌گیریم.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white54, fontSize: 11)),
+              ],
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(.15), borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.gold.withOpacity(.24))),
+                child: Row(children: [
+                  const Icon(Icons.how_to_vote_rounded, color: AppColors.goldLight, size: 22),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text('انتخابِ رهبری برای «${voter.name}»', textAlign: TextAlign.right, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800))),
+                ]),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          'نفرِ ${controller.referendumVoterIndex + 1} از ${controller.referendumVoters.length}',
-          style: const TextStyle(color: AppColors.goldLight, fontSize: 13),
-        ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
         Expanded(
-          child: GridView.count(
-            crossAxisCount: 3,
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 1.3,
-            children: candidates.map((c) {
-              return _voteCandidateButton(
-                c,
-                isSelected: false,
-                enabled: c.isAlive && c.id != voter.id,
-                onTap: () => controller.castReferendumVoteAndAdvance(c.id),
-              );
-            }).toList(),
-          ),
+          child: candidates.isEmpty
+              ? const Center(child: Text('نامزدی برای انتخاب وجود ندارد.', style: TextStyle(color: Colors.white38)))
+              : GridView.builder(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 190, mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: 1.45),
+                  itemCount: candidates.length,
+                  itemBuilder: (context, index) {
+                    final candidate = candidates[index];
+                    return _voteCandidateButton(candidate, isSelected: false, enabled: candidate.isAlive && candidate.id != voter.id, onTap: () => controller.castReferendumVoteAndAdvance(candidate.id));
+                  },
+                ),
         ),
       ],
     );
   }
-
   Widget _buildCommunityLeaderChoice() {
     final leader = controller.playerById(controller.communityLeaderId!);
     final targets = controller.alivePlayers.where((p) => p.id != leader.id).toList();
