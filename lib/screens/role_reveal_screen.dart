@@ -91,5 +91,19 @@ class _HiddenCard extends StatelessWidget {
 
 class _GenericTeamCard extends StatelessWidget {
   final GameTeam team; const _GenericTeamCard({required this.team});
-  @override Widget build(BuildContext context) => Container(width: 300, padding: const EdgeInsets.all(24), decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: team.color, width: 1.7), boxShadow: [BoxShadow(color: Colors.black.withOpacity(.25), blurRadius: 20, offset: const Offset(0, 10))]), child: Column(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.shield_rounded, size: 52, color: team.color), const SizedBox(height: 12), Text(team.name, textAlign: TextAlign.center, style: TextStyle(color: team.color, fontSize: 24, fontWeight: FontWeight.bold)), const SizedBox(height: 8), Text(team.description, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.mutedText, height: 1.5))]));
+  @override Widget build(BuildContext context) => LayoutBuilder(builder: (context, constraints) {
+    final compact = constraints.maxWidth < 360;
+    return Container(
+      width: constraints.maxWidth.clamp(0, 340),
+      padding: EdgeInsets.all(compact ? 18 : 24),
+      decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: team.color, width: 1.7), boxShadow: [BoxShadow(color: Colors.black.withOpacity(.25), blurRadius: 20, offset: const Offset(0, 10))]),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Icon(Icons.shield_rounded, size: compact ? 44 : 52, color: team.color),
+        SizedBox(height: compact ? 9 : 12),
+        Text(team.name, textAlign: TextAlign.center, style: TextStyle(color: team.color, fontSize: compact ? 21 : 24, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        Text(team.description, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.mutedText, height: 1.5)),
+      ]),
+    );
+  });
 }
