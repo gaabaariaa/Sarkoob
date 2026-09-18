@@ -63,7 +63,7 @@ class ModernRoleSetupScreen extends StatelessWidget {
                             ],
                           ),
                         ),
-                        _Badge(text: '\$' + '{players.length} بازیکن'),
+                        _Badge(text: players.length.toString() + ' بازیکن'),
                       ],
                     ),
                     const SizedBox(height: 18),
