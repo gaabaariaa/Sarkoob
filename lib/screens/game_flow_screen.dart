@@ -1134,32 +1134,81 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   Widget _buildGunBanner() {
     final armed = controller.armedPlayers;
+    return _buildDayEventBanner(
+      icon: Icons.gps_fixed_rounded,
+      title: 'اسلحه آماده‌ی شلیک است',
+      description: 'دارندگان اسلحه: ${armed.map((p) => p.name).join('، ')}',
+      actionLabel: 'اعلامِ اسلحه و شلیک',
+      onAction: _showFireGunDialog,
+    );
+  }
+
+  Widget _buildDayEventBanner({
+    required IconData icon,
+    required String title,
+    required String description,
+    String? actionLabel,
+    VoidCallback? onAction,
+  }) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.bloodRed.withOpacity(0.4),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.bloodRedLight),
+        color: AppColors.bloodRed.withOpacity(.20),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.bloodRedLight.withOpacity(.55)),
       ),
-      child: Column(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '🔫 یکی از بازیکن‌ها الان اسلحه داره و می‌تونه اعلامِ اسلحه کنه',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          Container(
+            width: 40,
+            height: 40,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.bloodRedLight.withOpacity(.18),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: AppColors.bloodRedLight, size: 21),
           ),
-          const SizedBox(height: 4),
-          Text(
-            '(کسایی که اسلحه دارن: ${armed.map((p) => p.name).join('، ')})',
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white54, fontSize: 12),
-          ),
-          const SizedBox(height: 8),
-          OutlinedButton(
-            onPressed: _showFireGunDialog,
-            child: const Text('اعلامِ اسلحه و شلیک'),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  title,
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                    color: Colors.white60,
+                    fontSize: 11,
+                    height: 1.45,
+                  ),
+                ),
+                if (actionLabel != null && onAction != null) ...[
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: Game3DButton(
+                      label: actionLabel,
+                      icon: Icons.arrow_back_rounded,
+                      onPressed: onAction,
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
         ],
       ),
@@ -1168,29 +1217,12 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   Widget _buildMercenaryDayBanner() {
     final merc = controller.mercenaryPlayer!;
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.bloodRed.withOpacity(0.4),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.bloodRedLight),
-      ),
-      child: Column(
-        children: [
-          const Text(
-            '🔪 مزدور لباس‌شخصی می‌تونه همین الان ترور کنه (تا قبل از رأی‌گیری)',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          OutlinedButton(
-            onPressed: () => _showAssassinatePicker(merc),
-            child: const Text('ترور'),
-          ),
-        ],
-      ),
+    return _buildDayEventBanner(
+      icon: Icons.gavel_rounded,
+      title: 'مزدور لباس‌شخصی آماده‌ی ترور است',
+      description: 'این قابلیت فقط تا قبل از شروع رأی‌گیری در دسترس است.',
+      actionLabel: 'ترور',
+      onAction: () => _showAssassinatePicker(merc),
     );
   }
 
@@ -1269,29 +1301,12 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }
 
   Widget _buildExecutionWordBanner() {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.bloodRed.withOpacity(0.4),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.bloodRedLight),
-      ),
-      child: Column(
-        children: [
-          Text(
-            '⚖️ حکم اعدام صادر شده؛ $_forbiddenWordLabel: «${controller.activeExecutionWord}»',
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          OutlinedButton(
-            onPressed: _showForbiddenWordPicker,
-            child: const Text('یکی این کلمه رو گفت!'),
-          ),
-        ],
-      ),
+    return _buildDayEventBanner(
+      icon: Icons.spellcheck_rounded,
+      title: 'حکم اعدام فعال است',
+      description: '$_forbiddenWordLabel: «${controller.activeExecutionWord}»',
+      actionLabel: 'یکی این کلمه رو گفت!',
+      onAction: _showForbiddenWordPicker,
     );
   }
 
@@ -1300,20 +1315,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Widget _buildBombDayBanner() {
     final target = controller.bombTargetPlayer;
     if (target == null) return const SizedBox.shrink();
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.bloodRed.withOpacity(0.4),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.bloodRedLight),
-      ),
-      child: Text(
-        '💣 بمب جلوی «${target.name}» گذاشته شده. آخرِ همین روز، قبل از رأی‌گیری، خودکار حل‌وفصل می‌شه.',
-        textAlign: TextAlign.center,
-        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      ),
+    return _buildDayEventBanner(
+      icon: Icons.warning_amber_rounded,
+      title: 'بمب فعال است',
+      description: 'بمب جلوی «${target.name}» گذاشته شده و آخرِ همین روز، قبل از رأی‌گیری، خودکار حل‌وفصل می‌شود.',
     );
   }
 
