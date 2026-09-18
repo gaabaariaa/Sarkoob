@@ -191,17 +191,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('تنظیمات')),
+      appBar: AppBar(title: const Text('تنظیمات'), actions: [Padding(padding: const EdgeInsetsDirectional.only(end: 14), child: Center(child: Text('دست خدا', style: const TextStyle(color: AppColors.mutedText, fontSize: 12))))],),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          _buildSectionHeader(Icons.palette_rounded, 'ظاهر برنامه', 'شخصی‌سازی ظاهر میز بازی'),
+          const SizedBox(height: 14),
           const _ThemePicker(),
           const SizedBox(height: 28),
-          Text('🎵 موزیکِ شب', style: AppTheme.headingFont(size: 20)),
+          _buildSectionHeader(Icons.music_note_rounded, 'موزیک شب', 'موسیقی خودکار فازهای شب و خواب نیمروزی'),
           const SizedBox(height: 8),
           const Text('چندتا فایلِ موزیک از گوشیت انتخاب کن تا خودکار تو فازِ شب و «خواب نیمروزی» به‌صورتِ شافل پخش بشن و با شروعِ روز قطع بشن.', style: TextStyle(color: Colors.white60, fontSize: 13)),
           const SizedBox(height: 16),
-          Card(child: Padding(padding: const EdgeInsets.all(12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Container(decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.gold.withOpacity(0.16))), child: Padding(padding: const EdgeInsets.all(14), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(_trackPaths.isEmpty ? 'هیچ موزیکی انتخاب نشده' : _trackPaths.length == 1 ? _displayName(_trackPaths.first) : '${_trackPaths.length} فایلِ موزیک انتخاب شده', style: TextStyle(color: _trackPaths.isNotEmpty ? Colors.white : Colors.white38, fontWeight: FontWeight.bold)),
             if (_trackPaths.length > 1) ...[
               const SizedBox(height: 8),
@@ -219,7 +221,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             if (_busy) ...[const SizedBox(height: 12), const LinearProgressIndicator()],
           ]))),
           const SizedBox(height: 32),
-          Text('💾 بک‌آپ و بازیابی', style: AppTheme.headingFont(size: 20)),
+          _buildSectionHeader(Icons.backup_rounded, 'بک‌آپ و بازیابی', 'انتقال و بازیابی اطلاعات بازی'),
           const SizedBox(height: 8),
           const Text('روستر و تاریخچه‌ی بازی‌ها را در یک فایل ذخیره کن تا بتوانی به گوشی دیگر منتقل یا از فایل قبلی بازیابی کنی.', style: TextStyle(color: Colors.white60, fontSize: 13)),
           const SizedBox(height: 16),
@@ -231,9 +233,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             if (_backupBusy) ...[const SizedBox(height: 12), const LinearProgressIndicator()],
           ]))),
           const SizedBox(height: 32),
-          Text('بقیه‌ی تنظیمات', style: AppTheme.headingFont(size: 20)),
+          _buildSectionHeader(Icons.tune_rounded, 'بقیه‌ی تنظیمات', 'گزینه‌های بیشتر در نسخه‌های بعدی'),
           const SizedBox(height: 8),
-          const Text('تنظیماتِ ویبره و تایمر به‌زودی همینجا میاد.', style: TextStyle(color: Colors.white38)),
+          Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppColors.gold.withOpacity(0.12))), child: const Row(children: [Icon(Icons.schedule_rounded, color: AppColors.subtleText), SizedBox(width: 10), Expanded(child: Text('تنظیمات ویبره و تایمر به‌زودی همینجا میاد.', style: TextStyle(color: AppColors.subtleText, fontSize: 12))) ])),
         ],
       ),
     );
@@ -242,6 +244,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
 class _ThemePicker extends StatelessWidget {
   const _ThemePicker();
+
+  Widget _buildSectionHeader(IconData icon, String title, String subtitle) => Padding(padding: const EdgeInsets.only(left: 2, right: 2), child: Row(children: [Container(width: 40, height: 40, decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(0.18), borderRadius: BorderRadius.circular(12)), child: Icon(icon, color: AppColors.goldLight, size: 20)), const SizedBox(width: 11), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: AppTheme.headingFont(size: 19)), const SizedBox(height: 2), Text(subtitle, style: const TextStyle(color: AppColors.mutedText, fontSize: 11))]))]));
 
   @override
   Widget build(BuildContext context) {
