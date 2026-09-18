@@ -1007,53 +1007,83 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surfaceDark,
+      backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (sheetContext) => DraggableScrollableSheet(
         expand: false,
-        initialChildSize: 0.5,
-        maxChildSize: 0.85,
-        builder: (context, scrollController) => SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Text(
-                  title,
-                  style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
-                ),
-              ),
-              Expanded(
-                child: targets.isEmpty
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Text(emptyMessage, style: const TextStyle(color: Colors.white38)),
-                        ),
-                      )
-                    : ListView(
-                        controller: scrollController,
-                        children: targets
-                            .map(
-                              (p) => ListTile(
-                                title: Text(
-                                  labelBuilder != null ? labelBuilder(p) : p.name,
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                                onTap: () {
-                                  Navigator.of(sheetContext).pop();
-                                  onSelected(p);
-                                },
-                              ),
-                            )
-                            .toList(),
+        initialChildSize: 0.52,
+        maxChildSize: 0.88,
+        minChildSize: 0.36,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: AppColors.surfaceDark,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+                Container(width: 42, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(99))),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 42, height: 42,
+                        decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(.25), shape: BoxShape.circle, border: Border.all(color: AppColors.gold.withOpacity(.25))),
+                        child: const Icon(Icons.people_alt_rounded, color: AppColors.goldLight),
                       ),
-              ),
-            ],
+                      const SizedBox(width: 10),
+                      Expanded(child: Text(title, style: AppTheme.headingFont(size: 19))),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(99)),
+                        child: Text('${targets.length} نفر', style: const TextStyle(color: AppColors.mutedText, fontSize: 11)),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: targets.isEmpty
+                      ? Center(child: Padding(padding: const EdgeInsets.all(24), child: Column(mainAxisSize: MainAxisSize.min, children: [
+                          const Icon(Icons.person_off_rounded, color: AppColors.mutedText, size: 38),
+                          const SizedBox(height: 10),
+                          Text(emptyMessage, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white38)),
+                        ])))
+                      : ListView.separated(
+                          controller: scrollController,
+                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
+                          itemCount: targets.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          itemBuilder: (_, index) {
+                            final p = targets[index];
+                            final label = labelBuilder != null ? labelBuilder(p) : p.name;
+                            return Material(
+                              color: AppColors.surfaceCard,
+                              borderRadius: BorderRadius.circular(16),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(16),
+                                onTap: () { Navigator.of(sheetContext).pop(); onSelected(p); },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                  child: Row(children: [
+                                    Container(width: 38, height: 38, decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(.22), shape: BoxShape.circle), child: Center(child: Text('${index + 1}', style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w800)))),
+                                    const SizedBox(width: 12),
+                                    Expanded(child: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
+                                    const Icon(Icons.chevron_left_rounded, color: Colors.white38),
+                                  ]),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    );
+    );;
   }
 
   void _showChallengePicker() {
