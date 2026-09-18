@@ -594,14 +594,21 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) {
           final nextStage = selectedTarget == null ? 0 : selectedTarget!.disciplineStage + 1;
-          return AlertDialog(
-            backgroundColor: AppColors.surfaceDark,
-            insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
-            titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-            contentPadding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
-            actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            title: Row(
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceCard,
+                borderRadius: BorderRadius.circular(26),
+                border: Border.all(color: AppColors.gold.withOpacity(.22)),
+              ),
+              child:
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
               children: [
                 Container(
                   width: 42,
@@ -618,7 +625,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 ),
               ],
             ),
-            content: SingleChildScrollView(
+                SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -740,7 +747,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 ],
               ),
             ),
-            actions: [
+                Row(
+                  children: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(),
                 child: const Text('انصراف'),
@@ -781,7 +789,11 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     : null,
                 child: Text(actionMode == 'expel' ? 'اخراج' : (actionMode == 'revokeVote' ? 'گرفتنِ حقِ رأی' : 'اعمالِ تنبیه')),
               ),
-            ],
+                  ],
+                ),
+              ],
+            ),
+          ),
           );
         },
       ),
