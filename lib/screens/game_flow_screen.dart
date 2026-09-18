@@ -453,43 +453,66 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   void _showReorderDialog() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surfaceDark,
+      backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (_) => DraggableScrollableSheet(
         expand: false,
-        initialChildSize: 0.7,
-        builder: (context, scrollController) => StatefulBuilder(
-          builder: (context, setSheetState) => Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+        initialChildSize: .72,
+        minChildSize: .45,
+        maxChildSize: .92,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: AppColors.surfaceCard,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: StatefulBuilder(
+            builder: (context, setSheetState) => Column(children: [
+              const SizedBox(height: 10),
+              Container(width: 44, height: 5,
+                decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(8))),
               Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text('ترتیبِ بازیکنان', style: AppTheme.headingFont(size: 20)),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+                child: Row(children: [
+                  Container(width: 42, height: 42,
+                    decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(.22), shape: BoxShape.circle),
+                    child: const Icon(Icons.swap_vert_rounded, color: AppColors.goldLight)),
+                  const SizedBox(width: 12),
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('ترتیب بازیکنان', style: AppTheme.headingFont(size: 19)),
+                    const Text('با نگه‌داشتن و کشیدن جابه‌جا کن.',
+                      style: TextStyle(color: AppColors.mutedText, fontSize: 11)),
+                  ])),
+                  CircleAvatar(radius: 17, backgroundColor: AppColors.goldDark.withOpacity(.22),
+                    child: Text('${controller.players.length}',
+                      style: const TextStyle(color: AppColors.goldLight, fontSize: 12))),
+                ]),
               ),
-              const Text(
-                'با نگه‌داشتن و کشیدن جابه‌جا کن.',
-                style: TextStyle(color: Colors.white38, fontSize: 12),
-              ),
+              const SizedBox(height: 8),
               Expanded(
                 child: ReorderableListView(
                   scrollController: scrollController,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                   onReorder: (oldIndex, newIndex) {
                     controller.reorderPlayers(oldIndex, newIndex);
                     setSheetState(() {});
                   },
-                  children: controller.players
-                      .map(
-                        (p) => ListTile(
-                          key: ValueKey('reorder-${p.id}'),
-                          leading: const Icon(Icons.drag_handle, color: Colors.white38),
-                          title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                        ),
-                      )
-                      .toList(),
+                  children: controller.players.map((p) => Material(
+                    key: ValueKey('reorder-${p.id}'),
+                    color: AppColors.surfaceDark,
+                    borderRadius: BorderRadius.circular(16),
+                    child: ListTile(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      leading: CircleAvatar(radius: 17,
+                        backgroundColor: AppColors.goldDark.withOpacity(.20),
+                        child: Text('${controller.players.indexOf(p) + 1}',
+                          style: const TextStyle(color: AppColors.goldLight, fontSize: 12))),
+                      title: Text(p.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                      trailing: const Icon(Icons.drag_handle_rounded, color: Colors.white38),
+                    ),
+                  )).toList(),
                 ),
               ),
-            ],
+            ]),
           ),
         ),
       ),
