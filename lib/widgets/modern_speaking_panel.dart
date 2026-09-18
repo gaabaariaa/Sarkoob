@@ -87,25 +87,10 @@ class ModernSpeakingPanel extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 if (seconds != null)
-                  Container(
-                    width: 150,
-                    height: 150,
-                    padding: const EdgeInsets.all(9),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.gold.withOpacity(.28), width: 1.5),
-                      gradient: const RadialGradient(
-                        colors: [AppColors.surfaceElevated, AppColors.surfaceDark],
-                      ),
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.gold.withOpacity(.58), width: 2),
-                      ),
-                      alignment: Alignment.center,
-                      child: CountdownTimerWidget(totalSeconds: seconds!, onFinished: onTimerFinished),
-                    ),
+                  CountdownTimerWidget(
+                    key: ValueKey('speaking-timer-$speakerName-$seconds'),
+                    totalSeconds: seconds!,
+                    onFinished: onTimerFinished,
                   ),
                 const SizedBox(height: 22),
                 Row(
