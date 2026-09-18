@@ -4369,62 +4369,154 @@ class _PlayerScoreDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sorted = players.toList()..sort((a, b) => b.scoreTotal.compareTo(a.scoreTotal));
+    final totalPositive = sorted.where((p) => p.scoreTotal > 0).length;
+    final totalNegative = sorted.where((p) => p.scoreTotal < 0).length;
     return Scaffold(
-      appBar: AppBar(title: const Text('جزئیاتِ امتیازِ بازیکنان')),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(12),
-        itemCount: sorted.length,
-        itemBuilder: (context, index) {
-          final p = sorted[index];
-          final teamName = SarkoobTeams.byId(p.teamId)?.name ?? p.teamId;
-          final roleName = p.roleId != null ? SarkoobRoles.byId(p.roleId!)?.name : null;
-          final total = p.scoreTotal;
-          final color = total > 0
-              ? AppColors.gold
-              : (total < 0 ? AppColors.bloodRedLight : Colors.white60);
-          return Card(
-            color: AppColors.surfaceCard,
-            margin: const EdgeInsets.only(bottom: 8),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-              side: BorderSide(color: color.withOpacity(0.3)),
+      appBar: AppBar(
+        title: const Text('جزئیاتِ امتیاز'),
+        actions: [
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 14),
+            child: Center(
+              child: Text(
+                '\${sorted.length} بازیکن',
+                style: const TextStyle(color: AppColors.mutedText, fontSize: 12),
+              ),
             ),
-            child: ExpansionTile(
-              iconColor: AppColors.gold,
-              collapsedIconColor: Colors.white60,
-              title: Text(
-                p.name,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        children: [
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceCard,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: AppColors.gold.withOpacity(.18)),
+            ),
+            child: Row(
+              children: [
+                _scoreStat(Icons.emoji_events_rounded, 'مثبت', totalPositive, AppColors.gold),
+                const SizedBox(width: 10),
+                _scoreStat(Icons.remove_circle_outline_rounded, 'منفی', totalNegative, AppColors.bloodRedLight),
+                const SizedBox(width: 10),
+                _scoreStat(Icons.groups_rounded, 'کل', sorted.length, AppColors.goldLight),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          if (sorted.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(28),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceCard,
+                borderRadius: BorderRadius.circular(22),
               ),
-              subtitle: Text(
-                '${roleName ?? teamName} — تیم: $teamName',
-                style: const TextStyle(color: Colors.white60, fontSize: 12),
+              child: const Column(
+                children: [
+                  Icon(Icons.scoreboard_rounded, color: AppColors.goldLight, size: 42),
+                  SizedBox(height: 10),
+                  Text('هنوز بازیکنی برای نمایش نیست.', style: TextStyle(color: AppColors.mutedText)),
+                ],
               ),
-              trailing: Text(
-                '${total >= 0 ? '+' : ''}$total',
-                style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-              children: p.scoreEvents.isEmpty
-                  ? const [
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(16, 0, 16, 12),
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            'هیچ رویدادِ امتیازی‌ای ثبت نشده.',
-                            style: TextStyle(color: Colors.white38, fontSize: 12),
+            )
+          else
+            ...sorted.asMap().entries.map((entry) {
+              final index = entry.key;
+              final p = entry.value;
+              final teamName = SarkoobTeams.byId(p.teamId)?.name ?? p.teamId;
+              final roleName = p.roleId != null ? SarkoobRoles.byId(p.roleId!)?.name : null;
+              final total = p.scoreTotal;
+              final scoreColor = total > 0
+                  ? AppColors.gold
+                  : (total < 0 ? AppColors.bloodRedLight : Colors.white60);
+              return Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceCard,
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: scoreColor.withOpacity(.22)),
+                ),
+                child: ExpansionTile(
+                  tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  childrenPadding: const EdgeInsets.only(bottom: 8),
+                  iconColor: AppColors.gold,
+                  collapsedIconColor: AppColors.mutedText,
+                  leading: CircleAvatar(
+                    radius: 19,
+                    backgroundColor: scoreColor.withOpacity(.14),
+                    child: Text(
+                      '\${index + 1}',
+                      style: TextStyle(color: scoreColor, fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                  title: Text(
+                    p.name,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                  ),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 3),
+                    child: Text(
+                      '\${roleName ?? teamName} • \$teamName',
+                      style: const TextStyle(color: AppColors.mutedText, fontSize: 11),
+                    ),
+                  ),
+                  trailing: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: scoreColor.withOpacity(.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '\${total >= 0 ? '+' : ''}\${total}',
+                      style: TextStyle(color: scoreColor, fontWeight: FontWeight.w900, fontSize: 17),
+                    ),
+                  ),
+                  children: p.scoreEvents.isEmpty
+                      ? const [
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(20, 2, 20, 16),
+                            child: Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: Text(
+                                'هیچ رویدادِ امتیازی‌ای ثبت نشده.',
+                                style: TextStyle(color: AppColors.subtleText, fontSize: 12),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ]
-                  : [
-                      const Divider(color: Colors.white24, height: 1),
-                      ...p.scoreEvents.map((e) => _scoreEventRow(e)),
-                      const SizedBox(height: 8),
-                    ],
-            ),
-          );
-        },
+                        ]
+                      : [
+                          Divider(color: scoreColor.withOpacity(.12), height: 1),
+                          ...p.scoreEvents.map((e) => _scoreEventRow(e)),
+                        ],
+                ),
+              );
+            }),
+        ],
+      ),
+    );
+  }
+
+  Widget _scoreStat(IconData icon, String label, int value, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 8),
+        decoration: BoxDecoration(
+          color: color.withOpacity(.08),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(.12)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(height: 5),
+            Text('\${value}', style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 17)),
+            const SizedBox(height: 2),
+            Text(label, style: const TextStyle(color: AppColors.mutedText, fontSize: 10)),
+          ],
+        ),
       ),
     );
   }
