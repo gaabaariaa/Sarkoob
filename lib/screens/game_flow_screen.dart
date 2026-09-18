@@ -2921,31 +2921,22 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     if (target == null) return const SizedBox.shrink();
 
     if (controller.bombOutcomeMessage != null) {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            controller.bombOutcomeMessage!,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.goldLight,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'حالا بگو همه چشماشون رو باز کنن.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white60),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: controller.acknowledgeBombOutcome,
-            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-            child: const Text('ادامه به رأی‌گیری'),
-          ),
-        ],
+      return ModernNightPanel(
+        eyebrow: 'خواب نیمروزی • نتیجه',
+        title: 'نتیجه‌ی بمب',
+        icon: Icons.local_fire_department_rounded,
+        body: Column(
+          children: [
+            Text(controller.bombOutcomeMessage!, textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w700, fontSize: 15, height: 1.5)),
+            const SizedBox(height: 10),
+            const Text('حالا بگو همه چشماشون رو باز کنن.',
+              textAlign: TextAlign.center, style: TextStyle(color: AppColors.mutedText, fontSize: 12)),
+          ],
+        ),
+        actionLabel: 'ادامه به رأی‌گیری',
+        actionIcon: Icons.how_to_vote_rounded,
+        onAction: controller.acknowledgeBombOutcome,
       );
     }
 
@@ -2961,21 +2952,26 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     }
 
     return SingleChildScrollView(
+      padding: const EdgeInsets.only(bottom: 12),
       child: Column(
         children: [
-          Text('🌙 خواب نیمروزی', style: AppTheme.headingFont(size: 22)),
-          const SizedBox(height: 4),
-          const Text(
-            'همه‌ی بازیکن‌ها چشماشون رو ببندن — یه تصمیمِ مخفیانه در جریانه.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white60),
+          ModernNightPanel(
+            eyebrow: 'خواب نیمروزی',
+            title: 'حل معمای بمب',
+            icon: Icons.lock_clock_rounded,
+            body: const Text('همه‌ی بازیکن‌ها چشماشون رو ببندن؛ یک تصمیم مخفیانه در جریانه.',
+              textAlign: TextAlign.center, style: TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.5)),
+            actionLabel: 'ادامه‌ی فرایند',
+            actionIcon: Icons.arrow_downward_rounded,
+            onAction: null,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 12),
           branch,
         ],
       ),
     );
   }
+
 
   Widget _playerBadge(String label, String name) {
     return Container(
@@ -2993,56 +2989,45 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }
 
   Widget _buildBombGuardSelfBranch(SessionPlayer target, SessionPlayer guard) {
-    return Column(
-      children: [
-        _playerBadge('👤 هدفِ بمب و محافظ، هردو', guard.name),
-        const SizedBox(height: 16),
-        Text(
-          'چون خودِ محافظ هدفه، رمزِ درست رو بی‌سروصدا بهش نشون بده: '
-          '${controller.bombCorrectCode}',
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white70),
-        ),
-        const SizedBox(height: 16),
-        ElevatedButton(
-          onPressed: () => controller.resolveBombCode(controller.bombCorrectCode!),
-          style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-          child: const Text('تأیید — بمب خنثی شد'),
-        ),
-      ],
+    return ModernNightPanel(
+      eyebrow: 'بمب • محافظ',
+      title: 'محافظ خودش هدف است',
+      icon: Icons.shield_rounded,
+      body: Column(
+        children: [
+          _playerBadge('👤 هدفِ بمب و محافظ، هردو', guard.name),
+          const SizedBox(height: 14),
+          Text('رمز درست را بی‌سروصدا به محافظ نشان بده: ${controller.bombCorrectCode}',
+            textAlign: TextAlign.center, style: const TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.5)),
+        ],
+      ),
+      actionLabel: 'تأیید — بمب خنثی شد',
+      actionIcon: Icons.verified_rounded,
+      onAction: () => controller.resolveBombCode(controller.bombCorrectCode!),
     );
   }
 
+
   Widget _buildBombAskGuardBranch() {
     final guard = controller.guardPlayer!;
-    return Column(
-      children: [
-        _playerBadge('👤 این نقش (محافظ)', guard.name),
-        const SizedBox(height: 16),
-        const Text(
-          'محافظ رو بی‌سروصدا بیدار کن و بپرس: می‌خوای برای نجاتِ هدف فدا بشی؟',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white70),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () => controller.recordGuardSacrificeAnswer(true),
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.goldDark),
-              child: const Text('بله، فدا می‌شه'),
-            ),
-            const SizedBox(width: 16),
-            OutlinedButton(
-              onPressed: () => controller.recordGuardSacrificeAnswer(false),
-              child: const Text('نه'),
-            ),
-          ],
-        ),
-      ],
+    return ModernNightPanel(
+      eyebrow: 'بمب • تصمیم محافظ',
+      title: 'آیا محافظ فدا می‌شود؟',
+      icon: Icons.shield_moon_rounded,
+      body: Column(
+        children: [
+          _playerBadge('👤 این نقش (محافظ)', guard.name),
+          const SizedBox(height: 14),
+          const Text('محافظ را بی‌سروصدا بیدار کن و بپرس: می‌خواهی برای نجات هدف فدا شوی؟',
+            textAlign: TextAlign.center, style: TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.5)),
+        ],
+      ),
+      actionLabel: 'بله، فدا می‌شود',
+      actionIcon: Icons.shield_rounded,
+      onAction: () => controller.recordGuardSacrificeAnswer(true),
     );
   }
+
 
   /// چیدمانِ ۲در۲ برای انتخابِ عددِ ۱ تا ۴ (کدِ بمب) — هم موقعِ
   /// گذاشتنِ بمب هم موقعِ حدسِ خنثی‌سازی استفاده می‌شه. دکمه‌های بزرگ
@@ -3085,6 +3070,27 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }
 
   Widget _buildBombCodeGuessBranch({required SessionPlayer guesser, required SessionPlayer forTarget}) {
+    final isSelf = guesser.id == forTarget.id;
+    return ModernNightPanel(
+      eyebrow: 'بمب • حدس رمز',
+      title: 'انتخاب رمز خنثی‌سازی',
+      icon: Icons.password_rounded,
+      body: Column(
+        children: [
+          _playerBadge(isSelf ? '👤 این نقش (هدف)' : '👤 این نقش (محافظ)', guesser.name),
+          const SizedBox(height: 14),
+          Text(isSelf ? '«${guesser.name}» باید رمز خنثی‌سازی را حدس بزند:' : '«${guesser.name}» به‌جایِ «${forTarget.name}» رمز را حدس می‌زند:',
+            textAlign: TextAlign.center, style: const TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.5)),
+          const SizedBox(height: 14),
+          _buildBombCodeGrid((code) => controller.resolveBombCode(code)),
+        ],
+      ),
+      actionLabel: 'رمز را انتخاب کن',
+      actionIcon: Icons.password_rounded,
+      onAction: null,
+    );
+  }
+) {
     final isSelf = guesser.id == forTarget.id;
     return Column(
       children: [
