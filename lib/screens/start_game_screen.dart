@@ -722,207 +722,292 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final introSeconds = (_speakSeconds / 2).round();
     final error = _validationError;
     final total = _draftPlayers.length;
+    final assigned = _isMafiaScenario ? _mafiaAssignedTotal : _assignedTotal;
+    final teams = _isMafiaScenario
+        ? [
+            (SarkoobTeams.mafiaGang, _mafiaGangTotal, _showMafiaGangTeamPage),
+            (SarkoobTeams.mafiaTown, _mafiaTownTotal, _showMafiaTownTeamPage),
+          ]
+        : [
+            (SarkoobTeams.suppression, _sorkoobTotal, _showSorkoobTeamPage),
+            (SarkoobTeams.citizen, _citizenTotal, _showCitizenTeamPage),
+          ];
 
     return Scaffold(
       appBar: AppBar(
         title: Text('شروع بازی — ${_selectedScenario!.name}'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          tooltip: 'تغییرِ سناریو',
+          icon: const Icon(Icons.arrow_back_rounded),
+          tooltip: 'تغییر سناریو',
           onPressed: () => setState(() => _selectedScenario = null),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final wide = constraints.maxWidth >= 800;
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1080),
+                child: ListView(
+                  padding: EdgeInsets.fromLTRB(wide ? 28 : 16, 16, wide ? 28 : 16, 28),
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceCard,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: _selectedScenario!.color.withOpacity(.25)),
+                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(.22), blurRadius: 24, offset: const Offset(0, 10))],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 54,
+                            height: 54,
+                            decoration: BoxDecoration(
+                              color: _selectedScenario!.color.withOpacity(.14),
+                              borderRadius: BorderRadius.circular(17),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(_selectedScenario!.emoji, style: const TextStyle(fontSize: 29)),
+                          ),
+                          const SizedBox(width: 13),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(_selectedScenario!.name, style: AppTheme.headingFont(size: 22)),
+                                const SizedBox(height: 3),
+                                Text(
+                                  _selectedScenario!.description,
+                                  style: const TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.45),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text('$total نفر', style: AppTheme.headingFont(size: 17, color: AppColors.goldLight)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildSetupSection(
+                      icon: Icons.groups_rounded,
+                      title: 'بازیکن‌ها',
+                      subtitle: total == 0 ? 'بازیکن‌ها را اضافه کن' : '$total بازیکن آماده است',
+                      child: Game3DButton(
+                        label: 'مدیریت بازیکن‌ها',
+                        icon: Icons.manage_accounts_rounded,
+                        onPressed: _showPlayersPage,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    _buildSetupSection(
+                      icon: Icons.hub_rounded,
+                      title: 'تیم‌ها و نقش‌ها',
+                      subtitle: '$assigned از $total نفر نقش‌بندی شده',
+                      child: Column(
+                        children: [
+                          ...teams.map(
+                            (entry) => Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: _teamNavButton(
+                                label: entry.$1.name,
+                                color: entry.$1.color,
+                                count: entry.$2,
+                                onTap: entry.$3,
+                              ),
+                            ),
+                          ),
+                          _teamNavButton(
+                            label: 'تیمِ مستقل',
+                            color: (_isMafiaScenario ? _includeZodiac : _includeMossad)
+                                ? (_isMafiaScenario ? SarkoobTeams.zodiac.color : SarkoobTeams.mossad.color)
+                                : AppColors.subtleText,
+                            count: (_isMafiaScenario ? _includeZodiac : _includeMossad) ? 1 : 0,
+                            onTap: _showIndependentTeamPage,
+                          ),
+                          const SizedBox(height: 2),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: (assigned == total && total > 0)
+                                  ? AppColors.gold.withOpacity(.07)
+                                  : AppColors.bloodRed.withOpacity(.20),
+                              borderRadius: BorderRadius.circular(15),
+                              border: Border.all(
+                                color: assigned == total && total > 0
+                                    ? AppColors.gold.withOpacity(.35)
+                                    : AppColors.bloodRedLight.withOpacity(.55),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  assigned == total && total > 0 ? Icons.check_circle_rounded : Icons.info_outline_rounded,
+                                  color: assigned == total && total > 0 ? AppColors.goldLight : AppColors.bloodRedLight,
+                                ),
+                                const SizedBox(width: 9),
+                                Expanded(
+                                  child: Text(
+                                    'نقش‌بندی‌شده: $assigned از $total نفر',
+                                    style: TextStyle(
+                                      color: assigned == total && total > 0 ? AppColors.goldLight : AppColors.bloodRedLight,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    _buildSetupSection(
+                      icon: Icons.tune_rounded,
+                      title: 'تنظیمات میز بازی',
+                      subtitle: 'زمان صحبت، نجات دکتر و محل بازی',
+                      child: Column(
+                        children: [
+                          _buildSettingRow(
+                            icon: Icons.timer_outlined,
+                            title: 'زمان صحبت',
+                            value: '$_speakSeconds ثانیه',
+                            onMinus: () => setState(() { if (_speakSeconds > 10) _speakSeconds -= 10; }),
+                            onPlus: () => setState(() => _speakSeconds += 10),
+                          ),
+                          const SizedBox(height: 6),
+                          Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: Text(
+                              'معارفه و چالش: $introSeconds ثانیه',
+                              style: const TextStyle(color: AppColors.mutedText, fontSize: 12),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          _buildSettingRow(
+                            icon: Icons.health_and_safety_outlined,
+                            title: 'نجات خودِ دکتر',
+                            value: '$_doctorMaxSelfSaves بار',
+                            onMinus: () => setState(() { if (_doctorMaxSelfSaves > 0) _doctorMaxSelfSaves--; }),
+                            onPlus: () => setState(() => _doctorMaxSelfSaves++),
+                          ),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: _locationController,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              labelText: 'محل بازی (اختیاری)',
+                              hintText: 'مثلاً خانه، کافه...',
+                              prefixIcon: const Icon(Icons.location_on_outlined, color: AppColors.gold),
+                              filled: true,
+                              fillColor: AppColors.surfaceDark,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: AppColors.goldDark.withOpacity(.35))),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: AppColors.goldDark.withOpacity(.35))),
+                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: const BorderSide(color: AppColors.gold)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    if (error != null)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: AppColors.bloodRed.withOpacity(.22),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppColors.bloodRedLight.withOpacity(.6)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.warning_amber_rounded, color: AppColors.bloodRedLight),
+                            const SizedBox(width: 10),
+                            Expanded(child: Text(error, style: const TextStyle(color: AppColors.bloodRedLight, fontWeight: FontWeight.w700))),
+                          ],
+                        ),
+                      ),
+                    Game3DButton(
+                      label: 'شروع بازی • روز معارفه',
+                      icon: Icons.play_arrow_rounded,
+                      onPressed: error == null ? _onStartPressed : null,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSetupSection({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Widget child,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.gold.withOpacity(.10)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('بازیکن‌ها', style: AppTheme.headingFont(size: 20)),
-          const SizedBox(height: 10),
-          SizedBox(
-            width: double.infinity,
-            child: Game3DButton(
-              label: 'افزودنِ بازیکن‌ها (${_draftPlayers.length} نفر)',
-              icon: Icons.groups_rounded,
-              onPressed: _showPlayersPage,
-            ),
-          ),
-
-          if (_isSorkoobScenario) ...[
-            const SizedBox(height: 24),
-            _teamNavButton(
-              label: 'تیمِ مستقل',
-              color: _includeMossad ? SarkoobTeams.mossad.color : Colors.grey,
-              count: _includeMossad ? 1 : 0,
-              onTap: _showIndependentTeamPage,
-            ),
-            _teamNavButton(
-              label: SarkoobTeams.suppression.name,
-              color: SarkoobTeams.suppression.color,
-              count: _sorkoobTotal,
-              onTap: _showSorkoobTeamPage,
-            ),
-            _teamNavButton(
-              label: SarkoobTeams.citizen.name,
-              color: SarkoobTeams.citizen.color,
-              count: _citizenTotal,
-              onTap: _showCitizenTeamPage,
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: _assignedTotal == total ? AppColors.gold : AppColors.bloodRedLight,
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                'نقش‌بندی‌شده: $_assignedTotal از $total نفر'
-                '${_includeMossad ? ' (شاملِ ۱ نفرِ تیمِ مستقل)' : ''}',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: _assignedTotal == total ? AppColors.goldLight : AppColors.bloodRedLight,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-
-          if (_isMafiaScenario) ...[
-            const SizedBox(height: 24),
-            _teamNavButton(
-              label: 'تیمِ مستقل',
-              color: _includeZodiac ? SarkoobTeams.zodiac.color : Colors.grey,
-              count: _includeZodiac ? 1 : 0,
-              onTap: _showIndependentTeamPage,
-            ),
-            _teamNavButton(
-              label: SarkoobTeams.mafiaGang.name,
-              color: SarkoobTeams.mafiaGang.color,
-              count: _mafiaGangTotal,
-              onTap: _showMafiaGangTeamPage,
-            ),
-            _teamNavButton(
-              label: SarkoobTeams.mafiaTown.name,
-              color: SarkoobTeams.mafiaTown.color,
-              count: _mafiaTownTotal,
-              onTap: _showMafiaTownTeamPage,
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: _mafiaAssignedTotal == total ? AppColors.gold : AppColors.bloodRedLight,
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                'نقش‌بندی‌شده: $_mafiaAssignedTotal از $total نفر'
-                '${_includeZodiac ? ' (شاملِ ۱ نفرِ تیمِ مستقل)' : ''}',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color:
-                      _mafiaAssignedTotal == total ? AppColors.goldLight : AppColors.bloodRedLight,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-
-          const SizedBox(height: 28),
-          Text('تنظیم زمان صحبت', style: AppTheme.headingFont(size: 20)),
-          const SizedBox(height: 8),
           Row(
             children: [
-              IconButton(
-                icon: const Icon(Icons.remove, color: AppColors.gold),
-                onPressed: () => setState(() {
-                  if (_speakSeconds > 10) _speakSeconds -= 10;
-                }),
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: AppColors.goldDark.withOpacity(.14),
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: Icon(icon, color: AppColors.goldLight),
               ),
-              Text(
-                '$_speakSeconds ثانیه',
-                style: const TextStyle(color: AppColors.goldLight, fontSize: 18),
-              ),
-              IconButton(
-                icon: const Icon(Icons.add, color: AppColors.gold),
-                onPressed: () => setState(() => _speakSeconds += 10),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: AppTheme.headingFont(size: 17)),
+                    const SizedBox(height: 2),
+                    Text(subtitle, style: const TextStyle(color: AppColors.mutedText, fontSize: 12)),
+                  ],
+                ),
               ),
             ],
           ),
-          Text(
-            'زمان معارفه و زمان چالش خودکار میشه: $introSeconds ثانیه (نصف زمان صحبت)',
-            style: const TextStyle(color: Colors.white60, fontSize: 13),
-          ),
-
-          const SizedBox(height: 24),
-          Text('نجاتِ خودِ دکتر', style: AppTheme.headingFont(size: 20)),
-          const SizedBox(height: 4),
-          const Text(
-            'دکتر در طولِ کلِ بازی حداکثر چندبار می‌تونه خودش رو نجات بده؟',
-            style: TextStyle(color: Colors.white60, fontSize: 12),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.remove, color: AppColors.gold),
-                onPressed: () => setState(() {
-                  if (_doctorMaxSelfSaves > 0) _doctorMaxSelfSaves--;
-                }),
-              ),
-              Text(
-                '$_doctorMaxSelfSaves بار',
-                style: const TextStyle(color: AppColors.goldLight, fontSize: 18),
-              ),
-              IconButton(
-                icon: const Icon(Icons.add, color: AppColors.gold),
-                onPressed: () => setState(() => _doctorMaxSelfSaves++),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-          Text('محلِ بازی', style: AppTheme.headingFont(size: 20)),
-          const SizedBox(height: 4),
-          const Text(
-            'اختیاریه — بعداً تو تاریخچه‌ی بازی‌ها هم نشون داده می‌شه.',
-            style: TextStyle(color: Colors.white60, fontSize: 12),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _locationController,
-            style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(
-              hintText: 'مثلاً: خونه‌ی سهیل، کافه X',
-              hintStyle: TextStyle(color: Colors.white38),
-              filled: true,
-              fillColor: AppColors.surfaceDark,
-              border: OutlineInputBorder(borderSide: BorderSide(color: AppColors.goldDark)),
-              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppColors.goldDark)),
-              focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: AppColors.gold)),
-            ),
-          ),
-
-          const SizedBox(height: 24),
-          if (error != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text(
-                error,
-                style: const TextStyle(color: AppColors.bloodRedLight),
-              ),
-            ),
-          SizedBox(
-            width: double.infinity,
-            child: Game3DButton(
-              label: 'شروع بازی (روز معارفه)',
-              icon: Icons.theater_comedy,
-              onPressed: error == null ? _onStartPressed : null,
-            ),
-          ),
+          const SizedBox(height: 13),
+          child,
         ],
       ),
+    );
+  }
+
+  Widget _buildSettingRow({
+    required IconData icon,
+    required String title,
+    required String value,
+    required VoidCallback onMinus,
+    required VoidCallback onPlus,
+  }) {
+    return Row(
+      children: [
+        Icon(icon, color: AppColors.goldLight, size: 22),
+        const SizedBox(width: 10),
+        Expanded(child: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
+        IconButton(onPressed: onMinus, icon: const Icon(Icons.remove_circle_outline_rounded), color: AppColors.gold),
+        Text(value, style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w900)),
+        IconButton(onPressed: onPlus, icon: const Icon(Icons.add_circle_outline_rounded), color: AppColors.gold),
+      ],
     );
   }
 
