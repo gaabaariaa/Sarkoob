@@ -79,10 +79,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
       decoration: BoxDecoration(
         color: AppColors.surfaceCard,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.gold.withOpacity(0.24)),
+        border: Border.all(color: AppColors.gold.withAlpha(61)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.24),
+            color: Colors.black.withAlpha(61),
             blurRadius: 22,
             offset: const Offset(0, 10),
           ),
@@ -94,9 +94,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
             width: 58,
             height: 58,
             decoration: BoxDecoration(
-              color: AppColors.goldDark.withOpacity(0.22),
+              color: AppColors.goldDark.withAlpha(56),
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.gold.withOpacity(0.28)),
+              border: Border.all(color: AppColors.gold.withAlpha(71)),
             ),
             child: const Icon(Icons.history_rounded, color: AppColors.goldLight, size: 29),
           ),
@@ -128,12 +128,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
       decoration: BoxDecoration(
         color: AppColors.surfaceCard,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.gold.withOpacity(0.20)),
+        border: Border.all(color: AppColors.gold.withAlpha(51)),
       ),
       child: Theme(
         data: Theme.of(context).copyWith(
           dividerColor: Colors.transparent,
-          splashColor: AppColors.gold.withOpacity(0.06),
+          splashColor: AppColors.gold.withAlpha(15),
         ),
         child: ExpansionTile(
           tilePadding: const EdgeInsets.fromLTRB(18, 8, 12, 8),
@@ -191,7 +191,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
                 leading: CircleAvatar(
                   radius: 18,
-                  backgroundColor: AppColors.goldDark.withOpacity(0.18),
+                  backgroundColor: AppColors.goldDark.withAlpha(46),
                   child: Text(
                     p.name.isEmpty ? '?' : p.name.characters.first,
                     style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
@@ -208,7 +208,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 trailing: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.10),
+                    color: statusColor.withAlpha(26),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -234,7 +234,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           decoration: BoxDecoration(
             color: AppColors.surfaceCard,
             borderRadius: BorderRadius.circular(26),
-            border: Border.all(color: AppColors.gold.withOpacity(0.22)),
+            border: Border.all(color: AppColors.gold.withAlpha(56)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -243,7 +243,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 width: 74,
                 height: 74,
                 decoration: BoxDecoration(
-                  color: AppColors.goldDark.withOpacity(0.18),
+                  color: AppColors.goldDark.withAlpha(46),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.history_toggle_off_rounded, color: AppColors.goldLight, size: 36),
