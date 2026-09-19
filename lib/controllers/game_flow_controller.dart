@@ -148,13 +148,7 @@ class GameFlowController extends ChangeNotifier {
   /// معنی‌دار بود یا نه» استفاده می‌شه.
   bool _hasActiveRole(SessionPlayer p) {
     if (p.roleId == null) return false;
-    final simpleRoleIds = {
-      SarkoobRoles.suppressor.id,
-      SarkoobRoles.simpleMafia.id,
-      SarkoobRoles.grayCitizen.id,
-      SarkoobRoles.simpleCitizen.id,
-    };
-    return !simpleRoleIds.contains(p.roleId);
+    return !scenario.simpleRoleIds.contains(p.roleId);
   }
 
   /// ضریبِ امتیازِ رأی‌دهیِ نقش (طبقِ sarkoob-action-scoring-template.xlsx،
@@ -164,11 +158,9 @@ class GameFlowController extends ChangeNotifier {
   /// «رأیِ خروج» و «رأیِ رهبری» اثر می‌ذاره، نه رویِ اکشن‌هایِ اختصاصی
   /// (چون نقش‌هایِ ساده اصلاً اکشنِ اختصاصی ندارن).
   double _voteScoreMultiplier(SessionPlayer p) {
-    if (p.roleId == SarkoobRoles.grayCitizen.id || p.roleId == SarkoobRoles.simpleCitizen.id) {
-      return 2.0;
-    }
-    if (p.roleId == SarkoobRoles.suppressor.id || p.roleId == SarkoobRoles.simpleMafia.id) {
-      return 1.5;
+    if (p.roleId != null && scenario.simpleRoleIds.contains(p.roleId)) {
+      if (p.roleId == scenario.townDefaultRoleId) return 2.0;
+      if (p.roleId == scenario.leaderDefaultRoleId) return 1.5;
     }
     if (p.roleId == SarkoobRoles.mossadLeader.id || p.roleId == SarkoobRoles.zodiacRole.id) {
       return 0.5;
@@ -946,14 +938,15 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get valiFaghihPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.valiFaghih.id || p.roleId == SarkoobRoles.godfather.id) return p;
+      if (p.roleId == scenario.leaderDefaultRoleId) return p;
     }
     return null;
   }
 
   SessionPlayer? get foreignMinisterPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.foreignMinister.id || p.roleId == SarkoobRoles.negotiator.id) return p;
+      final negotiatorRoleId = scenario.id == SarkoobScenarios.mafia.id ? SarkoobRoles.negotiator.id : SarkoobRoles.foreignMinister.id;
+      if (p.roleId == negotiatorRoleId) return p;
     }
     return null;
   }
@@ -971,9 +964,7 @@ class GameFlowController extends ChangeNotifier {
   /// قدیمیِ null رو پوشش می‌دیم.
   bool _isGrayCitizen(SessionPlayer p) =>
       isTownTeam(p.teamId) &&
-      (p.roleId == null ||
-          p.roleId == SarkoobRoles.grayCitizen.id ||
-          p.roleId == SarkoobRoles.simpleCitizen.id);
+      (p.roleId == null || p.roleId == scenario.townDefaultRoleId);
 
   /// شهروندهای «خاکستری»: زنده، عضو تیم شهروند، و بدون نقشِ خاص.
   List<SessionPlayer> get grayCitizens =>
@@ -1666,10 +1657,9 @@ class GameFlowController extends ChangeNotifier {
     final isPermanentInfiltrator = targetRole?.alwaysInfiltratesResistance ?? false;
 
     _rapperActedTonight = true;
-    final isMafiaGame = isMafiaScenario;
-    final resistanceTeamPhrase = isMafiaGame ? 'تیمِ اوشن' : 'تیمِ مقاومتِ فعال';
-    final leaderTeamLabel = isMafiaGame ? 'مافیا' : 'سرکوب';
-    final resistanceGroupNoun = isMafiaGame ? 'تیمِ اوشن' : 'مقاومت';
+    final resistanceTeamPhrase = scenario.resistanceTeamLabel;
+    final leaderTeamLabel = scenario.leaderLabel;
+    final resistanceGroupNoun = scenario.resistanceGroupLabel;
 
     if (isTownTeam(target.teamId)) {
       target.isActiveResistanceMember = true;
@@ -2456,7 +2446,7 @@ class GameFlowController extends ChangeNotifier {
     fighter.revolutionaryChargesRemaining = (fighter.revolutionaryChargesRemaining ?? 0) - 1;
     _revolutionaryActedTonight = true;
 
-    if (target.teamId == SarkoobTeams.suppression.id || target.teamId == SarkoobTeams.mafiaGang.id) {
+    if (isLeaderTeam(target.teamId)) {
       _pendingHits[targetId] = (_pendingHits[targetId] ?? 0) + 1;
       _pendingHitAttributions.add(_PendingHitAttribution(fighter.id, targetId, 'اعدامِ انقلابی'));
       revolutionaryResultMessage =
