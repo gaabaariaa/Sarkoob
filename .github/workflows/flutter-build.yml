@@ -17,8 +17,8 @@ jobs:
           cache: true
       - name: Install dependencies
         run: flutter pub get
-      - name: Analyze (non-blocking)
-        run: flutter analyze || true
+      - name: Analyze
+        run: flutter analyze
       - name: Build release APK (split per ABI)
         run: flutter build apk --release --split-per-abi
       - name: Upload APKs
