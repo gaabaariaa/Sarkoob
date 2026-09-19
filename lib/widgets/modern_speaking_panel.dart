@@ -45,10 +45,10 @@ class ModernSpeakingPanel extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.surfaceCard,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.gold.withOpacity(.34)),
+              border: Border.all(color: AppColors.gold.withAlpha(87)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(.30),
+                  color: Colors.black.withAlpha(77),
                   blurRadius: 22,
                   offset: const Offset(0, 10),
                 ),
@@ -118,7 +118,7 @@ class ModernSpeakingPanel extends StatelessWidget {
                           style: OutlinedButton.styleFrom(
                             minimumSize: const Size.fromHeight(52),
                             foregroundColor: AppColors.goldLight,
-                            side: BorderSide(color: AppColors.gold.withOpacity(.45)),
+                            side: BorderSide(color: AppColors.gold.withAlpha(115)),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                           ),
                         ),
@@ -144,7 +144,7 @@ class ModernSpeakingPanel extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.surfaceDark,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withOpacity(.06)),
+              border: Border.all(color: Colors.white.withAlpha(15)),
             ),
             child: const Row(
               children: [
@@ -203,9 +203,9 @@ class _StatusChip extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: active ? AppColors.gold.withOpacity(.12) : Colors.white.withOpacity(.035),
+          color: active ? AppColors.gold.withAlpha(31) : Colors.white.withAlpha(9),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: active ? AppColors.gold.withOpacity(.28) : Colors.white.withOpacity(.06)),
+          border: Border.all(color: active ? AppColors.gold.withAlpha(71) : Colors.white.withAlpha(15)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
