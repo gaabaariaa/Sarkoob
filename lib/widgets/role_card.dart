@@ -35,13 +35,13 @@ class _TeamRevealCardState extends State<TeamRevealCard> {
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: _revealed
-                ? widget.team.color.withOpacity(0.75)
-                : AppColors.gold.withOpacity(0.45),
+                ? widget.team.color.withAlpha(191)
+                : AppColors.gold.withAlpha(115),
             width: 1.4,
           ),
           boxShadow: [
             BoxShadow(
-              color: (_revealed ? widget.team.color : AppColors.gold).withOpacity(0.12),
+              color: (_revealed ? widget.team.color : AppColors.gold).withAlpha(31),
               blurRadius: 24,
               offset: const Offset(0, 10),
             ),
@@ -70,8 +70,8 @@ class _TeamRevealCardState extends State<TeamRevealCard> {
               height: 76,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.goldDark.withOpacity(0.18),
-                border: Border.all(color: AppColors.gold.withOpacity(0.5)),
+                color: AppColors.goldDark.withAlpha(46),
+                border: Border.all(color: AppColors.gold.withAlpha(128)),
               ),
               child: const Icon(
                 Icons.lock_rounded,
@@ -115,8 +115,8 @@ class _TeamRevealCardState extends State<TeamRevealCard> {
               height: 72,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: widget.team.color.withOpacity(0.16),
-                border: Border.all(color: widget.team.color.withOpacity(0.6)),
+                color: widget.team.color.withAlpha(41),
+                border: Border.all(color: widget.team.color.withAlpha(153)),
               ),
               child: Icon(
                 Icons.shield_rounded,
