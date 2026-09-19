@@ -329,8 +329,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     return _mafiaGangTotal > (total / 3);
   }
 
-  String? get _validationError {
-    if (_isMafiaScenario) return _mafiaValidationError;
+  String? get _sorkoobValidationError {
     final total = _draftPlayers.length;
     if (total < _minPlayers) {
       return 'حداقل $_minPlayers بازیکن لازمه (الان $total نفر)';
@@ -349,9 +348,25 @@ class _StartGameScreenState extends State<StartGameScreen> {
   }
 
   bool get _isPowerUnbalanced {
+    final scenario = _selectedScenario;
+    if (scenario == null || scenario.setupMode != GameScenarioSetupMode.sorkoob) {
+      return false;
+    }
     final total = _draftPlayers.length;
     if (total == 0) return false;
     return _citizenTotal < (total * 2 / 3);
+  }
+
+  String? get _validationError {
+    final scenario = _selectedScenario;
+    if (scenario == null) return 'سناریوی بازی انتخاب نشده';
+
+    switch (scenario.setupMode) {
+      case GameScenarioSetupMode.mafia:
+        return _mafiaValidationError;
+      case GameScenarioSetupMode.sorkoob:
+        return _sorkoobValidationError;
+    }
   }
 
   Future<void> _onStartPressed() async {
