@@ -1150,81 +1150,62 @@ class _StartGameScreenState extends State<StartGameScreen> {
   }
 
   void _showIndependentTeamPage() {
-    final isSorkoob = _isSorkoobScenario;
-    _pushSection('تیمِ مستقل', AppColors.gold, (context) {
+    final scenario = _selectedScenario;
+    if (scenario == null) return;
+    final team = SarkoobTeams.byId(scenario.independentTeamId);
+    final role = SarkoobRoles.byId(scenario.independentLeaderRoleId);
+    if (team == null || role == null) return;
+
+    _pushSection('تیمِ مستقل', team.color, (context) {
+      final enabled = scenario.id == SarkoobScenarios.mafia.id ? _includeZodiac : _includeMossad;
       return StatefulBuilder(
         builder: (context, setSheetState) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text('اختیاریه.', style: TextStyle(color: Colors.white60, fontSize: 12)),
             const SizedBox(height: 8),
-            if (isSorkoob) ...[
-              RadioListTile<String>(
-                value: 'none',
-                groupValue: _includeMossad ? 'mossad' : 'none',
-                onChanged: (_) {
-                  _setIndependentTeam(mossad: false);
-                  setSheetState(() {});
-                },
-                activeColor: AppColors.gold,
-                title: const Text('بدون تیم مستقل', style: TextStyle(color: Colors.white)),
-              ),
-              RadioListTile<String>(
-                value: 'mossad',
-                groupValue: _includeMossad ? 'mossad' : 'none',
-                onChanged: (_) {
-                  _setIndependentTeam(mossad: true);
-                  setSheetState(() {});
-                },
-                activeColor: SarkoobTeams.mossad.color,
-                title: Text(SarkoobTeams.mossad.name, style: const TextStyle(color: Colors.white)),
-              ),
-              if (_includeMossad) ...[
-                const SizedBox(height: 4),
-                const Text(
-                  'فعلاً تنها نقشِ این تیم رهبرِ موساده، پس این تیم همیشه دقیقاً ۱ نفره:',
-                  style: TextStyle(color: Colors.white60, fontSize: 12),
-                ),
-                const SizedBox(height: 4),
-                _mandatoryRoleRow(SarkoobRoles.mossadLeader),
-              ],
-            ] else ...[
-              RadioListTile<String>(
-                value: 'none',
-                groupValue: _includeZodiac ? 'zodiac' : 'none',
-                onChanged: (_) {
+            RadioListTile<String>(
+              value: 'none',
+              groupValue: enabled ? team.id : 'none',
+              onChanged: (_) {
+                if (scenario.id == SarkoobScenarios.mafia.id) {
                   _setMafiaIndependentTeam(zodiac: false);
-                  setSheetState(() {});
-                },
-                activeColor: AppColors.gold,
-                title: const Text('بدون تیم مستقل', style: TextStyle(color: Colors.white)),
-              ),
-              RadioListTile<String>(
-                value: 'zodiac',
-                groupValue: _includeZodiac ? 'zodiac' : 'none',
-                onChanged: (_) {
+                } else {
+                  _setIndependentTeam(mossad: false);
+                }
+                setSheetState(() {});
+              },
+              activeColor: AppColors.gold,
+              title: const Text('بدون تیم مستقل', style: TextStyle(color: Colors.white)),
+            ),
+            RadioListTile<String>(
+              value: team.id,
+              groupValue: enabled ? team.id : 'none',
+              onChanged: (_) {
+                if (scenario.id == SarkoobScenarios.mafia.id) {
                   _setMafiaIndependentTeam(zodiac: true);
-                  setSheetState(() {});
-                },
-                activeColor: SarkoobTeams.zodiac.color,
-                title: Text(SarkoobTeams.zodiac.name, style: const TextStyle(color: Colors.white)),
+                } else {
+                  _setIndependentTeam(mossad: true);
+                }
+                setSheetState(() {});
+              },
+              activeColor: team.color,
+              title: Text(team.name, style: const TextStyle(color: Colors.white)),
+            ),
+            if (enabled) ...[
+              const SizedBox(height: 4),
+              Text(
+                'فعلاً تنها نقشِ این تیم «${role.name}» است، پس این تیم همیشه دقیقاً ۱ نفره:',
+                style: const TextStyle(color: Colors.white60, fontSize: 12),
               ),
-              if (_includeZodiac) ...[
-                const SizedBox(height: 4),
-                const Text(
-                  'فعلاً تنها نقشِ این تیم زودیاکه، پس این تیم همیشه دقیقاً ۱ نفره:',
-                  style: TextStyle(color: Colors.white60, fontSize: 12),
-                ),
-                const SizedBox(height: 4),
-                _mandatoryRoleRow(SarkoobRoles.zodiacRole),
-              ],
+              const SizedBox(height: 4),
+              _mandatoryRoleRow(role),
             ],
           ],
         ),
       );
     });
   }
-
   void _showSorkoobTeamPage() {
     _pushSection(SarkoobTeams.suppression.name, SarkoobTeams.suppression.color, (context) {
       return StatefulBuilder(
