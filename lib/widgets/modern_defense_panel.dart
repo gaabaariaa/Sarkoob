@@ -37,9 +37,9 @@ class ModernDefensePanel extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
             decoration: BoxDecoration(
-              color: AppColors.bloodRed.withOpacity(0.28),
+              color: AppColors.bloodRed.withAlpha(71),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.bloodRedLight.withOpacity(0.7)),
+              border: Border.all(color: AppColors.bloodRedLight.withAlpha(179)),
             ),
             child: Row(
               children: [
@@ -47,7 +47,7 @@ class ModernDefensePanel extends StatelessWidget {
                   width: 38,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: AppColors.bloodRedLight.withOpacity(0.2),
+                    color: AppColors.bloodRedLight.withAlpha(51),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.gavel_rounded, color: AppColors.goldLight),
@@ -73,7 +73,7 @@ class ModernDefensePanel extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.surfaceCard,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.gold.withOpacity(0.28)),
+              border: Border.all(color: AppColors.gold.withAlpha(71)),
             ),
             child: Column(
               children: [
@@ -94,7 +94,7 @@ class ModernDefensePanel extends StatelessWidget {
                   const SizedBox(height: 6),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(0.22), borderRadius: BorderRadius.circular(20)),
+                    decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(56), borderRadius: BorderRadius.circular(20)),
                     child: Text(teamLabel!, style: const TextStyle(color: AppColors.goldLight, fontSize: 11, fontWeight: FontWeight.w700)),
                   ),
                 ],
