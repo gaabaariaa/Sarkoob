@@ -1600,12 +1600,20 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
   VoidCallback? _teamSetupPageFor(GameScenario scenario, String teamId) {
     if (teamId == scenario.leaderTeamId) {
-      if (teamId == SarkoobTeams.mafiaGang.id) return _showMafiaGangTeamPage;
-      if (teamId == SarkoobTeams.suppression.id) return _showSorkoobTeamPage;
+      switch (scenario.setupMode) {
+        case GameScenarioSetupMode.mafia:
+          return _showMafiaGangTeamPage;
+        case GameScenarioSetupMode.sorkoob:
+          return _showSorkoobTeamPage;
+      }
     }
     if (teamId == scenario.townTeamId) {
-      if (teamId == SarkoobTeams.mafiaTown.id) return _showMafiaTownTeamPage;
-      if (teamId == SarkoobTeams.citizen.id) return _showCitizenTeamPage;
+      switch (scenario.setupMode) {
+        case GameScenarioSetupMode.mafia:
+          return _showMafiaTownTeamPage;
+        case GameScenarioSetupMode.sorkoob:
+          return _showCitizenTeamPage;
+      }
     }
     return null;
   }
