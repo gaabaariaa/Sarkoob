@@ -94,7 +94,7 @@ class GameFlowController extends ChangeNotifier {
     // mossadAssassinate هم هیچ‌وقت براش true نشه (چون playstyle هیچ‌وقت
     // assassination نمی‌شه).
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.zodiacRole.id) {
+      if (p.roleId == scenario.independentLeaderRoleId) {
         p.mossadPlaystyle = MossadPlaystyle.secretOperation;
       }
     }
@@ -1964,7 +1964,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get mossadLeaderPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.mossadLeader.id || p.roleId == SarkoobRoles.zodiacRole.id) return p;
+      if (p.roleId == scenario.independentLeaderRoleId) return p;
     }
     return null;
   }
