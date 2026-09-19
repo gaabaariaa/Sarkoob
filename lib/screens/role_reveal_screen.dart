@@ -33,11 +33,12 @@ class _RoleRevealScreenState extends State<RoleRevealScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('نمایش نقش‌ها'), actions: [Padding(padding: const EdgeInsetsDirectional.only(end: 14), child: Center(child: Text(_seenIds.length.toString() + '/' + widget.players.length.toString(), style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w800))))]),
       body: SafeArea(child: LayoutBuilder(builder: (context, constraints) {
+        final compact = constraints.maxWidth < 380;
         final columns = constraints.maxWidth >= 1000 ? 4 : constraints.maxWidth >= 650 ? 3 : 2;
-        return Center(child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 1100), child: Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 16), child: Column(children: [
+        return Center(child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 1100), child: Padding(padding: EdgeInsets.fromLTRB(compact ? 10 : 16, compact ? 6 : 8, compact ? 10 : 16, compact ? 12 : 16), child: Column(children: [
           _RevealHeader(seen: _seenIds.length, total: widget.players.length),
           const SizedBox(height: 14),
-          Expanded(child: GridView.builder(itemCount: widget.players.length, gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: columns, mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: columns == 2 ? 1.08 : 1.12), itemBuilder: (context, index) { final player = widget.players[index]; final seen = _seenIds.contains(player.id); return _PlayerRevealTile(name: player.name, seen: seen, onTap: seen ? null : () => _openPlayer(player)); })),
+          Expanded(child: GridView.builder(itemCount: widget.players.length, gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: columns, mainAxisSpacing: compact ? 8 : 12, crossAxisSpacing: compact ? 8 : 12, childAspectRatio: columns == 2 ? (compact ? .92 : 1.08) : 1.12), itemBuilder: (context, index) { final player = widget.players[index]; final seen = _seenIds.contains(player.id); return _PlayerRevealTile(name: player.name, seen: seen, onTap: seen ? null : () => _openPlayer(player)); })),
           const SizedBox(height: 10),
           SizedBox(width: double.infinity, child: Game3DButton(label: allSeen ? 'همه نقش‌ها دیده شد • شروع بازی' : 'بعد از دیدن همه نقش‌ها شروع کن', icon: Icons.play_arrow_rounded, onPressed: allSeen ? _startGame : null)),
         ]))));
