@@ -1941,10 +1941,9 @@ class GameFlowController extends ChangeNotifier {
   InvestigationResult investigationResultFor(int targetId) {
     final target = playerById(targetId);
     final role = target.roleId != null ? SarkoobRoles.byId(target.roleId!) : null;
-    final isLeaderTeam =
-        isLeaderTeam(target.teamId);
+    final onLeaderTeam = isLeaderTeam(target.teamId);
 
-    if (!isLeaderTeam) return InvestigationResult.dislike;
+    if (!onLeaderTeam) return InvestigationResult.dislike;
     if (role != null && role.alwaysShowsInnocent) return InvestigationResult.dislike;
     if (role != null &&
         role.investigationHiddenUntilNight > 0 &&
