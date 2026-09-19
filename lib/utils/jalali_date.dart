@@ -70,12 +70,6 @@ List<int> _jdn2g(int jdn) {
   return [year, month, day];
 }
 
-int _j2d(int jy, int jm, int jd) {
-  final r = _jalCal(jy);
-  final t = _g2jdn(r.gy, 3, r.march) + (jm - 1) * 31;
-  return t - (jm ~/ 7) * (jm - 7) + jd - 1;
-}
-
 List<int> _d2j(int jdn) {
   final gy = _jdn2g(jdn)[0];
   var jy = gy - 621;
