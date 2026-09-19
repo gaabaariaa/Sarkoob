@@ -36,7 +36,7 @@ class ModernNightPanel extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.surfaceDark,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.gold.withOpacity(.22)),
+              border: Border.all(color: AppColors.gold.withAlpha(56)),
             ),
             child: Row(
               children: [
@@ -44,7 +44,7 @@ class ModernNightPanel extends StatelessWidget {
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
-                    color: AppColors.goldDark.withOpacity(.22),
+                    color: AppColors.goldDark.withAlpha(56),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: AppColors.goldLight, size: 22),
@@ -65,7 +65,7 @@ class ModernNightPanel extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: AppColors.goldDark.withOpacity(.18),
+                        color: AppColors.goldDark.withAlpha(46),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -85,7 +85,7 @@ class ModernNightPanel extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.surfaceCard,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.gold.withOpacity(.20)),
+              border: Border.all(color: AppColors.gold.withAlpha(51)),
             ),
             child: body,
           ),
