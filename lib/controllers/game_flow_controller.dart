@@ -1603,13 +1603,15 @@ class GameFlowController extends ChangeNotifier {
     if (pendingDiscloserPlayerId == null) return;
     final discloser = playerById(pendingDiscloserPlayerId!);
     final target = playerById(targetId);
-    final isMafia = target.teamId == leaderTeamId;
+    final isLeaderTeamTarget = target.teamId == leaderTeamId;
+    final leaderLabel = scenario.leaderLabel;
     discloserAnnouncement =
-        '📢 افشاگر قبلِ خروج افشا کرد: «${target.name}» ${isMafia ? "عضوِ مافیاست" : "عضوِ مافیا نیست"}.';
-    // افشا همیشه راسته (دروغ‌گفتن امکان‌پذیر نیست)؛ امتیازدهی طبقِ
-    // sarkoob-action-scoring-template.xlsx: افشایِ دشمنِ واقعی (مافیا) به
-    // سودِ تیمِ افشاگره، افشایِ یه هم‌تیمی به ضررشه.
-    _award(discloser, isMafia ? 3 : -2, 'افشایِ عمومیِ تیم');
+        '📢 افشاگر قبلِ خروج افشا کرد: «\${target.name}» '
+        '\${isLeaderTeamTarget ? "عضوِ تیمِ \$leaderLabel است" : "عضوِ تیمِ \$leaderLabel نیست"}.';
+    // افشا همیشه راسته (دروغ‌گفتن امکان‌پذیر نیست)؛ امتیازدهی به‌صورتِ
+    // قراردادی انجام می‌شه: افشایِ عضوِ تیمِ رهبرِ سناریو +۳ و افشایِ
+    // عضوِ غیرِ رهبر -۲.
+    _award(discloser, isLeaderTeamTarget ? 3 : -2, 'افشایِ عمومیِ تیم');
     pendingDiscloserPlayerId = null;
     notifyListeners();
   }
