@@ -15,7 +15,7 @@ class ComingSoon extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 56, color: AppColors.gold.withOpacity(0.6)),
+            Icon(icon, size: 56, color: AppColors.gold.withAlpha(153)),
             const SizedBox(height: 16),
             Text(
               text,
