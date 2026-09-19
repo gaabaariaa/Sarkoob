@@ -97,14 +97,9 @@ class _RosterScreenState extends State<RosterScreen> {
           TextButton(onPressed: _finishSelection, child: Text('تأیید (${_selectedIds.length})')),
         ] : null,
       ),
-      body: _loading ? const Center(child: CircularProgressIndicator()) : LayoutBuilder(
-        builder: (context, constraints) {
-          final compact = constraints.maxWidth < 380;
-          final wide = constraints.maxWidth >= 700;
-          final pad = compact ? 10.0 : (wide ? 28.0 : 16.0);
-          return Padding(
-            padding: EdgeInsets.all(pad),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      body: _loading ? const Center(child: CircularProgressIndicator()) : Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Text(widget.selectionMode ? 'بازیکن‌ها را انتخاب کن. برای جابه‌جایی ترتیب، دستت را روی آیکون ☰ نگه دار و بکش.' : 'این لیست دائمیه و بینِ بازی‌های مختلف می‌مونه؛ موقعِ شروعِ بازیِ جدید می‌تونی مستقیم ازش اسم اضافه کنی.', style: const TextStyle(color: Colors.white60, fontSize: 12)),
           const SizedBox(height: 12),
           Row(children: [Expanded(child: TextField(controller: _nameController, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(labelText: 'اسمِ بازیکنِ جدید', border: OutlineInputBorder()), onSubmitted: (_) => _addPlayer())), const SizedBox(width: 8), ElevatedButton(onPressed: _addPlayer, child: const Text('افزودن'))]),
