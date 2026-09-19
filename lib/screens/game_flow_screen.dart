@@ -41,8 +41,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   // «تیمِ رهبرِ» این جلسه سرکوبه یا مافیا؟ چندجا تو UIی مرحله‌ی تیمِ رهبر
   // لازمه، برای همینم یه getterِ مشترکه به‌جایِ محاسبه‌ی پراکنده.
   bool get _isMafiaGame => controller.isMafiaScenario;
-  String get _leaderTeamName => _isMafiaGame ? 'تیمِ مافیا' : 'تیمِ سرکوب';
-  String get _leaderRoleName => _isMafiaGame ? 'پدرخوانده' : 'ولی‌فقیه';
+  String get _leaderTeamName => controller.scenario.name;
+  String get _leaderRoleName => controller.roleNameForScenario(controller.scenario.leaderDefaultRoleId);
   String get _plainCitizenLabel => _isMafiaGame ? 'شهروندِ ساده' : 'شهروندِ خاکستری';
   String get _plainLeaderTeamLabel => _isMafiaGame ? 'مافیا ساده' : 'سرکوبگر';
   String get _independentLeaderRoleName => _isMafiaGame ? 'زودیاک' : 'رهبر موساد';
@@ -1620,7 +1620,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
     return ModernNightPanel(
       eyebrow: 'شب معارفه',
-      title: isMafiaGame ? 'اعضای مافیا بیدار شوند' : 'اعضای تیم سرکوب بیدار شوند',
+      title: 'اعضای ${controller.scenario.name} بیدار شوند',
       icon: Icons.groups_rounded,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -3230,7 +3230,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                       hint: const Text('حدسِ نقش', style: TextStyle(color: Colors.white70)),
                       dropdownColor: AppColors.surfaceDark,
                       value: selectedRoleId,
-                      items: controller.rolesInPlayForTeam(SarkoobTeams.suppression.id)
+                      items: controller.rolesInPlayForTeam(controller.scenario.leaderTeamId)
                           .map((r) => DropdownMenuItem(
                                 value: r.id,
                                 child: Text(r.name, style: const TextStyle(color: Colors.white)),
