@@ -4,8 +4,11 @@ import 'package:flutter/material.dart';
 /// شروعِ بازی، گرداننده اول سناریو رو انتخاب می‌کنه؛ از اون به بعد فقط
 /// تیم‌ها/نقش‌های همون سناریو قابل‌انتخابن. دو سناریو هیچ تیم/نقشی
 /// باهم مشترک ندارن (حتی اگه اسمِ نمایشی شبیه باشه، id ها جدان).
+enum GameScenarioSetupMode { sorkoob, mafia }
+
 class GameScenario {
   final String id;
+  final GameScenarioSetupMode setupMode;
   final String name;
   final String description;
   final Color color;
@@ -37,6 +40,7 @@ class GameScenario {
 
   const GameScenario({
     required this.id,
+    required this.setupMode,
     required this.name,
     required this.description,
     required this.color,
@@ -65,6 +69,7 @@ class GameScenario {
 class SarkoobScenarios {
   static const sorkoob = GameScenario(
     id: 'scenario_sorkoob',
+    setupMode: GameScenarioSetupMode.sorkoob,
     name: 'سرکوب',
     description:
         'فضاسازیِ فرهنگی-سیاسیِ ایرانی: تیمِ سرکوبِ حکومتی در برابرِ شهروندان، '
@@ -104,6 +109,7 @@ class SarkoobScenarios {
 
   static const mafia = GameScenario(
     id: 'scenario_mafia',
+    setupMode: GameScenarioSetupMode.mafia,
     name: 'مافیا',
     description:
         'نسخه‌ی کلاسیکِ بازیِ مافیا: تیمِ مافیا شب‌ها با هم روی یه نفر برای '
