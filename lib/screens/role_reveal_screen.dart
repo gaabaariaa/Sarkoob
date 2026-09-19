@@ -8,8 +8,10 @@ import '../widgets/role_info_card.dart';
 import 'modern_game_flow_screen.dart';
 
 GameTeam _teamOf(SessionPlayer p) {
-  for (final t in SarkoobTeams.all) { if (t.id == p.teamId) return t; }
-  return SarkoobTeams.citizen;
+  for (final t in SarkoobTeams.all) {
+    if (t.id == p.teamId) return t;
+  }
+  throw StateError('Unknown team "${p.teamId}" for player ${p.id}');
 }
 
 class RoleRevealScreen extends StatefulWidget {
