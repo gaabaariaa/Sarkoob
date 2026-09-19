@@ -15,6 +15,8 @@ class GameScenario {
   final String independentTeamId;
   final String leaderDefaultRoleId;
   final String townDefaultRoleId;
+  final String negotiatorRoleId;
+  final String independentLeaderRoleId;
 
   /// نقش‌های ساده‌ی پیش‌فرضِ این سناریو؛ موتور نباید از نام/سناریوی خاص
   /// استنتاج کند که چه نقشی «فعال» نیست.
@@ -36,6 +38,8 @@ class GameScenario {
     required this.independentTeamId,
     required this.leaderDefaultRoleId,
     required this.townDefaultRoleId,
+    required this.negotiatorRoleId,
+    required this.independentLeaderRoleId,
     required this.simpleRoleIds,
     required this.leaderLabel,
     required this.resistanceTeamLabel,
@@ -59,6 +63,8 @@ class SarkoobScenarios {
     independentTeamId: 'team_mossad',
     leaderDefaultRoleId: 'role_suppressor',
     townDefaultRoleId: 'role_gray_citizen',
+    negotiatorRoleId: 'role_foreign_minister',
+    independentLeaderRoleId: 'role_mossad_leader',
     simpleRoleIds: {'role_suppressor', 'role_gray_citizen'},
     leaderLabel: 'سرکوب',
     resistanceTeamLabel: 'تیمِ مقاومتِ فعال',
@@ -80,6 +86,8 @@ class SarkoobScenarios {
     independentTeamId: 'team_zodiac',
     leaderDefaultRoleId: 'role_simple_mafia',
     townDefaultRoleId: 'role_simple_citizen',
+    negotiatorRoleId: 'role_negotiator',
+    independentLeaderRoleId: 'role_zodiac',
     simpleRoleIds: {'role_simple_mafia', 'role_simple_citizen'},
     leaderLabel: 'مافیا',
     resistanceTeamLabel: 'تیمِ اوشن',
