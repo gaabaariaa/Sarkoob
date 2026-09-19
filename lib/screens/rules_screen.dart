@@ -14,7 +14,7 @@ class RulesScreen extends StatefulWidget {
 }
 
 class _RulesScreenState extends State<RulesScreen> {
-  GameScenario _selectedScenario = SarkoobScenarios.sorkoob;
+  GameScenario _selectedScenario = SarkoobScenarios.defaultScenario;
 
   @override
   Widget build(BuildContext context) {
