@@ -546,6 +546,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     }
 
     final settings = GameSettings(
+      scenarioId: _selectedScenario!.id,
       speakSeconds: _speakSeconds,
       doctorMaxSelfSaves: _doctorMaxSelfSaves,
       location: _locationController.text.trim(),
@@ -702,6 +703,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     }
 
     final settings = GameSettings(
+      scenarioId: _selectedScenario!.id,
       speakSeconds: _speakSeconds,
       doctorMaxSelfSaves: _doctorMaxSelfSaves,
       location: _locationController.text.trim(),
