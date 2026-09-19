@@ -3,6 +3,7 @@ import '../models/game_session.dart';
 import '../models/history.dart';
 import '../models/role.dart';
 import '../models/role_success_metric.dart';
+import '../models/scenario.dart';
 import '../models/team.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
@@ -212,7 +213,9 @@ class _StatsScreenState extends State<StatsScreen> {
     for (final entry in _history) {
       for (final p in entry.players) {
         if (p.roleId == null) continue;
-        final metric = roleSuccessMetrics[p.roleId];
+        final scenario = SarkoobScenarios.byId(entry.scenarioId);
+        if (scenario == null) continue;
+        final metric = roleSuccessMetricsForScenario(scenario)[p.roleId];
         if (metric == null) continue;
         final key = p.rosterId ?? p.name;
         displayNames[key] = p.name;
@@ -235,7 +238,7 @@ class _StatsScreenState extends State<StatsScreen> {
         ..sort((a, b) => b.count.compareTo(a.count));
       result.add(_RoleBest(
         roleName: role.name,
-        unitLabel: roleSuccessMetrics[roleEntry.key]!.unitLabel,
+        unitLabel: roleSuccessMetrics.values.firstWhere((metric) => metric.unitLabel.isNotEmpty && roleSuccessMetrics[roleEntry.key] == metric).unitLabel,
         rankings: rankings,
       ));
     }
