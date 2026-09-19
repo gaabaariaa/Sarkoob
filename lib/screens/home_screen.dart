@@ -25,7 +25,7 @@ class HomeScreen extends StatelessWidget {
           _HeroPanel(primary: primary, light: light, surface: surface, muted: muted), const SizedBox(height: 20),
           _StartButton(onTap: () => _open(context, const ModernStartGameScreen()), primary: primary, light: light), const SizedBox(height: 22),
           _SectionTitle(title: 'مدیریت بازی', primary: light), const SizedBox(height: 10),
-          GridView.count(crossAxisCount: wide ? 3 : 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: wide ? 1.55 : 1.28, children: [
+          GridView.count(crossAxisCount: wide ? 3 : 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), mainAxisSpacing: compact ? 9 : 12, crossAxisSpacing: compact ? 9 : 12, childAspectRatio: wide ? 1.55 : (compact ? 1.16 : 1.28), children: [
             _HomeTile(title: 'بازیکنان', subtitle: 'لیست و نقش‌ها', icon: Icons.groups_rounded, onTap: () => _open(context, const RosterScreen()), primary: primary, dark: dark, card: card, muted: muted),
             _HomeTile(title: 'آمار', subtitle: 'نتایج و عملکرد', icon: Icons.insights_rounded, onTap: () => _open(context, const StatsScreen()), primary: primary, dark: dark, card: card, muted: muted),
             _HomeTile(title: 'تاریخچه', subtitle: 'بازی‌های قبلی', icon: Icons.history_rounded, onTap: () => _open(context, const HistoryScreen()), primary: primary, dark: dark, card: card, muted: muted),
