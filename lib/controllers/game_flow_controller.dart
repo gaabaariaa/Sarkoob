@@ -79,6 +79,9 @@ class GameFlowController extends ChangeNotifier {
   bool isLeaderTeam(String teamId) => teamId == scenario.leaderTeamId;
   bool isTownTeam(String teamId) => teamId == scenario.townTeamId;
 
+  String roleNameForScenario(String roleId) =>
+      SarkoobRoles.byId(roleId)?.name ?? roleId;
+
   GameFlowController({required this.players, required this.settings}) {
     _rebuildSpeakingOrder();
     // تیمِ رهبرِ همین جلسه — سرکوب یا مافیا، هرکدوم حاضره (بخشِ ۶ی فایلِ
