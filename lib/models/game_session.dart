@@ -1,4 +1,5 @@
 import 'role.dart';
+import 'scenario.dart';
 import 'score_event.dart';
 
 /// برچسبِ فارسیِ هر مرحله‌ی تنبیهِ انضباطیِ گرداننده — هم تو خودِ بازی
@@ -44,7 +45,7 @@ class GameSettings {
   final String location;
 
   const GameSettings({
-    this.scenarioId = 'scenario_sorkoob',
+    this.scenarioId = SarkoobScenarios.defaultScenario.id,
     this.speakSeconds = 60,
     this.doctorMaxSelfSaves = 2,
     this.location = '',
