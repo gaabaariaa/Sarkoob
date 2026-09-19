@@ -1619,9 +1619,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            isMafiaGame
-                ? 'اعضای مافیا بیدار بشن و همدیگه رو ببینن:'
-                : 'اعضای تیم سرکوب بیدار بشن و همدیگه رو ببینن:',
+            'اعضای ${controller.scenario.leaderLabel} بیدار بشن و همدیگه رو ببینن:',
             textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.white60, fontSize: 12),
           ),

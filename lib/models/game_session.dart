@@ -45,7 +45,7 @@ class GameSettings {
   final String location;
 
   const GameSettings({
-    this.scenarioId = SarkoobScenarios.sorkoob.id,
+    this.scenarioId = 'scenario_sorkoob',
     this.speakSeconds = 60,
     this.doctorMaxSelfSaves = 2,
     this.location = '',
