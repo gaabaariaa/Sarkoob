@@ -142,6 +142,9 @@ class SarkoobScenarios {
     },
   );
 
+  /// سناریوی پیش‌فرض فقط برای UX است؛ منطق بازی نباید به آن fallback کند.
+  static const GameScenario defaultScenario = sorkoob;
+
   static const List<GameScenario> all = [sorkoob, mafia];
 
   static GameScenario? byId(String id) {
