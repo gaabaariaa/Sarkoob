@@ -538,21 +538,19 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final intelQuestionCharges = slaughterCharges;
     final guaranteeCharges = slaughterCharges;
 
-    for (var i = 0; i < players.length; i++) {
-      final roleId = players[i].roleId;
-      players[i] = players[i].copyWith(
-        hasArmor: roleId != null && armorRoleIds.contains(roleId),
-        slaughterChargesRemaining:
-            roleId == slaughterRoleId ? slaughterCharges : null,
-        revolutionaryChargesRemaining:
-            roleId == revolutionaryRoleId ? revolutionaryCharges : null,
-        warGunsRemaining:
-            roleId == warGunRoleId ? warGunCharges : null,
-        intelQuestionsRemaining:
-            roleId == intelRoleId ? intelQuestionCharges : null,
-        guaranteesRemaining:
-            roleId == guaranteeRoleId ? guaranteeCharges : null,
-      );
+    for (final player in players) {
+      final roleId = player.roleId;
+      player.hasArmor = roleId != null && armorRoleIds.contains(roleId);
+      player.slaughterChargesRemaining =
+          roleId == slaughterRoleId ? slaughterCharges : null;
+      player.revolutionaryChargesRemaining =
+          roleId == revolutionaryRoleId ? revolutionaryCharges : null;
+      player.warGunsRemaining =
+          roleId == warGunRoleId ? warGunCharges : null;
+      player.intelQuestionsRemaining =
+          roleId == intelRoleId ? intelQuestionCharges : null;
+      player.guaranteesRemaining =
+          roleId == guaranteeRoleId ? guaranteeCharges : null;
     }
 
     final settings = GameSettings(
