@@ -160,7 +160,7 @@ class _Game3DSurfaceState extends State<Game3DSurface> {
               BoxShadow(color: c.edge, offset: Offset(0, d), blurRadius: 0),
               if (!_pressed)
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.35),
+                  color: Colors.black.withAlpha(89),
                   offset: Offset(0, d + 2),
                   blurRadius: 6,
                 ),
@@ -222,7 +222,7 @@ class Game3DButton extends StatelessWidget {
                 color: c.text,
                 fontWeight: FontWeight.w800,
                 fontSize: fontSize,
-                shadows: [Shadow(color: Colors.black.withOpacity(0.3), offset: const Offset(0, 1), blurRadius: 2)],
+                shadows: [Shadow(color: Colors.black.withAlpha(77), offset: const Offset(0, 1), blurRadius: 2)],
               ),
             ),
           ),
@@ -269,8 +269,8 @@ class Game3DTile extends StatelessWidget {
               height: 52,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.black.withOpacity(0.18),
-                border: Border.all(color: c.text.withOpacity(0.7), width: 1.4),
+                color: Colors.black.withAlpha(46),
+                border: Border.all(color: c.text.withAlpha(179), width: 1.4),
               ),
               child: Icon(icon, color: c.text, size: 24),
             ),
