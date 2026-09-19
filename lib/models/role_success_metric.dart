@@ -1,4 +1,6 @@
 import 'role.dart';
+import 'scenario.dart';
+import 'team.dart';
 
 /// معیارِ «موفقیتِ اختصاصیِ» یه نقش: کدوم برچسب‌هایِ ScoreEvent.mechanism
 /// (به‌صورتِ substring) شمرده بشن، و واحدِ نمایشیش چیه.
@@ -62,3 +64,15 @@ final Map<String, RoleSuccessMetric> roleSuccessMetrics = {
   SarkoobRoles.discloser.id: RoleSuccessMetric(['افشایِ عمومیِ تیم'], 'افشایِ مفید'),
   SarkoobRoles.whiteBeard.id: RoleSuccessMetric(['تضمینِ قهرمانِ ملی/ریش‌سفید'], 'تضمینِ مؤثر'),
 };
+
+/// کاتالوگِ معیارهایِ امتیازیِ قابل‌استفاده در یک سناریو.
+/// رجیستریِ اصلی عمداً بر اساس roleId نگه داشته می‌شود تا تاریخچه‌ی بازی‌های
+/// مختلف بتواند همان داده را بخواند؛ این accessor فقط نقش‌های همان سناریو را
+/// در اختیار لایه‌های UI/آمار می‌گذارد.
+Map<String, RoleSuccessMetric> roleSuccessMetricsForScenario(GameScenario scenario) {
+  final teamIds = SarkoobTeams.forScenario(scenario.id).map((t) => t.id).toSet();
+  return Map.unmodifiable({
+    for (final entry in roleSuccessMetrics.entries)
+      if (SarkoobRoles.byId(entry.key) != null && teamIds.contains(SarkoobRoles.byId(entry.key)!.teamId)) entry.key: entry.value,
+  });
+}
