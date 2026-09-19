@@ -2040,7 +2040,7 @@ class GameFlowController extends ChangeNotifier {
     // چکِ تیم قبلاً فقط suppression بود که تو سناریوی مافیا (زودیاک)
     // هیچ‌وقت درست کار نمی‌کرد؛ حالا هر دو سناریو رو پوشش می‌ده.
     final onLeaderTeam =
-        target.teamId == SarkoobTeams.suppression.id || target.teamId == SarkoobTeams.mafiaGang.id;
+        isLeaderTeam(target.teamId);
     if (onLeaderTeam && target.roleId == guessedRoleId) {
       target.isAlive = false;
       target.eliminatedBySlaughter = true;
