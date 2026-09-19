@@ -40,7 +40,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   // «تیمِ رهبرِ» این جلسه سرکوبه یا مافیا؟ چندجا تو UIی مرحله‌ی تیمِ رهبر
   // لازمه، برای همینم یه getterِ مشترکه به‌جایِ محاسبه‌ی پراکنده.
-  bool get _isMafiaGame => controller.players.any((p) => p.teamId == SarkoobTeams.mafiaGang.id);
+  bool get _isMafiaGame => controller.isMafiaScenario;
   String get _leaderTeamName => _isMafiaGame ? 'تیمِ مافیا' : 'تیمِ سرکوب';
   String get _leaderRoleName => _isMafiaGame ? 'پدرخوانده' : 'ولی‌فقیه';
   String get _plainCitizenLabel => _isMafiaGame ? 'شهروندِ ساده' : 'شهروندِ خاکستری';
@@ -1613,8 +1613,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   // ---------- شب معارفه ----------
 
   Widget _buildIntroNight() {
-    final isMafiaGame = controller.players.any((p) => p.teamId == SarkoobTeams.mafiaGang.id);
-    final conspiracyTeamId = isMafiaGame ? SarkoobTeams.mafiaGang.id : SarkoobTeams.suppression.id;
+    final conspiracyTeamId = controller.leaderTeamId;
     final wakingMembers = controller.players
         .where((p) => p.teamId == conspiracyTeamId && !p.isModiri)
         .toList();
@@ -2696,7 +2695,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   /// لیستِ اعضای زنده‌ی تیمِ سرکوب به‌همراهِ نقشِ دقیقشون، برای این‌که
   /// گرداننده مطمئن باشه داره با آدمِ درست حرف می‌زنه.
   Widget _buildSorkoobRoster() {
-    final leaderTeamId = _isMafiaGame ? SarkoobTeams.mafiaGang.id : SarkoobTeams.suppression.id;
+    final leaderTeamId = controller.leaderTeamId;
     final members = controller.alivePlayers.where((p) => p.teamId == leaderTeamId).toList();
     if (members.isEmpty) return const SizedBox.shrink();
     return Container(
@@ -4541,4 +4540,3 @@ class _PlayerScoreDetailScreen extends StatelessWidget {
     );
   }
 }
-
