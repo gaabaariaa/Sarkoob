@@ -115,7 +115,7 @@ class _RosterScreenState extends State<RosterScreen> {
                 key: ValueKey(profile.id),
                 color: AppColors.surfaceCard,
                 margin: const EdgeInsets.only(bottom: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), side: BorderSide(color: selected ? AppColors.gold : AppColors.gold.withOpacity(0.3))),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), side: BorderSide(color: selected ? AppColors.gold : AppColors.gold.withAlpha(77))),
                 child: ListTile(
                   onTap: widget.selectionMode ? () => setState(() => selected ? _selectedIds.remove(profile.id) : _selectedIds.add(profile.id)) : null,
                   leading: widget.selectionMode ? Checkbox(value: selected, onChanged: (_) => setState(() => selected ? _selectedIds.remove(profile.id) : _selectedIds.add(profile.id))): null,
