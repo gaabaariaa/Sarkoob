@@ -1,4 +1,6 @@
 import 'role.dart';
+import 'scenario.dart';
+import 'team.dart';
 
 /// متنِ کوتاهِ امتیازدهیِ اختصاصیِ هر نقش — دقیقاً منطبق با چیزی که تو
 /// GameFlowController پیاده‌سازی شده (sarkoob-action-scoring-template.xlsx).
@@ -127,3 +129,12 @@ final Map<String, String> roleScoringInfo = {
       'تضمینِ یه بی‌گناهِ درمعرضِ خطرِ واقعی: +۲. تضمینِ اشتباهیِ یه عضوِ تیمِ‌مقابل: '
           '-۲. تضمینِ بی‌نیاز (خطری نبود) امتیازی نداره.',
 };
+
+/// متن‌های امتیازیِ قابل‌نمایش برای نقش‌های یک سناریوی مشخص.
+Map<String, String> roleScoringInfoForScenario(GameScenario scenario) {
+  final teamIds = SarkoobTeams.forScenario(scenario.id).map((t) => t.id).toSet();
+  return Map.unmodifiable({
+    for (final entry in roleScoringInfo.entries)
+      if (SarkoobRoles.byId(entry.key) != null && teamIds.contains(SarkoobRoles.byId(entry.key)!.teamId)) entry.key: entry.value,
+  });
+}
