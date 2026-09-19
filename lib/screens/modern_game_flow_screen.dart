@@ -45,7 +45,7 @@ class ModernGameFlowScreen extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 6),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: BorderSide(color: AppColors.gold.withOpacity(.10)),
+          side: BorderSide(color: AppColors.gold.withAlpha(26)),
         ),
       ),
       listTileTheme: base.listTileTheme.copyWith(
@@ -56,7 +56,7 @@ class ModernGameFlowScreen extends StatelessWidget {
         subtitleTextStyle: const TextStyle(color: AppColors.mutedText, fontSize: 12),
       ),
       dividerTheme: base.dividerTheme.copyWith(
-        color: AppColors.gold.withOpacity(.10),
+        color: AppColors.gold.withAlpha(26),
         thickness: 1,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -71,7 +71,7 @@ class ModernGameFlowScreen extends StatelessWidget {
           textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
-            side: BorderSide(color: AppColors.gold.withOpacity(.28)),
+            side: BorderSide(color: AppColors.gold.withAlpha(71)),
           ),
         ),
       ),
@@ -80,7 +80,7 @@ class ModernGameFlowScreen extends StatelessWidget {
           foregroundColor: AppColors.goldLight,
           minimumSize: const Size.fromHeight(46),
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-          side: BorderSide(color: AppColors.gold.withOpacity(.28)),
+          side: BorderSide(color: AppColors.gold.withAlpha(71)),
           textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
@@ -95,7 +95,7 @@ class ModernGameFlowScreen extends StatelessWidget {
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(
           foregroundColor: AppColors.goldLight,
-          backgroundColor: AppColors.surfaceDark.withOpacity(.72),
+          backgroundColor: AppColors.surfaceDark.withAlpha(184),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
@@ -108,11 +108,11 @@ class ModernGameFlowScreen extends StatelessWidget {
         suffixIconColor: AppColors.goldLight,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.gold.withOpacity(.12)),
+          borderSide: BorderSide(color: AppColors.gold.withAlpha(31)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.gold.withOpacity(.12)),
+          borderSide: BorderSide(color: AppColors.gold.withAlpha(31)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -124,7 +124,7 @@ class ModernGameFlowScreen extends StatelessWidget {
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(22),
-          side: BorderSide(color: AppColors.gold.withOpacity(.14)),
+          side: BorderSide(color: AppColors.gold.withAlpha(36)),
         ),
         titleTextStyle: AppTheme.headingFont(size: 19).copyWith(
           color: AppColors.goldLight,
@@ -140,7 +140,7 @@ class ModernGameFlowScreen extends StatelessWidget {
       ),
       progressIndicatorTheme: base.progressIndicatorTheme.copyWith(
         color: AppColors.gold,
-        circularTrackColor: AppColors.goldDark.withOpacity(.20),
+        circularTrackColor: AppColors.goldDark.withAlpha(51),
       ),
       bottomAppBarTheme: base.bottomAppBarTheme.copyWith(
         color: AppColors.background,
