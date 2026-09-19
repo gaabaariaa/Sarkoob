@@ -739,15 +739,22 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final error = _validationError;
     final total = _draftPlayers.length;
     final assigned = _isMafiaScenario ? _mafiaAssignedTotal : _assignedTotal;
-    final teams = _isMafiaScenario
-        ? [
-            (SarkoobTeams.mafiaGang, _mafiaGangTotal, _showMafiaGangTeamPage),
-            (SarkoobTeams.mafiaTown, _mafiaTownTotal, _showMafiaTownTeamPage),
-          ]
-        : [
-            (SarkoobTeams.suppression, _sorkoobTotal, _showSorkoobTeamPage),
-            (SarkoobTeams.citizen, _citizenTotal, _showCitizenTeamPage),
-          ];
+    final leaderTeam = SarkoobTeams.byId(scenario.leaderTeamId);
+    final townTeam = SarkoobTeams.byId(scenario.townTeamId);
+    final teams = <(GameTeam, int, VoidCallback)>[
+      if (leaderTeam != null)
+        (
+          leaderTeam,
+          _isMafiaScenario ? _mafiaGangTotal : _sorkoobTotal,
+          _teamSetupPageFor(scenario, leaderTeam.id) ?? (() {}),
+        ),
+      if (townTeam != null)
+        (
+          townTeam,
+          _isMafiaScenario ? _mafiaTownTotal : _citizenTotal,
+          _teamSetupPageFor(scenario, townTeam.id) ?? (() {}),
+        ),
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -1545,6 +1552,18 @@ class _StartGameScreenState extends State<StartGameScreen> {
         ),
       );
     });
+  }
+
+  VoidCallback? _teamSetupPageFor(GameScenario scenario, String teamId) {
+    if (teamId == scenario.leaderTeamId) {
+      if (teamId == SarkoobTeams.mafiaGang.id) return _showMafiaGangTeamPage;
+      if (teamId == SarkoobTeams.suppression.id) return _showSorkoobTeamPage;
+    }
+    if (teamId == scenario.townTeamId) {
+      if (teamId == SarkoobTeams.mafiaTown.id) return _showMafiaTownTeamPage;
+      if (teamId == SarkoobTeams.citizen.id) return _showCitizenTeamPage;
+    }
+    return null;
   }
 
   Widget _buildScenarioPicker() {
