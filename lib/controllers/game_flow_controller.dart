@@ -162,9 +162,7 @@ class GameFlowController extends ChangeNotifier {
       if (p.roleId == scenario.townDefaultRoleId) return 2.0;
       if (p.roleId == scenario.leaderDefaultRoleId) return 1.5;
     }
-    if (p.roleId == SarkoobRoles.mossadLeader.id || p.roleId == SarkoobRoles.zodiacRole.id) {
-      return 0.5;
-    }
+    if (p.roleId == scenario.independentLeaderRoleId) return 0.5;
     return 1.0;
   }
 
@@ -945,8 +943,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get foreignMinisterPlayer {
     for (final p in players) {
-      final negotiatorRoleId = scenario.id == SarkoobScenarios.mafia.id ? SarkoobRoles.negotiator.id : SarkoobRoles.foreignMinister.id;
-      if (p.roleId == negotiatorRoleId) return p;
+      if (p.roleId == scenario.negotiatorRoleId) return p;
     }
     return null;
   }
