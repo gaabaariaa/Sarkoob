@@ -761,20 +761,20 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final introSeconds = (_speakSeconds / 2).round();
     final error = _validationError;
     final total = _draftPlayers.length;
-    final assigned = _isMafiaScenario ? _mafiaAssignedTotal : _assignedTotal;
+    final assigned = _assignedTotalFor(scenario);
     final leaderTeam = SarkoobTeams.byId(scenario.leaderTeamId);
     final townTeam = SarkoobTeams.byId(scenario.townTeamId);
     final teams = <(GameTeam, int, VoidCallback)>[
       if (leaderTeam != null)
         (
           leaderTeam,
-          _isMafiaScenario ? _mafiaGangTotal : _sorkoobTotal,
+          _teamMemberCountFor(scenario, leaderTeam.id),
           _teamSetupPageFor(scenario, leaderTeam.id) ?? (() {}),
         ),
       if (townTeam != null)
         (
           townTeam,
-          _isMafiaScenario ? _mafiaTownTotal : _citizenTotal,
+          _teamMemberCountFor(scenario, townTeam.id),
           _teamSetupPageFor(scenario, townTeam.id) ?? (() {}),
         ),
     ];
@@ -1575,6 +1575,28 @@ class _StartGameScreenState extends State<StartGameScreen> {
         ),
       );
     });
+  }
+
+  int _assignedTotalFor(GameScenario scenario) {
+    switch (scenario.setupMode) {
+      case GameScenarioSetupMode.mafia:
+        return _mafiaAssignedTotal;
+      case GameScenarioSetupMode.sorkoob:
+        return _assignedTotal;
+    }
+  }
+
+  int _teamMemberCountFor(GameScenario scenario, String teamId) {
+    switch (scenario.setupMode) {
+      case GameScenarioSetupMode.mafia:
+        if (teamId == scenario.leaderTeamId) return _mafiaGangTotal;
+        if (teamId == scenario.townTeamId) return _mafiaTownTotal;
+        return 0;
+      case GameScenarioSetupMode.sorkoob:
+        if (teamId == scenario.leaderTeamId) return _sorkoobTotal;
+        if (teamId == scenario.townTeamId) return _citizenTotal;
+        return 0;
+    }
   }
 
   VoidCallback? _teamSetupPageFor(GameScenario scenario, String teamId) {
