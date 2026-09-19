@@ -16,6 +16,15 @@ class GameScenario {
   final String leaderDefaultRoleId;
   final String townDefaultRoleId;
 
+  /// نقش‌های ساده‌ی پیش‌فرضِ این سناریو؛ موتور نباید از نام/سناریوی خاص
+  /// استنتاج کند که چه نقشی «فعال» نیست.
+  final Set<String> simpleRoleIds;
+
+  /// برچسب‌های نمایشیِ قابلیت‌هایی که بین سناریوها رفتار مشابه دارند.
+  final String leaderLabel;
+  final String resistanceTeamLabel;
+  final String resistanceGroupLabel;
+
   const GameScenario({
     required this.id,
     required this.name,
@@ -27,6 +36,10 @@ class GameScenario {
     required this.independentTeamId,
     required this.leaderDefaultRoleId,
     required this.townDefaultRoleId,
+    required this.simpleRoleIds,
+    required this.leaderLabel,
+    required this.resistanceTeamLabel,
+    required this.resistanceGroupLabel,
   });
 }
 
@@ -46,6 +59,10 @@ class SarkoobScenarios {
     independentTeamId: 'team_mossad',
     leaderDefaultRoleId: 'role_suppressor',
     townDefaultRoleId: 'role_gray_citizen',
+    simpleRoleIds: {'role_suppressor', 'role_gray_citizen'},
+    leaderLabel: 'سرکوب',
+    resistanceTeamLabel: 'تیمِ مقاومتِ فعال',
+    resistanceGroupLabel: 'مقاومت',
   );
 
   static const mafia = GameScenario(
@@ -63,6 +80,10 @@ class SarkoobScenarios {
     independentTeamId: 'team_zodiac',
     leaderDefaultRoleId: 'role_simple_mafia',
     townDefaultRoleId: 'role_simple_citizen',
+    simpleRoleIds: {'role_simple_mafia', 'role_simple_citizen'},
+    leaderLabel: 'مافیا',
+    resistanceTeamLabel: 'تیمِ اوشن',
+    resistanceGroupLabel: 'تیمِ اوشن',
   );
 
   static const List<GameScenario> all = [sorkoob, mafia];
