@@ -88,7 +88,9 @@ class ModernSpeakingPanel extends StatelessWidget {
                 const SizedBox(height: 20),
                 if (seconds != null)
                   CountdownTimerWidget(
-                    key: ValueKey('speaking-timer-$speakerName-$seconds'),
+                    // Timer state must survive parent rebuilds while the countdown ticks.
+                    // The parent already has a stable key per speaker/challenge turn;
+                    // including `seconds` here would recreate the timer every second.
                     totalSeconds: seconds!,
                     onFinished: onTimerFinished,
                   ),

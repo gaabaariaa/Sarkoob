@@ -40,24 +40,23 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   // «تیمِ رهبرِ» این جلسه سرکوبه یا مافیا؟ چندجا تو UIی مرحله‌ی تیمِ رهبر
   // لازمه، برای همینم یه getterِ مشترکه به‌جایِ محاسبه‌ی پراکنده.
-  bool get _isMafiaGame => controller.players.any((p) => p.teamId == SarkoobTeams.mafiaGang.id);
-  String get _leaderTeamName => _isMafiaGame ? 'تیمِ مافیا' : 'تیمِ سرکوب';
-  String get _leaderRoleName => _isMafiaGame ? 'پدرخوانده' : 'ولی‌فقیه';
-  String get _plainCitizenLabel => _isMafiaGame ? 'شهروندِ ساده' : 'شهروندِ خاکستری';
-  String get _plainLeaderTeamLabel => _isMafiaGame ? 'مافیا ساده' : 'سرکوبگر';
-  String get _independentLeaderRoleName => _isMafiaGame ? 'زودیاک' : 'رهبر موساد';
-  // بقیه‌ی نقش‌های تکی که تو مافیا هم معادل دارن — همون الگوی بالا.
-  String get _rapperRoleName => _isMafiaGame ? 'اوشن' : 'رپر معترض';
-  String get _resistanceGroupLabel => _isMafiaGame ? 'تیمِ اوشن' : 'مقاومتِ فعال';
-  String get _hackerRoleName => _isMafiaGame ? 'کارآگاه' : 'هکر';
-  String get _politicalAnalystRoleName => _isMafiaGame ? 'شرلوک' : 'تحلیلگر سیاسی';
-  String get _rebelRoleName => _isMafiaGame ? 'تفنگدار' : 'شورشی';
-  String get _revolutionaryRoleName => _isMafiaGame ? 'حرفه‌ای' : 'مبارز انقلابی';
-  String get _nationalHeroRoleName => _isMafiaGame ? 'ریش‌سفید' : 'قهرمان ملی';
-  String get _revolutionaryActionLabel => _isMafiaGame ? 'حذفِ حرفه‌ای' : 'اعدامِ انقلابی';
-  String get _civicActivistRoleName => _isMafiaGame ? 'لیدر' : 'فعال مدنی';
-  String get _lawyerRoleName => _isMafiaGame ? 'کنستانتین' : 'وکیل';
-  String get _forbiddenWordLabel => _isMafiaGame ? 'کلمه‌ی طلسم‌شده' : 'کلمه‌ی ممنوع';
+  String get _leaderTeamName => controller.scenario.name;
+  String get _leaderRoleName => controller.roleNameForScenario(controller.scenario.leaderDefaultRoleId);
+  String get _plainCitizenLabel => _roleName(controller.scenario.townDefaultRoleId);
+  String get _plainLeaderTeamLabel => _roleName(controller.scenario.leaderDefaultRoleId);
+  String get _independentLeaderRoleName => _roleName(controller.scenario.roleIdFor('independentLeader'));
+  String get _rapperRoleName => _roleName(controller.scenario.roleIdFor('rapper'));
+  String get _resistanceGroupLabel => controller.scenario.resistanceGroupLabel;
+  String get _hackerRoleName => _roleName(controller.scenario.roleIdFor('hacker'));
+  String get _politicalAnalystRoleName => _roleName(controller.scenario.roleIdFor('politicalAnalyst'));
+  String get _rebelRoleName => _roleName(controller.scenario.roleIdFor('rebel'));
+  String get _revolutionaryRoleName => _roleName(controller.scenario.roleIdFor('revolutionary'));
+  String get _nationalHeroRoleName => _roleName(controller.scenario.roleIdFor('nationalHero'));
+  String get _revolutionaryActionLabel => controller.scenario.revolutionaryActionLabel;
+  String get _civicActivistRoleName => _roleName(controller.scenario.roleIdFor('civicActivist'));
+  String get _lawyerRoleName => _roleName(controller.scenario.roleIdFor('lawyer'));
+  String get _forbiddenWordLabel => controller.scenario.forbiddenWordLabel;
+  String _roleName(String roleId) => controller.roleNameForScenario(roleId);
 
   @override
   void initState() {
@@ -1140,12 +1139,6 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 controller.advanceSpeaker();
               }
             },
-            onFinishChallenge: isChallenge
-                ? () {
-                    MusicService.instance.stopAlert();
-                    controller.finishChallenge();
-                  }
-                : null,
             onChooseChallenge: (!isIntro &&
                     !isChallenge &&
                     controller.challengeEligiblePlayers.isNotEmpty &&
@@ -1613,15 +1606,14 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   // ---------- شب معارفه ----------
 
   Widget _buildIntroNight() {
-    final isMafiaGame = controller.players.any((p) => p.teamId == SarkoobTeams.mafiaGang.id);
-    final conspiracyTeamId = isMafiaGame ? SarkoobTeams.mafiaGang.id : SarkoobTeams.suppression.id;
+    final conspiracyTeamId = controller.leaderTeamId;
     final wakingMembers = controller.players
         .where((p) => p.teamId == conspiracyTeamId && !p.isModiri)
         .toList();
 
     return ModernNightPanel(
       eyebrow: 'شب معارفه',
-      title: isMafiaGame ? 'اعضای مافیا بیدار شوند' : 'اعضای تیم سرکوب بیدار شوند',
+      title: 'اعضای ${controller.scenario.name} بیدار شوند',
       icon: Icons.groups_rounded,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -2696,7 +2688,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   /// لیستِ اعضای زنده‌ی تیمِ سرکوب به‌همراهِ نقشِ دقیقشون، برای این‌که
   /// گرداننده مطمئن باشه داره با آدمِ درست حرف می‌زنه.
   Widget _buildSorkoobRoster() {
-    final leaderTeamId = _isMafiaGame ? SarkoobTeams.mafiaGang.id : SarkoobTeams.suppression.id;
+    final leaderTeamId = controller.leaderTeamId;
     final members = controller.alivePlayers.where((p) => p.teamId == leaderTeamId).toList();
     if (members.isEmpty) return const SizedBox.shrink();
     return Container(
@@ -3231,7 +3223,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                       hint: const Text('حدسِ نقش', style: TextStyle(color: Colors.white70)),
                       dropdownColor: AppColors.surfaceDark,
                       value: selectedRoleId,
-                      items: controller.rolesInPlayForTeam(SarkoobTeams.suppression.id)
+                      items: controller.rolesInPlayForTeam(controller.scenario.leaderTeamId)
                           .map((r) => DropdownMenuItem(
                                 value: r.id,
                                 child: Text(r.name, style: const TextStyle(color: Colors.white)),
@@ -3272,9 +3264,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Widget _buildPoliticalAnalystSection() {
     final result = controller.lastIndependentInvestigationResult;
     final targetName = controller.lastIndependentInvestigationTargetName;
-    final membershipQuestion = _isMafiaGame ? 'زودیاکه' : 'عضوِ یه تیمِ مستقله';
-    final membershipYes = _isMafiaGame ? 'زودیاکه' : 'مستقله';
-    final membershipNo = _isMafiaGame ? 'زودیاک نیست' : 'مستقل نیست';
+    final membershipQuestion = controller.scenario.independentInvestigationQuestion;
+    final membershipYes = controller.scenario.independentInvestigationYes;
+    final membershipNo = controller.scenario.independentInvestigationNo;
     return Column(
       children: [
         Text(
@@ -3562,7 +3554,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     return Column(
       children: [
         Text(
-          '${_isMafiaGame ? "افسونگر" : "رئیس قوه قضاییه"} می‌تونه (فقط یک‌بار در کل بازی) حکم اعدام صادر کنه:',
+          '${_roleName(controller.scenario.roleIdFor('judiciary'))} می‌تونه (فقط یک‌بار در کل بازی) حکم اعدام صادر کنه:',
           textAlign: TextAlign.center,
           style: const TextStyle(color: Colors.white70),
         ),
@@ -4107,8 +4099,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             OutlinedButton.icon(
-              icon: const Icon(Icons.gavel),
-              label: Text(_revolutionaryActionLabel),
+              icon: const Icon(Icons.gps_fixed_rounded),
+              label: const Text('شلیک'),
               onPressed: (controller.canRevolutionaryActTonight && charges > 0)
                   ? () => _showRevolutionaryExecutePicker(fighter)
                   : null,
@@ -4541,4 +4533,3 @@ class _PlayerScoreDetailScreen extends StatelessWidget {
     );
   }
 }
-

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/game_session.dart';
 import '../models/role.dart';
+import '../models/scenario.dart';
 import '../models/team.dart';
 import '../models/score_event.dart';
 
@@ -63,15 +64,30 @@ class GameFlowController extends ChangeNotifier {
   GamePhaseType phase = GamePhaseType.introDay;
   int roundNumber = 0;
 
+  /// سناریو از تنظیمات جلسه می‌آید؛ هیچ‌وقت از وجود/عدم وجود یک تیم استنتاج نمی‌شود.
+  GameScenario get scenario =>
+      SarkoobScenarios.byId(settings.scenarioId) ?? SarkoobScenarios.sorkoob;
+
+  bool get isMafiaScenario => scenario.id == SarkoobScenarios.mafia.id;
+
+  String get leaderTeamId => scenario.leaderTeamId;
+
+  String get townTeamId => scenario.townTeamId;
+
+  String get independentTeamId => scenario.independentTeamId;
+
+  bool isLeaderTeam(String teamId) => teamId == scenario.leaderTeamId;
+  bool isTownTeam(String teamId) => teamId == scenario.townTeamId;
+
+  String roleNameForScenario(String roleId) =>
+      SarkoobRoles.byId(roleId)?.name ?? roleId;
+
   GameFlowController({required this.players, required this.settings}) {
     _rebuildSpeakingOrder();
     // تیمِ رهبرِ همین جلسه — سرکوب یا مافیا، هرکدوم حاضره (بخشِ ۶ی فایلِ
     // وضعیت: همون الگویِ جنریک‌سازیِ sorkoobHasLostMember/leaderNegotiate).
-    final leaderTeamCount = players
-        .where((p) =>
-            p.teamId == SarkoobTeams.suppression.id ||
-            p.teamId == SarkoobTeams.mafiaGang.id)
-        .length;
+    final leaderTeamCount =
+        players.where((p) => p.teamId == leaderTeamId).length;
     statusInquiryChargesRemaining = leaderTeamCount > 0 ? leaderTeamCount - 1 : 0;
     // زودیاک برخلافِ رهبرِ موساد هیچ انتخابِ شیوه‌ای نداره — همیشه معادلِ
     // «عملیاتِ سری»، از همون اول ثابت. همین باعث می‌شه UIی انتخاب‌شیوه‌ی
@@ -132,13 +148,7 @@ class GameFlowController extends ChangeNotifier {
   /// معنی‌دار بود یا نه» استفاده می‌شه.
   bool _hasActiveRole(SessionPlayer p) {
     if (p.roleId == null) return false;
-    final simpleRoleIds = {
-      SarkoobRoles.suppressor.id,
-      SarkoobRoles.simpleMafia.id,
-      SarkoobRoles.grayCitizen.id,
-      SarkoobRoles.simpleCitizen.id,
-    };
-    return !simpleRoleIds.contains(p.roleId);
+    return !scenario.simpleRoleIds.contains(p.roleId);
   }
 
   /// ضریبِ امتیازِ رأی‌دهیِ نقش (طبقِ sarkoob-action-scoring-template.xlsx،
@@ -148,15 +158,11 @@ class GameFlowController extends ChangeNotifier {
   /// «رأیِ خروج» و «رأیِ رهبری» اثر می‌ذاره، نه رویِ اکشن‌هایِ اختصاصی
   /// (چون نقش‌هایِ ساده اصلاً اکشنِ اختصاصی ندارن).
   double _voteScoreMultiplier(SessionPlayer p) {
-    if (p.roleId == SarkoobRoles.grayCitizen.id || p.roleId == SarkoobRoles.simpleCitizen.id) {
-      return 2.0;
+    if (p.roleId != null && scenario.simpleRoleIds.contains(p.roleId)) {
+      if (p.roleId == scenario.townDefaultRoleId) return 2.0;
+      if (p.roleId == scenario.leaderDefaultRoleId) return 1.5;
     }
-    if (p.roleId == SarkoobRoles.suppressor.id || p.roleId == SarkoobRoles.simpleMafia.id) {
-      return 1.5;
-    }
-    if (p.roleId == SarkoobRoles.mossadLeader.id || p.roleId == SarkoobRoles.zodiacRole.id) {
-      return 0.5;
-    }
+    if (p.roleId == scenario.independentLeaderRoleId) return 0.5;
     return 1.0;
   }
 
@@ -170,10 +176,10 @@ class GameFlowController extends ChangeNotifier {
   List<MapEntry<GameTeam, int>> get aliveCountsByTeam {
     final presentTeamIds = players.map((p) => p.teamId).toSet();
     final orderedIds = [
-      SarkoobTeams.suppression.id,
-      SarkoobTeams.citizen.id,
+      leaderTeamId,
+      townTeamId,
       ...presentTeamIds.where(
-        (id) => id != SarkoobTeams.suppression.id && id != SarkoobTeams.citizen.id,
+        (id) => id != leaderTeamId && id != townTeamId,
       ),
     ];
     return [
@@ -930,14 +936,14 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get valiFaghihPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.valiFaghih.id || p.roleId == SarkoobRoles.godfather.id) return p;
+      if (p.roleId == scenario.leaderDefaultRoleId) return p;
     }
     return null;
   }
 
   SessionPlayer? get foreignMinisterPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.foreignMinister.id || p.roleId == SarkoobRoles.negotiator.id) return p;
+      if (p.roleId == scenario.negotiatorRoleId) return p;
     }
     return null;
   }
@@ -946,7 +952,7 @@ class GameFlowController extends ChangeNotifier {
   /// تا الان از بازی خارج شده؟
   bool get sorkoobHasLostMember => players.any(
       (p) =>
-          (p.teamId == SarkoobTeams.suppression.id || p.teamId == SarkoobTeams.mafiaGang.id) &&
+          isLeaderTeam(p.teamId) &&
           !p.isAlive);
 
   /// آیا این بازیکن یه عضوِ «سادهٔ» تیمِ شهروندِ همین سناریوعه؟ (بدونِ
@@ -954,10 +960,8 @@ class GameFlowController extends ChangeNotifier {
   /// roleId=grayCitizen/simpleCitizen می‌گیرن، هم اون حالت هم حالتِ
   /// قدیمیِ null رو پوشش می‌دیم.
   bool _isGrayCitizen(SessionPlayer p) =>
-      (p.teamId == SarkoobTeams.citizen.id || p.teamId == SarkoobTeams.mafiaTown.id) &&
-      (p.roleId == null ||
-          p.roleId == SarkoobRoles.grayCitizen.id ||
-          p.roleId == SarkoobRoles.simpleCitizen.id);
+      isTownTeam(p.teamId) &&
+      (p.roleId == null || p.roleId == scenario.townDefaultRoleId);
 
   /// شهروندهای «خاکستری»: زنده، عضو تیم شهروند، و بدون نقشِ خاص.
   List<SessionPlayer> get grayCitizens =>
@@ -981,9 +985,8 @@ class GameFlowController extends ChangeNotifier {
     final target = playerById(targetId);
     final isGrayCitizen = _isGrayCitizen(target);
     if (isGrayCitizen) {
-      final isMafiaGame = minister.teamId == SarkoobTeams.mafiaGang.id;
-      target.teamId = isMafiaGame ? SarkoobTeams.mafiaGang.id : SarkoobTeams.suppression.id;
-      target.roleId = isMafiaGame ? SarkoobRoles.simpleMafia.id : SarkoobRoles.suppressor.id;
+      target.teamId = leaderTeamId;
+      target.roleId = scenario.leaderDefaultRoleId;
       negotiateResultMessage = 'مذاکره با موفقیت صورت گرفت.';
       _award(minister, 2, 'مذاکره‌ی موفق');
     } else {
@@ -1073,11 +1076,9 @@ class GameFlowController extends ChangeNotifier {
   /// (موساد/زودیاک) بر اساسِ اینکه کدوم سناریو این جلسه حاضره تعیین
   /// می‌شن — همون الگویِ ژنریکِ بخشِ ۶ی فایلِ وضعیت.
   void _checkGameEndCondition() {
-    final isMafiaGame = players
-        .any((p) => p.teamId == SarkoobTeams.mafiaGang.id || p.teamId == SarkoobTeams.mafiaTown.id);
-    final leaderTeamId = isMafiaGame ? SarkoobTeams.mafiaGang.id : SarkoobTeams.suppression.id;
-    final townTeamId = isMafiaGame ? SarkoobTeams.mafiaTown.id : SarkoobTeams.citizen.id;
-    final independentTeamId = isMafiaGame ? SarkoobTeams.zodiac.id : SarkoobTeams.mossad.id;
+    final leaderTeamId = this.leaderTeamId;
+    final townTeamId = this.townTeamId;
+    final independentTeamId = this.independentTeamId;
     final leaderTeamName = SarkoobTeams.byId(leaderTeamId)!.name;
     final townTeamName = SarkoobTeams.byId(townTeamId)!.name;
     final independentTeamName = SarkoobTeams.byId(independentTeamId)!.name;
@@ -1153,11 +1154,9 @@ class GameFlowController extends ChangeNotifier {
   /// رهبر، مستقل بیرون‌مونده) → رهبر برنده.
   void resolveChaosPhase(int player1Id, int player2Id) {
     if (!chaosPhaseActive) return;
-    final isMafiaGame = players
-        .any((p) => p.teamId == SarkoobTeams.mafiaGang.id || p.teamId == SarkoobTeams.mafiaTown.id);
-    final leaderTeamId = isMafiaGame ? SarkoobTeams.mafiaGang.id : SarkoobTeams.suppression.id;
-    final townTeamId = isMafiaGame ? SarkoobTeams.mafiaTown.id : SarkoobTeams.citizen.id;
-    final independentTeamId = isMafiaGame ? SarkoobTeams.zodiac.id : SarkoobTeams.mossad.id;
+    final leaderTeamId = this.leaderTeamId;
+    final townTeamId = this.townTeamId;
+    final independentTeamId = this.independentTeamId;
     final p1 = playerById(player1Id);
     final p2 = playerById(player2Id);
     final String winnerTeamId;
@@ -1607,7 +1606,7 @@ class GameFlowController extends ChangeNotifier {
     if (pendingDiscloserPlayerId == null) return;
     final discloser = playerById(pendingDiscloserPlayerId!);
     final target = playerById(targetId);
-    final isMafia = target.teamId == SarkoobTeams.mafiaGang.id;
+    final isMafia = target.teamId == leaderTeamId;
     discloserAnnouncement =
         '📢 افشاگر قبلِ خروج افشا کرد: «${target.name}» ${isMafia ? "عضوِ مافیاست" : "عضوِ مافیا نیست"}.';
     // افشا همیشه راسته (دروغ‌گفتن امکان‌پذیر نیست)؛ امتیازدهی طبقِ
@@ -1655,12 +1654,11 @@ class GameFlowController extends ChangeNotifier {
     final isPermanentInfiltrator = targetRole?.alwaysInfiltratesResistance ?? false;
 
     _rapperActedTonight = true;
-    final isMafiaGame = players.any((p) => p.teamId == SarkoobTeams.mafiaGang.id);
-    final resistanceTeamPhrase = isMafiaGame ? 'تیمِ اوشن' : 'تیمِ مقاومتِ فعال';
-    final leaderTeamLabel = isMafiaGame ? 'مافیا' : 'سرکوب';
-    final resistanceGroupNoun = isMafiaGame ? 'تیمِ اوشن' : 'مقاومت';
+    final resistanceTeamPhrase = scenario.resistanceTeamLabel;
+    final leaderTeamLabel = scenario.leaderLabel;
+    final resistanceGroupNoun = scenario.resistanceGroupLabel;
 
-    if (target.teamId == SarkoobTeams.citizen.id || target.teamId == SarkoobTeams.mafiaTown.id) {
+    if (isTownTeam(target.teamId)) {
       target.isActiveResistanceMember = true;
       rapperResultMessage = '«${target.name}» به $resistanceTeamPhrase پیوست.';
       _award(rapper, 2, 'جذبِ مقاومتِ موفق');
@@ -1944,7 +1942,7 @@ class GameFlowController extends ChangeNotifier {
     final target = playerById(targetId);
     final role = target.roleId != null ? SarkoobRoles.byId(target.roleId!) : null;
     final isLeaderTeam =
-        target.teamId == SarkoobTeams.suppression.id || target.teamId == SarkoobTeams.mafiaGang.id;
+        isLeaderTeam(target.teamId);
 
     if (!isLeaderTeam) return InvestigationResult.dislike;
     if (role != null && role.alwaysShowsInnocent) return InvestigationResult.dislike;
@@ -2029,7 +2027,7 @@ class GameFlowController extends ChangeNotifier {
     // چکِ تیم قبلاً فقط suppression بود که تو سناریوی مافیا (زودیاک)
     // هیچ‌وقت درست کار نمی‌کرد؛ حالا هر دو سناریو رو پوشش می‌ده.
     final onLeaderTeam =
-        target.teamId == SarkoobTeams.suppression.id || target.teamId == SarkoobTeams.mafiaGang.id;
+        isLeaderTeam(target.teamId);
     if (onLeaderTeam && target.roleId == guessedRoleId) {
       target.isAlive = false;
       target.eliminatedBySlaughter = true;
@@ -2232,10 +2230,8 @@ class GameFlowController extends ChangeNotifier {
   /// حساب نمی‌شن — فعلاً فقط موساد و زودیاک ممکنه، ولی جوری نوشته شده که
   /// با اضافه‌شدنِ تیمِ مستقلِ بعدی هم خودکار درست کار کنه.)
   bool _isIndependentTeamMember(SessionPlayer p) =>
-      p.teamId != SarkoobTeams.suppression.id &&
-      p.teamId != SarkoobTeams.citizen.id &&
-      p.teamId != SarkoobTeams.mafiaGang.id &&
-      p.teamId != SarkoobTeams.mafiaTown.id;
+      !isLeaderTeam(p.teamId) &&
+      !isTownTeam(p.teamId);
 
   void politicalAnalystInvestigate(int targetId) {
     if (!canPoliticalAnalystActTonight) return;
@@ -2447,12 +2443,12 @@ class GameFlowController extends ChangeNotifier {
     fighter.revolutionaryChargesRemaining = (fighter.revolutionaryChargesRemaining ?? 0) - 1;
     _revolutionaryActedTonight = true;
 
-    if (target.teamId == SarkoobTeams.suppression.id || target.teamId == SarkoobTeams.mafiaGang.id) {
+    if (isLeaderTeam(target.teamId)) {
       _pendingHits[targetId] = (_pendingHits[targetId] ?? 0) + 1;
       _pendingHitAttributions.add(_PendingHitAttribution(fighter.id, targetId, 'اعدامِ انقلابی'));
       revolutionaryResultMessage =
           'اعدامِ انقلابیِ «${fighter.name}» روی «${target.name}» ثبت شد؛ نتیجه‌ی نهایی صبح مشخص می‌شه.';
-    } else if (target.teamId == SarkoobTeams.citizen.id || target.teamId == SarkoobTeams.mafiaTown.id) {
+    } else if (isTownTeam(target.teamId)) {
       _eliminatePlayer(fighter);
       _tonightEliminatedIds.add(fighter.id);
       revolutionaryResultMessage =
@@ -2530,7 +2526,7 @@ class GameFlowController extends ChangeNotifier {
         // سناریوی مافیا. تو یه بازیِ دیگه هیچ بازیکنی این تیم‌ها رو
         // نداره، پس این مرحله کلاً رد می‌شه.
         return players.any(
-            (p) => p.teamId == SarkoobTeams.suppression.id || p.teamId == SarkoobTeams.mafiaGang.id);
+            (p) => isLeaderTeam(p.teamId));
       case NightStepKind.mossadLeader:
         // شبِ اول (برای انتخابِ شیوه) یا شب‌های زوج (برای استفاده). فردِ
         // مرده هم باز باید صداش کنیم (لوندادن)، پس isAlive رو چک نمی‌کنیم.
@@ -2573,8 +2569,7 @@ class GameFlowController extends ChangeNotifier {
     if (sorkoobDisabledTonight) return false;
     final leader = valiFaghihPlayer;
     if (leader != null && leader.isAlive) return false;
-    final isMafiaGame = players.any((p) => p.teamId == SarkoobTeams.mafiaGang.id);
-    final leaderTeamId = isMafiaGame ? SarkoobTeams.mafiaGang.id : SarkoobTeams.suppression.id;
+    final leaderTeamId = this.leaderTeamId;
     return alivePlayers.any((p) => p.teamId == leaderTeamId);
   }
 

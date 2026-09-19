@@ -1,4 +1,5 @@
 import 'role.dart';
+import 'scenario.dart';
 import 'score_event.dart';
 
 /// برچسبِ فارسیِ هر مرحله‌ی تنبیهِ انضباطیِ گرداننده — هم تو خودِ بازی
@@ -32,6 +33,9 @@ enum GamePhaseType {
 /// تنظیمات زمان‌بندی؛ طبق قانون گفته‌شده، زمان معارفه و چالش همیشه
 /// نصف زمان صحبته (مستقل تنظیم نمی‌شن).
 class GameSettings {
+  /// سناریوی صریحِ همین جلسه؛ منبع حقیقت سناریو در کل Game Flow.
+  final String scenarioId;
+
   final int speakSeconds;
 
   /// چندبار در کلِ بازی دکتر می‌تونه خودش رو نجات بده (پیش‌فرض ۲).
@@ -41,6 +45,7 @@ class GameSettings {
   final String location;
 
   const GameSettings({
+    this.scenarioId = SarkoobScenarios.sorkoob.id,
     this.speakSeconds = 60,
     this.doctorMaxSelfSaves = 2,
     this.location = '',
@@ -49,8 +54,9 @@ class GameSettings {
   int get introSeconds => (speakSeconds / 2).round();
   int get challengeSeconds => (speakSeconds / 2).round();
 
-  GameSettings copyWith({int? speakSeconds, int? doctorMaxSelfSaves, String? location}) {
+  GameSettings copyWith({String? scenarioId, int? speakSeconds, int? doctorMaxSelfSaves, String? location}) {
     return GameSettings(
+      scenarioId: scenarioId ?? this.scenarioId,
       speakSeconds: speakSeconds ?? this.speakSeconds,
       doctorMaxSelfSaves: doctorMaxSelfSaves ?? this.doctorMaxSelfSaves,
       location: location ?? this.location,
