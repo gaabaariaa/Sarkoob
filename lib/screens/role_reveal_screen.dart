@@ -74,7 +74,6 @@ class _PlayerRevealScreen extends StatefulWidget {
   @override State<_PlayerRevealScreen> createState() => _PlayerRevealScreenState();
 }
 class _PlayerRevealScreenState extends State<_PlayerRevealScreen> {
-  bool _revealed = true;
   @override Widget build(BuildContext context) {
     final player = widget.player; final team = widget.team; final role = player.roleId != null ? SarkoobRoles.byId(player.roleId!) : null;
     return Scaffold(appBar: AppBar(title: const Text('نمایش نقش')), body: SafeArea(child: Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 16), child: Column(children: [
@@ -83,11 +82,6 @@ class _PlayerRevealScreenState extends State<_PlayerRevealScreen> {
       const SizedBox(height: 12), SizedBox(width: double.infinity, child: Game3DButton(label: 'دیدم، برگرد', icon: Icons.check_rounded, onPressed: () => Navigator.of(context).pop(true))),
     ]))));
   }
-}
-
-class _HiddenCard extends StatelessWidget {
-  const _HiddenCard();
-  @override Widget build(BuildContext context) => Container(width: 280, height: 360, decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: AppColors.gold.withAlpha(140), width: 1.4), boxShadow: [BoxShadow(color: Colors.black.withAlpha(71), blurRadius: 24, offset: const Offset(0, 12))]), alignment: Alignment.center, child: Column(mainAxisSize: MainAxisSize.min, children: [Container(width: 76, height: 76, decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.goldDark.withAlpha(46), border: Border.all(color: AppColors.gold.withAlpha(77))), child: const Icon(Icons.lock_outline_rounded, size: 38, color: AppColors.goldLight)), const SizedBox(height: 16), Text('نقش مخفی است', style: AppTheme.headingFont(size: 20)), const SizedBox(height: 6), const Text('برای نمایش، کارت را لمس کن', style: TextStyle(color: AppColors.mutedText))]));
 }
 
 class _GenericTeamCard extends StatelessWidget {
