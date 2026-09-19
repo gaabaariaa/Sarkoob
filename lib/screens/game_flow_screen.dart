@@ -803,6 +803,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Future<void> _saveGameHistoryEntry(String winnerId) async {
     final entry = GameHistoryEntry(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
+      scenarioId: controller.settings.scenarioId,
       playedAt: DateTime.now(),
       winningTeamId: winnerId,
       location: controller.settings.location,
