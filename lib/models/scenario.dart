@@ -26,6 +26,11 @@ class GameScenario {
   final String leaderLabel;
   final String resistanceTeamLabel;
   final String resistanceGroupLabel;
+  final String forbiddenWordLabel;
+  final String revolutionaryActionLabel;
+  final Map<String, String> roleIds;
+
+  String roleIdFor(String key) => roleIds[key] ?? key;
 
   const GameScenario({
     required this.id,
@@ -44,6 +49,9 @@ class GameScenario {
     required this.leaderLabel,
     required this.resistanceTeamLabel,
     required this.resistanceGroupLabel,
+    required this.forbiddenWordLabel,
+    required this.revolutionaryActionLabel,
+    required this.roleIds,
   });
 }
 
@@ -69,6 +77,19 @@ class SarkoobScenarios {
     leaderLabel: 'سرکوب',
     resistanceTeamLabel: 'تیمِ مقاومتِ فعال',
     resistanceGroupLabel: 'مقاومت',
+    forbiddenWordLabel: 'کلمه‌ی ممنوع',
+    revolutionaryActionLabel: 'اعدامِ انقلابی',
+    roleIds: {
+      'independentLeader': 'role_mossad_leader',
+      'rapper': 'role_rapper',
+      'hacker': 'role_hacker',
+      'politicalAnalyst': 'role_political_analyst',
+      'rebel': 'role_rebel',
+      'revolutionary': 'role_revolutionary_fighter',
+      'nationalHero': 'role_national_hero',
+      'civicActivist': 'role_civic_activist',
+      'lawyer': 'role_lawyer',
+    },
   );
 
   static const mafia = GameScenario(
@@ -92,6 +113,19 @@ class SarkoobScenarios {
     leaderLabel: 'مافیا',
     resistanceTeamLabel: 'تیمِ اوشن',
     resistanceGroupLabel: 'تیمِ اوشن',
+    forbiddenWordLabel: 'کلمه‌ی طلسم‌شده',
+    revolutionaryActionLabel: 'حذفِ حرفه‌ای',
+    roleIds: {
+      'independentLeader': 'role_zodiac',
+      'rapper': 'role_ocean',
+      'hacker': 'role_detective',
+      'politicalAnalyst': 'role_sherlock',
+      'rebel': 'role_gunman',
+      'revolutionary': 'role_professional',
+      'nationalHero': 'role_white_beard',
+      'civicActivist': 'role_leader',
+      'lawyer': 'role_konstantin',
+    },
   );
 
   static const List<GameScenario> all = [sorkoob, mafia];
