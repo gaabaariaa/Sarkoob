@@ -40,7 +40,6 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   // «تیمِ رهبرِ» این جلسه سرکوبه یا مافیا؟ چندجا تو UIی مرحله‌ی تیمِ رهبر
   // لازمه، برای همینم یه getterِ مشترکه به‌جایِ محاسبه‌ی پراکنده.
-  bool get _isMafiaGame => controller.isMafiaScenario;
   String get _leaderTeamName => controller.scenario.name;
   String get _leaderRoleName => controller.roleNameForScenario(controller.scenario.leaderDefaultRoleId);
   String get _plainCitizenLabel => _roleName(controller.scenario.townDefaultRoleId);
@@ -3265,9 +3264,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Widget _buildPoliticalAnalystSection() {
     final result = controller.lastIndependentInvestigationResult;
     final targetName = controller.lastIndependentInvestigationTargetName;
-    final membershipQuestion = _isMafiaGame ? 'زودیاکه' : 'عضوِ یه تیمِ مستقله';
-    final membershipYes = _isMafiaGame ? 'زودیاکه' : 'مستقله';
-    final membershipNo = _isMafiaGame ? 'زودیاک نیست' : 'مستقل نیست';
+    final membershipQuestion = controller.scenario.independentInvestigationQuestion;
+    final membershipYes = controller.scenario.independentInvestigationYes;
+    final membershipNo = controller.scenario.independentInvestigationNo;
     return Column(
       children: [
         Text(
@@ -3555,7 +3554,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     return Column(
       children: [
         Text(
-          '${_isMafiaGame ? "افسونگر" : "رئیس قوه قضاییه"} می‌تونه (فقط یک‌بار در کل بازی) حکم اعدام صادر کنه:',
+          '${_roleName(controller.scenario.roleIdFor('judiciary'))} می‌تونه (فقط یک‌بار در کل بازی) حکم اعدام صادر کنه:',
           textAlign: TextAlign.center,
           style: const TextStyle(color: Colors.white70),
         ),
