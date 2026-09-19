@@ -1,5 +1,4 @@
 import 'role.dart';
-import 'scenario.dart';
 import 'score_event.dart';
 
 /// برچسبِ فارسیِ هر مرحله‌ی تنبیهِ انضباطیِ گرداننده — هم تو خودِ بازی
@@ -45,7 +44,7 @@ class GameSettings {
   final String location;
 
   const GameSettings({
-    this.scenarioId = SarkoobScenarios.defaultScenario.id,
+    this.scenarioId = 'scenario_sorkoob',
     this.speakSeconds = 60,
     this.doctorMaxSelfSaves = 2,
     this.location = '',
@@ -53,132 +52,3 @@ class GameSettings {
 
   int get introSeconds => (speakSeconds / 2).round();
   int get challengeSeconds => (speakSeconds / 2).round();
-
-  GameSettings copyWith({String? scenarioId, int? speakSeconds, int? doctorMaxSelfSaves, String? location}) {
-    return GameSettings(
-      scenarioId: scenarioId ?? this.scenarioId,
-      speakSeconds: speakSeconds ?? this.speakSeconds,
-      doctorMaxSelfSaves: doctorMaxSelfSaves ?? this.doctorMaxSelfSaves,
-      location: location ?? this.location,
-    );
-  }
-}
-
-/// بازیکنِ همین جلسه‌ی بازی (نه لیست دائمی).
-/// teamId فعلاً موقتی و دستی‌ست، تا وقتی موتور تقسیم نقش واقعی ساخته بشه.
-class SessionPlayer {
-  final int id;
-  final String name;
-  final String? rosterId; // اگه از لیستِ دائمیِ بازیکن‌ها انتخاب شده بود
-  bool isAlive;
-  int recordCount; // «سابقه»
-  String teamId; // یکی از شناسه‌های GameTeam (team_sorkoob / team_citizen / ...)
-  bool isModiri;
-  int votes;
-  bool challengeReceivedToday; // آیا امروز قبلاً هدفِ چالش قرار گرفته؟
-  bool challengeGivenToday; // آیا تو نوبتِ عادیِ امروزش قبلاً به کسی چالش داده؟
-  int challengesGivenTotal = 0; // شمارنده‌ی کلِ بازی (برخلافِ فلگِ بالا، هیچ‌وقت ریست نمی‌شه)
-  int challengesReceivedTotal = 0; // شمارنده‌ی کلِ بازی
-  bool hasSpokenThisRound;
-
-  // ---- مربوط به نقش (فعلاً فقط ولی‌فقیه از این‌ها استفاده می‌کنه) ----
-  String? roleId;
-  bool hasArmor;
-  int? slaughterChargesRemaining;
-  bool eliminatedBySlaughter; // برای اینکه بعداً حتی ستوده هم نتونه برش گردونه
-
-  // ---- مربوط به رئیس قوه قضاییه ----
-  bool executionOrderUsed; // آیا قابلیتِ یک‌بارمصرفش رو مصرف کرده؟
-  bool isHalfAlive; // نیمه‌جان: تا وقتی «وکیل مردمی» نجاتش بده، شب‌ها بیدار نمی‌شه
-
-  // ---- مربوط به دکتر ----
-  int selfSavesUsed; // چندبار تا الان خودش رو نجات داده (سقفش تو GameSettings ـه)
-
-  // ---- مربوط به مبارزِ انقلابی ----
-  int? revolutionaryChargesRemaining; // سهمیه‌ی مشترکِ اعدامِ انقلابی/سلاخی
-  bool canStillSlaughter; // بعدِ یه حدسِ غلط، برای همیشه false می‌شه
-
-  // ---- مربوط به وکیل ----
-  bool revivalUsed; // آیا قابلیتِ یک‌بارمصرفِ جان‌بخشی رو مصرف کرده؟
-
-  // ---- مربوط به رپر معترض ----
-  bool isActiveResistanceMember; // عضوِ فعالِ تیمِ مقاومتِ رپر معترضه؟
-
-  // ---- مربوط به شورشی و اسلحه ----
-  GunType? heldGunType; // اسلحه‌ای که همین الان دستشه (null یعنی نداره)
-  int? warGunsRemaining; // فقط رو خودِ شورشی: سهمیه‌ی کلِ اسلحه‌ی جنگی
-
-  // ---- مربوط به وزیر اطلاعات ----
-  int? intelQuestionsRemaining; // سهمیه‌ی کلِ سؤالِ اطلاعاتی در طولِ بازی
-
-  // ---- مربوط به قهرمان ملی ----
-  int? guaranteesRemaining; // سهمیه‌ی کلِ تضمین در طولِ بازی
-
-  // ---- مربوط به بازجو خبرنگار ----
-  bool interrogationUsed; // آیا قابلیتِ یک‌بارمصرفِ بازجویی رو مصرف کرده؟
-  bool natashaSilenceUsed; // آیا قابلیتِ یک‌بارمصرفِ ساکت‌کردنِ ناتاشا مصرف شده؟
-
-  // ---- مربوط به رهبر موساد ----
-  MossadPlaystyle? mossadPlaystyle; // شبِ اول انتخاب می‌شه، بعدش ثابت می‌مونه
-
-  // ---- مربوط به فعال مدنی ----
-  bool referendumUsed; // آیا قابلیتِ یک‌بارمصرفِ درخواستِ رفراندوم رو مصرف کرده؟
-
-  // ---- مربوط به وزیر امور خارجه / مذاکره‌کننده ----
-  bool negotiateUsed; // آیا قابلیتِ یک‌بارمصرفِ مذاکره رو مصرف کرده؟ (چه موفق چه ناموفق)
-
-  // ---- مربوط به تنبیهِ انضباطیِ گرداننده ----
-  int disciplineStage; // ۰=بدونِ سابقه، ۱=اخطار، ۲=منعِ یک‌روزه، ۳=منعِ همیشگی+سکوت، ۴=اخراج
-  int? challengeBanRoundNumber; // فقط برای منعِ یک‌روزه‌ی مرحله‌ی ۲: کدوم روز نمی‌تونه چالش بگیره (هدف باشه)
-  bool challengeBannedForever; // از مرحله‌ی ۳ به بعد، برای همیشه از چالش‌گرفتن منعه (نه چالش‌دادن)
-  int? silencedRoundNumber; // فقط برای مرحله‌ی ۳: کدوم روز باید نوبتِ صحبتش رد بشه
-  int? noVoteRightsRoundNumber; // کدوم روز حقِ رأی نداره (اکتِ دفاعیه یا تنبیه)
-
-  // ---- سیستمِ امتیازدهیِ بهترین/بدترین بازیکن (سندِ طراحی:
-  // sarkoob-scoring-system-design.md) ----
-  final List<ScoreEvent> scoreEvents = [];
-
-  SessionPlayer({
-    required this.id,
-    required this.name,
-    required this.teamId,
-    this.rosterId,
-    this.isAlive = true,
-    this.recordCount = 0,
-    this.isModiri = false,
-    this.votes = 0,
-    this.challengeReceivedToday = false,
-    this.challengeGivenToday = false,
-    this.hasSpokenThisRound = false,
-    this.roleId,
-    this.hasArmor = false,
-    this.slaughterChargesRemaining,
-    this.eliminatedBySlaughter = false,
-    this.executionOrderUsed = false,
-    this.isHalfAlive = false,
-    this.selfSavesUsed = 0,
-    this.revolutionaryChargesRemaining,
-    this.canStillSlaughter = true,
-    this.revivalUsed = false,
-    this.isActiveResistanceMember = false,
-    this.heldGunType,
-    this.warGunsRemaining,
-    this.intelQuestionsRemaining,
-    this.guaranteesRemaining,
-    this.interrogationUsed = false,
-    this.natashaSilenceUsed = false,
-    this.mossadPlaystyle,
-    this.referendumUsed = false,
-    this.negotiateUsed = false,
-    this.disciplineStage = 0,
-    this.challengeBanRoundNumber,
-    this.challengeBannedForever = false,
-    this.silencedRoundNumber,
-    this.noVoteRightsRoundNumber,
-  });
-
-  bool get isSorkoobTeam => teamId == 'team_sorkoob';
-
-  /// جمعِ امتیازِ این بازیکن در همین بازی (طبقِ سندِ طراحیِ امتیازدهی).
-  int get scoreTotal => scoreEvents.fold(0, (sum, e) => sum + e.points);
-}
