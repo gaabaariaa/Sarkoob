@@ -65,8 +65,8 @@ class GameFlowController extends ChangeNotifier {
   int roundNumber = 0;
 
   /// سناریو از تنظیمات جلسه می‌آید؛ هیچ‌وقت از وجود/عدم وجود یک تیم استنتاج نمی‌شود.
-  GameScenario get scenario =>
-      SarkoobScenarios.byId(settings.scenarioId) ?? SarkoobScenarios.sorkoob;
+  GameScenario get scenario => SarkoobScenarios.byId(settings.scenarioId) ??
+      (throw StateError('Unknown scenario: ${settings.scenarioId}'));
 
   bool get isMafiaScenario => scenario.id == SarkoobScenarios.mafia.id;
 
