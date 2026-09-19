@@ -1432,7 +1432,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get mercenaryPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.mercenary.id || p.roleId == SarkoobRoles.terrorist.id) return p;
+      if (p.roleId == scenario.roleIdFor('mercenary')) return p;
     }
     return null;
   }
@@ -1483,7 +1483,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get lawyerPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.lawyer.id || p.roleId == SarkoobRoles.konstantin.id) return p;
+      if (p.roleId == scenario.roleIdFor('lawyer')) return p;
     }
     return null;
   }
@@ -1618,7 +1618,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get rapperPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.rapper.id || p.roleId == SarkoobRoles.ocean.id) return p;
+      if (p.roleId == scenario.roleIdFor('rapper')) return p;
     }
     return null;
   }
@@ -1682,7 +1682,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get rebelPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.rebel.id || p.roleId == SarkoobRoles.gunman.id) return p;
+      if (p.roleId == scenario.roleIdFor('rebel')) return p;
     }
     return null;
   }
@@ -1809,7 +1809,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get nationalHeroPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.nationalHero.id || p.roleId == SarkoobRoles.whiteBeard.id) {
+      if (p.roleId == scenario.roleIdFor('nationalHero')) {
         return p;
       }
     }
@@ -1842,7 +1842,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get doctorPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.doctor.id || p.roleId == SarkoobRoles.mafiaDoctor.id) return p;
+      if (p.roleId == scenario.roleIdFor('doctor')) return p;
     }
     return null;
   }
@@ -1915,7 +1915,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get hackerPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.hacker.id || p.roleId == SarkoobRoles.detective.id) return p;
+      if (p.roleId == scenario.roleIdFor('hacker')) return p;
     }
     return null;
   }
@@ -2204,7 +2204,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get politicalAnalystPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.politicalAnalyst.id || p.roleId == SarkoobRoles.sherlock.id) return p;
+      if (p.roleId == scenario.roleIdFor('politicalAnalyst')) return p;
     }
     return null;
   }
@@ -2412,7 +2412,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get revolutionaryFighterPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.revolutionaryFighter.id || p.roleId == SarkoobRoles.professional.id) return p;
+      if (p.roleId == scenario.roleIdFor('revolutionary')) return p;
     }
     return null;
   }
