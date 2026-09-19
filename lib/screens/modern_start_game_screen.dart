@@ -12,7 +12,7 @@ class ModernStartGameScreen extends StatefulWidget {
 }
 
 class _ModernStartGameScreenState extends State<ModernStartGameScreen> {
-  GameScenario _scenario = SarkoobScenarios.mafia;
+  GameScenario _scenario = SarkoobScenarios.defaultScenario;
 
   void _continue() {
     Navigator.of(context).push(
