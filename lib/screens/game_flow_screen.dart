@@ -43,21 +43,21 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   bool get _isMafiaGame => controller.isMafiaScenario;
   String get _leaderTeamName => controller.scenario.name;
   String get _leaderRoleName => controller.roleNameForScenario(controller.scenario.leaderDefaultRoleId);
-  String get _plainCitizenLabel => _isMafiaGame ? 'شهروندِ ساده' : 'شهروندِ خاکستری';
-  String get _plainLeaderTeamLabel => _isMafiaGame ? 'مافیا ساده' : 'سرکوبگر';
-  String get _independentLeaderRoleName => _isMafiaGame ? 'زودیاک' : 'رهبر موساد';
-  // بقیه‌ی نقش‌های تکی که تو مافیا هم معادل دارن — همون الگوی بالا.
-  String get _rapperRoleName => _isMafiaGame ? 'اوشن' : 'رپر معترض';
-  String get _resistanceGroupLabel => _isMafiaGame ? 'تیمِ اوشن' : 'مقاومتِ فعال';
-  String get _hackerRoleName => _isMafiaGame ? 'کارآگاه' : 'هکر';
-  String get _politicalAnalystRoleName => _isMafiaGame ? 'شرلوک' : 'تحلیلگر سیاسی';
-  String get _rebelRoleName => _isMafiaGame ? 'تفنگدار' : 'شورشی';
-  String get _revolutionaryRoleName => _isMafiaGame ? 'حرفه‌ای' : 'مبارز انقلابی';
-  String get _nationalHeroRoleName => _isMafiaGame ? 'ریش‌سفید' : 'قهرمان ملی';
-  String get _revolutionaryActionLabel => _isMafiaGame ? 'حذفِ حرفه‌ای' : 'اعدامِ انقلابی';
-  String get _civicActivistRoleName => _isMafiaGame ? 'لیدر' : 'فعال مدنی';
-  String get _lawyerRoleName => _isMafiaGame ? 'کنستانتین' : 'وکیل';
-  String get _forbiddenWordLabel => _isMafiaGame ? 'کلمه‌ی طلسم‌شده' : 'کلمه‌ی ممنوع';
+  String get _plainCitizenLabel => _roleName(controller.scenario.townDefaultRoleId);
+  String get _plainLeaderTeamLabel => _roleName(controller.scenario.leaderDefaultRoleId);
+  String get _independentLeaderRoleName => _roleName(controller.scenario.roleIdFor('independentLeader'));
+  String get _rapperRoleName => _roleName(controller.scenario.roleIdFor('rapper'));
+  String get _resistanceGroupLabel => controller.scenario.resistanceGroupLabel;
+  String get _hackerRoleName => _roleName(controller.scenario.roleIdFor('hacker'));
+  String get _politicalAnalystRoleName => _roleName(controller.scenario.roleIdFor('politicalAnalyst'));
+  String get _rebelRoleName => _roleName(controller.scenario.roleIdFor('rebel'));
+  String get _revolutionaryRoleName => _roleName(controller.scenario.roleIdFor('revolutionary'));
+  String get _nationalHeroRoleName => _roleName(controller.scenario.roleIdFor('nationalHero'));
+  String get _revolutionaryActionLabel => controller.scenario.revolutionaryActionLabel;
+  String get _civicActivistRoleName => _roleName(controller.scenario.roleIdFor('civicActivist'));
+  String get _lawyerRoleName => _roleName(controller.scenario.roleIdFor('lawyer'));
+  String get _forbiddenWordLabel => controller.scenario.forbiddenWordLabel;
+  String _roleName(String roleId) => controller.roleNameForScenario(roleId);
 
   @override
   void initState() {
