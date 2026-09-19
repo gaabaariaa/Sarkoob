@@ -358,10 +358,15 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final error = _validationError;
     if (error != null) return;
 
-    final unbalanced = _isMafiaScenario ? _isMafiaCountUnbalanced : _isPowerUnbalanced;
+    final scenario = _selectedScenario;
+    if (scenario == null) return;
+
+    final unbalanced = scenario.setupMode == GameScenarioSetupMode.mafia
+        ? _isMafiaCountUnbalanced
+        : _isPowerUnbalanced;
     if (unbalanced) {
       final proceed = await _showBalanceWarning(
-        _isMafiaScenario
+        scenario.setupMode == GameScenarioSetupMode.mafia
             ? 'تعدادِ مافیا بیشتر از یک‌سومِ کل نفراته؛ تیمِ مافیا قدرتِ '
                 'زیادی نسبت به اهالیِ شهر داره. می‌خوای همینطوری ادامه بدی؟'
             : 'تعداد تیم مقاومت (شهروند) کمتر از دو‌سومِ کل نفراته؛ تیم مقاومت '
@@ -370,10 +375,13 @@ class _StartGameScreenState extends State<StartGameScreen> {
       if (proceed != true) return;
     }
 
-    if (_isMafiaScenario) {
-      _startMafiaGame();
-    } else {
-      _startGame();
+    switch (scenario.setupMode) {
+      case GameScenarioSetupMode.mafia:
+        _startMafiaGame();
+        break;
+      case GameScenarioSetupMode.sorkoob:
+        _startGame();
+        break;
     }
   }
 
