@@ -238,7 +238,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           decoration: BoxDecoration(
             color: AppColors.surfaceDark,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.gold.withOpacity(0.4)),
+            border: Border.all(color: AppColors.gold.withAlpha(102)),
           ),
           child: Row(
             children: [
@@ -296,7 +296,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           decoration: BoxDecoration(
             color: AppColors.surfaceCard,
             borderRadius: BorderRadius.circular(26),
-            border: Border.all(color: AppColors.gold.withOpacity(.22)),
+            border: Border.all(color: AppColors.gold.withAlpha(56)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -307,7 +307,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: AppColors.goldDark.withOpacity(.22),
+                      color: AppColors.goldDark.withAlpha(56),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.note_alt_rounded, color: AppColors.goldLight),
@@ -344,11 +344,11 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: AppColors.gold.withOpacity(.16)),
+                    borderSide: BorderSide(color: AppColors.gold.withAlpha(41)),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: AppColors.gold.withOpacity(.16)),
+                    borderSide: BorderSide(color: AppColors.gold.withAlpha(41)),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -427,7 +427,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       decoration: BoxDecoration(
         color: AppColors.surfaceCard,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.gold.withOpacity(0.5)),
+        border: Border.all(color: AppColors.gold.withAlpha(128)),
       ),
       child: Wrap(
         alignment: WrapAlignment.center,
@@ -535,7 +535,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
                 child: Row(children: [
                   Container(width: 42, height: 42,
-                    decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(.22), shape: BoxShape.circle),
+                    decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(56), shape: BoxShape.circle),
                     child: const Icon(Icons.swap_vert_rounded, color: AppColors.goldLight)),
                   const SizedBox(width: 12),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -543,7 +543,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     const Text('با نگه‌داشتن و کشیدن جابه‌جا کن.',
                       style: TextStyle(color: AppColors.mutedText, fontSize: 11)),
                   ])),
-                  CircleAvatar(radius: 17, backgroundColor: AppColors.goldDark.withOpacity(.22),
+                  CircleAvatar(radius: 17, backgroundColor: AppColors.goldDark.withAlpha(56),
                     child: Text('${controller.players.length}',
                       style: const TextStyle(color: AppColors.goldLight, fontSize: 12))),
                 ]),
@@ -564,7 +564,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     child: ListTile(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       leading: CircleAvatar(radius: 17,
-                        backgroundColor: AppColors.goldDark.withOpacity(.20),
+                        backgroundColor: AppColors.goldDark.withAlpha(51),
                         child: Text('${controller.players.indexOf(p) + 1}',
                           style: const TextStyle(color: AppColors.goldLight, fontSize: 12))),
                       title: Text(p.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
@@ -602,7 +602,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               decoration: BoxDecoration(
                 color: AppColors.surfaceCard,
                 borderRadius: BorderRadius.circular(26),
-                border: Border.all(color: AppColors.gold.withOpacity(.22)),
+                border: Border.all(color: AppColors.gold.withAlpha(56)),
               ),
               child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -613,7 +613,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
-                    color: AppColors.bloodRed.withOpacity(0.32),
+                    color: AppColors.bloodRed.withAlpha(82),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.gavel_rounded, color: AppColors.bloodRedLight),
@@ -635,7 +635,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     decoration: BoxDecoration(
                       color: AppColors.surfaceCard,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.gold.withOpacity(0.12)),
+                      border: Border.all(color: AppColors.gold.withAlpha(31)),
                     ),
                     child: const Text(
                       'مستقل از قوانینِ عادیِ بازیه؛ برای رفتارِ خارج از نظمِ جلسه.',
@@ -676,7 +676,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(horizontal: 4),
                               backgroundColor:
-                                  actionMode == 'discipline' ? AppColors.goldDark.withOpacity(0.35) : null,
+                                  actionMode == 'discipline' ? AppColors.goldDark.withAlpha(89) : null,
                               side: BorderSide(
                                 color: actionMode == 'discipline' ? AppColors.gold : Colors.white24,
                               ),
@@ -691,7 +691,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(horizontal: 4),
                               backgroundColor:
-                                  actionMode == 'revokeVote' ? AppColors.goldDark.withOpacity(0.35) : null,
+                                  actionMode == 'revokeVote' ? AppColors.goldDark.withAlpha(89) : null,
                               side: BorderSide(
                                 color: actionMode == 'revokeVote' ? AppColors.gold : Colors.white24,
                               ),
@@ -706,7 +706,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(horizontal: 4),
                               backgroundColor: actionMode == 'expel'
-                                  ? AppColors.bloodRedLight.withOpacity(0.35)
+                                  ? AppColors.bloodRedLight.withAlpha(89)
                                   : null,
                               side: BorderSide(
                                 color: actionMode == 'expel' ? AppColors.bloodRedLight : Colors.white24,
@@ -851,9 +851,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             decoration: BoxDecoration(
               color: AppColors.surfaceCard,
               borderRadius: BorderRadius.circular(26),
-              border: Border.all(color: AppColors.gold.withOpacity(.22)),
+              border: Border.all(color: AppColors.gold.withAlpha(56)),
               boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(.35), blurRadius: 28, offset: const Offset(0, 14)),
+                BoxShadow(color: Colors.black.withAlpha(89), blurRadius: 28, offset: const Offset(0, 14)),
               ],
             ),
             child: Column(
@@ -862,9 +862,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 Container(
                   width: 58, height: 58,
                   decoration: BoxDecoration(
-                    color: AppColors.goldDark.withOpacity(.22),
+                    color: AppColors.goldDark.withAlpha(56),
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.gold.withOpacity(.25)),
+                    border: Border.all(color: AppColors.gold.withAlpha(64)),
                   ),
                   child: const Icon(Icons.flag_rounded, color: AppColors.goldLight, size: 29),
                 ),
@@ -893,11 +893,11 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     fillColor: AppColors.surfaceDark,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: AppColors.gold.withOpacity(.16)),
+                      borderSide: BorderSide(color: AppColors.gold.withAlpha(41)),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: AppColors.gold.withOpacity(.16)),
+                      borderSide: BorderSide(color: AppColors.gold.withAlpha(41)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -952,7 +952,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                                       decoration: BoxDecoration(
                                         color: AppColors.surfaceCard,
                                         borderRadius: BorderRadius.circular(26),
-                                        border: Border.all(color: AppColors.gold.withOpacity(.22)),
+                                        border: Border.all(color: AppColors.gold.withAlpha(56)),
                                       ),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
@@ -960,7 +960,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                                           Container(
                                             width: 64, height: 64,
                                             decoration: BoxDecoration(
-                                              color: (team?.color ?? AppColors.gold).withOpacity(.16),
+                                              color: (team?.color ?? AppColors.gold).withAlpha(41),
                                               shape: BoxShape.circle,
                                             ),
                                             child: Icon(
@@ -1069,7 +1069,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.goldDark.withOpacity(0.3),
+                color: AppColors.goldDark.withAlpha(77),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -1085,7 +1085,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.goldDark.withOpacity(0.3),
+                color: AppColors.goldDark.withAlpha(77),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Text(
@@ -1209,7 +1209,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     children: [
                       Container(
                         width: 42, height: 42,
-                        decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(.25), shape: BoxShape.circle, border: Border.all(color: AppColors.gold.withOpacity(.25))),
+                        decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(64), shape: BoxShape.circle, border: Border.all(color: AppColors.gold.withAlpha(64))),
                         child: const Icon(Icons.people_alt_rounded, color: AppColors.goldLight),
                       ),
                       const SizedBox(width: 10),
@@ -1246,7 +1246,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                                   child: Row(children: [
-                                    Container(width: 38, height: 38, decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(.22), shape: BoxShape.circle), child: Center(child: Text('${index + 1}', style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w800)))),
+                                    Container(width: 38, height: 38, decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(56), shape: BoxShape.circle), child: Center(child: Text('${index + 1}', style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w800)))),
                                     const SizedBox(width: 12),
                                     Expanded(child: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
                                     const Icon(Icons.chevron_left_rounded, color: Colors.white38),
@@ -1338,10 +1338,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: (danger ? AppColors.bloodRed : AppColors.goldDark).withOpacity(.16),
+        color: (danger ? AppColors.bloodRed : AppColors.goldDark).withAlpha(41),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: (danger ? AppColors.bloodRedLight : AppColors.gold).withOpacity(.30),
+          color: (danger ? AppColors.bloodRedLight : AppColors.gold).withAlpha(77),
         ),
       ),
       child: Row(
@@ -1398,9 +1398,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.bloodRed.withOpacity(.20),
+        color: AppColors.bloodRed.withAlpha(51),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.bloodRedLight.withOpacity(.55)),
+        border: Border.all(color: AppColors.bloodRedLight.withAlpha(140)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1410,7 +1410,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             height: 40,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: AppColors.bloodRedLight.withOpacity(.18),
+              color: AppColors.bloodRedLight.withAlpha(46),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: AppColors.bloodRedLight, size: 21),
@@ -1489,7 +1489,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               decoration: BoxDecoration(
                 color: AppColors.surfaceCard,
                 borderRadius: BorderRadius.circular(26),
-                border: Border.all(color: AppColors.gold.withOpacity(.22)),
+                border: Border.all(color: AppColors.gold.withAlpha(56)),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -1498,7 +1498,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     width: 58,
                     height: 58,
                     decoration: BoxDecoration(
-                      color: AppColors.bloodRed.withOpacity(.28),
+                      color: AppColors.bloodRed.withAlpha(71),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.gps_fixed_rounded, color: AppColors.goldLight, size: 29),
@@ -1640,9 +1640,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
               decoration: BoxDecoration(
-                color: AppColors.bloodRed.withOpacity(.24),
+                color: AppColors.bloodRed.withAlpha(61),
                 borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: AppColors.bloodRedLight.withOpacity(.35)),
+                border: Border.all(color: AppColors.bloodRedLight.withAlpha(89)),
               ),
               child: Row(
                 children: [
@@ -1651,7 +1651,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     height: 32,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: AppColors.bloodRedLight.withOpacity(.20),
+                      color: AppColors.bloodRedLight.withAlpha(51),
                       shape: BoxShape.circle,
                     ),
                     child: Text(
@@ -1692,9 +1692,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       return Center(child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: AppColors.gold.withOpacity(0.35))),
+        decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: AppColors.gold.withAlpha(89))),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(width: 64, height: 64, decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(0.25), shape: BoxShape.circle), child: const Icon(Icons.how_to_vote_rounded, color: AppColors.goldLight, size: 32)),
+          Container(width: 64, height: 64, decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(64), shape: BoxShape.circle), child: const Icon(Icons.how_to_vote_rounded, color: AppColors.goldLight, size: 32)),
           const SizedBox(height: 16),
           Text('رأی‌گیری تمام شد', style: AppTheme.headingFont(size: 22)),
           const SizedBox(height: 6),
@@ -1712,11 +1712,11 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       if (controller.gunExplosionSummary != null) Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-        decoration: BoxDecoration(color: AppColors.bloodRed.withOpacity(0.35), borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.bloodRedLight.withOpacity(0.8))),
+        decoration: BoxDecoration(color: AppColors.bloodRed.withAlpha(89), borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.bloodRedLight.withAlpha(204))),
         child: Row(children: [const Icon(Icons.warning_amber_rounded, color: AppColors.bloodRedLight, size: 20), const SizedBox(width: 9), Expanded(child: Text(controller.gunExplosionSummary!, textAlign: TextAlign.right, style: const TextStyle(color: Colors.white, fontSize: 12, height: 1.35)))]),
       ),
-      Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(22), border: Border.all(color: AppColors.gold.withOpacity(0.28))), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Row(children: [Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), decoration: BoxDecoration(color: controller.isSecondVoteRound ? AppColors.bloodRed.withOpacity(0.45) : AppColors.goldDark.withOpacity(0.28), borderRadius: BorderRadius.circular(20)), child: Text(controller.isSecondVoteRound ? 'دور دوم' : 'رأی‌گیری حذف', style: TextStyle(color: controller.isSecondVoteRound ? AppColors.bloodRedLight : AppColors.goldLight, fontWeight: FontWeight.w800, fontSize: 11))), const Spacer(), Text('$currentIndex / $totalSubjects', style: const TextStyle(color: Colors.white54, fontWeight: FontWeight.w700, fontSize: 12))]),
+      Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(22), border: Border.all(color: AppColors.gold.withAlpha(71))), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Row(children: [Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), decoration: BoxDecoration(color: controller.isSecondVoteRound ? AppColors.bloodRed.withAlpha(115) : AppColors.goldDark.withAlpha(71), borderRadius: BorderRadius.circular(20)), child: Text(controller.isSecondVoteRound ? 'دور دوم' : 'رأی‌گیری حذف', style: TextStyle(color: controller.isSecondVoteRound ? AppColors.bloodRedLight : AppColors.goldLight, fontWeight: FontWeight.w800, fontSize: 11))), const Spacer(), Text('$currentIndex / $totalSubjects', style: const TextStyle(color: Colors.white54, fontWeight: FontWeight.w700, fontSize: 12))]),
         const SizedBox(height: 12), ClipRRect(borderRadius: BorderRadius.circular(20), child: LinearProgressIndicator(value: progress.clamp(0.0, 1.0), minHeight: 6, backgroundColor: Colors.white10, valueColor: const AlwaysStoppedAnimation<Color>(AppColors.gold))),
         const SizedBox(height: 18), const Text('موضوعِ رأی', style: TextStyle(color: Colors.white54, fontSize: 11)), const SizedBox(height: 4), Text(subject.name, textAlign: TextAlign.right, style: AppTheme.headingFont(size: 25)), const SizedBox(height: 8),
         Row(children: [const Icon(Icons.how_to_vote_rounded, color: AppColors.goldLight, size: 18), const SizedBox(width: 7), Text('${subject.votes} رأی', style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w800)), const SizedBox(width: 8), const Text('•', style: TextStyle(color: Colors.white24)), const SizedBox(width: 8), const Expanded(child: Text('رأی‌دهنده‌هایی را که علیه این بازیکن رأی داده‌اند انتخاب کن.', style: TextStyle(color: Colors.white54, fontSize: 11)))]),
@@ -1730,9 +1730,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Widget _voteCandidateButton(SessionPlayer c, {required bool isSelected, required bool enabled, required VoidCallback onTap}) {
     final isLocked=!enabled; final palette=isSelected ? Game3DPalette.danger : Game3DPalette.gold; final colors=Game3DColors.of(palette);
     return Game3DSurface(onPressed: enabled ? onTap : null, palette: palette, depth: enabled ? 5 : 2, borderRadius: BorderRadius.circular(18), padding: const EdgeInsets.all(3), semanticLabel: c.name, child: Container(
-      decoration: BoxDecoration(color: isSelected ? AppColors.bloodRed.withOpacity(0.35) : Colors.black.withOpacity(0.12), borderRadius: BorderRadius.circular(15), border: Border.all(color: isSelected ? AppColors.bloodRedLight : Colors.white.withOpacity(enabled ? 0.08 : 0.04), width: isSelected ? 1.4 : 1)),
+      decoration: BoxDecoration(color: isSelected ? AppColors.bloodRed.withAlpha(89) : Colors.black.withAlpha(31), borderRadius: BorderRadius.circular(15), border: Border.all(color: isSelected ? AppColors.bloodRedLight : Colors.white.withOpacity(enabled ? 0.08 : 0.04), width: isSelected ? 1.4 : 1)),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9), child: Row(children: [
-        Container(width: 38, height: 38, decoration: BoxDecoration(color: isSelected ? AppColors.bloodRedLight.withOpacity(0.28) : Colors.white.withOpacity(0.05), shape: BoxShape.circle), child: Icon(isSelected ? Icons.check_rounded : (isLocked ? Icons.lock_outline_rounded : Icons.person_outline_rounded), color: isSelected ? AppColors.bloodRedLight : (isLocked ? Colors.white24 : colors.text), size: 20)),
+        Container(width: 38, height: 38, decoration: BoxDecoration(color: isSelected ? AppColors.bloodRedLight.withAlpha(71) : Colors.white.withAlpha(13), shape: BoxShape.circle), child: Icon(isSelected ? Icons.check_rounded : (isLocked ? Icons.lock_outline_rounded : Icons.person_outline_rounded), color: isSelected ? AppColors.bloodRedLight : (isLocked ? Colors.white24 : colors.text), size: 20)),
         const SizedBox(width: 9), Expanded(child: Text(c.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: isLocked ? Colors.white30 : Colors.white, fontWeight: FontWeight.w800, fontSize: 13, height: 1.2))),
       ])));
   }
@@ -1778,7 +1778,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           decoration: BoxDecoration(
             color: AppColors.surfaceCard,
             borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: AppColors.gold.withOpacity(.28)),
+            border: Border.all(color: AppColors.gold.withAlpha(71)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1787,7 +1787,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isRunoff ? AppColors.bloodRed.withOpacity(.35) : AppColors.goldDark.withOpacity(.28),
+                    color: isRunoff ? AppColors.bloodRed.withAlpha(89) : AppColors.goldDark.withAlpha(71),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(isRunoff ? 'رأی‌گیری مجدد' : 'انتخاب رهبر', style: TextStyle(color: isRunoff ? AppColors.bloodRedLight : AppColors.goldLight, fontWeight: FontWeight.w800, fontSize: 11)),
@@ -1809,7 +1809,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               const SizedBox(height: 14),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(.15), borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.gold.withOpacity(.24))),
+                decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(38), borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.gold.withAlpha(61))),
                 child: Row(children: [
                   const Icon(Icons.how_to_vote_rounded, color: AppColors.goldLight, size: 22),
                   const SizedBox(width: 10),
@@ -1850,9 +1850,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.goldDark.withOpacity(.16),
+              color: AppColors.goldDark.withAlpha(41),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.gold.withOpacity(.26)),
+              border: Border.all(color: AppColors.gold.withAlpha(66)),
             ),
             child: Row(
               children: [
@@ -1878,9 +1878,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
             decoration: BoxDecoration(
-              color: AppColors.bloodRed.withOpacity(.16),
+              color: AppColors.bloodRed.withAlpha(41),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.bloodRedLight.withOpacity(.28)),
+              border: Border.all(color: AppColors.bloodRedLight.withAlpha(71)),
             ),
             child: const Row(
               children: [
@@ -1915,7 +1915,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                   semanticLabel: 'اخراج ${p.name}',
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
-                    decoration: BoxDecoration(color: Colors.black.withOpacity(.12), borderRadius: BorderRadius.circular(14)),
+                    decoration: BoxDecoration(color: Colors.black.withAlpha(31), borderRadius: BorderRadius.circular(14)),
                     child: Row(
                       children: [
                         const Icon(Icons.person_outline_rounded, color: AppColors.goldLight, size: 21),
@@ -1949,9 +1949,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.goldDark.withOpacity(.14),
+              color: AppColors.goldDark.withAlpha(36),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.gold.withOpacity(.28)),
+              border: Border.all(color: AppColors.gold.withAlpha(71)),
             ),
             child: Column(
               children: [
@@ -2006,9 +2006,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
             decoration: BoxDecoration(
-              color: AppColors.bloodRed.withOpacity(.14),
+              color: AppColors.bloodRed.withAlpha(36),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.bloodRedLight.withOpacity(.28)),
+              border: Border.all(color: AppColors.bloodRedLight.withAlpha(71)),
             ),
             child: Row(
               children: [
@@ -2030,9 +2030,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(.04),
+                color: Colors.white.withAlpha(10),
                 borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: Colors.white.withOpacity(.07)),
+                border: Border.all(color: Colors.white.withAlpha(18)),
               ),
               child: Row(
                 children: [
@@ -2041,7 +2041,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     height: 32,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: AppColors.goldDark.withOpacity(.25),
+                      color: AppColors.goldDark.withAlpha(64),
                       shape: BoxShape.circle,
                     ),
                     child: Text(
@@ -2076,9 +2076,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: AppColors.gold.withOpacity(0.28))),
+          decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: AppColors.gold.withAlpha(71))),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Container(width: 62, height: 62, decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(0.24), shape: BoxShape.circle), child: const Icon(Icons.how_to_vote_rounded, color: AppColors.goldLight, size: 31)),
+            Container(width: 62, height: 62, decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(61), shape: BoxShape.circle), child: const Icon(Icons.how_to_vote_rounded, color: AppColors.goldLight, size: 31)),
             const SizedBox(height: 14),
             Text('دفاعیه تمام شد', style: AppTheme.headingFont(size: 23)),
             const SizedBox(height: 7),
@@ -2130,9 +2130,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: (team?.color ?? AppColors.gold).withOpacity(.12),
+              color: (team?.color ?? AppColors.gold).withAlpha(31),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: (team?.color ?? AppColors.gold).withOpacity(.35)),
+              border: Border.all(color: (team?.color ?? AppColors.gold).withAlpha(89)),
             ),
             child: Column(
               children: [
@@ -2204,7 +2204,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       decoration: BoxDecoration(
         color: AppColors.surfaceCard,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.5)),
+        border: Border.all(color: color.withAlpha(128)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -2255,10 +2255,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         decoration: BoxDecoration(
           color: AppColors.surfaceCard,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.gold.withOpacity(.24)),
+          border: Border.all(color: AppColors.gold.withAlpha(61)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(.18),
+              color: Colors.black.withAlpha(46),
               blurRadius: 22,
               offset: const Offset(0, 10),
             ),
@@ -2273,9 +2273,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                   width: 54,
                   height: 54,
                   decoration: BoxDecoration(
-                    color: AppColors.goldDark.withOpacity(.22),
+                    color: AppColors.goldDark.withAlpha(56),
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.gold.withOpacity(.28)),
+                    border: Border.all(color: AppColors.gold.withAlpha(71)),
                   ),
                   child: const Icon(
                     Icons.cyclone_rounded,
@@ -2307,9 +2307,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.bloodRed.withOpacity(.20),
+                    color: AppColors.bloodRed.withAlpha(51),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.bloodRedLight.withOpacity(.35)),
+                    border: Border.all(color: AppColors.bloodRedLight.withAlpha(89)),
                   ),
                   child: const Text(
                     '۳ نفر',
@@ -2326,9 +2326,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(.12),
+                color: Colors.black.withAlpha(31),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withOpacity(.07)),
+                border: Border.all(color: Colors.white.withAlpha(18)),
               ),
               child: const Text(
                 'فقط ۳ نفر باقی موندن. دو نفر باید در زمانِ مشخص با هم به توافق برسن و متحد بشن؛ نفرِ سوم طرفِ مقابله‌ست.',
@@ -2385,7 +2385,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             decoration: BoxDecoration(
               color: AppColors.surfaceDark,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.gold.withOpacity(.22)),
+              border: Border.all(color: AppColors.gold.withAlpha(56)),
             ),
             child: Text(
               controller.lastResolution?.message ?? '',
@@ -2398,9 +2398,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppColors.goldDark.withOpacity(.16),
+                color: AppColors.goldDark.withAlpha(41),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.gold.withOpacity(.45)),
+                border: Border.all(color: AppColors.gold.withAlpha(115)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -2454,9 +2454,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(.14),
+                color: Colors.black.withAlpha(36),
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: AppColors.gold.withOpacity(.35)),
+                border: Border.all(color: AppColors.gold.withAlpha(89)),
               ),
               child: Text(
                 controller.lastNightSummary!,
@@ -2469,9 +2469,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               Container(
                 padding: const EdgeInsets.all(13),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(.035),
+                  color: Colors.white.withAlpha(9),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withOpacity(.08)),
+                  border: Border.all(color: Colors.white.withAlpha(20)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -2499,7 +2499,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.surfaceDark,
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: AppColors.gold.withOpacity(.16)),
+                  border: Border.all(color: AppColors.gold.withAlpha(41)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -2531,12 +2531,12 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: controller.statusInquiryLastVotePassed == true
-                              ? AppColors.goldDark.withOpacity(.16)
-                              : Colors.white.withOpacity(.025),
+                              ? AppColors.goldDark.withAlpha(41)
+                              : Colors.white.withAlpha(6),
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
                             color: controller.statusInquiryLastVotePassed == true
-                                ? AppColors.gold.withOpacity(.55)
+                                ? AppColors.gold.withAlpha(140)
                                 : Colors.white24,
                           ),
                         ),
@@ -2734,9 +2734,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(.035),
+                color: Colors.white.withAlpha(9),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withOpacity(.08)),
+                border: Border.all(color: Colors.white.withAlpha(20)),
               ),
               child: const Text(
                 'امشب تیمِ رهبر قابلیتی ندارد؛ فقط به مرحله‌ی بعد برو.',
@@ -2816,7 +2816,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         decoration: BoxDecoration(
           color: AppColors.surfaceDark,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.bloodRedLight.withOpacity(.28)),
+          border: Border.all(color: AppColors.bloodRedLight.withAlpha(71)),
         ),
         child: const Row(
           children: [
@@ -2836,13 +2836,13 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       decoration: BoxDecoration(
         color: AppColors.surfaceCard,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.gold.withOpacity(.18)),
+        border: Border.all(color: AppColors.gold.withAlpha(46)),
       ),
       child: Column(
         children: [
           Container(
             width: 58, height: 58,
-            decoration: BoxDecoration(color: AppColors.bloodRed.withOpacity(.28), shape: BoxShape.circle),
+            decoration: BoxDecoration(color: AppColors.bloodRed.withAlpha(71), shape: BoxShape.circle),
             child: const Icon(Icons.local_fire_department_rounded, color: AppColors.goldLight, size: 30),
           ),
           const SizedBox(height: 12),
@@ -2885,14 +2885,14 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           decoration: BoxDecoration(
             color: AppColors.surfaceCard,
             borderRadius: BorderRadius.circular(26),
-            border: Border.all(color: AppColors.gold.withOpacity(.22)),
+            border: Border.all(color: AppColors.gold.withAlpha(56)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 width: 52, height: 52,
-                decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(.25), shape: BoxShape.circle),
+                decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(64), shape: BoxShape.circle),
                 child: const Icon(Icons.password_rounded, color: AppColors.goldLight, size: 28),
               ),
               const SizedBox(height: 12),
@@ -2979,7 +2979,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       decoration: BoxDecoration(
         color: AppColors.surfaceCard,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.gold.withOpacity(0.4)),
+        border: Border.all(color: AppColors.gold.withAlpha(102)),
       ),
       child: Text(
         '$label: $name',
@@ -3590,7 +3590,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color: AppColors.bloodRed.withOpacity(.22),
+                color: AppColors.bloodRed.withAlpha(56),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.gavel_rounded, color: AppColors.goldLight),
@@ -3610,7 +3610,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             fillColor: AppColors.surfaceDark,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: AppColors.gold.withOpacity(.18)),
+              borderSide: BorderSide(color: AppColors.gold.withAlpha(46)),
             ),
           ),
         ),
@@ -3679,7 +3679,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           title: Row(children: [
             Container(width: 42, height: 42,
-              decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(.22), shape: BoxShape.circle),
+              decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(56), shape: BoxShape.circle),
               child: const Icon(Icons.record_voice_over_rounded, color: AppColors.goldLight)),
             const SizedBox(width: 12), const Text('بازجویی'),
           ]),
@@ -3755,7 +3755,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           title: Row(children: [
             Container(width: 42, height: 42,
-              decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(.22), shape: BoxShape.circle),
+              decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(56), shape: BoxShape.circle),
               child: const Icon(Icons.psychology_rounded, color: AppColors.goldLight)),
             const SizedBox(width: 12), const Expanded(child: Text('سؤال اطلاعاتی')),
           ]),
@@ -3765,7 +3765,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 style: TextStyle(color: AppColors.mutedText, fontSize: 12)),
               const SizedBox(height: 10),
               ...targets.map((p) => Material(
-                color: selected.contains(p.id) ? AppColors.goldDark.withOpacity(.16) : AppColors.surfaceDark,
+                color: selected.contains(p.id) ? AppColors.goldDark.withAlpha(41) : AppColors.surfaceDark,
                 borderRadius: BorderRadius.circular(14),
                 child: CheckboxListTile(
                   dense: true, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -3774,7 +3774,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     if (v ?? false) { selected.add(p.id); } else { selected.remove(p.id); }
                   }),
                   title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                  secondary: CircleAvatar(radius: 16, backgroundColor: AppColors.goldDark.withOpacity(.24),
+                  secondary: CircleAvatar(radius: 16, backgroundColor: AppColors.goldDark.withAlpha(61),
                     child: Text('\${targets.indexOf(p) + 1}',
                       style: const TextStyle(color: AppColors.goldLight, fontSize: 12))),
                 ),
@@ -3932,7 +3932,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           title: Row(children: [
             Container(width: 42, height: 42,
-              decoration: BoxDecoration(color: AppColors.goldDark.withOpacity(.22), shape: BoxShape.circle),
+              decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(56), shape: BoxShape.circle),
               child: const Icon(Icons.front_hand_rounded, color: AppColors.goldLight)),
             const SizedBox(width: 12), const Text('دادنِ اسلحه'),
           ]),
@@ -4155,18 +4155,18 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             decoration: BoxDecoration(
               color: AppColors.surfaceCard,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-              border: Border(top: BorderSide(color: AppColors.gold.withOpacity(.22))),
+              border: Border(top: BorderSide(color: AppColors.gold.withAlpha(56))),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(width: 44, height: 5, decoration: BoxDecoration(color: AppColors.gold.withOpacity(.3), borderRadius: BorderRadius.circular(10))),
+                Container(width: 44, height: 5, decoration: BoxDecoration(color: AppColors.gold.withAlpha(77), borderRadius: BorderRadius.circular(10))),
                 const SizedBox(height: 16),
                 Row(
                   children: [
                     Container(
                       width: 46, height: 46,
-                      decoration: BoxDecoration(color: AppColors.bloodRed.withOpacity(.35), shape: BoxShape.circle),
+                      decoration: BoxDecoration(color: AppColors.bloodRed.withAlpha(89), shape: BoxShape.circle),
                       child: const Icon(Icons.warning_amber_rounded, color: AppColors.goldLight),
                     ),
                     const SizedBox(width: 12),
@@ -4394,7 +4394,7 @@ class _PlayerScoreDetailScreen extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.surfaceCard,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.gold.withOpacity(.18)),
+              border: Border.all(color: AppColors.gold.withAlpha(46)),
             ),
             child: Row(
               children: [
@@ -4437,7 +4437,7 @@ class _PlayerScoreDetailScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.surfaceCard,
                   borderRadius: BorderRadius.circular(22),
-                  border: Border.all(color: scoreColor.withOpacity(.22)),
+                  border: Border.all(color: scoreColor.withAlpha(56)),
                 ),
                 child: ExpansionTile(
                   tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -4446,7 +4446,7 @@ class _PlayerScoreDetailScreen extends StatelessWidget {
                   collapsedIconColor: AppColors.mutedText,
                   leading: CircleAvatar(
                     radius: 19,
-                    backgroundColor: scoreColor.withOpacity(.14),
+                    backgroundColor: scoreColor.withAlpha(36),
                     child: Text(
                       '\${index + 1}',
                       style: TextStyle(color: scoreColor, fontWeight: FontWeight.w800),
@@ -4466,7 +4466,7 @@ class _PlayerScoreDetailScreen extends StatelessWidget {
                   trailing: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
                     decoration: BoxDecoration(
-                      color: scoreColor.withOpacity(.12),
+                      color: scoreColor.withAlpha(31),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -4488,7 +4488,7 @@ class _PlayerScoreDetailScreen extends StatelessWidget {
                           ),
                         ]
                       : [
-                          Divider(color: scoreColor.withOpacity(.12), height: 1),
+                          Divider(color: scoreColor.withAlpha(31), height: 1),
                           ...p.scoreEvents.map((e) => _scoreEventRow(e)),
                         ],
                 ),
@@ -4504,9 +4504,9 @@ class _PlayerScoreDetailScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 8),
         decoration: BoxDecoration(
-          color: color.withOpacity(.08),
+          color: color.withAlpha(20),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(.12)),
+          border: Border.all(color: color.withAlpha(31)),
         ),
         child: Column(
           children: [
