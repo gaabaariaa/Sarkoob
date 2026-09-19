@@ -210,6 +210,7 @@ class _StatsScreenState extends State<StatsScreen> {
   List<_RoleBest> get _bestPerRole {
     final counts = <String, Map<String, int>>{}; // roleId -> playerKey -> count
     final displayNames = <String, String>{}; // playerKey -> آخرین اسمِ دیده‌شده
+    final metricsByRoleId = <String, RoleSuccessMetric>{};
     for (final entry in _history) {
       for (final p in entry.players) {
         if (p.roleId == null) continue;
@@ -217,6 +218,7 @@ class _StatsScreenState extends State<StatsScreen> {
         if (scenario == null) continue;
         final metric = roleSuccessMetricsForScenario(scenario)[p.roleId];
         if (metric == null) continue;
+        metricsByRoleId[p.roleId!] = metric;
         final key = p.rosterId ?? p.name;
         displayNames[key] = p.name;
         final successCount = p.scoreEvents
@@ -238,7 +240,7 @@ class _StatsScreenState extends State<StatsScreen> {
         ..sort((a, b) => b.count.compareTo(a.count));
       result.add(_RoleBest(
         roleName: role.name,
-        unitLabel: roleSuccessMetrics.values.firstWhere((metric) => metric.unitLabel.isNotEmpty && roleSuccessMetrics[roleEntry.key] == metric).unitLabel,
+        unitLabel: metricsByRoleId[roleEntry.key]!.unitLabel,
         rankings: rankings,
       ));
     }
