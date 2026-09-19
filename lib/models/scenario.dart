@@ -28,6 +28,9 @@ class GameScenario {
   final String resistanceGroupLabel;
   final String forbiddenWordLabel;
   final String revolutionaryActionLabel;
+  final String independentInvestigationQuestion;
+  final String independentInvestigationYes;
+  final String independentInvestigationNo;
   final Map<String, String> roleIds;
 
   String roleIdFor(String key) => roleIds[key] ?? key;
@@ -51,6 +54,9 @@ class GameScenario {
     required this.resistanceGroupLabel,
     required this.forbiddenWordLabel,
     required this.revolutionaryActionLabel,
+    required this.independentInvestigationQuestion,
+    required this.independentInvestigationYes,
+    required this.independentInvestigationNo,
     required this.roleIds,
   });
 }
@@ -79,6 +85,12 @@ class SarkoobScenarios {
     resistanceGroupLabel: 'مقاومت',
     forbiddenWordLabel: 'کلمه‌ی ممنوع',
     revolutionaryActionLabel: 'اعدامِ انقلابی',
+    independentInvestigationQuestion: 'عضوِ یه تیمِ مستقله',
+    independentInvestigationYes: 'مستقله',
+    independentInvestigationNo: 'مستقل نیست',
+    independentInvestigationQuestion: 'زودیاکه',
+    independentInvestigationYes: 'زودیاکه',
+    independentInvestigationNo: 'زودیاک نیست',
     roleIds: {
       'independentLeader': 'role_mossad_leader',
       'rapper': 'role_rapper',
