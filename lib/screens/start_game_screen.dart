@@ -302,7 +302,6 @@ class _StartGameScreenState extends State<StartGameScreen> {
       : (_isIndependentTeamEnabled(_selectedScenario!) ? 1 : 0);
   int get _mafiaAssignedTotal => _mafiaGangTotal + _mafiaTownTotal + _zodiacTotal;
 
-  bool get _isMafiaScenario => _selectedScenario == SarkoobScenarios.mafia;
 
   String? get _mafiaValidationError {
     final total = _draftPlayers.length;
