@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/role.dart';
 import '../models/role_scoring_info.dart';
+import '../models/scenario.dart';
 import '../models/team.dart';
 import '../theme/app_theme.dart';
 
@@ -15,6 +16,9 @@ class RoleInfoCard extends StatelessWidget {
     required this.team,
     this.showScoringInfo = false,
   });
+
+  GameScenario get _scenarioForTeam => SarkoobScenarios.byId(team.scenarioId) ??
+      (throw StateError('Unknown scenario "${team.scenarioId}" for team ${team.id}'));
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +97,7 @@ class RoleInfoCard extends StatelessWidget {
               style: const TextStyle(color: Colors.white70, height: 1.7, fontSize: 13),
             ),
           ),
-          if (showScoringInfo && roleScoringInfo[role.id] != null) ...[
+          if (showScoringInfo && roleScoringInfoForScenario(_scenarioForTeam).containsKey(role.id)) ...[
             const SizedBox(height: 14),
             _panel(
               borderColor: AppColors.gold.withAlpha(71),
@@ -109,7 +113,7 @@ class RoleInfoCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    roleScoringInfo[role.id]!,
+                    roleScoringInfoForScenario(_scenarioForTeam)[role.id]!,
                     textAlign: TextAlign.center,
                     style: const TextStyle(color: Colors.white60, height: 1.7, fontSize: 12),
                   ),
