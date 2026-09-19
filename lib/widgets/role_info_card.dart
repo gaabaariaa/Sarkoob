@@ -25,7 +25,7 @@ class RoleInfoCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _panel(
-            borderColor: team.color.withOpacity(0.55),
+            borderColor: team.color.withAlpha(140),
             child: Row(
               children: [
                 Container(
@@ -57,7 +57,7 @@ class RoleInfoCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.surfaceCard,
               borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: team.color.withOpacity(0.28)),
+              border: Border.all(color: team.color.withAlpha(71)),
             ),
             clipBehavior: Clip.antiAlias,
             child: role.imageAsset != null
@@ -78,7 +78,7 @@ class RoleInfoCard extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           _panel(
-            borderColor: AppColors.gold.withOpacity(0.22),
+            borderColor: AppColors.gold.withAlpha(56),
             child: Center(
               child: Text(role.name, style: AppTheme.headingFont(size: 23)),
             ),
@@ -96,7 +96,7 @@ class RoleInfoCard extends StatelessWidget {
           if (showScoringInfo && roleScoringInfo[role.id] != null) ...[
             const SizedBox(height: 14),
             _panel(
-              borderColor: AppColors.gold.withOpacity(0.28),
+              borderColor: AppColors.gold.withAlpha(71),
               child: Column(
                 children: [
                   Row(
