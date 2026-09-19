@@ -757,8 +757,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
                       decoration: BoxDecoration(
                         color: AppColors.surfaceCard,
                         borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: _selectedScenario!.color.withOpacity(.25)),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(.22), blurRadius: 24, offset: const Offset(0, 10))],
+                        border: Border.all(color: _selectedScenario!.color.withAlpha(64)),
+                        boxShadow: [BoxShadow(color: Colors.black.withAlpha(56), blurRadius: 24, offset: const Offset(0, 10))],
                       ),
                       child: Row(
                         children: [
@@ -766,7 +766,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                             width: 54,
                             height: 54,
                             decoration: BoxDecoration(
-                              color: _selectedScenario!.color.withOpacity(.14),
+                              color: _selectedScenario!.color.withAlpha(36),
                               borderRadius: BorderRadius.circular(17),
                             ),
                             alignment: Alignment.center,
@@ -833,13 +833,13 @@ class _StartGameScreenState extends State<StartGameScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                             decoration: BoxDecoration(
                               color: (assigned == total && total > 0)
-                                  ? AppColors.gold.withOpacity(.07)
-                                  : AppColors.bloodRed.withOpacity(.20),
+                                  ? AppColors.gold.withAlpha(18)
+                                  : AppColors.bloodRed.withAlpha(51),
                               borderRadius: BorderRadius.circular(15),
                               border: Border.all(
                                 color: assigned == total && total > 0
-                                    ? AppColors.gold.withOpacity(.35)
-                                    : AppColors.bloodRedLight.withOpacity(.55),
+                                    ? AppColors.gold.withAlpha(89)
+                                    : AppColors.bloodRedLight.withAlpha(140),
                               ),
                             ),
                             child: Row(
@@ -904,8 +904,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
                               prefixIcon: const Icon(Icons.location_on_outlined, color: AppColors.gold),
                               filled: true,
                               fillColor: AppColors.surfaceDark,
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: AppColors.goldDark.withOpacity(.35))),
-                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: AppColors.goldDark.withOpacity(.35))),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: AppColors.goldDark.withAlpha(89))),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: AppColors.goldDark.withAlpha(89))),
                               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: const BorderSide(color: AppColors.gold)),
                             ),
                           ),
@@ -918,9 +918,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
                         margin: const EdgeInsets.only(bottom: 12),
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: AppColors.bloodRed.withOpacity(.22),
+                          color: AppColors.bloodRed.withAlpha(56),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.bloodRedLight.withOpacity(.6)),
+                          border: Border.all(color: AppColors.bloodRedLight.withAlpha(153)),
                         ),
                         child: Row(
                           children: [
@@ -956,7 +956,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
       decoration: BoxDecoration(
         color: AppColors.surfaceDark,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.gold.withOpacity(.10)),
+        border: Border.all(color: AppColors.gold.withAlpha(26)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -967,7 +967,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: AppColors.goldDark.withOpacity(.14),
+                  color: AppColors.goldDark.withAlpha(36),
                   borderRadius: BorderRadius.circular(13),
                 ),
                 child: Icon(icon, color: AppColors.goldLight),
@@ -1043,7 +1043,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
         builder: (context) => Scaffold(
           appBar: AppBar(
             title: Text(title),
-            backgroundColor: Color.alphaBlend(appBarTint.withOpacity(0.28), AppColors.surfaceDark),
+            backgroundColor: Color.alphaBlend(appBarTint.withAlpha(71), AppColors.surfaceDark),
           ),
           body: StatefulBuilder(
             builder: (context, setSheetState) => SingleChildScrollView(
@@ -1121,7 +1121,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                   margin: const EdgeInsets.only(bottom: 8),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
-                    side: BorderSide(color: AppColors.gold.withOpacity(0.3)),
+                    side: BorderSide(color: AppColors.gold.withAlpha(77)),
                   ),
                   child: ListTile(
                     leading: const Icon(Icons.drag_handle, color: Colors.white38),
@@ -1576,7 +1576,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
               margin: const EdgeInsets.only(bottom: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: scenario.color.withOpacity(0.6), width: 1.5),
+                side: BorderSide(color: scenario.color.withAlpha(153), width: 1.5),
               ),
               child: InkWell(
                 borderRadius: BorderRadius.circular(12),
