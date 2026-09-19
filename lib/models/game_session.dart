@@ -1,5 +1,4 @@
 import 'role.dart';
-import 'scenario.dart';
 import 'score_event.dart';
 
 /// برچسبِ فارسیِ هر مرحله‌ی تنبیهِ انضباطیِ گرداننده — هم تو خودِ بازی
