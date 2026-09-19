@@ -5,6 +5,7 @@ import '../models/role.dart';
 import '../models/scenario.dart';
 import '../models/team.dart';
 import '../services/storage_service.dart';
+import '../services/scenario_role_assigner.dart';
 import '../theme/app_theme.dart';
 import '../widgets/game_3d_button.dart';
 import 'role_reveal_screen.dart';
