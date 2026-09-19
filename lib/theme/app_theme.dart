@@ -104,7 +104,7 @@ class AppTheme {
       visualDensity: VisualDensity.standard,
       splashFactory: InkRipple.splashFactory,
       appBarTheme: AppBarTheme(backgroundColor: background, elevation: 0, centerTitle: true, foregroundColor: primaryLight, scrolledUnderElevation: 0, titleTextStyle: GoogleFonts.lalezar(fontSize: 21, color: primaryLight, height: 1.15), iconTheme: IconThemeData(color: primaryLight)),
-      cardTheme: CardThemeData(color: card, elevation: 0, margin: EdgeInsets.zero, surfaceTintColor: Colors.transparent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18), side: BorderSide(color: primary.withOpacity(0.12)))),
+      cardTheme: CardThemeData(color: card, elevation: 0, margin: EdgeInsets.zero, surfaceTintColor: Colors.transparent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18), side: BorderSide(color: primary.withAlpha(31)))),
       listTileTheme: ListTileThemeData(tileColor: card, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), iconColor: primaryLight, textColor: Colors.white, contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3)),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: surface,
@@ -112,10 +112,10 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         showDragHandle: true,
-        dragHandleColor: primary.withOpacity(0.30),
+        dragHandleColor: primary.withAlpha(77),
         shape: RoundedRectangleBorder(
           borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-          side: BorderSide(color: primary.withOpacity(0.14)),
+          side: BorderSide(color: primary.withAlpha(36)),
         ),
       ),
       dialogTheme: DialogThemeData(
@@ -123,7 +123,7 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         shadowColor: Colors.black54,
-        barrierColor: Colors.black.withOpacity(0.72),
+        barrierColor: Colors.black.withAlpha(184),
         insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         titleTextStyle: TextStyle(
           color: primaryLight,
@@ -138,19 +138,19 @@ class AppTheme {
         actionsPadding: const EdgeInsets.fromLTRB(18, 4, 18, 18),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: primary.withOpacity(0.16)),
+          side: BorderSide(color: primary.withAlpha(41)),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(style: ElevatedButton.styleFrom(backgroundColor: primary, foregroundColor: Colors.black, minimumSize: const Size(0, 50), padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14), elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), textStyle: const TextStyle(fontWeight: FontWeight.w800))),
-      outlinedButtonTheme: OutlinedButtonThemeData(style: OutlinedButton.styleFrom(foregroundColor: primaryLight, minimumSize: const Size(0, 48), padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12), side: BorderSide(color: primary.withOpacity(0.55)), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), textStyle: const TextStyle(fontWeight: FontWeight.w700))),
+      outlinedButtonTheme: OutlinedButtonThemeData(style: OutlinedButton.styleFrom(foregroundColor: primaryLight, minimumSize: const Size(0, 48), padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12), side: BorderSide(color: primary.withAlpha(140)), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), textStyle: const TextStyle(fontWeight: FontWeight.w700))),
       textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: primaryLight, textStyle: const TextStyle(fontWeight: FontWeight.w700))),
-      switchTheme: SwitchThemeData(thumbColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? primary : Colors.white38), trackColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? primary.withOpacity(0.35) : Colors.white12), trackOutlineColor: WidgetStateProperty.all(primary.withOpacity(0.18))),
+      switchTheme: SwitchThemeData(thumbColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? primary : Colors.white38), trackColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? primary.withAlpha(89) : Colors.white12), trackOutlineColor: WidgetStateProperty.all(primary.withAlpha(46))),
       radioTheme: RadioThemeData(fillColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? primary : Colors.white38)),
-      checkboxTheme: CheckboxThemeData(fillColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? primary : Colors.transparent), checkColor: WidgetStateProperty.all(Colors.black), side: BorderSide(color: primary.withOpacity(0.55))),
+      checkboxTheme: CheckboxThemeData(fillColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? primary : Colors.transparent), checkColor: WidgetStateProperty.all(Colors.black), side: BorderSide(color: primary.withAlpha(140))),
       iconTheme: IconThemeData(color: primaryLight),
-      dividerTheme: DividerThemeData(color: primary.withOpacity(0.14), thickness: 1, space: 1),
-      sliderTheme: SliderThemeData(activeTrackColor: primary, inactiveTrackColor: primary.withOpacity(0.18), thumbColor: primaryLight, overlayColor: primary.withOpacity(0.12)),
-      inputDecorationTheme: InputDecorationTheme(filled: true, fillColor: card, contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14), border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: primary.withOpacity(0.12))), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: primary.withOpacity(0.12))), focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: primary, width: 1.2)), labelStyle: TextStyle(color: primaryLight.withOpacity(0.78)), floatingLabelStyle: TextStyle(color: primaryLight), hintStyle: TextStyle(color: Colors.white.withOpacity(0.38))),
+      dividerTheme: DividerThemeData(color: primary.withAlpha(36), thickness: 1, space: 1),
+      sliderTheme: SliderThemeData(activeTrackColor: primary, inactiveTrackColor: primary.withAlpha(46), thumbColor: primaryLight, overlayColor: primary.withAlpha(31)),
+      inputDecorationTheme: InputDecorationTheme(filled: true, fillColor: card, contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14), border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: primary.withAlpha(31))), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: primary.withAlpha(31))), focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: primary, width: 1.2)), labelStyle: TextStyle(color: primaryLight.withAlpha(199)), floatingLabelStyle: TextStyle(color: primaryLight), hintStyle: TextStyle(color: Colors.white.withAlpha(97))),
     );
   }
 
