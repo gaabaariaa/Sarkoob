@@ -10,7 +10,6 @@ import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/countdown_timer_widget.dart';
 import '../widgets/game_3d_button.dart';
-import '../widgets/role_card.dart';
 import '../widgets/modern_speaking_panel.dart';
 import '../widgets/modern_defense_panel.dart';
 import '../widgets/modern_night_panel.dart';
@@ -4448,7 +4447,7 @@ class _PlayerScoreDetailScreen extends StatelessWidget {
                     radius: 19,
                     backgroundColor: scoreColor.withAlpha(36),
                     child: Text(
-                      '\${index + 1}',
+                      '${index + 1}',
                       style: TextStyle(color: scoreColor, fontWeight: FontWeight.w800),
                     ),
                   ),
@@ -4459,7 +4458,7 @@ class _PlayerScoreDetailScreen extends StatelessWidget {
                   subtitle: Padding(
                     padding: const EdgeInsets.only(top: 3),
                     child: Text(
-                      '\${roleName ?? teamName} • \$teamName',
+                      '${roleName ?? teamName} • $teamName',
                       style: const TextStyle(color: AppColors.mutedText, fontSize: 11),
                     ),
                   ),
