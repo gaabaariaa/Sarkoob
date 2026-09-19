@@ -303,7 +303,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 class _ThemePicker extends StatelessWidget {
   const _ThemePicker();
 
-  Widget _buildSectionHeader(IconData icon, String title, String subtitle) => Padding(padding: const EdgeInsets.only(left: 2, right: 2), child: Row(children: [Container(width: 40, height: 40, decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(46), borderRadius: BorderRadius.circular(12)), child: Icon(icon, color: AppColors.goldLight, size: 20)), const SizedBox(width: 11), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: AppTheme.headingFont(size: 19)), const SizedBox(height: 2), Text(subtitle, style: const TextStyle(color: AppColors.mutedText, fontSize: 11))]))]));
+
 
   @override
   Widget build(BuildContext context) {
