@@ -423,317 +423,134 @@ class _StartGameScreenState extends State<StartGameScreen> {
   void _startGame() {
     final scenario = _selectedScenario;
     if (scenario == null) return;
-    final total = _draftPlayers.length;
-    final independentTeamId = _isIndependentTeamEnabled(scenario)
-        ? scenario.independentTeamId
-        : null;
-    final sorkoobCount = _sorkoobTotal;
-    final independentCount = _independentTotal;
 
-    // تخصیصِ تیم: کاملاً تصادفی. کلِ بازیکن‌ها رو قاطی می‌کنیم، اولین
-    // $sorkoobCount نفر سرکوب، بعدی‌ها (اگه تیمِ مستقل فعاله) مستقل، و
-    // بقیه خودکار شهروند.
-    final allShuffled = List<int>.generate(total, (i) => i)..shuffle();
-    final sorkoobIndices = allShuffled.take(sorkoobCount).toSet();
-    final independentIndices =
-        allShuffled.skip(sorkoobCount).take(independentCount).toSet();
-
-    final sorkoobShuffled = sorkoobIndices.toList()..shuffle();
-    final valiFaghihIndex =
-        (_includeValiFaghih && sorkoobShuffled.isNotEmpty) ? sorkoobShuffled[0] : null;
-
-    // یکی از اعضای تیمِ مستقل (اگه موساد فعال باشه) رهبرِ موساد می‌شه —
-    // درست مثلِ ولی‌فقیهِ سرکوب.
-    final independentShuffled = independentIndices.toList()..shuffle();
-    final independentLeaderIndex =
-        (_isIndependentTeamEnabled(scenario) && independentShuffled.isNotEmpty)
-            ? independentShuffled[0]
-            : null;
-
-    var sorkoobCursor = _includeValiFaghih ? 1 : 0; // اندیسِ ۰ فقط اگه ولی‌فقیه فعال باشه رزرو می‌شه
-    int? nextSorkoobIndex(bool enabled) {
-      if (!enabled || sorkoobCursor >= sorkoobShuffled.length) return null;
-      return sorkoobShuffled[sorkoobCursor++];
-    }
-
-    final foreignMinisterIndex = nextSorkoobIndex(_includeForeignMinister);
-    final judiciaryChiefIndex = nextSorkoobIndex(_includeJudiciaryChief);
-    final celebrityIndex = nextSorkoobIndex(_includeCelebrity);
-    final interrogatorIndex = nextSorkoobIndex(_includeInterrogator);
-    final intelMinisterIndex = nextSorkoobIndex(_includeIntelMinister);
-    final policeCommanderIndex = nextSorkoobIndex(_includePoliceCommander);
-    final mercenaryIndex = nextSorkoobIndex(_includeMercenary);
-
-    final citizenShuffled = List<int>.generate(total, (i) => i)
-        .where((i) => !sorkoobIndices.contains(i) && !independentIndices.contains(i))
-        .toList()
-      ..shuffle();
-
-    var citizenCursor = 0;
-    int? nextCitizenIndex(bool enabled) {
-      if (!enabled || citizenCursor >= citizenShuffled.length) return null;
-      return citizenShuffled[citizenCursor++];
-    }
-
-    final doctorIndex = nextCitizenIndex(_includeDoctor);
-    final hackerIndex = nextCitizenIndex(_includeHacker);
-    final revolutionaryIndex = nextCitizenIndex(_includeRevolutionary);
-    final lawyerIndex = nextCitizenIndex(_includeLawyer);
-    final zhinaIndex = nextCitizenIndex(_includeZhina);
-    final rapperIndex = nextCitizenIndex(_includeRapper);
-    final rebelIndex = nextCitizenIndex(_includeRebel);
-    final nationalHeroIndex = nextCitizenIndex(_includeNationalHero);
-    final civicActivistIndex = nextCitizenIndex(_includeCivicActivist);
-    final politicalAnalystIndex = nextCitizenIndex(_includePoliticalAnalyst);
-
-    final slaughterCharges = (total / 6).floor().clamp(1, 999);
-    final revolutionaryCharges = (sorkoobCount - 1).clamp(0, 999);
-    final warGunCharges = slaughterCharges; // همون فرمولِ «هر ۶ نفر یکی»، رو کلِ بازیکن‌ها
-    final intelQuestionCharges = slaughterCharges; // همون فرمول
-    final guaranteeCharges = slaughterCharges; // همون فرمول
-
-    final players = <SessionPlayer>[];
-    for (var i = 0; i < total; i++) {
-      final String teamId;
-      if (sorkoobIndices.contains(i)) {
-        teamId = scenario.leaderTeamId;
-      } else if (independentIndices.contains(i)) {
-        teamId = independentTeamId!;
-      } else {
-        teamId = scenario.townTeamId;
-      }
-
-      String? roleId;
-      if (i == valiFaghihIndex) {
-        roleId = SarkoobRoles.valiFaghih.id;
-      } else if (i == foreignMinisterIndex) {
-        roleId = SarkoobRoles.foreignMinister.id;
-      } else if (i == judiciaryChiefIndex) {
-        roleId = SarkoobRoles.judiciaryChief.id;
-      } else if (i == celebrityIndex) {
-        roleId = SarkoobRoles.governmentCelebrity.id;
-      } else if (i == interrogatorIndex) {
-        roleId = SarkoobRoles.interrogator.id;
-      } else if (i == intelMinisterIndex) {
-        roleId = SarkoobRoles.intelligenceMinister.id;
-      } else if (i == policeCommanderIndex) {
-        roleId = SarkoobRoles.policeCommander.id;
-      } else if (i == mercenaryIndex) {
-        roleId = SarkoobRoles.mercenary.id;
-      } else if (i == doctorIndex) {
-        roleId = SarkoobRoles.doctor.id;
-      } else if (i == hackerIndex) {
-        roleId = SarkoobRoles.hacker.id;
-      } else if (i == revolutionaryIndex) {
-        roleId = SarkoobRoles.revolutionaryFighter.id;
-      } else if (i == lawyerIndex) {
-        roleId = SarkoobRoles.lawyer.id;
-      } else if (i == zhinaIndex) {
-        roleId = SarkoobRoles.zhina.id;
-      } else if (i == rapperIndex) {
-        roleId = SarkoobRoles.rapper.id;
-      } else if (i == rebelIndex) {
-        roleId = SarkoobRoles.rebel.id;
-      } else if (i == nationalHeroIndex) {
-        roleId = SarkoobRoles.nationalHero.id;
-      } else if (i == civicActivistIndex) {
-        roleId = SarkoobRoles.civicActivist.id;
-      } else if (i == politicalAnalystIndex) {
-        roleId = SarkoobRoles.politicalAnalyst.id;
-      } else if (i == independentLeaderIndex) {
-        roleId = SarkoobRoles.byId(scenario.independentLeaderRoleId)?.id;
-      }
-
-      // نقشِ ساده هم از قراردادِ خودِ سناریو می‌آید؛ موتور نباید
-      // برای این حالت به نامِ یک سناریوی خاص وابسته باشد.
-      if (roleId == null) {
-        if (teamId == scenario.leaderTeamId) {
-          roleId = scenario.leaderDefaultRoleId;
-        } else if (teamId == scenario.townTeamId) {
-          roleId = scenario.townDefaultRoleId;
-        }
-      }
-
-      players.add(
-        SessionPlayer(
-          id: i + 1,
-          name: _draftPlayers[i],
-          rosterId: _draftRosterLinks[_draftPlayers[i]],
-          teamId: teamId,
-          roleId: roleId,
-          hasArmor: i == valiFaghihIndex,
-          slaughterChargesRemaining: i == valiFaghihIndex ? slaughterCharges : null,
-          revolutionaryChargesRemaining: i == revolutionaryIndex ? revolutionaryCharges : null,
-          warGunsRemaining: i == rebelIndex ? warGunCharges : null,
-          intelQuestionsRemaining: i == intelMinisterIndex ? intelQuestionCharges : null,
-          guaranteesRemaining: i == nationalHeroIndex ? guaranteeCharges : null,
-        ),
-      );
-    }
-
-    final settings = GameSettings(
-      scenarioId: scenario.id,
-      speakSeconds: _speakSeconds,
-      doctorMaxSelfSaves: _doctorMaxSelfSaves,
-      location: _locationController.text.trim(),
-    );
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => RoleRevealScreen(players: players, settings: settings),
-      ),
+    _startScenarioWithRoles(
+      scenario: scenario,
+      leaderCount: _sorkoobTotal,
+      independentCount: _independentTotal,
+      leaderRoleIds: [
+        if (_includeValiFaghih) SarkoobRoles.valiFaghih.id,
+        if (_includeForeignMinister) SarkoobRoles.foreignMinister.id,
+        if (_includeJudiciaryChief) SarkoobRoles.judiciaryChief.id,
+        if (_includeCelebrity) SarkoobRoles.governmentCelebrity.id,
+        if (_includeInterrogator) SarkoobRoles.interrogator.id,
+        if (_includeIntelMinister) SarkoobRoles.intelligenceMinister.id,
+        if (_includePoliceCommander) SarkoobRoles.policeCommander.id,
+        if (_includeMercenary) SarkoobRoles.mercenary.id,
+      ],
+      townRoleIds: [
+        if (_includeDoctor) SarkoobRoles.doctor.id,
+        if (_includeHacker) SarkoobRoles.hacker.id,
+        if (_includeRevolutionary) SarkoobRoles.revolutionaryFighter.id,
+        if (_includeLawyer) SarkoobRoles.lawyer.id,
+        if (_includeZhina) SarkoobRoles.zhina.id,
+        if (_includeRapper) SarkoobRoles.rapper.id,
+        if (_includeRebel) SarkoobRoles.rebel.id,
+        if (_includeNationalHero) SarkoobRoles.nationalHero.id,
+        if (_includeCivicActivist) SarkoobRoles.civicActivist.id,
+        if (_includePoliticalAnalyst) SarkoobRoles.politicalAnalyst.id,
+      ],
+      independentEnabled: _isIndependentTeamEnabled(scenario),
+      slaughterRoleId: SarkoobRoles.valiFaghih.id,
+      revolutionaryRoleId: SarkoobRoles.revolutionaryFighter.id,
+      warGunRoleId: SarkoobRoles.rebel.id,
+      intelRoleId: SarkoobRoles.intelligenceMinister.id,
+      guaranteeRoleId: SarkoobRoles.nationalHero.id,
+      armorRoleIds: {SarkoobRoles.valiFaghih.id},
     );
   }
 
-  /// نسخه‌ی سناریوی «مافیا»ی شروعِ بازی — کاملاً موازیِ _startGame، فقط
-  /// با تیم‌ها/نقش‌های سناریوی مافیا.
   void _startMafiaGame() {
     final scenario = _selectedScenario;
     if (scenario == null) return;
-    final total = _draftPlayers.length;
-    final independentTeamId = _isIndependentTeamEnabled(scenario)
-        ? scenario.independentTeamId
-        : null;
-    final mafiaGangCount = _mafiaGangTotal;
-    final independentCount = _zodiacTotal;
 
-    final allShuffled = List<int>.generate(total, (i) => i)..shuffle();
-    final mafiaGangIndices = allShuffled.take(mafiaGangCount).toSet();
-    final independentIndices = allShuffled.skip(mafiaGangCount).take(independentCount).toSet();
+    _startScenarioWithRoles(
+      scenario: scenario,
+      leaderCount: _mafiaGangTotal,
+      independentCount: _zodiacTotal,
+      leaderRoleIds: [
+        if (_includeGodfather) SarkoobRoles.godfather.id,
+        if (_includeNegotiator) SarkoobRoles.negotiator.id,
+        if (_includeEnchanter) SarkoobRoles.enchanter.id,
+        if (_includeSpy) SarkoobRoles.spy.id,
+        if (_includeKidnapper) SarkoobRoles.kidnapper.id,
+        if (_includeTerrorist) SarkoobRoles.terrorist.id,
+        if (_includeBomber) SarkoobRoles.bomber.id,
+        if (_includeMistress) SarkoobRoles.mistress.id,
+        if (_includeNatasha) SarkoobRoles.natasha.id,
+        if (_includeSaboteur) SarkoobRoles.saboteur.id,
+      ],
+      townRoleIds: [
+        if (_includeMafiaDoctor) SarkoobRoles.mafiaDoctor.id,
+        if (_includeDetective) SarkoobRoles.detective.id,
+        if (_includeProfessional) SarkoobRoles.professional.id,
+        if (_includeKonstantin) SarkoobRoles.konstantin.id,
+        if (_includeOcean) SarkoobRoles.ocean.id,
+        if (_includeGunman) SarkoobRoles.gunman.id,
+        if (_includeLeader) SarkoobRoles.leader.id,
+        if (_includeSherlock) SarkoobRoles.sherlock.id,
+        if (_includeGuard) SarkoobRoles.guard.id,
+        if (_includeDiscloser) SarkoobRoles.discloser.id,
+        if (_includeWhiteBeard) SarkoobRoles.whiteBeard.id,
+      ],
+      independentEnabled: _isIndependentTeamEnabled(scenario),
+      slaughterRoleId: SarkoobRoles.godfather.id,
+      revolutionaryRoleId: SarkoobRoles.professional.id,
+      warGunRoleId: SarkoobRoles.gunman.id,
+      guaranteeRoleId: SarkoobRoles.whiteBeard.id,
+      armorRoleIds: {
+        SarkoobRoles.godfather.id,
+        SarkoobRoles.professional.id,
+      },
+    );
+  }
 
-    final mafiaGangShuffled = mafiaGangIndices.toList()..shuffle();
-    final godfatherIndex =
-        (_includeGodfather && mafiaGangShuffled.isNotEmpty) ? mafiaGangShuffled[0] : null;
+  void _startScenarioWithRoles({
+    required GameScenario scenario,
+    required int leaderCount,
+    required int independentCount,
+    required List<String> leaderRoleIds,
+    required List<String> townRoleIds,
+    required bool independentEnabled,
+    required String slaughterRoleId,
+    String? revolutionaryRoleId,
+    String? warGunRoleId,
+    String? intelRoleId,
+    String? guaranteeRoleId,
+    required Set<String> armorRoleIds,
+  }) {
+    final players = ScenarioRoleAssigner.assign(
+      scenario: scenario,
+      playerNames: _draftPlayers,
+      rosterIds: _draftPlayers.map((name) => _draftRosterLinks[name]).toList(),
+      leaderCount: leaderCount,
+      independentCount: independentCount,
+      leaderRoleIds: leaderRoleIds,
+      townRoleIds: townRoleIds,
+      independentEnabled: independentEnabled,
+    );
 
-    final independentShuffled = independentIndices.toList()..shuffle();
-    final independentLeaderIndex =
-        (_isIndependentTeamEnabled(scenario) && independentShuffled.isNotEmpty)
-            ? independentShuffled[0]
-            : null;
-
-    var mafiaGangCursor = _includeGodfather ? 1 : 0; // اندیسِ ۰ فقط اگه پدرخوانده فعال باشه رزرو می‌شه
-    int? nextMafiaGangIndex(bool enabled) {
-      if (!enabled || mafiaGangCursor >= mafiaGangShuffled.length) return null;
-      return mafiaGangShuffled[mafiaGangCursor++];
-    }
-
-    final negotiatorIndex = nextMafiaGangIndex(_includeNegotiator);
-    final enchanterIndex = nextMafiaGangIndex(_includeEnchanter);
-    final spyIndex = nextMafiaGangIndex(_includeSpy);
-    final kidnapperIndex = nextMafiaGangIndex(_includeKidnapper);
-    final terroristIndex = nextMafiaGangIndex(_includeTerrorist);
-    final bomberIndex = nextMafiaGangIndex(_includeBomber);
-    final mistressIndex = nextMafiaGangIndex(_includeMistress);
-    final natashaIndex = nextMafiaGangIndex(_includeNatasha);
-    final saboteurIndex = nextMafiaGangIndex(_includeSaboteur);
-
-    final townShuffled = List<int>.generate(total, (i) => i)
-        .where((i) => !mafiaGangIndices.contains(i) && !independentIndices.contains(i))
-        .toList()
-      ..shuffle();
-
-    var townCursor = 0;
-    int? nextTownIndex(bool enabled) {
-      if (!enabled || townCursor >= townShuffled.length) return null;
-      return townShuffled[townCursor++];
-    }
-
-    final mafiaDoctorIndex = nextTownIndex(_includeMafiaDoctor);
-    final detectiveIndex = nextTownIndex(_includeDetective);
-    final professionalIndex = nextTownIndex(_includeProfessional);
-    final konstantinIndex = nextTownIndex(_includeKonstantin);
-    final oceanIndex = nextTownIndex(_includeOcean);
-    final gunmanIndex = nextTownIndex(_includeGunman);
-    final leaderIndex = nextTownIndex(_includeLeader);
-    final sherlockIndex = nextTownIndex(_includeSherlock);
-    final guardIndex = nextTownIndex(_includeGuard);
-    final discloserIndex = nextTownIndex(_includeDiscloser);
-    final whiteBeardIndex = nextTownIndex(_includeWhiteBeard);
-
+    final total = players.length;
     final slaughterCharges = (total / 6).floor().clamp(1, 999);
-    final professionalCharges = (mafiaGangCount - 1).clamp(0, 999);
+    final revolutionaryCharges = (leaderCount - 1).clamp(0, 999);
     final warGunCharges = slaughterCharges;
+    final intelQuestionCharges = slaughterCharges;
+    final guaranteeCharges = slaughterCharges;
 
-    final players = <SessionPlayer>[];
-    for (var i = 0; i < total; i++) {
-      final String teamId;
-      if (mafiaGangIndices.contains(i)) {
-        teamId = scenario.leaderTeamId;
-      } else if (independentIndices.contains(i)) {
-        teamId = independentTeamId!;
-      } else {
-        teamId = scenario.townTeamId;
-      }
-
-      String? roleId;
-      if (i == godfatherIndex) {
-        roleId = SarkoobRoles.godfather.id;
-      } else if (i == negotiatorIndex) {
-        roleId = SarkoobRoles.negotiator.id;
-      } else if (i == enchanterIndex) {
-        roleId = SarkoobRoles.enchanter.id;
-      } else if (i == spyIndex) {
-        roleId = SarkoobRoles.spy.id;
-      } else if (i == kidnapperIndex) {
-        roleId = SarkoobRoles.kidnapper.id;
-      } else if (i == terroristIndex) {
-        roleId = SarkoobRoles.terrorist.id;
-      } else if (i == mafiaDoctorIndex) {
-        roleId = SarkoobRoles.mafiaDoctor.id;
-      } else if (i == detectiveIndex) {
-        roleId = SarkoobRoles.detective.id;
-      } else if (i == professionalIndex) {
-        roleId = SarkoobRoles.professional.id;
-      } else if (i == konstantinIndex) {
-        roleId = SarkoobRoles.konstantin.id;
-      } else if (i == oceanIndex) {
-        roleId = SarkoobRoles.ocean.id;
-      } else if (i == gunmanIndex) {
-        roleId = SarkoobRoles.gunman.id;
-      } else if (i == leaderIndex) {
-        roleId = SarkoobRoles.leader.id;
-      } else if (i == sherlockIndex) {
-        roleId = SarkoobRoles.sherlock.id;
-      } else if (i == bomberIndex) {
-        roleId = SarkoobRoles.bomber.id;
-      } else if (i == guardIndex) {
-        roleId = SarkoobRoles.guard.id;
-      } else if (i == independentLeaderIndex) {
-        roleId = SarkoobRoles.byId(scenario.independentLeaderRoleId)?.id;
-      } else if (i == mistressIndex) {
-        roleId = SarkoobRoles.mistress.id;
-      } else if (i == natashaIndex) {
-        roleId = SarkoobRoles.natasha.id;
-      } else if (i == saboteurIndex) {
-        roleId = SarkoobRoles.saboteur.id;
-      } else if (i == discloserIndex) {
-        roleId = SarkoobRoles.discloser.id;
-      } else if (i == whiteBeardIndex) {
-        roleId = SarkoobRoles.whiteBeard.id;
-      }
-
-      // نقشِ ساده از قراردادِ سناریو می‌آید تا این مسیر به
-      // شناسه‌های اختصاصیِ «مافیا» قفل نشود.
-      if (roleId == null) {
-        if (teamId == scenario.leaderTeamId) {
-          roleId = scenario.leaderDefaultRoleId;
-        } else if (teamId == scenario.townTeamId) {
-          roleId = scenario.townDefaultRoleId;
-        }
-      }
-
-      players.add(
-        SessionPlayer(
-          id: i + 1,
-          name: _draftPlayers[i],
-          rosterId: _draftRosterLinks[_draftPlayers[i]],
-          teamId: teamId,
-          roleId: roleId,
-          hasArmor: i == godfatherIndex || i == professionalIndex,
-          slaughterChargesRemaining: i == godfatherIndex ? slaughterCharges : null,
-          revolutionaryChargesRemaining: i == professionalIndex ? professionalCharges : null,
-          warGunsRemaining: i == gunmanIndex ? warGunCharges : null,
-          guaranteesRemaining: i == whiteBeardIndex ? slaughterCharges : null,
-        ),
+    for (var i = 0; i < players.length; i++) {
+      final roleId = players[i].roleId;
+      players[i] = players[i].copyWith(
+        hasArmor: roleId != null && armorRoleIds.contains(roleId),
+        slaughterChargesRemaining:
+            roleId == slaughterRoleId ? slaughterCharges : null,
+        revolutionaryChargesRemaining:
+            roleId == revolutionaryRoleId ? revolutionaryCharges : null,
+        warGunsRemaining:
+            roleId == warGunRoleId ? warGunCharges : null,
+        intelQuestionsRemaining:
+            roleId == intelRoleId ? intelQuestionCharges : null,
+        guaranteesRemaining:
+            roleId == guaranteeRoleId ? guaranteeCharges : null,
       );
     }
 
