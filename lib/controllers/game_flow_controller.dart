@@ -1385,9 +1385,7 @@ class GameFlowController extends ChangeNotifier {
     _intelQuestionUsedTonight = true;
     final allHaveRoles = targetIds.every((id) {
       final roleId = playerById(id).roleId;
-      return roleId != null &&
-          roleId != SarkoobRoles.suppressor.id &&
-          roleId != SarkoobRoles.grayCitizen.id;
+      return roleId != null && !scenario.simpleRoleIds.contains(roleId);
     });
     lastIntelQuestionResult = allHaveRoles ? InvestigationResult.like : InvestigationResult.dislike;
     lastIntelQuestionTargetNames = targetIds.map((id) => playerById(id).name).toList();
