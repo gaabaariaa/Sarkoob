@@ -399,6 +399,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
   }
 
   void _startGame() {
+    final scenario = _selectedScenario;
+    if (scenario == null) return;
     final total = _draftPlayers.length;
     final independentTeamId = _includeMossad ? SarkoobTeams.mossad.id : null;
     final sorkoobCount = _sorkoobTotal;
@@ -468,11 +470,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
     for (var i = 0; i < total; i++) {
       final String teamId;
       if (sorkoobIndices.contains(i)) {
-        teamId = _selectedScenario.leaderTeamId;
+        teamId = scenario.leaderTeamId;
       } else if (independentIndices.contains(i)) {
         teamId = independentTeamId!;
       } else {
-        teamId = _selectedScenario.townTeamId;
+        teamId = scenario.townTeamId;
       }
 
       String? roleId;
@@ -521,9 +523,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
       // تیمِ مستقل (غیر از رهبرِ موساد) دست‌نخورده می‌مونه چون هنوز
       // نقشِ اختصاصیِ دومی براش تعریف نشده.
       if (roleId == null) {
-        if (teamId == _selectedScenario.leaderTeamId) {
+        if (teamId == scenario.leaderTeamId) {
           roleId = SarkoobRoles.suppressor.id;
-        } else if (teamId == _selectedScenario.townTeamId) {
+        } else if (teamId == scenario.townTeamId) {
           roleId = SarkoobRoles.grayCitizen.id;
         }
       }
@@ -546,7 +548,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     }
 
     final settings = GameSettings(
-      scenarioId: _selectedScenario!.id,
+      scenarioId: scenario.id,
       speakSeconds: _speakSeconds,
       doctorMaxSelfSaves: _doctorMaxSelfSaves,
       location: _locationController.text.trim(),
@@ -561,6 +563,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
   /// نسخه‌ی سناریوی «مافیا»ی شروعِ بازی — کاملاً موازیِ _startGame، فقط
   /// با تیم‌ها/نقش‌های سناریوی مافیا.
   void _startMafiaGame() {
+    final scenario = _selectedScenario;
+    if (scenario == null) return;
     final total = _draftPlayers.length;
     final independentTeamId = _includeZodiac ? SarkoobTeams.zodiac.id : null;
     final mafiaGangCount = _mafiaGangTotal;
@@ -624,11 +628,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
     for (var i = 0; i < total; i++) {
       final String teamId;
       if (mafiaGangIndices.contains(i)) {
-        teamId = _selectedScenario.leaderTeamId;
+        teamId = scenario.leaderTeamId;
       } else if (independentIndices.contains(i)) {
         teamId = independentTeamId!;
       } else {
-        teamId = _selectedScenario.townTeamId;
+        teamId = scenario.townTeamId;
       }
 
       String? roleId;
@@ -679,9 +683,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
       }
 
       if (roleId == null) {
-        if (teamId == _selectedScenario.leaderTeamId) {
+        if (teamId == scenario.leaderTeamId) {
           roleId = SarkoobRoles.simpleMafia.id;
-        } else if (teamId == _selectedScenario.townTeamId) {
+        } else if (teamId == scenario.townTeamId) {
           roleId = SarkoobRoles.simpleCitizen.id;
         }
       }
@@ -703,7 +707,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     }
 
     final settings = GameSettings(
-      scenarioId: _selectedScenario!.id,
+      scenarioId: scenario.id,
       speakSeconds: _speakSeconds,
       doctorMaxSelfSaves: _doctorMaxSelfSaves,
       location: _locationController.text.trim(),
