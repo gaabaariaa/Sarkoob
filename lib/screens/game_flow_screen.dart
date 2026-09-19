@@ -1140,12 +1140,6 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 controller.advanceSpeaker();
               }
             },
-            onFinishChallenge: isChallenge
-                ? () {
-                    MusicService.instance.stopAlert();
-                    controller.finishChallenge();
-                  }
-                : null,
             onChooseChallenge: (!isIntro &&
                     !isChallenge &&
                     controller.challengeEligiblePlayers.isNotEmpty &&
@@ -4106,8 +4100,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             OutlinedButton.icon(
-              icon: const Icon(Icons.gavel),
-              label: Text(_revolutionaryActionLabel),
+              icon: const Icon(Icons.gps_fixed_rounded),
+              label: const Text('شلیک'),
               onPressed: (controller.canRevolutionaryActTonight && charges > 0)
                   ? () => _showRevolutionaryExecutePicker(fighter)
                   : null,
