@@ -25,7 +25,7 @@ String disciplineStageLabel(int stage) {
 enum GamePhaseType {
   introDay, // روز معارفه
   introNight, // شب معارفه (فقط سرکوب بجز مدیری)
-  day, // روزهای عادی (۱، ۲، ...)
+  day, // روزهای عادی (۱، ۲, ...)
   night, // شب‌های عادی
 }
 
@@ -53,7 +53,12 @@ class GameSettings {
   int get introSeconds => (speakSeconds / 2).round();
   int get challengeSeconds => (speakSeconds / 2).round();
 
-  GameSettings copyWith({String? scenarioId, int? speakSeconds, int? doctorMaxSelfSaves, String? location}) {
+  GameSettings copyWith({
+    String? scenarioId,
+    int? speakSeconds,
+    int? doctorMaxSelfSaves,
+    String? location,
+  }) {
     return GameSettings(
       scenarioId: scenarioId ?? this.scenarioId,
       speakSeconds: speakSeconds ?? this.speakSeconds,
@@ -144,8 +149,6 @@ class SessionPlayer {
     this.silencedRoundNumber,
     this.noVoteRightsRoundNumber,
   });
-
-  bool get isSorkoobTeam => teamId == 'team_sorkoob';
 
   int get scoreTotal => scoreEvents.fold(0, (sum, e) => sum + e.points);
 }
