@@ -247,7 +247,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
       (_includeCelebrity ? 1 : 0) +
       (_includeInterrogator ? 1 : 0) +
       (_includeIntelMinister ? 1 : 0) +
-      (_includePoliceCommander ? 1 : 0) +      (_includeMercenary ? 1 : 0);
+      (_includePoliceCommander ? 1 : 0) +
+      (_includeMercenary ? 1 : 0);
 
   int get _citizenRoleSlotsEnabled =>
       (_includeDoctor ? 1 : 0) +
@@ -496,7 +497,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
       } else if (i == policeCommanderIndex) {
         roleId = SarkoobRoles.policeCommander.id;
       } else if (i == mercenaryIndex) {
-        roleId = SarkoobRoles.mercenary.id;      } else if (i == doctorIndex) {
+        roleId = SarkoobRoles.mercenary.id;
+      } else if (i == doctorIndex) {
         roleId = SarkoobRoles.doctor.id;
       } else if (i == hackerIndex) {
         roleId = SarkoobRoles.hacker.id;
@@ -746,6 +748,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
             (SarkoobTeams.suppression, _sorkoobTotal, _showSorkoobTeamPage),
             (SarkoobTeams.citizen, _citizenTotal, _showCitizenTeamPage),
           ];
+
     return Scaffold(
       appBar: AppBar(
         title: Text('شروع بازی — ${_selectedScenario!.name}'),
@@ -995,7 +998,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
                     Text(subtitle, style: const TextStyle(color: AppColors.mutedText, fontSize: 12)),
                   ],
                 ),
-              ),            ],
+              ),
+            ],
           ),
           const SizedBox(height: 13),
           child,
@@ -1244,7 +1248,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
             _roleToggle(
               role: SarkoobRoles.intelligenceMinister,
               value: _includeIntelMinister,
-              onChanged: (v) => setSheetState(() => _includeIntelMinister = v),            ),
+              onChanged: (v) => setSheetState(() => _includeIntelMinister = v),
+            ),
             _roleToggle(
               role: SarkoobRoles.policeCommander,
               value: _includePoliceCommander,
@@ -1494,3 +1499,177 @@ class _StartGameScreenState extends State<StartGameScreen> {
               onChanged: (v) => setSheetState(() => _includeGunman = v),
             ),
             _roleToggle(
+              role: SarkoobRoles.leader,
+              value: _includeLeader,
+              onChanged: (v) => setSheetState(() => _includeLeader = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.sherlock,
+              value: _includeSherlock,
+              onChanged: (v) => setSheetState(() => _includeSherlock = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.guard,
+              value: _includeGuard,
+              onChanged: (v) => setSheetState(() => _includeGuard = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.discloser,
+              value: _includeDiscloser,
+              onChanged: (v) => setSheetState(() => _includeDiscloser = v),
+            ),
+            _roleToggle(
+              role: SarkoobRoles.whiteBeard,
+              value: _includeWhiteBeard,
+              onChanged: (v) => setSheetState(() => _includeWhiteBeard = v),
+            ),
+            const SizedBox(height: 4),
+            _roleCountStepper(
+              role: SarkoobRoles.simpleCitizen,
+              value: _simpleCitizenCount,
+              onDecrement: () => setSheetState(() {
+                if (_simpleCitizenCount > 0) _simpleCitizenCount--;
+              }),
+              onIncrement: () => setSheetState(() => _simpleCitizenCount++),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'مجموعِ تیم شهروند: $_mafiaTownTotal نفر',
+              style: const TextStyle(
+                color: AppColors.goldLight,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildScenarioPicker() {
+    return Scaffold(
+      appBar: AppBar(title: const Text('شروع بازی — انتخابِ سناریو')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const Text(
+            'اول سناریوی بازی رو انتخاب کن — تیم‌ها و نقش‌های قابل‌انتخاب '
+            'کاملاً به همین انتخاب بستگی دارن.',
+            style: TextStyle(color: Colors.white60, fontSize: 13),
+          ),
+          const SizedBox(height: 16),
+          ...SarkoobScenarios.all.map(
+            (scenario) => Card(
+              color: AppColors.surfaceCard,
+              margin: const EdgeInsets.only(bottom: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: scenario.color.withAlpha(153), width: 1.5),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () => setState(() => _selectedScenario = scenario),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(scenario.emoji, style: const TextStyle(fontSize: 26)),
+                          const SizedBox(width: 10),
+                          Text(
+                            scenario.name,
+                            style: AppTheme.headingFont(size: 22, color: scenario.color),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        scenario.description,
+                        style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _roleToggle({
+    required GameRole role,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return SwitchListTile(
+      value: value,
+      onChanged: (v) => onChanged(v),
+      activeColor: AppColors.gold,
+      title: Text(role.name, style: const TextStyle(color: Colors.white)),
+      dense: true,
+    );
+  }
+
+  /// شمارشگرِ عددی جلوی یه نقشِ «بدونِ قابلیتِ خاص» (سرکوبگر، شهروندِ
+  /// خاکستری) — برخلافِ نقش‌های ویژه که فقط ۰ یا ۱ تا ازشون معنی داره،
+  /// از این‌ها می‌شه هر تعداد تو بازی داشت.
+  Widget _roleCountStepper({
+    required GameRole role,
+    required int value,
+    required VoidCallback onDecrement,
+    required VoidCallback onIncrement,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(role.name, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+          ),
+          IconButton(
+            icon: const Icon(Icons.remove, color: AppColors.gold),
+            onPressed: onDecrement,
+          ),
+          SizedBox(
+            width: 28,
+            child: Text(
+              '$value',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.goldLight, fontSize: 16),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.add, color: AppColors.gold),
+            onPressed: onIncrement,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _mandatoryRoleRow(GameRole role) {
+    return ListTile(
+      dense: true,
+      leading: const Icon(Icons.check_circle, color: AppColors.gold),
+      title: Text(role.name, style: const TextStyle(color: Colors.white)),
+      trailing: const Text('همیشه فعال', style: TextStyle(color: Colors.white38, fontSize: 12)),
+    );
+  }
+}
+
+class StartGameScreen extends StatefulWidget {
+  final GameScenario? initialScenario;
+
+  const StartGameScreen({
+    super.key,
+    this.initialScenario,
+  });
+
+  @override
+  State<StartGameScreen> createState() => _StartGameScreenState();
+}
