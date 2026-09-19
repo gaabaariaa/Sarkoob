@@ -68,7 +68,6 @@ class GameFlowController extends ChangeNotifier {
   GameScenario get scenario => SarkoobScenarios.byId(settings.scenarioId) ??
       (throw StateError('Unknown scenario: ${settings.scenarioId}'));
 
-  bool get isMafiaScenario => scenario.id == SarkoobScenarios.mafia.id;
 
   String get leaderTeamId => scenario.leaderTeamId;
 
