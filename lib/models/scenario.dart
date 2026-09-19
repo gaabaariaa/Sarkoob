@@ -88,9 +88,6 @@ class SarkoobScenarios {
     independentInvestigationQuestion: 'عضوِ یه تیمِ مستقله',
     independentInvestigationYes: 'مستقله',
     independentInvestigationNo: 'مستقل نیست',
-    independentInvestigationQuestion: 'زودیاکه',
-    independentInvestigationYes: 'زودیاکه',
-    independentInvestigationNo: 'زودیاک نیست',
     roleIds: {
       'independentLeader': 'role_mossad_leader',
       'rapper': 'role_rapper',
@@ -101,6 +98,7 @@ class SarkoobScenarios {
       'nationalHero': 'role_national_hero',
       'civicActivist': 'role_civic_activist',
       'lawyer': 'role_lawyer',
+      'judiciary': 'role_judiciary_chief',
     },
   );
 
@@ -127,6 +125,9 @@ class SarkoobScenarios {
     resistanceGroupLabel: 'تیمِ اوشن',
     forbiddenWordLabel: 'کلمه‌ی طلسم‌شده',
     revolutionaryActionLabel: 'حذفِ حرفه‌ای',
+    independentInvestigationQuestion: 'زودیاکه',
+    independentInvestigationYes: 'زودیاکه',
+    independentInvestigationNo: 'زودیاک نیست',
     roleIds: {
       'independentLeader': 'role_zodiac',
       'rapper': 'role_ocean',
@@ -137,6 +138,7 @@ class SarkoobScenarios {
       'nationalHero': 'role_white_beard',
       'civicActivist': 'role_leader',
       'lawyer': 'role_konstantin',
+      'judiciary': 'role_enchanter',
     },
   );
 
