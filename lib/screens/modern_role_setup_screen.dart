@@ -43,7 +43,7 @@ class ModernRoleSetupScreen extends StatelessWidget {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: BorderSide(color: AppColors.gold.withOpacity(.10)),
+          side: BorderSide(color: AppColors.gold.withAlpha(26)),
         ),
       ),
       dialogTheme: base.dialogTheme.copyWith(
@@ -51,7 +51,7 @@ class ModernRoleSetupScreen extends StatelessWidget {
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(22),
-          side: BorderSide(color: AppColors.gold.withOpacity(.14)),
+          side: BorderSide(color: AppColors.gold.withAlpha(36)),
         ),
       ),
       inputDecorationTheme: base.inputDecorationTheme.copyWith(
@@ -61,11 +61,11 @@ class ModernRoleSetupScreen extends StatelessWidget {
         suffixIconColor: AppColors.goldLight,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.gold.withOpacity(.12)),
+          borderSide: BorderSide(color: AppColors.gold.withAlpha(31)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.gold.withOpacity(.12)),
+          borderSide: BorderSide(color: AppColors.gold.withAlpha(31)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -86,7 +86,7 @@ class ModernRoleSetupScreen extends StatelessWidget {
                     center: const Alignment(0, -.9),
                     radius: 1.2,
                     colors: [
-                      scenario.color.withOpacity(.08),
+                      scenario.color.withAlpha(20),
                       AppColors.background,
                     ],
                     stops: const [0, .72],
