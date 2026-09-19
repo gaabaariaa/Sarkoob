@@ -97,12 +97,12 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
         color: AppColors.surfaceCard,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: (urgent ? AppColors.bloodRedLight : AppColors.gold).withOpacity(0.72),
+          color: (urgent ? AppColors.bloodRedLight : AppColors.gold).withAlpha(184),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.32),
+            color: Colors.black.withAlpha(82),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
