@@ -80,7 +80,7 @@ class _RoleBestRow extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surfaceCard,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.gold.withOpacity(.16)),
+        border: Border.all(color: AppColors.gold.withAlpha(41)),
       ),
       child: ExpansionTile(
         iconColor: AppColors.gold,
@@ -479,7 +479,7 @@ class _StatsScreenState extends State<StatsScreen> {
               color: AppColors.surfaceCard,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: AppColors.gold.withOpacity(0.3)),
+                side: BorderSide(color: AppColors.gold.withAlpha(77)),
               ),
               margin: const EdgeInsets.only(bottom: 8),
               child: ExpansionTile(
@@ -531,7 +531,7 @@ class _StatsHero extends StatelessWidget {
     decoration: BoxDecoration(
       color: AppColors.surfaceCard,
       borderRadius: BorderRadius.circular(26),
-      border: Border.all(color: AppColors.gold.withOpacity(.2)),
+      border: Border.all(color: AppColors.gold.withAlpha(51)),
       gradient: LinearGradient(
         colors: [AppColors.surfaceCard, AppColors.surfaceElevated],
         begin: Alignment.topRight,
@@ -542,7 +542,7 @@ class _StatsHero extends StatelessWidget {
       Container(
         width: 54, height: 54,
         decoration: BoxDecoration(
-          color: AppColors.goldDark.withOpacity(.2),
+          color: AppColors.goldDark.withAlpha(51),
           shape: BoxShape.circle,
         ),
         child: const Icon(Icons.insights_rounded, color: AppColors.goldLight, size: 28),
@@ -587,7 +587,7 @@ class _HighlightCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.7)),
+        border: Border.all(color: color.withAlpha(179)),
         color: AppColors.surfaceCard,
       ),
       child: Column(
@@ -626,7 +626,7 @@ class _LeaderboardRow extends StatelessWidget {
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: AppColors.gold.withOpacity(0.2),
+            backgroundColor: AppColors.gold.withAlpha(51),
             child: Text(
               agg.displayName.isNotEmpty ? agg.displayName.substring(0, 1) : '?',
               style: const TextStyle(color: AppColors.goldLight),
@@ -660,7 +660,7 @@ class _ScoreLeaderboardRow extends StatelessWidget {
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: color.withOpacity(0.2),
+            backgroundColor: color.withAlpha(51),
             child: Text(
               agg.displayName.isNotEmpty ? agg.displayName.substring(0, 1) : '?',
               style: TextStyle(color: color),
