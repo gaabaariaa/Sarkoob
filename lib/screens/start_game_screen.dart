@@ -26,7 +26,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
   // ---- سناریوی «مافیا»: کاملاً موازیِ سرکوب — پدرخوانده اجباری،
   // بقیه‌ی نقش‌ها اختیاری، دو شمارشگر برای اعضای سادهٔ هر تیم. ----
-  bool _includeZodiac = false;
+  final Map<String, bool> _independentTeamEnabled = <String, bool>{};
 
   bool _includeGodfather = false;
   bool _includeNegotiator = false;
@@ -54,7 +54,6 @@ class _StartGameScreenState extends State<StartGameScreen> {
   int _mafiaCount = 0; // مافیا ساده
   int _simpleCitizenCount = 0; // شهروندِ ساده
 
-  bool _includeMossad = false;
 
   // کدوم نقش‌های اختیاری تو این بازی فعالن. این‌که کدوم نقش‌ها اصلاً تو
   // بازی باشن دستیه، ولی این‌که کدوم بازیکنِ خاص هرکدوم رو بگیره، کاملاً
@@ -106,15 +105,12 @@ class _StartGameScreenState extends State<StartGameScreen> {
     super.dispose();
   }
 
-  void _setIndependentTeam({required bool mossad}) {
-    setState(() {
-      _includeMossad = mossad;
-    });
-  }
+  bool _isIndependentTeamEnabled(GameScenario scenario) =>
+      _independentTeamEnabled[scenario.id] ?? false;
 
-  void _setMafiaIndependentTeam({required bool zodiac}) {
+  void _setIndependentTeamEnabled(GameScenario scenario, bool enabled) {
     setState(() {
-      _includeZodiac = zodiac;
+      _independentTeamEnabled[scenario.id] = enabled;
     });
   }
 
@@ -239,7 +235,10 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
   // فعلاً تنها تیمِ مستقلِ قابل‌انتخاب موسادِه؛ اگه بعداً یه تیمِ دیگه
   // اضافه شد، اینجا `|| _includeXxx` هم اضافه می‌شه.
-  bool get _includeIndependent => _includeMossad;
+  bool get _includeIndependent {
+    final scenario = _selectedScenario;
+    return scenario != null && _isIndependentTeamEnabled(scenario);
+  }
 
   int get _sorkoobRoleSlotsEnabled =>
       (_includeValiFaghih ? 1 : 0) +
@@ -298,10 +297,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
   int get _mafiaGangTotal => _mafiaGangRoleSlotsEnabled + _mafiaCount;
   int get _mafiaTownTotal => _mafiaTownRoleSlotsEnabled + _simpleCitizenCount;
-  int get _zodiacTotal => _includeZodiac ? 1 : 0;
+  int get _zodiacTotal => _selectedScenario == null
+      ? 0
+      : (_isIndependentTeamEnabled(_selectedScenario!) ? 1 : 0);
   int get _mafiaAssignedTotal => _mafiaGangTotal + _mafiaTownTotal + _zodiacTotal;
 
-  bool get _isSorkoobScenario => _selectedScenario == SarkoobScenarios.sorkoob;
   bool get _isMafiaScenario => _selectedScenario == SarkoobScenarios.mafia;
 
   String? get _mafiaValidationError {
@@ -402,7 +402,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final scenario = _selectedScenario;
     if (scenario == null) return;
     final total = _draftPlayers.length;
-    final independentTeamId = _includeMossad ? SarkoobTeams.mossad.id : null;
+    final independentTeamId = _isIndependentTeamEnabled(scenario)
+        ? scenario.independentTeamId
+        : null;
     final sorkoobCount = _sorkoobTotal;
     final independentCount = _independentTotal;
 
@@ -421,8 +423,10 @@ class _StartGameScreenState extends State<StartGameScreen> {
     // یکی از اعضای تیمِ مستقل (اگه موساد فعال باشه) رهبرِ موساد می‌شه —
     // درست مثلِ ولی‌فقیهِ سرکوب.
     final independentShuffled = independentIndices.toList()..shuffle();
-    final mossadLeaderIndex =
-        (_includeMossad && independentShuffled.isNotEmpty) ? independentShuffled[0] : null;
+    final independentLeaderIndex =
+        (_isIndependentTeamEnabled(scenario) && independentShuffled.isNotEmpty)
+            ? independentShuffled[0]
+            : null;
 
     var sorkoobCursor = _includeValiFaghih ? 1 : 0; // اندیسِ ۰ فقط اگه ولی‌فقیه فعال باشه رزرو می‌شه
     int? nextSorkoobIndex(bool enabled) {
@@ -514,8 +518,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
         roleId = SarkoobRoles.civicActivist.id;
       } else if (i == politicalAnalystIndex) {
         roleId = SarkoobRoles.politicalAnalyst.id;
-      } else if (i == mossadLeaderIndex) {
-        roleId = SarkoobRoles.mossadLeader.id;
+      } else if (i == independentLeaderIndex) {
+        roleId = SarkoobRoles.byId(scenario.independentLeaderRoleId)?.id;
       }
 
       // بازیکنی که هیچ نقشِ خاصی نگرفته: اگه عضوِ سرکوبه، «سرکوبگر»
@@ -566,7 +570,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final scenario = _selectedScenario;
     if (scenario == null) return;
     final total = _draftPlayers.length;
-    final independentTeamId = _includeZodiac ? SarkoobTeams.zodiac.id : null;
+    final independentTeamId = _isIndependentTeamEnabled(scenario)
+        ? scenario.independentTeamId
+        : null;
     final mafiaGangCount = _mafiaGangTotal;
     final independentCount = _zodiacTotal;
 
@@ -579,7 +585,10 @@ class _StartGameScreenState extends State<StartGameScreen> {
         (_includeGodfather && mafiaGangShuffled.isNotEmpty) ? mafiaGangShuffled[0] : null;
 
     final independentShuffled = independentIndices.toList()..shuffle();
-    final zodiacIndex = (_includeZodiac && independentShuffled.isNotEmpty) ? independentShuffled[0] : null;
+    final independentLeaderIndex =
+        (_isIndependentTeamEnabled(scenario) && independentShuffled.isNotEmpty)
+            ? independentShuffled[0]
+            : null;
 
     var mafiaGangCursor = _includeGodfather ? 1 : 0; // اندیسِ ۰ فقط اگه پدرخوانده فعال باشه رزرو می‌شه
     int? nextMafiaGangIndex(bool enabled) {
@@ -668,8 +677,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
         roleId = SarkoobRoles.bomber.id;
       } else if (i == guardIndex) {
         roleId = SarkoobRoles.guard.id;
-      } else if (i == zodiacIndex) {
-        roleId = SarkoobRoles.zodiacRole.id;
+      } else if (i == independentLeaderIndex) {
+        roleId = SarkoobRoles.byId(scenario.independentLeaderRoleId)?.id;
       } else if (i == mistressIndex) {
         roleId = SarkoobRoles.mistress.id;
       } else if (i == natashaIndex) {
@@ -828,10 +837,10 @@ class _StartGameScreenState extends State<StartGameScreen> {
                           ),
                           _teamNavButton(
                             label: 'تیمِ مستقل',
-                            color: (_isMafiaScenario ? _includeZodiac : _includeMossad)
-                                ? (_isMafiaScenario ? SarkoobTeams.zodiac.color : SarkoobTeams.mossad.color)
+                            color: _isIndependentTeamEnabled(scenario)
+                                ? SarkoobTeams.byId(scenario.independentTeamId)!.color
                                 : AppColors.subtleText,
-                            count: (_isMafiaScenario ? _includeZodiac : _includeMossad) ? 1 : 0,
+                            count: _isIndependentTeamEnabled(scenario) ? 1 : 0,
                             onTap: _showIndependentTeamPage,
                           ),
                           const SizedBox(height: 2),
@@ -1157,7 +1166,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     if (team == null || role == null) return;
 
     _pushSection('تیمِ مستقل', team.color, (context) {
-      final enabled = scenario.id == SarkoobScenarios.mafia.id ? _includeZodiac : _includeMossad;
+      final enabled = _isIndependentTeamEnabled(scenario);
       return StatefulBuilder(
         builder: (context, setSheetState) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1168,11 +1177,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
               value: 'none',
               groupValue: enabled ? team.id : 'none',
               onChanged: (_) {
-                if (scenario.id == SarkoobScenarios.mafia.id) {
-                  _setMafiaIndependentTeam(zodiac: false);
-                } else {
-                  _setIndependentTeam(mossad: false);
-                }
+                _setIndependentTeamEnabled(scenario, false);
                 setSheetState(() {});
               },
               activeColor: AppColors.gold,
@@ -1182,11 +1187,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
               value: team.id,
               groupValue: enabled ? team.id : 'none',
               onChanged: (_) {
-                if (scenario.id == SarkoobScenarios.mafia.id) {
-                  _setMafiaIndependentTeam(zodiac: true);
-                } else {
-                  _setIndependentTeam(mossad: true);
-                }
+                _setIndependentTeamEnabled(scenario, true);
                 setSheetState(() {});
               },
               activeColor: team.color,
