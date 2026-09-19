@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'role.dart';
-import 'team.dart';
-
 /// یه سناریوی کاملاً مستقل: مجموعه‌ی خودش از تیم‌ها و نقش‌ها. موقعِ
 /// شروعِ بازی، گرداننده اول سناریو رو انتخاب می‌کنه؛ از اون به بعد فقط
 /// تیم‌ها/نقش‌های همون سناریو قابل‌انتخابن. دو سناریو هیچ تیم/نقشی
@@ -44,11 +41,11 @@ class SarkoobScenarios {
         'پیاده‌سازی‌شده و پرجزئیات.',
     color: Color(0xFFB71C1C),
     emoji: '🕵️',
-    leaderTeamId: SarkoobTeams.suppression.id,
-    townTeamId: SarkoobTeams.citizen.id,
-    independentTeamId: SarkoobTeams.mossad.id,
-    leaderDefaultRoleId: SarkoobRoles.suppressor.id,
-    townDefaultRoleId: SarkoobRoles.grayCitizen.id,
+    leaderTeamId: 'team_sorkoob',
+    townTeamId: 'team_citizen',
+    independentTeamId: 'team_mossad',
+    leaderDefaultRoleId: 'role_suppressor',
+    townDefaultRoleId: 'role_gray_citizen',
   );
 
   static const mafia = GameScenario(
@@ -61,11 +58,11 @@ class SarkoobScenarios {
         'کارآگاه و...) رو یکی‌یکی بهش اضافه کرد.',
     color: Color(0xFF37474F),
     emoji: '🎭',
-    leaderTeamId: SarkoobTeams.mafiaGang.id,
-    townTeamId: SarkoobTeams.mafiaTown.id,
-    independentTeamId: SarkoobTeams.zodiac.id,
-    leaderDefaultRoleId: SarkoobRoles.simpleMafia.id,
-    townDefaultRoleId: SarkoobRoles.simpleCitizen.id,
+    leaderTeamId: 'team_mafia_gang',
+    townTeamId: 'team_mafia_town',
+    independentTeamId: 'team_zodiac',
+    leaderDefaultRoleId: 'role_simple_mafia',
+    townDefaultRoleId: 'role_simple_citizen',
   );
 
   static const List<GameScenario> all = [sorkoob, mafia];
