@@ -544,15 +544,13 @@ class _StartGameScreenState extends State<StartGameScreen> {
         roleId = SarkoobRoles.byId(scenario.independentLeaderRoleId)?.id;
       }
 
-      // بازیکنی که هیچ نقشِ خاصی نگرفته: اگه عضوِ سرکوبه، «سرکوبگر»
-      // حساب می‌شه؛ اگه عضوِ شهرونده، «شهروندِ خاکستری». عضوِ سادهٔ
-      // تیمِ مستقل (غیر از رهبرِ موساد) دست‌نخورده می‌مونه چون هنوز
-      // نقشِ اختصاصیِ دومی براش تعریف نشده.
+      // نقشِ ساده هم از قراردادِ خودِ سناریو می‌آید؛ موتور نباید
+      // برای این حالت به نامِ یک سناریوی خاص وابسته باشد.
       if (roleId == null) {
         if (teamId == scenario.leaderTeamId) {
-          roleId = SarkoobRoles.suppressor.id;
+          roleId = scenario.leaderDefaultRoleId;
         } else if (teamId == scenario.townTeamId) {
-          roleId = SarkoobRoles.grayCitizen.id;
+          roleId = scenario.townDefaultRoleId;
         }
       }
 
@@ -713,11 +711,13 @@ class _StartGameScreenState extends State<StartGameScreen> {
         roleId = SarkoobRoles.whiteBeard.id;
       }
 
+      // نقشِ ساده از قراردادِ سناریو می‌آید تا این مسیر به
+      // شناسه‌های اختصاصیِ «مافیا» قفل نشود.
       if (roleId == null) {
         if (teamId == scenario.leaderTeamId) {
-          roleId = SarkoobRoles.simpleMafia.id;
+          roleId = scenario.leaderDefaultRoleId;
         } else if (teamId == scenario.townTeamId) {
-          roleId = SarkoobRoles.simpleCitizen.id;
+          roleId = scenario.townDefaultRoleId;
         }
       }
 
