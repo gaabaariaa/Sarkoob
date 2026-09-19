@@ -27,7 +27,7 @@ class _RulesScreenState extends State<RulesScreen> {
           Container(
             margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppColors.gold.withOpacity(0.18))),
+            decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppColors.gold.withAlpha(46))),
             child: SegmentedButton<GameScenario>(
               showSelectedIcon: false,
               segments: SarkoobScenarios.all
@@ -47,7 +47,7 @@ class _RulesScreenState extends State<RulesScreen> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Container(padding: const EdgeInsets.all(20), margin: const EdgeInsets.only(bottom: 14), decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: _selectedScenario.color.withOpacity(0.4))), child: Row(children: [Container(width: 56, height: 56, decoration: BoxDecoration(color: _selectedScenario.color.withOpacity(0.18), shape: BoxShape.circle), child: Center(child: Text(_selectedScenario.emoji, style: const TextStyle(fontSize: 26)))), const SizedBox(width: 14), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('راهنمای سناریو', style: AppTheme.headingFont(size: 21)), const SizedBox(height: 5), Text(_selectedScenario.description, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.mutedText, fontSize: 11, height: 1.45))]))]),),
+                Container(padding: const EdgeInsets.all(20), margin: const EdgeInsets.only(bottom: 14), decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: _selectedScenario.color.withAlpha(102))), child: Row(children: [Container(width: 56, height: 56, decoration: BoxDecoration(color: _selectedScenario.color.withAlpha(46), shape: BoxShape.circle), child: Center(child: Text(_selectedScenario.emoji, style: const TextStyle(fontSize: 26)))), const SizedBox(width: 14), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('راهنمای سناریو', style: AppTheme.headingFont(size: 21)), const SizedBox(height: 5), Text(_selectedScenario.description, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.mutedText, fontSize: 11, height: 1.45))]))]),),
                 Row(children: [const Icon(Icons.groups_rounded, color: AppColors.goldLight, size: 19), const SizedBox(width: 8), Text('تیم‌ها و نقش‌ها', style: AppTheme.headingFont(size: 19))]),
                 const SizedBox(height: 4),
                 const Text(
@@ -90,7 +90,7 @@ class _TeamSection extends StatelessWidget {
       color: AppColors.surfaceCard,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: team.color.withOpacity(0.6)),
+        side: BorderSide(color: team.color.withAlpha(153)),
       ),
       margin: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -99,7 +99,7 @@ class _TeamSection extends StatelessWidget {
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => _TeamPreviewScreen(team: team)),
             ),
-            leading: Container(width: 44, height: 44, decoration: BoxDecoration(color: team.color.withOpacity(0.18), shape: BoxShape.circle, border: Border.all(color: team.color.withOpacity(0.45))), child: Icon(Icons.groups_rounded, color: team.color)),
+            leading: Container(width: 44, height: 44, decoration: BoxDecoration(color: team.color.withAlpha(46), shape: BoxShape.circle, border: Border.all(color: team.color.withAlpha(115))), child: Icon(Icons.groups_rounded, color: team.color)),
             title: Text(
               team.name,
               style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
