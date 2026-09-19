@@ -85,6 +85,7 @@ class GameHistoryPlayerRecord {
 /// تیم/نقشی داشت و زنده موند یا نه.
 class GameHistoryEntry {
   final String id;
+  final String scenarioId;
   final DateTime playedAt;
   final String winningTeamId; // شناسه‌ی تیمِ برنده، یا 'unknown'
   final String location; // محلِ برگزاری — رکوردهای قدیمی‌تر خالیه
@@ -92,6 +93,7 @@ class GameHistoryEntry {
 
   GameHistoryEntry({
     required this.id,
+    this.scenarioId = 'scenario_sorkoob',
     required this.playedAt,
     required this.winningTeamId,
     this.location = '',
@@ -100,6 +102,7 @@ class GameHistoryEntry {
 
   Map<String, dynamic> toJson() => {
         'id': id,
+        'scenarioId': scenarioId,
         'playedAt': playedAt.toIso8601String(),
         'winningTeamId': winningTeamId,
         'location': location,
@@ -109,6 +112,8 @@ class GameHistoryEntry {
   factory GameHistoryEntry.fromJson(Map<String, dynamic> json) {
     return GameHistoryEntry(
       id: json['id'] as String,
+      // تاریخچه‌های قدیمی قبل از چندسناریویی‌شدن، سرکوب بوده‌اند.
+      scenarioId: json['scenarioId'] as String? ?? 'scenario_sorkoob',
       playedAt: DateTime.parse(json['playedAt'] as String),
       winningTeamId: json['winningTeamId'] as String,
       location: json['location'] as String? ?? '',
