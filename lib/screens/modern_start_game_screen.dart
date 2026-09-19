@@ -40,9 +40,9 @@ class _ModernStartGameScreenState extends State<ModernStartGameScreen> {
                         Container(
                           width: 46, height: 46,
                           decoration: BoxDecoration(
-                            color: AppColors.goldDark.withOpacity(.18),
+                            color: AppColors.goldDark.withAlpha(46),
                             borderRadius: BorderRadius.circular(15),
-                            border: Border.all(color: AppColors.gold.withOpacity(.22)),
+                            border: Border.all(color: AppColors.gold.withAlpha(56)),
                           ),
                           child: const Icon(Icons.auto_awesome_rounded, color: AppColors.goldLight),
                         ),
@@ -62,7 +62,7 @@ class _ModernStartGameScreenState extends State<ModernStartGameScreen> {
                           decoration: BoxDecoration(
                             color: AppColors.surfaceCard,
                             borderRadius: BorderRadius.circular(999),
-                            border: Border.all(color: AppColors.gold.withOpacity(.18)),
+                            border: Border.all(color: AppColors.gold.withAlpha(46)),
                           ),
                           child: const Text('دست خدا', style: TextStyle(color: AppColors.goldLight, fontSize: 11, fontWeight: FontWeight.w800)),
                         ),
@@ -111,7 +111,7 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(18),
-    decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(22), border: Border.all(color: AppColors.gold.withOpacity(.16))),
+    decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(22), border: Border.all(color: AppColors.gold.withAlpha(41))),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: AppTheme.headingFont(size: 18)), const SizedBox(height: 12), child]),
   );
 }
@@ -122,7 +122,7 @@ class _Ambient extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Positioned.fill(
     child: DecoratedBox(
-      decoration: BoxDecoration(color: AppColors.background, gradient: RadialGradient(center: const Alignment(0, -.8), radius: 1.2, colors: [color.withOpacity(.09), AppColors.background], stops: const [0, .72])),
+      decoration: BoxDecoration(color: AppColors.background, gradient: RadialGradient(center: const Alignment(0, -.8), radius: 1.2, colors: [color.withAlpha(23), AppColors.background], stops: const [0, .72])),
     ),
   );
 }
