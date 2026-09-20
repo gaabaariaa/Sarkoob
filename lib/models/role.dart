@@ -83,7 +83,7 @@ class GameRole {
   final bool canGuarantee; // قابلیتِ تضمین/مصونیتِ رأی داره؟
 
   // ---- فیلدِ مخصوص رهبر موساد ----
-  final bool canMossadAct; // شبِ اول انتخابِ شیوه، بعدش شب‌های زوج ترور یا شاتِ سری
+  final bool canIndependentLeaderAct; // شبِ اول انتخابِ شیوه، بعدش شب‌های زوج ترور یا شاتِ سری
 
   // ---- فیلدِ مخصوص فعال مدنی ----
   final bool canRequestReferendum; // یک‌بار در بازی، شبانه، درخواستِ رفراندوم
@@ -170,7 +170,7 @@ class GameRole {
     this.canDetain = false,
     this.canAssassinate = false,
     this.canGuarantee = false,
-    this.canMossadAct = false,
+    this.canIndependentLeaderAct = false,
     this.canRequestReferendum = false,
     this.canInvestigateIndependent = false,
     this.canPlantBomb = false,
@@ -476,7 +476,7 @@ class SarkoobRoles {
         'ژینا (بی‌قابلیت‌شدنِ سرکوب) روش اثری نداره. همیشه، هر شب، زره داره: '
         'با شاتِ شب (چه از ولی‌فقیه چه از هرکسِ دیگه) هیچ‌وقت از بازی خارج '
         'نمی‌شه — فقط سلاخی می‌تونه حذفش کنه.',
-    canMossadAct: true,
+    canIndependentLeaderAct: true,
     hasPermanentNightArmor: true,
   );
 
@@ -761,7 +761,7 @@ class SarkoobRoles {
         'کارآگاه همیشه دیس‌لایک می‌گیره. همیشه، هر شب، زره داره: با شاتِ شب '
         '(چه از پدرخوانده چه از هرکسِ دیگه) هیچ‌وقت از بازی خارج نمی‌شه — '
         'فقط سلاخی می‌تونه حذفش کنه.',
-    canMossadAct: true,
+    canIndependentLeaderAct: true,
     hasPermanentNightArmor: true,
   );
 
