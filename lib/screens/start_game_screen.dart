@@ -241,7 +241,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     return scenario != null && _isIndependentTeamEnabled(scenario);
   }
 
-  int get _sorkoobRoleSlotsEnabled =>
+  int get _standardLeaderRoleSlotsEnabled =>
       (_includeValiFaghih ? 1 : 0) +
       (_includeForeignMinister ? 1 : 0) +
       (_includeJudiciaryChief ? 1 : 0) +
@@ -251,7 +251,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
       (_includePoliceCommander ? 1 : 0) +
       (_includeMercenary ? 1 : 0);
 
-  int get _citizenRoleSlotsEnabled =>
+  int get _standardTownRoleSlotsEnabled =>
       (_includeDoctor ? 1 : 0) +
       (_includeHacker ? 1 : 0) +
       (_includeRevolutionary ? 1 : 0) +
@@ -265,10 +265,10 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
   // مجموعِ نقش‌های هر تیم (نقش‌های ویژه + عضوِ سادهٔ بدونِ قابلیتِ خاص)
   // خودش اندازه‌ی اون تیم رو تعیین می‌کنه — نه برعکس.
-  int get _sorkoobTotal => _sorkoobRoleSlotsEnabled + _suppressorCount;
+  int get _standardLeaderTotal => _standardLeaderRoleSlotsEnabled + _suppressorCount;
   int get _independentTotal => _includeIndependent ? 1 : 0; // فعلاً فقط رهبرِ موساد
-  int get _citizenTotal => _citizenRoleSlotsEnabled + _grayCitizenCount;
-  int get _assignedTotal => _sorkoobTotal + _independentTotal + _citizenTotal;
+  int get _standardTownTotal => _standardTownRoleSlotsEnabled + _grayCitizenCount;
+  int get _standardAssignedTotal => _standardLeaderTotal + _independentTotal + _standardTownTotal;
 
   // ---- جمعِ نقش‌بندی‌شده‌ی سناریوی «مافیا» (کاملاً موازیِ بالا) ----
   int get _mafiaGangRoleSlotsEnabled =>
@@ -329,15 +329,15 @@ class _StartGameScreenState extends State<StartGameScreen> {
     return _mafiaGangTotal > (total / 3);
   }
 
-  String? get _sorkoobValidationError {
+  String? get _standardValidationError {
     final total = _draftPlayers.length;
     if (total < _minPlayers) {
       return 'حداقل $_minPlayers بازیکن لازمه (الان $total نفر)';
     }
-    if (_citizenTotal < 1) {
+    if (_standardTownTotal < 1) {
       return 'باید حداقل ۱ نفر تو تیم شهروند باشه — تعدادِ شهروندِ خاکستری رو زیاد کن';
     }
-    final diff = total - _assignedTotal;
+    final diff = total - _standardAssignedTotal;
     if (diff > 0) {
       return 'هنوز $diff نفر نقش نگرفتن — تعدادِ سرکوبگر یا شهروندِ خاکستری رو زیاد کن';
     }
@@ -354,7 +354,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     }
     final total = _draftPlayers.length;
     if (total == 0) return false;
-    return _citizenTotal < (total * 2 / 3);
+    return _standardTownTotal < (total * 2 / 3);
   }
 
   String? get _validationError {
@@ -365,7 +365,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
       case GameScenarioSetupTemplate.mafiaClassic:
         return _mafiaValidationError;
       case GameScenarioSetupTemplate.standard:
-        return _sorkoobValidationError;
+        return _standardValidationError;
     }
   }
 
@@ -427,7 +427,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
     _startScenarioWithRoles(
       scenario: scenario,
-      leaderCount: _sorkoobTotal,
+      leaderCount: _standardLeaderTotal,
       independentCount: _independentTotal,
       leaderRoleIds: [
         if (_includeValiFaghih) scenario.roleIdFor('leaderRole'),
@@ -576,7 +576,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final introSeconds = (_speakSeconds / 2).round();
     final error = _validationError;
     final total = _draftPlayers.length;
-    final assigned = _assignedTotalFor(scenario);
+    final assigned = _standardAssignedTotalFor(scenario);
     final leaderTeam = SarkoobTeams.byId(scenario.leaderTeamId);
     final townTeam = SarkoobTeams.byId(scenario.townTeamId);
     final teams = <(GameTeam, int, VoidCallback)>[
@@ -1053,7 +1053,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
       );
     });
   }
-  void _showSorkoobTeamPage() {
+  void _showStandardLeaderTeamPage() {
     _pushSection(SarkoobTeams.suppression.name, SarkoobTeams.suppression.color, (context) {
       return StatefulBuilder(
         builder: (context, setSheetState) => Column(
@@ -1116,7 +1116,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              'مجموعِ تیم سرکوب: $_sorkoobTotal نفر',
+              'مجموعِ تیم سرکوب: $_standardLeaderTotal نفر',
               style: const TextStyle(
                 color: AppColors.goldLight,
                 fontSize: 13,
@@ -1129,7 +1129,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     });
   }
 
-  void _showCitizenTeamPage() {
+  void _showStandardTownTeamPage() {
     _pushSection(SarkoobTeams.citizen.name, SarkoobTeams.citizen.color, (context) {
       return StatefulBuilder(
         builder: (context, setSheetState) => Column(
@@ -1202,7 +1202,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              'مجموعِ تیم شهروند: $_citizenTotal نفر',
+              'مجموعِ تیم شهروند: $_standardTownTotal نفر',
               style: const TextStyle(
                 color: AppColors.goldLight,
                 fontSize: 13,
@@ -1392,12 +1392,12 @@ class _StartGameScreenState extends State<StartGameScreen> {
     });
   }
 
-  int _assignedTotalFor(GameScenario scenario) {
+  int _standardAssignedTotalFor(GameScenario scenario) {
     switch (scenario.setupTemplate) {
       case GameScenarioSetupTemplate.mafiaClassic:
         return _mafiaAssignedTotal;
       case GameScenarioSetupTemplate.standard:
-        return _assignedTotal;
+        return _standardAssignedTotal;
     }
   }
 
@@ -1408,8 +1408,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
         if (teamId == scenario.townTeamId) return _mafiaTownTotal;
         return 0;
       case GameScenarioSetupTemplate.standard:
-        if (teamId == scenario.leaderTeamId) return _sorkoobTotal;
-        if (teamId == scenario.townTeamId) return _citizenTotal;
+        if (teamId == scenario.leaderTeamId) return _standardLeaderTotal;
+        if (teamId == scenario.townTeamId) return _standardTownTotal;
         return 0;
     }
   }
@@ -1420,7 +1420,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
         case GameScenarioSetupTemplate.mafiaClassic:
           return _showMafiaGangTeamPage;
         case GameScenarioSetupTemplate.standard:
-          return _showSorkoobTeamPage;
+          return _showStandardLeaderTeamPage;
       }
     }
     if (teamId == scenario.townTeamId) {
@@ -1428,7 +1428,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
         case GameScenarioSetupTemplate.mafiaClassic:
           return _showMafiaTownTeamPage;
         case GameScenarioSetupTemplate.standard:
-          return _showCitizenTeamPage;
+          return _showStandardTownTeamPage;
       }
     }
     return null;
