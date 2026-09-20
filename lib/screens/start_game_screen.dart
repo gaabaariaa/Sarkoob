@@ -349,7 +349,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
   bool get _isPowerUnbalanced {
     final scenario = _selectedScenario;
-    if (scenario == null || scenario.setupMode != GameScenarioSetupMode.sorkoob) {
+    if (scenario == null || scenario.setupTemplate != GameScenarioSetupTemplate.standard) {
       return false;
     }
     final total = _draftPlayers.length;
@@ -361,10 +361,10 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final scenario = _selectedScenario;
     if (scenario == null) return 'سناریوی بازی انتخاب نشده';
 
-    switch (scenario.setupMode) {
-      case GameScenarioSetupMode.mafia:
+    switch (scenario.setupTemplate) {
+      case GameScenarioSetupTemplate.mafiaClassic:
         return _mafiaValidationError;
-      case GameScenarioSetupMode.sorkoob:
+      case GameScenarioSetupTemplate.standard:
         return _sorkoobValidationError;
     }
   }
@@ -376,12 +376,12 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final scenario = _selectedScenario;
     if (scenario == null) return;
 
-    final unbalanced = scenario.setupMode == GameScenarioSetupMode.mafia
+    final unbalanced = scenario.setupTemplate == GameScenarioSetupTemplate.mafiaClassic
         ? _isMafiaCountUnbalanced
         : _isPowerUnbalanced;
     if (unbalanced) {
       final proceed = await _showBalanceWarning(
-        scenario.setupMode == GameScenarioSetupMode.mafia
+        scenario.setupTemplate == GameScenarioSetupTemplate.mafiaClassic
             ? 'تعدادِ مافیا بیشتر از یک‌سومِ کل نفراته؛ تیمِ مافیا قدرتِ '
                 'زیادی نسبت به اهالیِ شهر داره. می‌خوای همینطوری ادامه بدی؟'
             : 'تعداد تیم مقاومت (شهروند) کمتر از دو‌سومِ کل نفراته؛ تیم مقاومت '
@@ -390,11 +390,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
       if (proceed != true) return;
     }
 
-    switch (scenario.setupMode) {
-      case GameScenarioSetupMode.mafia:
+    switch (scenario.setupTemplate) {
+      case GameScenarioSetupTemplate.mafiaClassic:
         _startMafiaGame();
         break;
-      case GameScenarioSetupMode.sorkoob:
+      case GameScenarioSetupTemplate.standard:
         _startGame();
         break;
     }
@@ -1393,21 +1393,21 @@ class _StartGameScreenState extends State<StartGameScreen> {
   }
 
   int _assignedTotalFor(GameScenario scenario) {
-    switch (scenario.setupMode) {
-      case GameScenarioSetupMode.mafia:
+    switch (scenario.setupTemplate) {
+      case GameScenarioSetupTemplate.mafiaClassic:
         return _mafiaAssignedTotal;
-      case GameScenarioSetupMode.sorkoob:
+      case GameScenarioSetupTemplate.standard:
         return _assignedTotal;
     }
   }
 
   int _teamMemberCountFor(GameScenario scenario, String teamId) {
-    switch (scenario.setupMode) {
-      case GameScenarioSetupMode.mafia:
+    switch (scenario.setupTemplate) {
+      case GameScenarioSetupTemplate.mafiaClassic:
         if (teamId == scenario.leaderTeamId) return _mafiaGangTotal;
         if (teamId == scenario.townTeamId) return _mafiaTownTotal;
         return 0;
-      case GameScenarioSetupMode.sorkoob:
+      case GameScenarioSetupTemplate.standard:
         if (teamId == scenario.leaderTeamId) return _sorkoobTotal;
         if (teamId == scenario.townTeamId) return _citizenTotal;
         return 0;
@@ -1416,18 +1416,18 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
   VoidCallback? _teamSetupPageFor(GameScenario scenario, String teamId) {
     if (teamId == scenario.leaderTeamId) {
-      switch (scenario.setupMode) {
-        case GameScenarioSetupMode.mafia:
+      switch (scenario.setupTemplate) {
+        case GameScenarioSetupTemplate.mafiaClassic:
           return _showMafiaGangTeamPage;
-        case GameScenarioSetupMode.sorkoob:
+        case GameScenarioSetupTemplate.standard:
           return _showSorkoobTeamPage;
       }
     }
     if (teamId == scenario.townTeamId) {
-      switch (scenario.setupMode) {
-        case GameScenarioSetupMode.mafia:
+      switch (scenario.setupTemplate) {
+        case GameScenarioSetupTemplate.mafiaClassic:
           return _showMafiaTownTeamPage;
-        case GameScenarioSetupMode.sorkoob:
+        case GameScenarioSetupTemplate.standard:
           return _showCitizenTeamPage;
       }
     }
