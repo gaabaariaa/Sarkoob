@@ -2590,7 +2590,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     switch (controller.currentNightStep) {
       case NightStepKind.leaderTeam:
         return _buildSorkoobTeamStep();
-      case NightStepKind.mossadLeader:
+      case NightStepKind.independentLeader:
         return _buildRoleNightStep(
           wakeLabel: '$_independentLeaderRoleName بیدار بشه',
           sleepLabel: '$_independentLeaderRoleName چشمش رو ببنده',
