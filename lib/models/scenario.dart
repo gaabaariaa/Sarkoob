@@ -104,6 +104,7 @@ class SarkoobScenarios {
       'civicActivist': 'role_civic_activist',
       'lawyer': 'role_lawyer',
       'judiciary': 'role_judiciary_chief',
+      'policeCommander': 'role_police_commander',
       'natasha': 'role_natasha',
       'interrogator': 'role_interrogator',
       'intelligenceMinister': 'role_intelligence_minister',
@@ -156,6 +157,7 @@ class SarkoobScenarios {
       'civicActivist': 'role_leader',
       'lawyer': 'role_konstantin',
       'judiciary': 'role_enchanter',
+      'policeCommander': 'role_kidnapper',
     },
   );
 
