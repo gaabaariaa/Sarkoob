@@ -104,6 +104,17 @@ class SarkoobScenarios {
       'civicActivist': 'role_civic_activist',
       'lawyer': 'role_lawyer',
       'judiciary': 'role_judiciary_chief',
+      'natasha': 'role_natasha',
+      'interrogator': 'role_interrogator',
+      'intelligenceMinister': 'role_intelligence_minister',
+      'policeCommander': 'role_police_commander',
+      'kidnapper': 'role_kidnapper',
+      'zhina': 'role_zhina',
+      'mistress': 'role_mistress',
+      'discloser': 'role_discloser',
+      'saboteur': 'role_saboteur',
+      'bomber': 'role_bomber',
+      'guard': 'role_guard',
     },
   );
 
