@@ -272,7 +272,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get natashaPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.natasha.id) return p;
+      if (p.roleId == scenario.roleIdFor('natasha')) return p;
     }
     return null;
   }
@@ -1288,7 +1288,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get judiciaryChiefPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.judiciaryChief.id || p.roleId == SarkoobRoles.enchanter.id) return p;
+      if (p.roleId == scenario.roleIdFor('judiciary') || p.roleId == scenario.roleIdFor('judiciary')) return p;
     }
     return null;
   }
@@ -1313,7 +1313,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get interrogatorPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.interrogator.id) return p;
+      if (p.roleId == scenario.roleIdFor('interrogator')) return p;
     }
     return null;
   }
@@ -1355,7 +1355,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get intelligenceMinisterPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.intelligenceMinister.id) return p;
+      if (p.roleId == scenario.roleIdFor('intelligenceMinister')) return p;
     }
     return null;
   }
@@ -1397,7 +1397,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get policeCommanderPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.policeCommander.id || p.roleId == SarkoobRoles.kidnapper.id) return p;
+      if (p.roleId == scenario.roleIdFor('policeCommander') || p.roleId == scenario.roleIdFor('kidnapper')) return p;
     }
     return null;
   }
@@ -1553,7 +1553,7 @@ class GameFlowController extends ChangeNotifier {
   /// نداره. سلاخی هم چون یه‌جور «حذف»ه، همین چک رو صدا می‌زنه، فقط جدا
   /// از _eliminatePlayer چون سلاخی مستقیم isAlive رو خودش ست می‌کنه.
   void _checkZhinaTrigger(SessionPlayer player) {
-    if (player.roleId == SarkoobRoles.zhina.id) {
+    if (player.roleId == scenario.roleIdFor('zhina')) {
       sorkoobDisabledNextNight = true;
     }
   }
@@ -1572,7 +1572,7 @@ class GameFlowController extends ChangeNotifier {
   /// یعنی هر مسیرِ حذفی: رأی/شات (از تویِ _eliminatePlayer)، سلاخیِ
   /// حرفه‌ای، اقداماتِ زودیاک، اخراجِ انضباطی، و اخراجِ رهبرِ جامعه.
   void _checkMistressTrigger(SessionPlayer player) {
-    if (player.roleId != SarkoobRoles.mistress.id) return;
+    if (player.roleId != scenario.roleIdFor('mistress')) return;
     final godfather = valiFaghihPlayer;
     if (godfather == null || !godfather.isAlive) return;
     godfatherEnragedNextNight = true;
@@ -1588,7 +1588,7 @@ class GameFlowController extends ChangeNotifier {
   String? discloserAnnouncement;
 
   void _checkDiscloserTrigger(SessionPlayer player) {
-    if (player.roleId != SarkoobRoles.discloser.id) return;
+    if (player.roleId != scenario.roleIdFor('discloser')) return;
     pendingDiscloserPlayerId = player.id;
   }
 
@@ -1708,7 +1708,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get saboteurPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.saboteur.id) return p;
+      if (p.roleId == scenario.roleIdFor('saboteur')) return p;
     }
     return null;
   }
@@ -2088,14 +2088,14 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get bomberPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.bomber.id) return p;
+      if (p.roleId == scenario.roleIdFor('bomber')) return p;
     }
     return null;
   }
 
   SessionPlayer? get guardPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.guard.id) return p;
+      if (p.roleId == scenario.roleIdFor('guard')) return p;
     }
     return null;
   }
