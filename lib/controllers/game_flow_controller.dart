@@ -42,7 +42,7 @@ class _PhaseSnapshot {
 /// جداگونه و به‌ترتیب، و در آخر جمع‌بندیِ شب.
 enum NightStepKind {
   leaderTeam,
-  mossadLeader,
+  independentLeader,
   rapper,
   hacker,
   politicalAnalyst,
