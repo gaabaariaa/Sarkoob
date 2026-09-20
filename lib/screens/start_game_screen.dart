@@ -452,12 +452,12 @@ class _StartGameScreenState extends State<StartGameScreen> {
         if (_includePoliticalAnalyst) scenario.roleIdFor('politicalAnalyst'),
       ],
       independentEnabled: _isIndependentTeamEnabled(scenario),
-      slaughterRoleId: scenario.roleIdFor('leaderRole'),
+      slaughterRoleId: scenario.leaderRoleId,
       revolutionaryRoleId: scenario.roleIdFor('revolutionary'),
       warGunRoleId: scenario.roleIdFor('rebel'),
       intelRoleId: scenario.roleIdFor('intelligenceMinister'),
       guaranteeRoleId: scenario.roleIdFor('nationalHero'),
-      armorRoleIds: {scenario.roleIdFor('leaderRole')},
+      armorRoleIds: {scenario.leaderRoleId},
     );
   }
 
@@ -495,12 +495,12 @@ class _StartGameScreenState extends State<StartGameScreen> {
         if (_includeWhiteBeard) scenario.roleIdFor('guarantee'),
       ],
       independentEnabled: _isIndependentTeamEnabled(scenario),
-      slaughterRoleId: scenario.roleIdFor('leaderRole'),
+      slaughterRoleId: scenario.leaderRoleId,
       revolutionaryRoleId: scenario.roleIdFor('revolutionary'),
       warGunRoleId: scenario.roleIdFor('warGun'),
       guaranteeRoleId: scenario.roleIdFor('guarantee'),
       armorRoleIds: {
-        scenario.roleIdFor('leaderRole'),
+        scenario.leaderRoleId,
         scenario.roleIdFor('revolutionary'),
       },
     );
