@@ -1296,7 +1296,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get judiciaryChiefPlayer {
     for (final p in players) {
-      if (p.roleId == scenario.roleIdFor('judiciary') || p.roleId == scenario.roleIdFor('judiciary')) return p;
+      if (p.roleId == scenario.roleIdFor('judiciary')) return p;
     }
     return null;
   }
@@ -2257,7 +2257,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get civicActivistPlayer {
     for (final p in players) {
-      if (p.roleId == SarkoobRoles.civicActivist.id || p.roleId == SarkoobRoles.leader.id) return p;
+      if (p.roleId == scenario.roleIdFor('civicActivist')) return p;
     }
     return null;
   }
