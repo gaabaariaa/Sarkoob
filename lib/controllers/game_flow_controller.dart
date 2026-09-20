@@ -38,7 +38,7 @@ class _PhaseSnapshot {
   const _PhaseSnapshot(this.phase, this.roundNumber);
 }
 
-/// ترتیبِ «بیدارشدنِ» شب: اول تیمِ سرکوب باهم، بعد هر نقشِ خاصِ شهروندی
+/// ترتیبِ «بیدارشدنِ» شب: اول تیمِ رهبرِ سناریو باهم، بعد نقش‌های ویژه‌ی فعال
 /// جداگونه و به‌ترتیب، و در آخر جمع‌بندیِ شب.
 enum NightStepKind {
   leaderTeam,
@@ -2509,7 +2509,7 @@ class GameFlowController extends ChangeNotifier {
     NightStepKind.nationalHero,
     NightStepKind.civicActivist,
     NightStepKind.lawyer,
-    NightStepKind.mossadLeader,
+    NightStepKind.independentLeader,
     NightStepKind.done,
   ];
 
@@ -2535,7 +2535,7 @@ class GameFlowController extends ChangeNotifier {
         // نداره، پس این مرحله کلاً رد می‌شه.
         return players.any(
             (p) => isLeaderTeam(p.teamId));
-      case NightStepKind.mossadLeader:
+      case NightStepKind.independentLeader:
         // شبِ اول (برای انتخابِ شیوه) یا شب‌های زوج (برای استفاده). فردِ
         // مرده هم باز باید صداش کنیم (لوندادن)، پس isAlive رو چک نمی‌کنیم.
         if (mossadLeaderPlayer == null) return false;
@@ -2581,10 +2581,10 @@ class GameFlowController extends ChangeNotifier {
     return alivePlayers.any((p) => p.teamId == leaderTeamId);
   }
 
-  /// آیا الان می‌شه از مرحله‌ی «تیمِ سرکوب» جلوتر رفت؟ اگه ولی‌فقیه زنده‌ست،
+  /// آیا الان می‌شه از مرحله‌ی «تیمِ رهبر» جلوتر رفت؟ اگه ولی‌فقیه زنده‌ست،
   /// باید حتماً تصمیمش رو گرفته باشه (شات/سلاخی/مذاکره)؛ اگه زنده نیست ولی
   /// بازم شاتِ جایگزین ممکنه، بازم باید یه تصمیم گرفته شده باشه؛ فقط وقتی
-  /// کلِ تیمِ سرکوب حذف شده، بدونِ هیچ تصمیمی هم می‌شه رد شد.
+  /// کلِ تیمِ رهبر حذف شده، بدونِ هیچ تصمیمی هم می‌شه رد شد.
   bool get canAdvancePastLeaderTeamStep {
     if (sorkoobDisabledTonight) return true;
     final leader = valiFaghihPlayer;
