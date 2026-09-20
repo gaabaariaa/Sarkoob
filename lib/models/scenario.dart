@@ -108,7 +108,6 @@ class SarkoobScenarios {
       'natasha': 'role_natasha',
       'interrogator': 'role_interrogator',
       'intelligenceMinister': 'role_intelligence_minister',
-      'policeCommander': 'role_police_commander',
       'kidnapper': 'role_kidnapper',
       'zhina': 'role_zhina',
       'mistress': 'role_mistress',
