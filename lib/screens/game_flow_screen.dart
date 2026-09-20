@@ -3175,8 +3175,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
             onPressed: () => isAssassination
-                ? _showMossadAssassinationPicker(leader)
-                : _showMossadShootPicker(leader),
+                ? _showIndependentLeaderAssassinationPicker(leader)
+                : _showIndependentLeaderShootPicker(leader),
             child: Text(isAssassination ? 'ترور (هدف + حدسِ نقش)' : 'شات'),
           )
         else
@@ -3185,7 +3185,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     );
   }
 
-  void _showMossadAssassinationPicker(SessionPlayer leader) {
+  void _showIndependentLeaderAssassinationPicker(SessionPlayer leader) {
     final targets = controller.alivePlayers.where((p) => p.id != leader.id).toList();
     SessionPlayer? selectedTarget;
     String? selectedRoleId;
@@ -3250,7 +3250,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     );
   }
 
-  void _showMossadShootPicker(SessionPlayer leader) {
+  void _showIndependentLeaderShootPicker(SessionPlayer leader) {
     _showPlayerListPicker(
       title: 'شات روی کی؟',
       targets: controller.alivePlayers.where((p) => p.id != leader.id).toList(),
