@@ -16,6 +16,7 @@ class GameScenario {
   final String leaderTeamId;
   final String townTeamId;
   final String independentTeamId;
+  final String leaderRoleId;
   final String leaderDefaultRoleId;
   final String townDefaultRoleId;
   final String negotiatorRoleId;
@@ -48,6 +49,7 @@ class GameScenario {
     required this.leaderTeamId,
     required this.townTeamId,
     required this.independentTeamId,
+    required this.leaderRoleId,
     required this.leaderDefaultRoleId,
     required this.townDefaultRoleId,
     required this.negotiatorRoleId,
@@ -78,6 +80,7 @@ class SarkoobScenarios {
     color: Color(0xFFB71C1C),
     emoji: '🕵️',
     leaderTeamId: 'team_sorkoob',
+    leaderRoleId: 'role_vali_faghih',
     townTeamId: 'team_citizen',
     independentTeamId: 'team_mossad',
     leaderDefaultRoleId: 'role_suppressor',
@@ -135,6 +138,7 @@ class SarkoobScenarios {
     color: Color(0xFF37474F),
     emoji: '🎭',
     leaderTeamId: 'team_mafia_gang',
+    leaderRoleId: 'role_godfather',
     townTeamId: 'team_mafia_town',
     independentTeamId: 'team_zodiac',
     leaderDefaultRoleId: 'role_simple_mafia',
