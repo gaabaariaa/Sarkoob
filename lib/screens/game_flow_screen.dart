@@ -2594,7 +2594,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         return _buildRoleNightStep(
           wakeLabel: '$_independentLeaderRoleName بیدار بشه',
           sleepLabel: '$_independentLeaderRoleName چشمش رو ببنده',
-          playerName: controller.mossadLeaderPlayer?.name,
+          playerName: controller.independentLeaderPlayer?.name,
           body: _buildMossadLeaderSection(),
           canAdvance: controller.canAdvancePastMossadLeaderStep,
         );
@@ -3108,7 +3108,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   // ---------- رهبرِ موساد ----------
 
   Widget _buildMossadLeaderSection() {
-    final leader = controller.mossadLeaderPlayer!;
+    final leader = controller.independentLeaderPlayer!;
 
     if (controller.roundNumber == 1) {
       if (leader.mossadPlaystyle != null) {
