@@ -41,7 +41,7 @@ class _PhaseSnapshot {
 /// ترتیبِ «بیدارشدنِ» شب: اول تیمِ سرکوب باهم، بعد هر نقشِ خاصِ شهروندی
 /// جداگونه و به‌ترتیب، و در آخر جمع‌بندیِ شب.
 enum NightStepKind {
-  sorkoobTeam,
+  leaderTeam,
   mossadLeader,
   rapper,
   hacker,
@@ -2499,7 +2499,7 @@ class GameFlowController extends ChangeNotifier {
   // ---------- ترتیبِ بیدارشدنِ شب ----------
 
   static const List<NightStepKind> _nightStepOrder = [
-    NightStepKind.sorkoobTeam,
+    NightStepKind.leaderTeam,
     NightStepKind.doctor,
     NightStepKind.hacker,
     NightStepKind.revolutionary,
@@ -2513,7 +2513,7 @@ class GameFlowController extends ChangeNotifier {
     NightStepKind.done,
   ];
 
-  NightStepKind currentNightStep = NightStepKind.sorkoobTeam;
+  NightStepKind currentNightStep = NightStepKind.leaderTeam;
 
   /// آیا این مرحله باید تو ترتیبِ شب بیاد؟ نکته‌ی مهم: مرده‌بودنِ صاحبِ
   /// نقش دلیلِ کافی برای ردکردنِ مرحله نیست — اگه هکر/دکتر/مبارز مرده
@@ -2529,7 +2529,7 @@ class GameFlowController extends ChangeNotifier {
   /// مشخصِ خودِ نقشه، نه چیزی که لو بده کسی زنده یا مرده‌ست.
   bool _isNightStepApplicable(NightStepKind step) {
     switch (step) {
-      case NightStepKind.sorkoobTeam:
+      case NightStepKind.leaderTeam:
         // «تیمِ رهبر»یِ همین جلسه — سرکوب تو سناریوی سرکوب، مافیا تو
         // سناریوی مافیا. تو یه بازیِ دیگه هیچ بازیکنی این تیم‌ها رو
         // نداره، پس این مرحله کلاً رد می‌شه.
@@ -2585,7 +2585,7 @@ class GameFlowController extends ChangeNotifier {
   /// باید حتماً تصمیمش رو گرفته باشه (شات/سلاخی/مذاکره)؛ اگه زنده نیست ولی
   /// بازم شاتِ جایگزین ممکنه، بازم باید یه تصمیم گرفته شده باشه؛ فقط وقتی
   /// کلِ تیمِ سرکوب حذف شده، بدونِ هیچ تصمیمی هم می‌شه رد شد.
-  bool get canAdvancePastSorkoobTeamStep {
+  bool get canAdvancePastLeaderTeamStep {
     if (sorkoobDisabledTonight) return true;
     final leader = valiFaghihPlayer;
     final leaderAlive = leader != null && leader.isAlive;
