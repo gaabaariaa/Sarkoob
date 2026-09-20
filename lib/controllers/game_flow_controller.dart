@@ -2498,20 +2498,28 @@ class GameFlowController extends ChangeNotifier {
 
   // ---------- ترتیبِ بیدارشدنِ شب ----------
 
-  static const List<NightStepKind> _nightStepOrder = [
-    NightStepKind.leaderTeam,
-    NightStepKind.doctor,
-    NightStepKind.hacker,
-    NightStepKind.revolutionary,
-    NightStepKind.rebel,
-    NightStepKind.rapper,
-    NightStepKind.politicalAnalyst,
-    NightStepKind.nationalHero,
-    NightStepKind.civicActivist,
-    NightStepKind.lawyer,
-    NightStepKind.independentLeader,
-    NightStepKind.done,
-  ];
+  List<NightStepKind> get _nightStepOrder => [
+        for (final key in scenario.nightStepOrder) _nightStepFromScenarioKey(key),
+        NightStepKind.done,
+      ];
+
+  NightStepKind _nightStepFromScenarioKey(String key) {
+    switch (key) {
+      case 'leaderTeam': return NightStepKind.leaderTeam;
+      case 'independentLeader': return NightStepKind.independentLeader;
+      case 'rapper': return NightStepKind.rapper;
+      case 'hacker': return NightStepKind.hacker;
+      case 'politicalAnalyst': return NightStepKind.politicalAnalyst;
+      case 'doctor': return NightStepKind.doctor;
+      case 'rebel': return NightStepKind.rebel;
+      case 'nationalHero': return NightStepKind.nationalHero;
+      case 'revolutionary': return NightStepKind.revolutionary;
+      case 'civicActivist': return NightStepKind.civicActivist;
+      case 'lawyer': return NightStepKind.lawyer;
+      default:
+        throw StateError('Unknown night step "' + key + '" in scenario "' + scenario.id + '"');
+    }
+  }
 
   NightStepKind currentNightStep = NightStepKind.leaderTeam;
 
