@@ -1985,7 +1985,7 @@ class GameFlowController extends ChangeNotifier {
   /// اصلاً رهبرِ موساد تو بازی نیست یا مرده — و امشب مرده حساب نمی‌شه اگه
   /// همین امشب سلاخی شده، چون تصمیمش هنوز نهایی نشده — چیزی برای
   /// انتخاب‌کردن نیست و همیشه می‌شه رد شد).
-  bool get canAdvancePastMossadLeaderStep {
+  bool get canAdvancePastIndependentLeaderStep {
     final leader = independentLeaderPlayer;
     if (leader == null || !_stillActiveTonight(leader)) return true;
     if (roundNumber != 1) return true;
