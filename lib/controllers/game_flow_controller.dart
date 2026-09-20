@@ -943,7 +943,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get valiFaghihPlayer {
     for (final p in players) {
-      if (p.roleId == scenario.leaderDefaultRoleId) return p;
+      if (p.roleId == scenario.leaderRoleId) return p;
     }
     return null;
   }
