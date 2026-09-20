@@ -2720,7 +2720,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         children: [
           _buildSorkoobRoster(),
           const SizedBox(height: 14),
-          if (controller.sorkoobDisabledTonight)
+          if (controller.leaderTeamDisabledTonight)
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
