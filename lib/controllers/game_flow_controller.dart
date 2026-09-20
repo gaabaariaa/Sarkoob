@@ -1397,7 +1397,7 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer? get policeCommanderPlayer {
     for (final p in players) {
-      if (p.roleId == scenario.roleIdFor('policeCommander') || p.roleId == scenario.roleIdFor('kidnapper')) return p;
+      if (p.roleId == scenario.roleIdFor('policeCommander')) return p;
     }
     return null;
   }
