@@ -101,7 +101,7 @@ class SessionPlayer {
   int? guaranteesRemaining;
   bool interrogationUsed;
   bool natashaSilenceUsed;
-  MossadPlaystyle? mossadPlaystyle;
+  IndependentLeaderPlaystyle? independentLeaderPlaystyle;
   bool referendumUsed;
   bool negotiateUsed;
   int disciplineStage;
@@ -140,7 +140,7 @@ class SessionPlayer {
     this.guaranteesRemaining,
     this.interrogationUsed = false,
     this.natashaSilenceUsed = false,
-    this.mossadPlaystyle,
+    this.independentLeaderPlaystyle,
     this.referendumUsed = false,
     this.negotiateUsed = false,
     this.disciplineStage = 0,
