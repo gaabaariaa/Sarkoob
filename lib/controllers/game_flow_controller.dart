@@ -78,8 +78,14 @@ class GameFlowController extends ChangeNotifier {
   bool isLeaderTeam(String teamId) => teamId == scenario.leaderTeamId;
   bool isTownTeam(String teamId) => teamId == scenario.townTeamId;
 
-  String roleNameForScenario(String roleId) =>
-      SarkoobRoles.byId(roleId)?.name ?? roleId;
+  String roleNameForScenario(String roleId) {
+    final role = SarkoobRoles.forScenario(scenario.id).firstWhere(
+      (r) => r.id == roleId,
+      orElse: () => SarkoobRoles.byId(roleId) ??
+          (throw StateError('Unknown role: $roleId')),
+    );
+    return role.name;
+  }
 
   GameFlowController({required this.players, required this.settings}) {
     _rebuildSpeakingOrder();
@@ -197,7 +203,9 @@ class GameFlowController extends ChangeNotifier {
   /// نشون داده بشن. ترتیب طبقِ همون ترتیبِ ثابتِ SarkoobRoles.all ـه.
   List<GameRole> get rolesInPlay {
     final idsInPlay = players.map((p) => p.roleId).whereType<String>().toSet();
-    return SarkoobRoles.all.where((r) => idsInPlay.contains(r.id)).toList();
+    return SarkoobRoles.forScenario(scenario.id)
+        .where((r) => idsInPlay.contains(r.id))
+        .toList();
   }
 
   /// مثلِ rolesInPlay، ولی فقط نقش‌های یه تیمِ خاص (مثلاً برای ترورِ
