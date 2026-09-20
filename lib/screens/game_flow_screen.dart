@@ -2596,7 +2596,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           sleepLabel: '$_independentLeaderRoleName چشمش رو ببنده',
           playerName: controller.independentLeaderPlayer?.name,
           body: _buildMossadLeaderSection(),
-          canAdvance: controller.canAdvancePastMossadLeaderStep,
+          canAdvance: controller.canAdvancePastIndependentLeaderStep,
         );
       case NightStepKind.rapper:
         return _buildRoleNightStep(
