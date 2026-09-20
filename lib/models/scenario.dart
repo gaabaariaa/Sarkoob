@@ -22,6 +22,9 @@ class GameScenario {
   final String negotiatorRoleId;
   final String independentLeaderRoleId;
 
+  /// ترتیب مراحل شب به‌صورت کلیدهای قراردادی؛ Controller فقط آن‌ها را اجرا می‌کند.
+  final List<String> nightStepOrder;
+
   /// نقشی که در این سناریو می‌تواند تیمِ رهبر را برای شبِ بعد غیرفعال کند.
   /// در سناریوهایی که چنین قابلیتی ندارند null است.
   final String? leaderTeamDisableTriggerRoleId;
@@ -58,6 +61,7 @@ class GameScenario {
     required this.townDefaultRoleId,
     required this.negotiatorRoleId,
     required this.independentLeaderRoleId,
+    required this.nightStepOrder,
     this.leaderTeamDisableTriggerRoleId,
     required this.simpleRoleIds,
     required this.leaderLabel,
@@ -93,6 +97,20 @@ class SarkoobScenarios {
     negotiatorRoleId: 'role_foreign_minister',
     independentLeaderRoleId: 'role_mossad_leader',
     leaderTeamDisableTriggerRoleId: 'role_zhina',
+    nightStepOrder: [
+      'leaderTeam',
+      'doctor',
+      'hacker',
+      'revolutionary',
+      'rebel',
+      'rapper',
+      'politicalAnalyst',
+      'nationalHero',
+      'civicActivist',
+      'lawyer',
+      'independentLeader',
+    ],
+
     simpleRoleIds: {'role_suppressor', 'role_gray_citizen'},
     leaderLabel: 'سرکوب',
     resistanceTeamLabel: 'تیمِ مقاومتِ فعال',
@@ -152,6 +170,20 @@ class SarkoobScenarios {
     negotiatorRoleId: 'role_negotiator',
     independentLeaderRoleId: 'role_zodiac',
     leaderTeamDisableTriggerRoleId: null,
+    nightStepOrder: [
+      'leaderTeam',
+      'doctor',
+      'hacker',
+      'revolutionary',
+      'rebel',
+      'rapper',
+      'politicalAnalyst',
+      'nationalHero',
+      'civicActivist',
+      'lawyer',
+      'independentLeader',
+    ],
+
     simpleRoleIds: {'role_simple_mafia', 'role_simple_citizen'},
     leaderLabel: 'مافیا',
     resistanceTeamLabel: 'تیمِ اوشن',
