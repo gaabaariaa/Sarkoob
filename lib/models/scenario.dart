@@ -166,6 +166,14 @@ class SarkoobScenarios {
       'warGun': 'role_gunman',
       'guarantee': 'role_white_beard',
       'doctor': 'role_mafia_doctor',
+      'spy': 'role_spy',
+      'terrorist': 'role_terrorist',
+      'bomber': 'role_bomber',
+      'mistress': 'role_mistress',
+      'natasha': 'role_natasha',
+      'saboteur': 'role_saboteur',
+      'guard': 'role_guard',
+      'discloser': 'role_discloser',
     },
   );
 
