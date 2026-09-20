@@ -22,6 +22,10 @@ class GameScenario {
   final String negotiatorRoleId;
   final String independentLeaderRoleId;
 
+  /// نقشی که در این سناریو می‌تواند تیمِ رهبر را برای شبِ بعد غیرفعال کند.
+  /// در سناریوهایی که چنین قابلیتی ندارند null است.
+  final String? leaderTeamDisableTriggerRoleId;
+
   /// نقش‌های ساده‌ی پیش‌فرضِ این سناریو؛ موتور نباید از نام/سناریوی خاص
   /// استنتاج کند که چه نقشی «فعال» نیست.
   final Set<String> simpleRoleIds;
