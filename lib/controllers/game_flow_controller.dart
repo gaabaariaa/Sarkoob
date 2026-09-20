@@ -90,7 +90,7 @@ class GameFlowController extends ChangeNotifier {
   GameFlowController({required this.players, required this.settings}) {
     _rebuildSpeakingOrder();
     // تیمِ رهبرِ همین جلسه — سرکوب یا مافیا، هرکدوم حاضره (بخشِ ۶ی فایلِ
-    // وضعیت: همون الگویِ جنریک‌سازیِ sorkoobHasLostMember/leaderNegotiate).
+    // وضعیت: همون الگویِ جنریک‌سازیِ leaderTeamHasLostMember/leaderNegotiate).
     final leaderTeamCount =
         players.where((p) => p.teamId == leaderTeamId).length;
     statusInquiryChargesRemaining = leaderTeamCount > 0 ? leaderTeamCount - 1 : 0;
@@ -934,10 +934,10 @@ class GameFlowController extends ChangeNotifier {
   bool isStillActiveTonight(SessionPlayer p) => _stillActiveTonight(p);
 
   /// ژینا: اگه دیشب حذف شده باشه، این true می‌شه و امشب مصرفش می‌کنیم.
-  bool sorkoobDisabledNextNight = false;
+  bool leaderTeamDisabledNextNight = false;
 
   /// همینِ امشب، تیمِ سرکوب هیچ قابلیتی نداره (چون ژینا دیشب حذف شد).
-  bool sorkoobDisabledTonight = false;
+  bool leaderTeamDisabledTonight = false;
 
   bool get nightActionTaken => _nightActionTaken;
 
@@ -957,7 +957,7 @@ class GameFlowController extends ChangeNotifier {
 
   /// آیا حداقل یه عضوِ تیمِ رهبر (سرکوب یا مافیا، هرکدوم این جلسه حاضره)
   /// تا الان از بازی خارج شده؟
-  bool get sorkoobHasLostMember => players.any(
+  bool get leaderTeamHasLostMember => players.any(
       (p) =>
           isLeaderTeam(p.teamId) &&
           !p.isAlive);
@@ -975,18 +975,18 @@ class GameFlowController extends ChangeNotifier {
       players.where((p) => p.isAlive && _isGrayCitizen(p)).toList();
 
   bool get canUseNegotiate {
-    if (sorkoobDisabledTonight) return false;
+    if (leaderTeamDisabledTonight) return false;
     final minister = foreignMinisterPlayer;
     if (minister == null || !minister.isAlive) return false;
     if (minister.negotiateUsed) return false;
     if (isPlayerDetained(minister.id)) return false;
-    if (!sorkoobHasLostMember) return false;
+    if (!leaderTeamHasLostMember) return false;
     if (grayCitizens.isEmpty) return false;
     return true;
   }
 
   void leaderNegotiate(int targetId) {
-    if (sorkoobDisabledTonight) return;
+    if (leaderTeamDisabledTonight) return;
     final minister = foreignMinisterPlayer;
     if (minister == null || isPlayerDetained(minister.id) || minister.negotiateUsed) return;
     final target = playerById(targetId);
@@ -1006,7 +1006,7 @@ class GameFlowController extends ChangeNotifier {
   }
 
   void leaderShoot(int targetId) {
-    if (sorkoobDisabledTonight) return;
+    if (leaderTeamDisabledTonight) return;
     final leader = valiFaghihPlayer;
     if (leader == null || isPlayerDetained(leader.id)) return;
     _pendingHits[targetId] = (_pendingHits[targetId] ?? 0) + 1;
@@ -1017,7 +1017,7 @@ class GameFlowController extends ChangeNotifier {
   }
 
   void leaderSlaughter(int targetId, String guessedRoleId) {
-    if (sorkoobDisabledTonight) return;
+    if (leaderTeamDisabledTonight) return;
     final leader = valiFaghihPlayer;
     if (leader == null || isPlayerDetained(leader.id)) return;
     final target = playerById(targetId);
@@ -1302,7 +1302,7 @@ class GameFlowController extends ChangeNotifier {
   }
 
   bool get canIssueExecutionOrder {
-    if (sorkoobDisabledTonight) return false;
+    if (leaderTeamDisabledTonight) return false;
     final chief = judiciaryChiefPlayer;
     if (chief == null || !chief.isAlive || chief.executionOrderUsed) return false;
     return !isPlayerDetained(chief.id);
@@ -1327,7 +1327,7 @@ class GameFlowController extends ChangeNotifier {
   }
 
   bool get canInterrogateTonight {
-    if (sorkoobDisabledTonight) return false;
+    if (leaderTeamDisabledTonight) return false;
     final interrogator = interrogatorPlayer;
     if (interrogator == null || !interrogator.isAlive || interrogator.interrogationUsed) {
       return false;
@@ -1371,7 +1371,7 @@ class GameFlowController extends ChangeNotifier {
   bool _intelQuestionUsedTonight = false;
 
   bool get canAskIntelQuestionTonight {
-    if (sorkoobDisabledTonight) return false;
+    if (leaderTeamDisabledTonight) return false;
     final minister = intelligenceMinisterPlayer;
     if (minister == null || !minister.isAlive) return false;
     if (isPlayerDetained(minister.id)) return false;
@@ -1416,7 +1416,7 @@ class GameFlowController extends ChangeNotifier {
   bool isPlayerDetained(int playerId) => detainedPlayerId == playerId;
 
   bool get canDetainTonight {
-    if (sorkoobDisabledTonight) return false;
+    if (leaderTeamDisabledTonight) return false;
     final commander = policeCommanderPlayer;
     return commander != null && _stillActiveTonight(commander) && detainedPlayerId == null;
   }
@@ -1446,7 +1446,7 @@ class GameFlowController extends ChangeNotifier {
   }
 
   bool get canAssassinateTonight {
-    if (sorkoobDisabledTonight) return false;
+    if (leaderTeamDisabledTonight) return false;
     final merc = mercenaryPlayer;
     if (merc == null || !_stillActiveTonight(merc)) return false;
     return !isPlayerDetained(merc.id);
@@ -1563,7 +1563,7 @@ class GameFlowController extends ChangeNotifier {
   void _checkZhinaTrigger(SessionPlayer player) {
     final triggerRoleId = scenario.leaderTeamDisableTriggerRoleId;
     if (triggerRoleId != null && player.roleId == triggerRoleId) {
-      sorkoobDisabledNextNight = true;
+      leaderTeamDisabledNextNight = true;
     }
   }
 
@@ -2582,7 +2582,7 @@ class GameFlowController extends ChangeNotifier {
   /// شاتِ تیمی هیچ‌وقت کاملاً از دست نمی‌ره، مادامی که حداقل یه عضوِ زنده
   /// از تیمِ رهبر (سرکوب یا مافیا) باقی باشه.
   bool get canFallbackShoot {
-    if (sorkoobDisabledTonight) return false;
+    if (leaderTeamDisabledTonight) return false;
     final leader = valiFaghihPlayer;
     if (leader != null && leader.isAlive) return false;
     final leaderTeamId = this.leaderTeamId;
@@ -2594,7 +2594,7 @@ class GameFlowController extends ChangeNotifier {
   /// بازم شاتِ جایگزین ممکنه، بازم باید یه تصمیم گرفته شده باشه؛ فقط وقتی
   /// کلِ تیمِ رهبر حذف شده، بدونِ هیچ تصمیمی هم می‌شه رد شد.
   bool get canAdvancePastLeaderTeamStep {
-    if (sorkoobDisabledTonight) return true;
+    if (leaderTeamDisabledTonight) return true;
     final leader = valiFaghihPlayer;
     final leaderAlive = leader != null && leader.isAlive;
     if (leaderAlive) return _nightActionTaken;
@@ -2646,8 +2646,8 @@ class GameFlowController extends ChangeNotifier {
     guaranteedPlayerId = null; // تضمینِ دیروز فقط برای همون روز بود، الان منقضی می‌شه
     _detainedLastNight = detainedPlayerId; // دیشب کی بازداشت بود، برای قانونِ «نه دو شبِ پیاپی»
     detainedPlayerId = null;
-    sorkoobDisabledTonight = sorkoobDisabledNextNight;
-    sorkoobDisabledNextNight = false;
+    leaderTeamDisabledTonight = leaderTeamDisabledNextNight;
+    leaderTeamDisabledNextNight = false;
     godfatherEnragedTonight = godfatherEnragedNextNight;
     godfatherEnragedNextNight = false;
     leaderActionsUsedTonight = 0;
