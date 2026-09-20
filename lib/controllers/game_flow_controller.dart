@@ -1606,8 +1606,9 @@ class GameFlowController extends ChangeNotifier {
     final isLeaderTeamTarget = target.teamId == leaderTeamId;
     final leaderLabel = scenario.leaderLabel;
     discloserAnnouncement =
-        '📢 افشاگر قبلِ خروج افشا کرد: «\${target.name}» '
-        '\${isLeaderTeamTarget ? "عضوِ تیمِ \$leaderLabel است" : "عضوِ تیمِ \$leaderLabel نیست"}.';
+        '📢 افشاگر قبلِ خروج افشا کرد: «${target.name}» '
+        '${isLeaderTeamTarget ? "عضوِ تیمِ " : "عضوِ تیمِ "}$leaderLabel'
+        '${isLeaderTeamTarget ? " است" : " نیست"}.';
     // افشا همیشه راسته (دروغ‌گفتن امکان‌پذیر نیست)؛ امتیازدهی به‌صورتِ
     // قراردادی انجام می‌شه: افشایِ عضوِ تیمِ رهبرِ سناریو +۳ و افشایِ
     // عضوِ غیرِ رهبر -۲.
