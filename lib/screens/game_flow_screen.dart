@@ -2589,13 +2589,13 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
     switch (controller.currentNightStep) {
       case NightStepKind.leaderTeam:
-        return _buildSorkoobTeamStep();
+        return _buildLeaderTeamStep();
       case NightStepKind.independentLeader:
         return _buildRoleNightStep(
           wakeLabel: '$_independentLeaderRoleName بیدار بشه',
           sleepLabel: '$_independentLeaderRoleName چشمش رو ببنده',
           playerName: controller.independentLeaderPlayer?.name,
-          body: _buildMossadLeaderSection(),
+          body: _buildIndependentLeaderSection(),
           canAdvance: controller.canAdvancePastIndependentLeaderStep,
         );
       case NightStepKind.rapper:
@@ -2686,7 +2686,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   /// امور خارجه + حکمِ اعدامِ رئیس قوه قضاییه، چون هر سه عضوِ همین تیم‌ان.
   /// لیستِ اعضای زنده‌ی تیمِ سرکوب به‌همراهِ نقشِ دقیقشون، برای این‌که
   /// گرداننده مطمئن باشه داره با آدمِ درست حرف می‌زنه.
-  Widget _buildSorkoobRoster() {
+  Widget _buildLeaderTeamRoster() {
     final leaderTeamId = controller.leaderTeamId;
     final members = controller.alivePlayers.where((p) => p.teamId == leaderTeamId).toList();
     if (members.isEmpty) return const SizedBox.shrink();
@@ -2709,7 +2709,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     );
   }
 
-  Widget _buildSorkoobTeamStep() {
+  Widget _buildLeaderTeamStep() {
     final teamLabel = _leaderTeamName;
     return ModernNightPanel(
       eyebrow: 'شب ${controller.roundNumber}',
@@ -2718,7 +2718,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildSorkoobRoster(),
+          _buildLeaderTeamRoster(),
           const SizedBox(height: 14),
           if (controller.leaderTeamDisabledTonight)
             Container(
@@ -3107,7 +3107,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   // ---------- رهبرِ موساد ----------
 
-  Widget _buildMossadLeaderSection() {
+  Widget _buildIndependentLeaderSection() {
     final leader = controller.independentLeaderPlayer!;
 
     if (controller.roundNumber == 1) {
