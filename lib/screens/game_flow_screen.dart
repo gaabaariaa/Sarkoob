@@ -41,7 +41,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   // «تیمِ رهبرِ» این جلسه سرکوبه یا مافیا؟ چندجا تو UIی مرحله‌ی تیمِ رهبر
   // لازمه، برای همینم یه getterِ مشترکه به‌جایِ محاسبه‌ی پراکنده.
   String get _leaderTeamName => controller.scenario.name;
-  String get _leaderRoleName => controller.roleNameForScenario(controller.scenario.leaderDefaultRoleId);
+  String get _leaderRoleName => controller.roleNameForScenario(controller.scenario.leaderRoleId);
   String get _plainCitizenLabel => _roleName(controller.scenario.townDefaultRoleId);
   String get _plainLeaderTeamLabel => _roleName(controller.scenario.leaderDefaultRoleId);
   String get _independentLeaderRoleName => _roleName(controller.scenario.roleIdFor('independentLeader'));
