@@ -1561,7 +1561,8 @@ class GameFlowController extends ChangeNotifier {
   /// نداره. سلاخی هم چون یه‌جور «حذف»ه، همین چک رو صدا می‌زنه، فقط جدا
   /// از _eliminatePlayer چون سلاخی مستقیم isAlive رو خودش ست می‌کنه.
   void _checkZhinaTrigger(SessionPlayer player) {
-    if (player.roleId == scenario.roleIdFor('zhina')) {
+    final triggerRoleId = scenario.leaderTeamDisableTriggerRoleId;
+    if (triggerRoleId != null && player.roleId == triggerRoleId) {
       sorkoobDisabledNextNight = true;
     }
   }
