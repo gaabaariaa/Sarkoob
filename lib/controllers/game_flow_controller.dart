@@ -96,12 +96,12 @@ class GameFlowController extends ChangeNotifier {
     statusInquiryChargesRemaining = leaderTeamCount > 0 ? leaderTeamCount - 1 : 0;
     // زودیاک برخلافِ رهبرِ موساد هیچ انتخابِ شیوه‌ای نداره — همیشه معادلِ
     // «عملیاتِ سری»، از همون اول ثابت. همین باعث می‌شه UIی انتخاب‌شیوه‌ی
-    // شبِ اول خودکار رد بشه (چون mossadPlaystyle از قبل null نیست) و
-    // mossadAssassinate هم هیچ‌وقت براش true نشه (چون playstyle هیچ‌وقت
+    // شبِ اول خودکار رد بشه (چون independentLeaderPlaystyle از قبل null نیست) و
+    // independentLeaderAssassinate هم هیچ‌وقت براش true نشه (چون playstyle هیچ‌وقت
     // assassination نمی‌شه).
     for (final p in players) {
       if (p.roleId == scenario.independentLeaderRoleId) {
-        p.mossadPlaystyle = MossadPlaystyle.secretOperation;
+        p.independentLeaderPlaystyle = IndependentLeaderPlaystyle.secretOperation;
       }
     }
   }
@@ -119,7 +119,7 @@ class GameFlowController extends ChangeNotifier {
   /// موقعِ حل‌وفصلِ نهاییِ هر دور امتیازدهی می‌شه و خالی می‌شه.
   final Map<int, Set<int>> _voteHistoryThisRound = {};
 
-  /// ضربه‌های شبانه‌ی معلق (leaderShoot/mossadShoot/revolutionaryExecute)
+  /// ضربه‌های شبانه‌ی معلق (leaderShoot/independentLeaderShoot/revolutionaryExecute)
   /// به‌همراهِ عاملشون؛ در finishNight بعدِ حل‌وفصلِ نهایی امتیازدهی و خالی می‌شه.
   final List<_PendingHitAttribution> _pendingHitAttributions = [];
 
@@ -1989,35 +1989,35 @@ class GameFlowController extends ChangeNotifier {
     final leader = independentLeaderPlayer;
     if (leader == null || !_stillActiveTonight(leader)) return true;
     if (roundNumber != 1) return true;
-    return leader.mossadPlaystyle != null;
+    return leader.independentLeaderPlaystyle != null;
   }
 
-  void chooseMossadPlaystyle(MossadPlaystyle style) {
+  void chooseIndependentLeaderPlaystyle(IndependentLeaderPlaystyle style) {
     final leader = independentLeaderPlayer;
     if (leader == null || !_stillActiveTonight(leader) || roundNumber != 1) return;
-    if (leader.mossadPlaystyle != null) return; // یه‌بار برای همیشه
-    leader.mossadPlaystyle = style;
+    if (leader.independentLeaderPlaystyle != null) return; // یه‌بار برای همیشه
+    leader.independentLeaderPlaystyle = style;
     notifyListeners();
   }
 
   /// آیا امشب هنوز از عملیاتِ ترور/سری استفاده نشده؟ (هرکدوم از
-  /// mossadAssassinate/mossadShoot که یه‌بار استفاده بشه، امشب دیگه
+  /// independentLeaderAssassinate/independentLeaderShoot که یه‌بار استفاده بشه، امشب دیگه
   /// نمی‌شه عوضش کرد.)
-  bool _mossadActedTonight = false;
+  bool _independentLeaderActedTonight = false;
 
   /// عملیاتِ ترور/سری فقط شب‌های زوجِ بازی (دوم، چهارم، ...) و فقط یک‌بار
   /// در هر شب قابل‌استفاده‌ست.
-  bool get canMossadActTonight {
+  bool get canIndependentLeaderActTonight {
     final leader = independentLeaderPlayer;
-    if (leader == null || !_stillActiveTonight(leader) || leader.mossadPlaystyle == null) {
+    if (leader == null || !_stillActiveTonight(leader) || leader.independentLeaderPlaystyle == null) {
       return false;
     }
     if (roundNumber.isOdd) return false;
-    if (_mossadActedTonight) return false;
+    if (_independentLeaderActedTonight) return false;
     return !isPlayerDetained(leader.id);
   }
 
-  String? mossadAssassinationResultMessage;
+  String? independentLeaderAssassinationResultMessage;
 
   /// عملیاتِ ترور: هدف + حدسِ نقش. فقط اگه هدف واقعاً عضوِ سرکوب باشه و
   /// نقشش درست حدس زده بشه حذف می‌شه — مثلِ سلاخی، مستقیم و برگشت‌ناپذیر
@@ -2026,11 +2026,11 @@ class GameFlowController extends ChangeNotifier {
   /// حدسِ غلط هیچ اثری تو بازی نداره و رهبرِ موساد به بقیه‌ی بازیکنا لو
   /// نمی‌ره — ولی نتیجه (موفق یا ناموفق) تو یادداشتِ خصوصیِ گرداننده
   /// می‌مونه، نه متنی که قراره عیناً به جمع خونده بشه.
-  void mossadAssassinate(int targetId, String guessedRoleId) {
-    if (!canMossadActTonight) return;
+  void independentLeaderAssassinate(int targetId, String guessedRoleId) {
+    if (!canIndependentLeaderActTonight) return;
     final leader = independentLeaderPlayer!;
-    if (leader.mossadPlaystyle != MossadPlaystyle.assassination) return;
-    _mossadActedTonight = true;
+    if (leader.independentLeaderPlaystyle != IndependentLeaderPlaystyle.assassination) return;
+    _independentLeaderActedTonight = true;
     final target = playerById(targetId);
     // چکِ تیم قبلاً فقط suppression بود که تو سناریوی مافیا (زودیاک)
     // هیچ‌وقت درست کار نمی‌کرد؛ حالا هر دو سناریو رو پوشش می‌ده.
@@ -2042,10 +2042,10 @@ class GameFlowController extends ChangeNotifier {
       _checkZhinaTrigger(target);
       _checkMistressTrigger(target);
       _tonightSlaughteredIds.add(target.id);
-      mossadAssassinationResultMessage = '«${target.name}» با ترورِ موساد از بازی خارج شد.';
+      independentLeaderAssassinationResultMessage = '«${target.name}» با ترورِ موساد از بازی خارج شد.';
       _award(leader, 2, 'ترورِ رهبرِ تیمِ مستقل');
     } else {
-      mossadAssassinationResultMessage = 'ترورِ موساد بی‌اثر بود؛ هیچ‌کس متوجه نشد.';
+      independentLeaderAssassinationResultMessage = 'ترورِ موساد بی‌اثر بود؛ هیچ‌کس متوجه نشد.';
     }
     notifyListeners();
   }
@@ -2056,11 +2056,11 @@ class GameFlowController extends ChangeNotifier {
   /// استثنا: اگه هدف خودِ محافظ باشه، اصلاً صف‌بندی نمی‌شه — برعکسش
   /// می‌شه: زودیاک همون‌لحظه و کاملاً حذف می‌شه (پدافندِ غیرفعالِ محافظ،
   /// مستقل از زره/نجاتِ دکتر).
-  void mossadShoot(int targetId) {
-    if (!canMossadActTonight) return;
+  void independentLeaderShoot(int targetId) {
+    if (!canIndependentLeaderActTonight) return;
     final leader = independentLeaderPlayer!;
-    if (leader.mossadPlaystyle != MossadPlaystyle.secretOperation) return;
-    _mossadActedTonight = true;
+    if (leader.independentLeaderPlaystyle != IndependentLeaderPlaystyle.secretOperation) return;
+    _independentLeaderActedTonight = true;
     final guard = guardPlayer;
     if (guard != null && guard.isAlive && targetId == guard.id) {
       leader.isAlive = false;
@@ -2632,7 +2632,7 @@ class GameFlowController extends ChangeNotifier {
     _savedPlayerIds.clear();
     _doctorSavesUsedTonight = 0;
     _hackerUsedTonight = false;
-    _mossadActedTonight = false;
+    _independentLeaderActedTonight = false;
     lastInvestigationResult = null;
     lastInvestigationTargetName = null;
     _revolutionaryActedTonight = false;
@@ -2673,7 +2673,7 @@ class GameFlowController extends ChangeNotifier {
     _tonightSlaughteredIds.clear();
     _tonightEliminatedIds.clear();
     _tonightRevivedId = null;
-    mossadAssassinationResultMessage = null;
+    independentLeaderAssassinationResultMessage = null;
     guardCounterResultMessage = null;
     _politicalAnalystUsedTonight = false;
     lastIndependentInvestigationResult = null;
@@ -2809,8 +2809,8 @@ class GameFlowController extends ChangeNotifier {
     if (negotiateResultMessage != null) privateNotes.insert(0, negotiateResultMessage!);
     if (revolutionaryResultMessage != null) privateNotes.insert(0, revolutionaryResultMessage!);
     if (rapperResultMessage != null) privateNotes.insert(0, rapperResultMessage!);
-    if (mossadAssassinationResultMessage != null) {
-      privateNotes.insert(0, mossadAssassinationResultMessage!);
+    if (independentLeaderAssassinationResultMessage != null) {
+      privateNotes.insert(0, independentLeaderAssassinationResultMessage!);
     }
     if (guardCounterResultMessage != null) privateNotes.insert(0, guardCounterResultMessage!);
 
