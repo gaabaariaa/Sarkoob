@@ -3111,9 +3111,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final leader = controller.independentLeaderPlayer!;
 
     if (controller.roundNumber == 1) {
-      if (leader.mossadPlaystyle != null) {
+      if (leader.independentLeaderPlaystyle != null) {
         return Text(
-          leader.mossadPlaystyle == MossadPlaystyle.assassination
+          leader.independentLeaderPlaystyle == IndependentLeaderPlaystyle.assassination
               ? 'شیوه انتخاب شد: 🕶 عملیاتِ ترور'
               : 'شیوه انتخاب شد: 🗡 عملیاتِ سری',
           textAlign: TextAlign.center,
@@ -3130,13 +3130,13 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           const SizedBox(height: 16),
           ElevatedButton(
             style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-            onPressed: () => controller.chooseMossadPlaystyle(MossadPlaystyle.assassination),
+            onPressed: () => controller.chooseIndependentLeaderPlaystyle(IndependentLeaderPlaystyle.assassination),
             child: const Text('🕶 عملیاتِ ترور'),
           ),
           const SizedBox(height: 8),
           ElevatedButton(
             style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-            onPressed: () => controller.chooseMossadPlaystyle(MossadPlaystyle.secretOperation),
+            onPressed: () => controller.chooseIndependentLeaderPlaystyle(IndependentLeaderPlaystyle.secretOperation),
             child: const Text('🗡 عملیاتِ سری'),
           ),
         ],
@@ -3151,8 +3151,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       );
     }
 
-    final isAssassination = leader.mossadPlaystyle == MossadPlaystyle.assassination;
-    final resultText = controller.mossadAssassinationResultMessage;
+    final isAssassination = leader.independentLeaderPlaystyle == IndependentLeaderPlaystyle.assassination;
+    final resultText = controller.independentLeaderAssassinationResultMessage;
     return Column(
       children: [
         Text(
@@ -3171,7 +3171,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           ),
         ],
         const SizedBox(height: 16),
-        if (controller.canMossadActTonight)
+        if (controller.canIndependentLeaderActTonight)
           ElevatedButton(
             style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
             onPressed: () => isAssassination
@@ -3234,7 +3234,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     ElevatedButton(
                       onPressed: (selectedTarget != null && selectedRoleId != null)
                           ? () {
-                              controller.mossadAssassinate(selectedTarget!.id, selectedRoleId!);
+                              controller.independentLeaderAssassinate(selectedTarget!.id, selectedRoleId!);
                               Navigator.of(context).pop();
                             }
                           : null,
@@ -3254,7 +3254,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     _showPlayerListPicker(
       title: 'شات روی کی؟',
       targets: controller.alivePlayers.where((p) => p.id != leader.id).toList(),
-      onSelected: (p) => controller.mossadShoot(p.id),
+      onSelected: (p) => controller.independentLeaderShoot(p.id),
     );
   }
 
