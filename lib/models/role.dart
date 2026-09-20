@@ -4,7 +4,7 @@ import 'team.dart';
 /// می‌فهمه چه UI ای رو براش نشون بده.
 enum NightActionKind {
   none,
-  sorkoobLeaderDecision, // مخصوص ولی‌فقیه: تصمیم شات یا سلاخی
+  leaderTeamDecision, // مخصوص ولی‌فقیه: تصمیم شات یا سلاخی
 }
 
 /// نتیجه‌ی خلاصه‌شده‌ی استعلامِ هکر: «لایک» یعنی مثبت (نشونه‌ی عضویت در '
@@ -198,7 +198,7 @@ class SarkoobRoles {
         'می‌شه. یک زره داره: اولین شاتی که بهش بخوره فقط زره رو از بین می‌بره '
         '(خودش زنده می‌مونه)، ولی شاتِ بعدی — چه همون شب چه شب دیگه — حذفش '
         'می‌کنه، مگر اینکه دکتر همون شب نجاتش بده.',
-    nightAction: NightActionKind.sorkoobLeaderDecision,
+    nightAction: NightActionKind.leaderTeamDecision,
     alwaysShowsInnocent: true,
     hasNightArmor: true,
     canSlaughter: true,
@@ -526,7 +526,7 @@ class SarkoobRoles {
         'داده می‌شه. یه زره داره: اولین شاتی که بهش بخوره فقط زره رو از بین '
         'می‌بره (خودش زنده می‌مونه)، ولی شاتِ بعدی — چه همون شب چه شبِ دیگه — '
         'حذفش می‌کنه، مگراینکه دکتر همون شب نجاتش بده.',
-    nightAction: NightActionKind.sorkoobLeaderDecision,
+    nightAction: NightActionKind.leaderTeamDecision,
     alwaysShowsInnocent: true,
     hasNightArmor: true,
     canSlaughter: true,
