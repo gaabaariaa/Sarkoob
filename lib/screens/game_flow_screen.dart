@@ -2588,7 +2588,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     }
 
     switch (controller.currentNightStep) {
-      case NightStepKind.sorkoobTeam:
+      case NightStepKind.leaderTeam:
         return _buildSorkoobTeamStep();
       case NightStepKind.mossadLeader:
         return _buildRoleNightStep(
@@ -2792,7 +2792,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         ],
       ),
       actionLabel: 'اعضای $teamLabel چشم‌هاشون رو ببندن',
-      onAction: controller.canAdvancePastSorkoobTeamStep ? controller.advanceNightStep : null,
+      onAction: controller.canAdvancePastLeaderTeamStep ? controller.advanceNightStep : null,
     );
   }
 
