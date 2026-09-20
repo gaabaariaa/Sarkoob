@@ -1974,7 +1974,7 @@ class GameFlowController extends ChangeNotifier {
 
   // ---------- رهبرِ موساد: انتخابِ شیوه (شبِ اول) + عملیاتِ ترور/سری (شب‌های زوج) ----------
 
-  SessionPlayer? get mossadLeaderPlayer {
+  SessionPlayer? get independentLeaderPlayer {
     for (final p in players) {
       if (p.roleId == scenario.independentLeaderRoleId) return p;
     }
@@ -1986,14 +1986,14 @@ class GameFlowController extends ChangeNotifier {
   /// همین امشب سلاخی شده، چون تصمیمش هنوز نهایی نشده — چیزی برای
   /// انتخاب‌کردن نیست و همیشه می‌شه رد شد).
   bool get canAdvancePastMossadLeaderStep {
-    final leader = mossadLeaderPlayer;
+    final leader = independentLeaderPlayer;
     if (leader == null || !_stillActiveTonight(leader)) return true;
     if (roundNumber != 1) return true;
     return leader.mossadPlaystyle != null;
   }
 
   void chooseMossadPlaystyle(MossadPlaystyle style) {
-    final leader = mossadLeaderPlayer;
+    final leader = independentLeaderPlayer;
     if (leader == null || !_stillActiveTonight(leader) || roundNumber != 1) return;
     if (leader.mossadPlaystyle != null) return; // یه‌بار برای همیشه
     leader.mossadPlaystyle = style;
@@ -2008,7 +2008,7 @@ class GameFlowController extends ChangeNotifier {
   /// عملیاتِ ترور/سری فقط شب‌های زوجِ بازی (دوم، چهارم، ...) و فقط یک‌بار
   /// در هر شب قابل‌استفاده‌ست.
   bool get canMossadActTonight {
-    final leader = mossadLeaderPlayer;
+    final leader = independentLeaderPlayer;
     if (leader == null || !_stillActiveTonight(leader) || leader.mossadPlaystyle == null) {
       return false;
     }
@@ -2028,7 +2028,7 @@ class GameFlowController extends ChangeNotifier {
   /// می‌مونه، نه متنی که قراره عیناً به جمع خونده بشه.
   void mossadAssassinate(int targetId, String guessedRoleId) {
     if (!canMossadActTonight) return;
-    final leader = mossadLeaderPlayer!;
+    final leader = independentLeaderPlayer!;
     if (leader.mossadPlaystyle != MossadPlaystyle.assassination) return;
     _mossadActedTonight = true;
     final target = playerById(targetId);
@@ -2058,7 +2058,7 @@ class GameFlowController extends ChangeNotifier {
   /// مستقل از زره/نجاتِ دکتر).
   void mossadShoot(int targetId) {
     if (!canMossadActTonight) return;
-    final leader = mossadLeaderPlayer!;
+    final leader = independentLeaderPlayer!;
     if (leader.mossadPlaystyle != MossadPlaystyle.secretOperation) return;
     _mossadActedTonight = true;
     final guard = guardPlayer;
@@ -2546,7 +2546,7 @@ class GameFlowController extends ChangeNotifier {
       case NightStepKind.independentLeader:
         // شبِ اول (برای انتخابِ شیوه) یا شب‌های زوج (برای استفاده). فردِ
         // مرده هم باز باید صداش کنیم (لوندادن)، پس isAlive رو چک نمی‌کنیم.
-        if (mossadLeaderPlayer == null) return false;
+        if (independentLeaderPlayer == null) return false;
         return roundNumber == 1 || roundNumber.isEven;
       case NightStepKind.rapper:
         return rapperPlayer != null;
