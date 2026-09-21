@@ -577,16 +577,16 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final error = _validationError;
     final total = _draftPlayers.length;
     final assigned = _standardAssignedTotalFor(scenario);
-    final leaderTeam = SarkoobTeams.byId(scenario.leaderTeamId);
-    final townTeam = SarkoobTeams.byId(scenario.townTeamId);
+    final leaderTeam = scenarioTeam(scenario, scenario.leaderTeamId);
+    final townTeam = scenarioTeam(scenario, scenario.townTeamId);
     final teams = <(GameTeam, int, VoidCallback)>[
-      if (leaderTeam != null)
+      if (leaderTeam.id.isNotEmpty)
         (
           leaderTeam,
           _teamMemberCountFor(scenario, leaderTeam.id),
           _teamSetupPageFor(scenario, leaderTeam.id) ?? (() {}),
         ),
-      if (townTeam != null)
+      if (townTeam.id.isNotEmpty)
         (
           townTeam,
           _teamMemberCountFor(scenario, townTeam.id),
@@ -684,7 +684,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                           _teamNavButton(
                             label: 'تیمِ مستقل',
                             color: _isIndependentTeamEnabled(scenario)
-                                ? SarkoobTeams.byId(scenario.independentTeamId)!.color
+                                ? scenarioTeam(scenario, scenario.independentTeamId).color
                                 : AppColors.subtleText,
                             count: _isIndependentTeamEnabled(scenario) ? 1 : 0,
                             onTap: _showIndependentTeamPage,
@@ -1004,11 +1004,35 @@ class _StartGameScreenState extends State<StartGameScreen> {
     });
   }
 
+  GameTeam scenarioTeam(GameScenario scenario, String teamId) {
+    final team = SarkoobTeams.byId(teamId);
+    if (team == null || team.scenarioId != scenario.id) {
+      throw StateError('Unknown team ' + teamId + ' for scenario ' + scenario.id);
+    }
+    return team;
+  }
+
+  GameRole scenarioRole(GameScenario scenario, String key) {
+    final roleId = key == 'leaderDefault'
+        ? scenario.leaderDefaultRoleId
+        : key == 'townDefault'
+            ? scenario.townDefaultRoleId
+            : scenario.roleIdFor(key);
+    return scenarioRoleById(scenario, roleId);
+  }
+
+  GameRole scenarioRoleById(GameScenario scenario, String roleId) {
+    for (final role in SarkoobRoles.forScenario(scenario.id)) {
+      if (role.id == roleId) return role;
+    }
+    throw StateError('Unknown role ' + roleId + ' for scenario ' + scenario.id);
+  }
+
   void _showIndependentTeamPage() {
     final scenario = _selectedScenario;
     if (scenario == null) return;
-    final team = SarkoobTeams.byId(scenario.independentTeamId);
-    final role = SarkoobRoles.byId(scenario.independentLeaderRoleId);
+    final team = scenarioTeam(scenario, scenario.independentTeamId);
+    final role = scenarioRoleById(scenario, scenario.independentLeaderRoleId);
     if (team == null || role == null) return;
 
     _pushSection('تیمِ مستقل', team.color, (context) {
@@ -1054,7 +1078,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     });
   }
   void _showStandardLeaderTeamPage() {
-    _pushSection(SarkoobTeams.suppression.name, SarkoobTeams.suppression.color, (context) {
+    _pushSection(scenarioTeam(scenario, scenario.leaderTeamId).name, scenarioTeam(scenario, scenario.leaderTeamId).color, (context) {
       return StatefulBuilder(
         builder: (context, setSheetState) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1066,48 +1090,48 @@ class _StartGameScreenState extends State<StartGameScreen> {
             ),
             const SizedBox(height: 8),
             _roleToggle(
-              role: SarkoobRoles.valiFaghih,
+              role: scenarioRole(scenario, 'leaderRole'),
               value: _includeValiFaghih,
               onChanged: (v) => setSheetState(() => _includeValiFaghih = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.foreignMinister,
+              role: scenarioRole(scenario, 'negotiator'),
               value: _includeForeignMinister,
               onChanged: (v) => setSheetState(() => _includeForeignMinister = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.judiciaryChief,
+              role: scenarioRole(scenario, 'judiciary'),
               value: _includeJudiciaryChief,
               onChanged: (v) => setSheetState(() => _includeJudiciaryChief = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.governmentCelebrity,
+              role: scenarioRole(scenario, 'celebrity'),
               value: _includeCelebrity,
               onChanged: (v) => setSheetState(() => _includeCelebrity = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.interrogator,
+              role: scenarioRole(scenario, 'interrogator'),
               value: _includeInterrogator,
               onChanged: (v) => setSheetState(() => _includeInterrogator = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.intelligenceMinister,
+              role: scenarioRole(scenario, 'intelligenceMinister'),
               value: _includeIntelMinister,
               onChanged: (v) => setSheetState(() => _includeIntelMinister = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.policeCommander,
+              role: scenarioRole(scenario, 'policeCommander'),
               value: _includePoliceCommander,
               onChanged: (v) => setSheetState(() => _includePoliceCommander = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.mercenary,
+              role: scenarioRole(scenario, 'mercenary'),
               value: _includeMercenary,
               onChanged: (v) => setSheetState(() => _includeMercenary = v),
             ),
             const SizedBox(height: 4),
             _roleCountStepper(
-              role: SarkoobRoles.suppressor,
+              role: scenarioRole(scenario, 'leaderDefault'),
               value: _suppressorCount,
               onDecrement: () => setSheetState(() {
                 if (_suppressorCount > 0) _suppressorCount--;
@@ -1130,7 +1154,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   }
 
   void _showStandardTownTeamPage() {
-    _pushSection(SarkoobTeams.citizen.name, SarkoobTeams.citizen.color, (context) {
+    _pushSection(scenarioTeam(scenario, scenario.townTeamId).name, scenarioTeam(scenario, scenario.townTeamId).color, (context) {
       return StatefulBuilder(
         builder: (context, setSheetState) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1142,58 +1166,58 @@ class _StartGameScreenState extends State<StartGameScreen> {
             ),
             const SizedBox(height: 8),
             _roleToggle(
-              role: SarkoobRoles.doctor,
+              role: scenarioRole(scenario, 'doctor'),
               value: _includeDoctor,
               onChanged: (v) => setSheetState(() => _includeDoctor = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.hacker,
+              role: scenarioRole(scenario, 'hacker'),
               value: _includeHacker,
               onChanged: (v) => setSheetState(() => _includeHacker = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.revolutionaryFighter,
+              role: scenarioRole(scenario, 'revolutionary'),
               value: _includeRevolutionary,
               onChanged: (v) => setSheetState(() => _includeRevolutionary = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.lawyer,
+              role: scenarioRole(scenario, 'lawyer'),
               value: _includeLawyer,
               onChanged: (v) => setSheetState(() => _includeLawyer = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.zhina,
+              role: scenarioRole(scenario, 'zhina'),
               value: _includeZhina,
               onChanged: (v) => setSheetState(() => _includeZhina = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.rapper,
+              role: scenarioRole(scenario, 'rapper'),
               value: _includeRapper,
               onChanged: (v) => setSheetState(() => _includeRapper = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.rebel,
+              role: scenarioRole(scenario, 'rebel'),
               value: _includeRebel,
               onChanged: (v) => setSheetState(() => _includeRebel = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.nationalHero,
+              role: scenarioRole(scenario, 'nationalHero'),
               value: _includeNationalHero,
               onChanged: (v) => setSheetState(() => _includeNationalHero = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.civicActivist,
+              role: scenarioRole(scenario, 'civicActivist'),
               value: _includeCivicActivist,
               onChanged: (v) => setSheetState(() => _includeCivicActivist = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.politicalAnalyst,
+              role: scenarioRole(scenario, 'politicalAnalyst'),
               value: _includePoliticalAnalyst,
               onChanged: (v) => setSheetState(() => _includePoliticalAnalyst = v),
             ),
             const SizedBox(height: 4),
             _roleCountStepper(
-              role: SarkoobRoles.grayCitizen,
+              role: scenarioRole(scenario, 'townDefault'),
               value: _grayCitizenCount,
               onDecrement: () => setSheetState(() {
                 if (_grayCitizenCount > 0) _grayCitizenCount--;
@@ -1216,7 +1240,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   }
 
   void _showMafiaGangTeamPage() {
-    _pushSection(SarkoobTeams.mafiaGang.name, SarkoobTeams.mafiaGang.color, (context) {
+    _pushSection(scenarioTeam(scenario, scenario.leaderTeamId).name, scenarioTeam(scenario, scenario.leaderTeamId).color, (context) {
       return StatefulBuilder(
         builder: (context, setSheetState) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1228,58 +1252,58 @@ class _StartGameScreenState extends State<StartGameScreen> {
             ),
             const SizedBox(height: 8),
             _roleToggle(
-              role: SarkoobRoles.godfather,
+              role: scenarioRole(scenario, 'leaderRole'),
               value: _includeGodfather,
               onChanged: (v) => setSheetState(() => _includeGodfather = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.negotiator,
+              role: scenarioRole(scenario, 'negotiator'),
               value: _includeNegotiator,
               onChanged: (v) => setSheetState(() => _includeNegotiator = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.enchanter,
+              role: scenarioRole(scenario, 'judiciary'),
               value: _includeEnchanter,
               onChanged: (v) => setSheetState(() => _includeEnchanter = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.spy,
+              role: scenarioRole(scenario, 'spy'),
               value: _includeSpy,
               onChanged: (v) => setSheetState(() => _includeSpy = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.kidnapper,
+              role: scenarioRole(scenario, 'policeCommander'),
               value: _includeKidnapper,
               onChanged: (v) => setSheetState(() => _includeKidnapper = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.terrorist,
+              role: scenarioRole(scenario, 'terrorist'),
               value: _includeTerrorist,
               onChanged: (v) => setSheetState(() => _includeTerrorist = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.bomber,
+              role: scenarioRole(scenario, 'bomber'),
               value: _includeBomber,
               onChanged: (v) => setSheetState(() => _includeBomber = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.mistress,
+              role: scenarioRole(scenario, 'mistress'),
               value: _includeMistress,
               onChanged: (v) => setSheetState(() => _includeMistress = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.natasha,
+              role: scenarioRole(scenario, 'natasha'),
               value: _includeNatasha,
               onChanged: (v) => setSheetState(() => _includeNatasha = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.saboteur,
+              role: scenarioRole(scenario, 'saboteur'),
               value: _includeSaboteur,
               onChanged: (v) => setSheetState(() => _includeSaboteur = v),
             ),
             const SizedBox(height: 4),
             _roleCountStepper(
-              role: SarkoobRoles.simpleMafia,
+              role: scenarioRole(scenario, 'leaderDefault'),
               value: _mafiaCount,
               onDecrement: () => setSheetState(() {
                 if (_mafiaCount > 0) _mafiaCount--;
@@ -1302,7 +1326,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   }
 
   void _showMafiaTownTeamPage() {
-    _pushSection(SarkoobTeams.mafiaTown.name, SarkoobTeams.mafiaTown.color, (context) {
+    _pushSection(scenarioTeam(scenario, scenario.townTeamId).name, scenarioTeam(scenario, scenario.townTeamId).color, (context) {
       return StatefulBuilder(
         builder: (context, setSheetState) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1314,63 +1338,63 @@ class _StartGameScreenState extends State<StartGameScreen> {
             ),
             const SizedBox(height: 8),
             _roleToggle(
-              role: SarkoobRoles.mafiaDoctor,
+              role: scenarioRole(scenario, 'doctor'),
               value: _includeMafiaDoctor,
               onChanged: (v) => setSheetState(() => _includeMafiaDoctor = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.detective,
+              role: scenarioRole(scenario, 'hacker'),
               value: _includeDetective,
               onChanged: (v) => setSheetState(() => _includeDetective = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.professional,
+              role: scenarioRole(scenario, 'revolutionary'),
               value: _includeProfessional,
               onChanged: (v) => setSheetState(() => _includeProfessional = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.konstantin,
+              role: scenarioRole(scenario, 'lawyer'),
               value: _includeKonstantin,
               onChanged: (v) => setSheetState(() => _includeKonstantin = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.ocean,
+              role: scenarioRole(scenario, 'rapper'),
               value: _includeOcean,
               onChanged: (v) => setSheetState(() => _includeOcean = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.gunman,
+              role: scenarioRole(scenario, 'warGun'),
               value: _includeGunman,
               onChanged: (v) => setSheetState(() => _includeGunman = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.leader,
+              role: scenarioRole(scenario, 'civicActivist'),
               value: _includeLeader,
               onChanged: (v) => setSheetState(() => _includeLeader = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.sherlock,
+              role: scenarioRole(scenario, 'politicalAnalyst'),
               value: _includeSherlock,
               onChanged: (v) => setSheetState(() => _includeSherlock = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.guard,
+              role: scenarioRole(scenario, 'guard'),
               value: _includeGuard,
               onChanged: (v) => setSheetState(() => _includeGuard = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.discloser,
+              role: scenarioRole(scenario, 'discloser'),
               value: _includeDiscloser,
               onChanged: (v) => setSheetState(() => _includeDiscloser = v),
             ),
             _roleToggle(
-              role: SarkoobRoles.whiteBeard,
+              role: scenarioRole(scenario, 'guarantee'),
               value: _includeWhiteBeard,
               onChanged: (v) => setSheetState(() => _includeWhiteBeard = v),
             ),
             const SizedBox(height: 4),
             _roleCountStepper(
-              role: SarkoobRoles.simpleCitizen,
+              role: scenarioRole(scenario, 'townDefault'),
               value: _simpleCitizenCount,
               onDecrement: () => setSheetState(() {
                 if (_simpleCitizenCount > 0) _simpleCitizenCount--;
