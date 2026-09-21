@@ -997,341 +997,73 @@ class _StartGameScreenState extends State<StartGameScreen> {
       );
     });
   }
-  void _showStandardLeaderTeamPage() {
-    final scenario = _selectedScenario;
-    if (scenario == null) return;
-    _pushSection(scenarioTeam(scenario, scenario.leaderTeamId).name, scenarioTeam(scenario, scenario.leaderTeamId).color, (context) {
+  void _showTeamSetupPage(GameScenario scenario, String teamId) {
+    final team = scenarioTeam(scenario, teamId);
+    final isLeader = teamId == scenario.leaderTeamId;
+    final defaultRole = scenarioRole(
+      scenario,
+      isLeader ? 'leaderDefault' : 'townDefault',
+    );
+    final defaultCount = isLeader
+        ? (scenario.setupTemplate == GameScenarioSetupTemplate.mafiaClassic
+            ? _mafiaCount
+            : _suppressorCount)
+        : (scenario.setupTemplate == GameScenarioSetupTemplate.mafiaClassic
+            ? _simpleCitizenCount
+            : _grayCitizenCount);
+
+    void setDefaultCount(int value) {
+      if (isLeader) {
+        if (scenario.setupTemplate == GameScenarioSetupTemplate.mafiaClassic) {
+          _mafiaCount = value;
+        } else {
+          _suppressorCount = value;
+        }
+      } else {
+        if (scenario.setupTemplate == GameScenarioSetupTemplate.mafiaClassic) {
+          _simpleCitizenCount = value;
+        } else {
+          _grayCitizenCount = value;
+        }
+      }
+    }
+
+    _pushSection(team.name, team.color, (context) {
       return StatefulBuilder(
         builder: (context, setSheetState) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'جلوی هر نقش، تعدادش رو مشخص کن؛ خودِ برنامه موقعِ شروعِ بازی '
-              'کاملاً تصادفی مشخص می‌کنه کدوم بازیکن کدوم نقش رو می‌گیره.',
-              style: TextStyle(color: Colors.white60, fontSize: 12),
+            Text(
+              isLeader
+                  ? 'جلوی هر نقش، تعدادش رو مشخص کن؛ خودِ برنامه موقعِ شروعِ بازی '
+                    'کاملاً تصادفی مشخص می‌کنه کدوم بازیکن کدوم نقش رو می‌گیره.'
+                  : 'همینطور جلوی هر نقشِ این تیم، تعدادش رو مشخص کن؛ عضوِ ساده '
+                    'همون عضوِ بدونِ قابلیتِ خاصه.',
+              style: const TextStyle(color: Colors.white60, fontSize: 12),
             ),
             const SizedBox(height: 8),
-            _roleToggle(
-              role: scenarioRole(scenario, 'leaderRole'),
-              value: _includeValiFaghih,
-              onChanged: (v) => setSheetState(() => _includeValiFaghih = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'negotiator'),
-              value: _includeForeignMinister,
-              onChanged: (v) => setSheetState(() => _includeForeignMinister = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'judiciary'),
-              value: _includeJudiciaryChief,
-              onChanged: (v) => setSheetState(() => _includeJudiciaryChief = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'celebrity'),
-              value: _includeCelebrity,
-              onChanged: (v) => setSheetState(() => _includeCelebrity = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'interrogator'),
-              value: _includeInterrogator,
-              onChanged: (v) => setSheetState(() => _includeInterrogator = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'intelligenceMinister'),
-              value: _includeIntelMinister,
-              onChanged: (v) => setSheetState(() => _includeIntelMinister = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'policeCommander'),
-              value: _includePoliceCommander,
-              onChanged: (v) => setSheetState(() => _includePoliceCommander = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'mercenary'),
-              value: _includeMercenary,
-              onChanged: (v) => setSheetState(() => _includeMercenary = v),
-            ),
-            const SizedBox(height: 4),
-            _roleCountStepper(
-              role: scenarioRole(scenario, 'leaderDefault'),
-              value: _suppressorCount,
-              onDecrement: () => setSheetState(() {
-                if (_suppressorCount > 0) _suppressorCount--;
-              }),
-              onIncrement: () => setSheetState(() => _suppressorCount++),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'مجموعِ تیم سرکوب: $_standardLeaderTotal نفر',
-              style: const TextStyle(
-                color: AppColors.goldLight,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
+            ...scenario.setupRoleKeysForTeam(teamId).map(
+              (key) => _roleToggle(
+                role: scenarioRole(scenario, key),
+                value: _isRoleIncluded(key),
+                onChanged: (v) => setSheetState(() => _includedRoles[key] = v),
               ),
             ),
-          ],
-        ),
-      );
-    });
-  }
-
-  void _showStandardTownTeamPage() {
-    final scenario = _selectedScenario;
-    if (scenario == null) return;
-    _pushSection(scenarioTeam(scenario, scenario.townTeamId).name, scenarioTeam(scenario, scenario.townTeamId).color, (context) {
-      return StatefulBuilder(
-        builder: (context, setSheetState) => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'همینطور جلوی هر نقشِ شهروندی، تعدادش رو مشخص کن؛ شهروندِ '
-              'خاکستری همون عضوِ سادهٔ بدونِ قابلیتِ خاصه.',
-              style: TextStyle(color: Colors.white60, fontSize: 12),
-            ),
-            const SizedBox(height: 8),
-            _roleToggle(
-              role: scenarioRole(scenario, 'doctor'),
-              value: _includeDoctor,
-              onChanged: (v) => setSheetState(() => _includeDoctor = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'hacker'),
-              value: _includeHacker,
-              onChanged: (v) => setSheetState(() => _includeHacker = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'revolutionary'),
-              value: _includeRevolutionary,
-              onChanged: (v) => setSheetState(() => _includeRevolutionary = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'lawyer'),
-              value: _includeLawyer,
-              onChanged: (v) => setSheetState(() => _includeLawyer = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'zhina'),
-              value: _includeZhina,
-              onChanged: (v) => setSheetState(() => _includeZhina = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'rapper'),
-              value: _includeRapper,
-              onChanged: (v) => setSheetState(() => _includeRapper = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'rebel'),
-              value: _includeRebel,
-              onChanged: (v) => setSheetState(() => _includeRebel = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'nationalHero'),
-              value: _includeNationalHero,
-              onChanged: (v) => setSheetState(() => _includeNationalHero = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'civicActivist'),
-              value: _includeCivicActivist,
-              onChanged: (v) => setSheetState(() => _includeCivicActivist = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'politicalAnalyst'),
-              value: _includePoliticalAnalyst,
-              onChanged: (v) => setSheetState(() => _includePoliticalAnalyst = v),
-            ),
             const SizedBox(height: 4),
             _roleCountStepper(
-              role: scenarioRole(scenario, 'townDefault'),
-              value: _grayCitizenCount,
+              role: defaultRole,
+              value: defaultCount,
               onDecrement: () => setSheetState(() {
-                if (_grayCitizenCount > 0) _grayCitizenCount--;
+                final next = defaultCount > 0 ? defaultCount - 1 : 0;
+                setDefaultCount(next);
               }),
-              onIncrement: () => setSheetState(() => _grayCitizenCount++),
+              onIncrement: () => setSheetState(() {
+                setDefaultCount(defaultCount + 1);
+              }),
             ),
             const SizedBox(height: 4),
             Text(
-              'مجموعِ تیم شهروند: $_standardTownTotal نفر',
-              style: const TextStyle(
-                color: AppColors.goldLight,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      );
-    });
-  }
-
-  void _showMafiaGangTeamPage() {
-    final scenario = _selectedScenario;
-    if (scenario == null) return;
-    _pushSection(scenarioTeam(scenario, scenario.leaderTeamId).name, scenarioTeam(scenario, scenario.leaderTeamId).color, (context) {
-      return StatefulBuilder(
-        builder: (context, setSheetState) => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'جلوی هر نقش، تعدادش رو مشخص کن؛ خودِ برنامه موقعِ شروعِ بازی '
-              'کاملاً تصادفی مشخص می‌کنه کدوم بازیکن کدوم نقش رو می‌گیره.',
-              style: TextStyle(color: Colors.white60, fontSize: 12),
-            ),
-            const SizedBox(height: 8),
-            _roleToggle(
-              role: scenarioRole(scenario, 'leaderRole'),
-              value: _includeGodfather,
-              onChanged: (v) => setSheetState(() => _includeGodfather = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'negotiator'),
-              value: _includeNegotiator,
-              onChanged: (v) => setSheetState(() => _includeNegotiator = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'judiciary'),
-              value: _includeEnchanter,
-              onChanged: (v) => setSheetState(() => _includeEnchanter = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'spy'),
-              value: _includeSpy,
-              onChanged: (v) => setSheetState(() => _includeSpy = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'policeCommander'),
-              value: _includeKidnapper,
-              onChanged: (v) => setSheetState(() => _includeKidnapper = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'terrorist'),
-              value: _includeTerrorist,
-              onChanged: (v) => setSheetState(() => _includeTerrorist = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'bomber'),
-              value: _includeBomber,
-              onChanged: (v) => setSheetState(() => _includeBomber = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'mistress'),
-              value: _includeMistress,
-              onChanged: (v) => setSheetState(() => _includeMistress = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'natasha'),
-              value: _includeNatasha,
-              onChanged: (v) => setSheetState(() => _includeNatasha = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'saboteur'),
-              value: _includeSaboteur,
-              onChanged: (v) => setSheetState(() => _includeSaboteur = v),
-            ),
-            const SizedBox(height: 4),
-            _roleCountStepper(
-              role: scenarioRole(scenario, 'leaderDefault'),
-              value: _mafiaCount,
-              onDecrement: () => setSheetState(() {
-                if (_mafiaCount > 0) _mafiaCount--;
-              }),
-              onIncrement: () => setSheetState(() => _mafiaCount++),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'مجموعِ تیم مافیا: $_mafiaGangTotal نفر',
-              style: const TextStyle(
-                color: AppColors.goldLight,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      );
-    });
-  }
-
-  void _showMafiaTownTeamPage() {
-    final scenario = _selectedScenario;
-    if (scenario == null) return;
-    _pushSection(scenarioTeam(scenario, scenario.townTeamId).name, scenarioTeam(scenario, scenario.townTeamId).color, (context) {
-      return StatefulBuilder(
-        builder: (context, setSheetState) => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'همینطور جلوی هر نقشِ شهروندی، تعدادش رو مشخص کن؛ شهروندِ '
-              'ساده همون عضوِ سادهٔ بدونِ قابلیتِ خاصه.',
-              style: TextStyle(color: Colors.white60, fontSize: 12),
-            ),
-            const SizedBox(height: 8),
-            _roleToggle(
-              role: scenarioRole(scenario, 'doctor'),
-              value: _includeMafiaDoctor,
-              onChanged: (v) => setSheetState(() => _includeMafiaDoctor = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'hacker'),
-              value: _includeDetective,
-              onChanged: (v) => setSheetState(() => _includeDetective = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'revolutionary'),
-              value: _includeProfessional,
-              onChanged: (v) => setSheetState(() => _includeProfessional = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'lawyer'),
-              value: _includeKonstantin,
-              onChanged: (v) => setSheetState(() => _includeKonstantin = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'rapper'),
-              value: _includeOcean,
-              onChanged: (v) => setSheetState(() => _includeOcean = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'warGun'),
-              value: _includeGunman,
-              onChanged: (v) => setSheetState(() => _includeGunman = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'civicActivist'),
-              value: _includeLeader,
-              onChanged: (v) => setSheetState(() => _includeLeader = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'politicalAnalyst'),
-              value: _includeSherlock,
-              onChanged: (v) => setSheetState(() => _includeSherlock = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'guard'),
-              value: _includeGuard,
-              onChanged: (v) => setSheetState(() => _includeGuard = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'discloser'),
-              value: _includeDiscloser,
-              onChanged: (v) => setSheetState(() => _includeDiscloser = v),
-            ),
-            _roleToggle(
-              role: scenarioRole(scenario, 'guarantee'),
-              value: _includeWhiteBeard,
-              onChanged: (v) => setSheetState(() => _includeWhiteBeard = v),
-            ),
-            const SizedBox(height: 4),
-            _roleCountStepper(
-              role: scenarioRole(scenario, 'townDefault'),
-              value: _simpleCitizenCount,
-              onDecrement: () => setSheetState(() {
-                if (_simpleCitizenCount > 0) _simpleCitizenCount--;
-              }),
-              onIncrement: () => setSheetState(() => _simpleCitizenCount++),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'مجموعِ تیم شهروند: $_mafiaTownTotal نفر',
+              'مجموعِ ${team.name}: ${_teamMemberCountFor(scenario, teamId)} نفر',
               style: const TextStyle(
                 color: AppColors.goldLight,
                 fontSize: 13,
@@ -1367,23 +1099,10 @@ class _StartGameScreenState extends State<StartGameScreen> {
   }
 
   VoidCallback? _teamSetupPageFor(GameScenario scenario, String teamId) {
-    if (teamId == scenario.leaderTeamId) {
-      switch (scenario.setupTemplate) {
-        case GameScenarioSetupTemplate.mafiaClassic:
-          return _showMafiaGangTeamPage;
-        case GameScenarioSetupTemplate.standard:
-          return _showStandardLeaderTeamPage;
-      }
+    if (teamId != scenario.leaderTeamId && teamId != scenario.townTeamId) {
+      return null;
     }
-    if (teamId == scenario.townTeamId) {
-      switch (scenario.setupTemplate) {
-        case GameScenarioSetupTemplate.mafiaClassic:
-          return _showMafiaTownTeamPage;
-        case GameScenarioSetupTemplate.standard:
-          return _showStandardTownTeamPage;
-      }
-    }
-    return null;
+    return () => _showTeamSetupPage(scenario, teamId);
   }
 
   Widget _buildScenarioPicker() {
