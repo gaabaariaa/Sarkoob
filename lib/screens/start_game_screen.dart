@@ -184,13 +184,6 @@ class _StartGameScreenState extends State<StartGameScreen> {
     });
   }
 
-  // فعال‌بودنِ تیم مستقل کاملاً از state سناریو می‌آید؛ نام یا هویتِ تیم
-  // مستقل نباید در صفحه‌ی شروع hard-code شود.
-  bool get _includeIndependent {
-    final scenario = _selectedScenario;
-    return scenario != null && _isIndependentTeamEnabled(scenario);
-  }
-
   String _roleStateKey(GameScenario scenario, String key) =>
       '${scenario.id}::$key';
 
