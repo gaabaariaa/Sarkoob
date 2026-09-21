@@ -814,7 +814,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   }
 
   GameTeam scenarioTeam(GameScenario scenario, String teamId) {
-    final team = SarkoobTeams.byId(teamId);
+    final team = GameTeams.byId(teamId);
     if (team == null || team.scenarioId != scenario.id) {
       throw StateError('Unknown team ' + teamId + ' for scenario ' + scenario.id);
     }
@@ -831,7 +831,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   }
 
   GameRole scenarioRoleById(GameScenario scenario, String roleId) {
-    for (final role in SarkoobRoles.forScenario(scenario.id)) {
+    for (final role in GameRoles.forScenario(scenario.id)) {
       if (role.id == roleId) return role;
     }
     throw StateError('Unknown role ' + roleId + ' for scenario ' + scenario.id);
@@ -930,7 +930,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
             style: TextStyle(color: Colors.white60, fontSize: 13),
           ),
           const SizedBox(height: 16),
-          ...SarkoobScenarios.all.map(
+          ...GameScenarios.all.map(
             (scenario) => Card(
               color: AppColors.surfaceCard,
               margin: const EdgeInsets.only(bottom: 12),
