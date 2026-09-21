@@ -205,15 +205,19 @@ class _StartGameScreenState extends State<StartGameScreen> {
     return scenario != null && _isIndependentTeamEnabled(scenario);
   }
 
-  bool _isRoleIncluded(String key) => _includedRoles[key] ?? false;
+  String _roleStateKey(GameScenario scenario, String key) =>
+      '${scenario.id}::$key';
 
-  void _setRoleIncluded(String key, bool value) {
-    setState(() => _includedRoles[key] = value);
+  bool _isRoleIncluded(GameScenario scenario, String key) =>
+      _includedRoles[_roleStateKey(scenario, key)] ?? false;
+
+  void _setRoleIncluded(GameScenario scenario, String key, bool value) {
+    setState(() => _includedRoles[_roleStateKey(scenario, key)] = value);
   }
 
   int _enabledRoleCount(GameScenario scenario, String teamId) =>
       scenario.setupRoleKeysForTeam(teamId)
-          .where(_isRoleIncluded)
+          .where((key) => _isRoleIncluded(scenario, key))
           .length;
 
   int get _standardLeaderRoleSlotsEnabled {
@@ -369,13 +373,6 @@ class _StartGameScreenState extends State<StartGameScreen> {
     );
   }
 
-  String _roleKeyForId(GameScenario scenario, String roleId) {
-    for (final key in scenario.roleIds.keys) {
-      if (scenario.roleIdFor(key) == roleId) return key;
-    }
-    return roleId;
-  }
-
   void _startGame() {
     final scenario = _selectedScenario;
     if (scenario == null) return;
@@ -384,11 +381,13 @@ class _StartGameScreenState extends State<StartGameScreen> {
       scenario: scenario,
       leaderCount: _standardLeaderTotal,
       independentCount: _independentTotal,
-      leaderRoleIds: scenario.setupRoleIdsForTeam(scenario.leaderTeamId)
-          .where((id) => _isRoleIncluded(_roleKeyForId(scenario, id)))
+      leaderRoleIds: scenario.setupRoleKeysForTeam(scenario.leaderTeamId)
+          .where((key) => _isRoleIncluded(scenario, key))
+          .map(scenario.roleIdFor)
           .toList(),
-      townRoleIds: scenario.setupRoleIdsForTeam(scenario.townTeamId)
-          .where((id) => _isRoleIncluded(_roleKeyForId(scenario, id)))
+      townRoleIds: scenario.setupRoleKeysForTeam(scenario.townTeamId)
+          .where((key) => _isRoleIncluded(scenario, key))
+          .map(scenario.roleIdFor)
           .toList(),
       independentEnabled: _isIndependentTeamEnabled(scenario),
       slaughterRoleId: scenario.leaderRoleId,
@@ -1045,8 +1044,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
             ...scenario.setupRoleKeysForTeam(teamId).map(
               (key) => _roleToggle(
                 role: scenarioRole(scenario, key),
-                value: _isRoleIncluded(key),
-                onChanged: (v) => setSheetState(() => _includedRoles[key] = v),
+                value: _isRoleIncluded(scenario, key),
+                onChanged: (v) => setSheetState(() => _includedRoles[_roleStateKey(scenario, key)] = v),
               ),
             ),
             const SizedBox(height: 4),
