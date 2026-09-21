@@ -33,21 +33,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
   /// بنابراین اضافه‌شدن سناریوی جدید نیازمند افزودن فیلدِ _includeXxx نیست.
   final Map<String, bool> _includedRoles = <String, bool>{};
 
-  int _mafiaCount = 0; // مافیا ساده
-  int _simpleCitizenCount = 0; // شهروندِ ساده
-
-
-  // کدوم نقش‌های اختیاری تو این بازی فعالن. این‌که کدوم نقش‌ها اصلاً تو
-  // بازی باشن دستیه، ولی این‌که کدوم بازیکنِ خاص هرکدوم رو بگیره، کاملاً
-  // تصادفیه.
-
-
-  // به‌جای یه عددِ کلیِ «چند نفر عضوِ این تیم باشن» و کم‌کردنِ نقش‌های
-  // فعال ازش، حالا مسیر برعکسه: جلوی نقش‌های بدونِ قابلیتِ خاص هم
-  // (سرکوبگرِ ساده، شهروندِ خاکستری) یه شمارشگر هست، و مجموعِ تک‌تکِ
-  // نقش‌های هر تیم خودش اندازه‌ی اون تیم رو تعیین می‌کنه.
-  int _suppressorCount = 0;
-  int _grayCitizenCount = 0;
+  /// تعدادِ نقش‌های ساده هم مثل نقش‌های اختیاری متعلق به سناریو است؛
+  /// کلید شامل scenario.id است تا تغییر سناریو state را قاطی نکند.
+  final Map<String, int> _simpleRoleCounts = <String, int>{};
 
   static const int _minPlayers = 9;
 
@@ -216,136 +204,83 @@ class _StartGameScreenState extends State<StartGameScreen> {
           .where((key) => _isRoleIncluded(scenario, key))
           .length;
 
-  int get _standardLeaderRoleSlotsEnabled {
-    final scenario = _selectedScenario;
-    return scenario == null ? 0 : _enabledRoleCount(scenario, scenario.leaderTeamId);
+  String _simpleCountKey(GameScenario scenario, String roleId) =>
+      '\${scenario.id}::\${roleId}';
+
+  int _simpleRoleCount(GameScenario scenario, String roleId) =>
+      _simpleRoleCounts[_simpleCountKey(scenario, roleId)] ?? 0;
+
+  void _setSimpleRoleCount(GameScenario scenario, String roleId, int value) {
+    _simpleRoleCounts[_simpleCountKey(scenario, roleId)] = value.clamp(0, 999);
   }
 
-  int get _standardTownRoleSlotsEnabled {
-    final scenario = _selectedScenario;
-    return scenario == null ? 0 : _enabledRoleCount(scenario, scenario.townTeamId);
+  int _teamMemberCountFor(GameScenario scenario, String teamId) {
+    if (teamId == scenario.leaderTeamId) {
+      return _enabledRoleCount(scenario, teamId) + _simpleRoleCount(scenario, scenario.setupRules.simpleLeaderRoleId);
+    }
+    if (teamId == scenario.townTeamId) {
+      return _enabledRoleCount(scenario, teamId) + _simpleRoleCount(scenario, scenario.setupRules.simpleTownRoleId);
+    }
+    if (teamId == scenario.independentTeamId && _isIndependentTeamEnabled(scenario)) {
+      return scenario.setupRules.independentPlayerCount;
+    }
+    return 0;
   }
 
-  // مجموعِ نقش‌های هر تیم (نقش‌های ویژه + عضوِ سادهٔ بدونِ قابلیتِ خاص)
-  // خودش اندازه‌ی اون تیم رو تعیین می‌کنه — نه برعکس.
-  int get _standardLeaderTotal => _standardLeaderRoleSlotsEnabled + _suppressorCount;
-  int get _independentTotal => _includeIndependent ? 1 : 0; // فعلاً فقط رهبرِ موساد
-  int get _standardTownTotal => _standardTownRoleSlotsEnabled + _grayCitizenCount;
-  int get _standardAssignedTotal => _standardLeaderTotal + _independentTotal + _standardTownTotal;
+  int _assignedTotalFor(GameScenario scenario) =>
+      _teamMemberCountFor(scenario, scenario.leaderTeamId) +
+      _teamMemberCountFor(scenario, scenario.townTeamId) +
+      _teamMemberCountFor(scenario, scenario.independentTeamId);
 
-  // ---- جمعِ نقش‌بندی‌شده‌ی سناریوی «مافیا» (کاملاً موازیِ بالا) ----
-  int get _mafiaGangRoleSlotsEnabled {
+  int _leaderTeamTotal(GameScenario scenario) => _teamMemberCountFor(scenario, scenario.leaderTeamId);
+  int _townTeamTotal(GameScenario scenario) => _teamMemberCountFor(scenario, scenario.townTeamId);
+  int _independentTotal(GameScenario scenario) => _isIndependentTeamEnabled(scenario) ? scenario.setupRules.independentPlayerCount : 0;
+
+
+  String? get _validationError {
     final scenario = _selectedScenario;
-    return scenario == null ? 0 : _enabledRoleCount(scenario, scenario.leaderTeamId);
-  }
-
-  int get _mafiaTownRoleSlotsEnabled {
-    final scenario = _selectedScenario;
-    return scenario == null ? 0 : _enabledRoleCount(scenario, scenario.townTeamId);
-  }
-
-  int get _mafiaGangTotal => _mafiaGangRoleSlotsEnabled + _mafiaCount;
-  int get _mafiaTownTotal => _mafiaTownRoleSlotsEnabled + _simpleCitizenCount;
-  int get _zodiacTotal => _selectedScenario == null
-      ? 0
-      : (_isIndependentTeamEnabled(_selectedScenario!) ? 1 : 0);
-  int get _mafiaAssignedTotal => _mafiaGangTotal + _mafiaTownTotal + _zodiacTotal;
-
-
-  String? get _mafiaValidationError {
+    if (scenario == null) return 'سناریوی بازی انتخاب نشده';
     final total = _draftPlayers.length;
-    if (total < _minPlayers) {
-      return 'حداقل $_minPlayers بازیکن لازمه (الان $total نفر)';
-    }
-    if (_mafiaTownTotal < 1) {
-      return 'باید حداقل ۱ نفر تو تیم شهروند باشه — تعدادِ شهروندِ ساده رو زیاد کن';
-    }
-    final diff = total - _mafiaAssignedTotal;
-    if (diff > 0) {
-      return 'هنوز $diff نفر نقش نگرفتن — تعدادِ مافیا ساده یا شهروندِ ساده رو زیاد کن';
-    }
-    if (diff < 0) {
-      return 'مجموعِ نقش‌ها ${-diff} نفر بیشتر از بازیکن‌هاست — تعدادِ مافیا ساده یا شهروندِ ساده رو کم کن';
-    }
-    return null;
-  }
-
-  /// راهنمای رایجِ بازیِ مافیا: تعدادِ تیمِ مافیا نباید بیشتر از یک‌سومِ کل باشه.
-  bool get _isMafiaCountUnbalanced {
-    final total = _draftPlayers.length;
-    if (total == 0 || _mafiaGangTotal == 0) return false;
-    return _mafiaGangTotal > (total / 3);
-  }
-
-  String? get _standardValidationError {
-    final total = _draftPlayers.length;
-    if (total < _minPlayers) {
-      return 'حداقل $_minPlayers بازیکن لازمه (الان $total نفر)';
-    }
-    if (_standardTownTotal < 1) {
-      return 'باید حداقل ۱ نفر تو تیم شهروند باشه — تعدادِ شهروندِ خاکستری رو زیاد کن';
-    }
-    final diff = total - _standardAssignedTotal;
-    if (diff > 0) {
-      return 'هنوز $diff نفر نقش نگرفتن — تعدادِ سرکوبگر یا شهروندِ خاکستری رو زیاد کن';
-    }
-    if (diff < 0) {
-      return 'مجموعِ نقش‌ها ${-diff} نفر بیشتر از بازیکن‌هاست — تعدادِ سرکوبگر یا شهروندِ خاکستری رو کم کن';
-    }
+    if (total < _minPlayers) return 'حداقل $_minPlayers بازیکن لازمه (الان $total نفر)';
+    final townTotal = _townTeamTotal(scenario);
+    final assigned = _assignedTotalFor(scenario);
+    final townTeam = scenarioTeam(scenario, scenario.townTeamId);
+    final simpleTown = scenarioRoleById(scenario, scenario.setupRules.simpleTownRoleId);
+    if (townTotal < 1) return 'باید حداقل ۱ نفر در ${townTeam.name} باشه — تعدادِ ${simpleTown.name} رو زیاد کن';
+    final diff = total - assigned;
+    final simpleLeader = scenarioRoleById(scenario, scenario.setupRules.simpleLeaderRoleId);
+    if (diff > 0) return 'هنوز $diff نفر نقش نگرفتن — تعدادِ ${simpleLeader.name} یا ${simpleTown.name} رو زیاد کن';
+    if (diff < 0) return 'مجموعِ نقش‌ها ${-diff} نفر بیشتر از بازیکن‌هاست — تعدادِ ${simpleLeader.name} یا ${simpleTown.name} رو کم کن';
     return null;
   }
 
   bool get _isPowerUnbalanced {
     final scenario = _selectedScenario;
-    if (scenario == null || scenario.setupTemplate != GameScenarioSetupTemplate.standard) {
-      return false;
-    }
+    final fraction = scenario?.setupRules.minTownTeamFraction;
+    if (scenario == null || fraction == null) return false;
     final total = _draftPlayers.length;
-    if (total == 0) return false;
-    return _standardTownTotal < (total * 2 / 3);
+    return total > 0 && _townTeamTotal(scenario) < total * fraction;
   }
 
-  String? get _validationError {
+  bool get _isLeaderTeamUnbalanced {
     final scenario = _selectedScenario;
-    if (scenario == null) return 'سناریوی بازی انتخاب نشده';
-
-    switch (scenario.setupTemplate) {
-      case GameScenarioSetupTemplate.mafiaClassic:
-        return _mafiaValidationError;
-      case GameScenarioSetupTemplate.standard:
-        return _standardValidationError;
-    }
+    final fraction = scenario?.setupRules.maxLeaderTeamFraction;
+    if (scenario == null || fraction == null) return false;
+    final total = _draftPlayers.length;
+    final leaderTotal = _leaderTeamTotal(scenario);
+    return total > 0 && leaderTotal > 0 && leaderTotal > total * fraction;
   }
 
   Future<void> _onStartPressed() async {
     final error = _validationError;
     if (error != null) return;
-
     final scenario = _selectedScenario;
     if (scenario == null) return;
-
-    final unbalanced = scenario.setupTemplate == GameScenarioSetupTemplate.mafiaClassic
-        ? _isMafiaCountUnbalanced
-        : _isPowerUnbalanced;
-    if (unbalanced) {
-      final proceed = await _showBalanceWarning(
-        scenario.setupTemplate == GameScenarioSetupTemplate.mafiaClassic
-            ? 'تعدادِ مافیا بیشتر از یک‌سومِ کل نفراته؛ تیمِ مافیا قدرتِ '
-                'زیادی نسبت به اهالیِ شهر داره. می‌خوای همینطوری ادامه بدی؟'
-            : 'تعداد تیم مقاومت (شهروند) کمتر از دو‌سومِ کل نفراته؛ تیم مقاومت '
-                'قدرت کمتری نسبت به بقیه‌ی تیم‌ها داره. می‌خوای همینطوری ادامه بدی؟',
-      );
+    if ((_isLeaderTeamUnbalanced || _isPowerUnbalanced) && scenario.setupRules.balanceWarning != null) {
+      final proceed = await _showBalanceWarning(scenario.setupRules.balanceWarning!);
       if (proceed != true) return;
     }
-
-    switch (scenario.setupTemplate) {
-      case GameScenarioSetupTemplate.mafiaClassic:
-        _startMafiaGame();
-        break;
-      case GameScenarioSetupTemplate.standard:
-        _startGame();
-        break;
-    }
+    _startScenario(scenario);
   }
 
   Future<bool?> _showBalanceWarning(String message) {
@@ -369,57 +304,23 @@ class _StartGameScreenState extends State<StartGameScreen> {
     );
   }
 
-  void _startGame() {
-    final scenario = _selectedScenario;
-    if (scenario == null) return;
-
+  void _startScenario(GameScenario scenario) {
+    final leaderRoleIds = scenario.setupRoleKeysForTeam(scenario.leaderTeamId).where((key) => _isRoleIncluded(scenario, key)).map(scenario.roleIdFor).toList();
+    final townRoleIds = scenario.setupRoleKeysForTeam(scenario.townTeamId).where((key) => _isRoleIncluded(scenario, key)).map(scenario.roleIdFor).toList();
+    final rules = scenario.setupRules;
     _startScenarioWithRoles(
       scenario: scenario,
-      leaderCount: _standardLeaderTotal,
-      independentCount: _independentTotal,
-      leaderRoleIds: scenario.setupRoleKeysForTeam(scenario.leaderTeamId)
-          .where((key) => _isRoleIncluded(scenario, key))
-          .map(scenario.roleIdFor)
-          .toList(),
-      townRoleIds: scenario.setupRoleKeysForTeam(scenario.townTeamId)
-          .where((key) => _isRoleIncluded(scenario, key))
-          .map(scenario.roleIdFor)
-          .toList(),
+      leaderCount: _leaderTeamTotal(scenario),
+      independentCount: _independentTotal(scenario),
+      leaderRoleIds: leaderRoleIds,
+      townRoleIds: townRoleIds,
       independentEnabled: _isIndependentTeamEnabled(scenario),
-      slaughterRoleId: scenario.leaderRoleId,
-      revolutionaryRoleId: scenario.roleIdFor('revolutionary'),
-      warGunRoleId: scenario.roleIdFor('rebel'),
-      intelRoleId: scenario.roleIdFor('intelligenceMinister'),
-      guaranteeRoleId: scenario.roleIdFor('nationalHero'),
-      armorRoleIds: {scenario.leaderRoleId},
-    );
-  }
-
-  void _startMafiaGame() {
-    final scenario = _selectedScenario;
-    if (scenario == null) return;
-
-    _startScenarioWithRoles(
-      scenario: scenario,
-      leaderCount: _mafiaGangTotal,
-      independentCount: _zodiacTotal,
-      leaderRoleIds: scenario.setupRoleKeysForTeam(scenario.leaderTeamId)
-          .where((key) => _isRoleIncluded(scenario, key))
-          .map(scenario.roleIdFor)
-          .toList(),
-      townRoleIds: scenario.setupRoleKeysForTeam(scenario.townTeamId)
-          .where((key) => _isRoleIncluded(scenario, key))
-          .map(scenario.roleIdFor)
-          .toList(),
-      independentEnabled: _isIndependentTeamEnabled(scenario),
-      slaughterRoleId: scenario.leaderRoleId,
-      revolutionaryRoleId: scenario.roleIdFor('revolutionary'),
-      warGunRoleId: scenario.roleIdFor('warGun'),
-      guaranteeRoleId: scenario.roleIdFor('guarantee'),
-      armorRoleIds: {
-        scenario.leaderRoleId,
-        scenario.roleIdFor('revolutionary'),
-      },
+      slaughterRoleId: rules.slaughterRoleId,
+      revolutionaryRoleId: rules.revolutionaryRoleId,
+      warGunRoleId: rules.warGunRoleId,
+      intelRoleId: rules.intelRoleId,
+      guaranteeRoleId: rules.guaranteeRoleId,
+      armorRoleIds: rules.armorRoleIds,
     );
   }
 
@@ -493,7 +394,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final introSeconds = (_speakSeconds / 2).round();
     final error = _validationError;
     final total = _draftPlayers.length;
-    final assigned = _standardAssignedTotalFor(scenario);
+    final assigned = _assignedTotalFor(scenario);
     final leaderTeam = scenarioTeam(scenario, scenario.leaderTeamId);
     final townTeam = scenarioTeam(scenario, scenario.townTeamId);
     final teams = <(GameTeam, int, VoidCallback)>[
@@ -997,108 +898,32 @@ class _StartGameScreenState extends State<StartGameScreen> {
   void _showTeamSetupPage(GameScenario scenario, String teamId) {
     final team = scenarioTeam(scenario, teamId);
     final isLeader = teamId == scenario.leaderTeamId;
-    final defaultRole = scenarioRole(
-      scenario,
-      isLeader ? 'leaderDefault' : 'townDefault',
-    );
-    final defaultCount = isLeader
-        ? (scenario.setupTemplate == GameScenarioSetupTemplate.mafiaClassic
-            ? _mafiaCount
-            : _suppressorCount)
-        : (scenario.setupTemplate == GameScenarioSetupTemplate.mafiaClassic
-            ? _simpleCitizenCount
-            : _grayCitizenCount);
+    final simpleRoleId = isLeader ? scenario.setupRules.simpleLeaderRoleId : scenario.setupRules.simpleTownRoleId;
+    final defaultRole = scenarioRoleById(scenario, simpleRoleId);
+    final defaultCount = _simpleRoleCount(scenario, simpleRoleId);
 
-    void setDefaultCount(int value) {
-      if (isLeader) {
-        if (scenario.setupTemplate == GameScenarioSetupTemplate.mafiaClassic) {
-          _mafiaCount = value;
-        } else {
-          _suppressorCount = value;
-        }
-      } else {
-        if (scenario.setupTemplate == GameScenarioSetupTemplate.mafiaClassic) {
-          _simpleCitizenCount = value;
-        } else {
-          _grayCitizenCount = value;
-        }
-      }
-    }
+    void setDefaultCount(int value) => _setSimpleRoleCount(scenario, simpleRoleId, value);
 
     _pushSection(team.name, team.color, (context) {
       return StatefulBuilder(
         builder: (context, setSheetState) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              isLeader
-                  ? 'جلوی هر نقش، تعدادش رو مشخص کن؛ خودِ برنامه موقعِ شروعِ بازی '
-                    'کاملاً تصادفی مشخص می‌کنه کدوم بازیکن کدوم نقش رو می‌گیره.'
-                  : 'همینطور جلوی هر نقشِ این تیم، تعدادش رو مشخص کن؛ عضوِ ساده '
-                    'همون عضوِ بدونِ قابلیتِ خاصه.',
-              style: const TextStyle(color: Colors.white60, fontSize: 12),
-            ),
+            Text(isLeader ? 'جلوی هر نقش، تعدادش رو مشخص کن؛ خودِ برنامه موقعِ شروعِ بازی کاملاً تصادفی مشخص می‌کنه کدوم بازیکن کدوم نقش رو می‌گیره.' : 'همینطور جلوی هر نقشِ این تیم، تعدادش رو مشخص کن؛ عضوِ ساده همون عضوِ بدونِ قابلیتِ خاصه.', style: const TextStyle(color: Colors.white60, fontSize: 12)),
             const SizedBox(height: 8),
-            ...scenario.setupRoleKeysForTeam(teamId).map(
-              (key) => _roleToggle(
-                role: scenarioRole(scenario, key),
-                value: _isRoleIncluded(scenario, key),
-                onChanged: (v) => setSheetState(() => _includedRoles[_roleStateKey(scenario, key)] = v),
-              ),
-            ),
+            ...scenario.setupRoleKeysForTeam(teamId).map((key) => _roleToggle(role: scenarioRole(scenario, key), value: _isRoleIncluded(scenario, key), onChanged: (v) => setSheetState(() => _includedRoles[_roleStateKey(scenario, key)] = v))),
             const SizedBox(height: 4),
-            _roleCountStepper(
-              role: defaultRole,
-              value: defaultCount,
-              onDecrement: () => setSheetState(() {
-                final next = defaultCount > 0 ? defaultCount - 1 : 0;
-                setDefaultCount(next);
-              }),
-              onIncrement: () => setSheetState(() {
-                setDefaultCount(defaultCount + 1);
-              }),
-            ),
+            _roleCountStepper(role: defaultRole, value: defaultCount, onDecrement: () => setSheetState(() => setDefaultCount(defaultCount > 0 ? defaultCount - 1 : 0)), onIncrement: () => setSheetState(() => setDefaultCount(defaultCount + 1))),
             const SizedBox(height: 4),
-            Text(
-              'مجموعِ ${team.name}: ${_teamMemberCountFor(scenario, teamId)} نفر',
-              style: const TextStyle(
-                color: AppColors.goldLight,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            Text('مجموعِ ${team.name}: ${_teamMemberCountFor(scenario, teamId)} نفر', style: const TextStyle(color: AppColors.goldLight, fontSize: 13, fontWeight: FontWeight.bold)),
           ],
         ),
       );
     });
   }
 
-  int _standardAssignedTotalFor(GameScenario scenario) {
-    switch (scenario.setupTemplate) {
-      case GameScenarioSetupTemplate.mafiaClassic:
-        return _mafiaAssignedTotal;
-      case GameScenarioSetupTemplate.standard:
-        return _standardAssignedTotal;
-    }
-  }
-
-  int _teamMemberCountFor(GameScenario scenario, String teamId) {
-    switch (scenario.setupTemplate) {
-      case GameScenarioSetupTemplate.mafiaClassic:
-        if (teamId == scenario.leaderTeamId) return _mafiaGangTotal;
-        if (teamId == scenario.townTeamId) return _mafiaTownTotal;
-        return 0;
-      case GameScenarioSetupTemplate.standard:
-        if (teamId == scenario.leaderTeamId) return _standardLeaderTotal;
-        if (teamId == scenario.townTeamId) return _standardTownTotal;
-        return 0;
-    }
-  }
-
   VoidCallback? _teamSetupPageFor(GameScenario scenario, String teamId) {
-    if (teamId != scenario.leaderTeamId && teamId != scenario.townTeamId) {
-      return null;
-    }
+    if (teamId != scenario.leaderTeamId && teamId != scenario.townTeamId) return null;
     return () => _showTeamSetupPage(scenario, teamId);
   }
 
