@@ -29,28 +29,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
   // بقیه‌ی نقش‌ها اختیاری، دو شمارشگر برای اعضای سادهٔ هر تیم. ----
   final Map<String, bool> _independentTeamEnabled = <String, bool>{};
 
-  bool _includeGodfather = false;
-  bool _includeNegotiator = false;
-  bool _includeEnchanter = false;
-  bool _includeSpy = false;
-  bool _includeKidnapper = false;
-  bool _includeTerrorist = false;
-  bool _includeBomber = false;
-
-  bool _includeMafiaDoctor = false;
-  bool _includeDetective = false;
-  bool _includeProfessional = false;
-  bool _includeKonstantin = false;
-  bool _includeOcean = false;
-  bool _includeGunman = false;
-  bool _includeLeader = false;
-  bool _includeSherlock = false;
-  bool _includeGuard = false;
-  bool _includeMistress = false;
-  bool _includeNatasha = false;
-  bool _includeSaboteur = false;
-  bool _includeDiscloser = false;
-  bool _includeWhiteBeard = false;
+  /// وضعیتِ نقش‌های اختیاری کاملاً بر اساس کلید قراردادی سناریو نگه‌داری می‌شود.
+  /// بنابراین اضافه‌شدن سناریوی جدید نیازمند افزودن فیلدِ _includeXxx نیست.
+  final Map<String, bool> _includedRoles = <String, bool>{};
 
   int _mafiaCount = 0; // مافیا ساده
   int _simpleCitizenCount = 0; // شهروندِ ساده
@@ -59,24 +40,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   // کدوم نقش‌های اختیاری تو این بازی فعالن. این‌که کدوم نقش‌ها اصلاً تو
   // بازی باشن دستیه، ولی این‌که کدوم بازیکنِ خاص هرکدوم رو بگیره، کاملاً
   // تصادفیه.
-  bool _includeValiFaghih = false;
-  bool _includeForeignMinister = false;
-  bool _includeJudiciaryChief = false;
-  bool _includeCelebrity = false;
-  bool _includeDoctor = false;
-  bool _includeHacker = false;
-  bool _includeRevolutionary = false;
-  bool _includeLawyer = false;
-  bool _includeZhina = false;
-  bool _includeRapper = false;
-  bool _includeRebel = false;
-  bool _includeNationalHero = false;
-  bool _includeInterrogator = false;
-  bool _includeIntelMinister = false;
-  bool _includePoliceCommander = false;
-  bool _includeMercenary = false;
-  bool _includeCivicActivist = false;
-  bool _includePoliticalAnalyst = false;
+
 
   // به‌جای یه عددِ کلیِ «چند نفر عضوِ این تیم باشن» و کم‌کردنِ نقش‌های
   // فعال ازش، حالا مسیر برعکسه: جلوی نقش‌های بدونِ قابلیتِ خاص هم
@@ -241,27 +205,26 @@ class _StartGameScreenState extends State<StartGameScreen> {
     return scenario != null && _isIndependentTeamEnabled(scenario);
   }
 
-  int get _standardLeaderRoleSlotsEnabled =>
-      (_includeValiFaghih ? 1 : 0) +
-      (_includeForeignMinister ? 1 : 0) +
-      (_includeJudiciaryChief ? 1 : 0) +
-      (_includeCelebrity ? 1 : 0) +
-      (_includeInterrogator ? 1 : 0) +
-      (_includeIntelMinister ? 1 : 0) +
-      (_includePoliceCommander ? 1 : 0) +
-      (_includeMercenary ? 1 : 0);
+  bool _isRoleIncluded(String key) => _includedRoles[key] ?? false;
 
-  int get _standardTownRoleSlotsEnabled =>
-      (_includeDoctor ? 1 : 0) +
-      (_includeHacker ? 1 : 0) +
-      (_includeRevolutionary ? 1 : 0) +
-      (_includeLawyer ? 1 : 0) +
-      (_includeZhina ? 1 : 0) +
-      (_includeRapper ? 1 : 0) +
-      (_includeRebel ? 1 : 0) +
-      (_includeNationalHero ? 1 : 0) +
-      (_includeCivicActivist ? 1 : 0) +
-      (_includePoliticalAnalyst ? 1 : 0);
+  void _setRoleIncluded(String key, bool value) {
+    setState(() => _includedRoles[key] = value);
+  }
+
+  int _enabledRoleCount(GameScenario scenario, String teamId) =>
+      scenario.setupRoleKeysForTeam(teamId)
+          .where(_isRoleIncluded)
+          .length;
+
+  int get _standardLeaderRoleSlotsEnabled {
+    final scenario = _selectedScenario;
+    return scenario == null ? 0 : _enabledRoleCount(scenario, scenario.leaderTeamId);
+  }
+
+  int get _standardTownRoleSlotsEnabled {
+    final scenario = _selectedScenario;
+    return scenario == null ? 0 : _enabledRoleCount(scenario, scenario.townTeamId);
+  }
 
   // مجموعِ نقش‌های هر تیم (نقش‌های ویژه + عضوِ سادهٔ بدونِ قابلیتِ خاص)
   // خودش اندازه‌ی اون تیم رو تعیین می‌کنه — نه برعکس.
@@ -271,30 +234,15 @@ class _StartGameScreenState extends State<StartGameScreen> {
   int get _standardAssignedTotal => _standardLeaderTotal + _independentTotal + _standardTownTotal;
 
   // ---- جمعِ نقش‌بندی‌شده‌ی سناریوی «مافیا» (کاملاً موازیِ بالا) ----
-  int get _mafiaGangRoleSlotsEnabled =>
-      (_includeGodfather ? 1 : 0) +
-      (_includeNegotiator ? 1 : 0) +
-      (_includeEnchanter ? 1 : 0) +
-      (_includeSpy ? 1 : 0) +
-      (_includeKidnapper ? 1 : 0) +
-      (_includeTerrorist ? 1 : 0) +
-      (_includeBomber ? 1 : 0) +
-      (_includeMistress ? 1 : 0) +
-      (_includeNatasha ? 1 : 0) +
-      (_includeSaboteur ? 1 : 0);
+  int get _mafiaGangRoleSlotsEnabled {
+    final scenario = _selectedScenario;
+    return scenario == null ? 0 : _enabledRoleCount(scenario, scenario.leaderTeamId);
+  }
 
-  int get _mafiaTownRoleSlotsEnabled =>
-      (_includeMafiaDoctor ? 1 : 0) +
-      (_includeDetective ? 1 : 0) +
-      (_includeProfessional ? 1 : 0) +
-      (_includeKonstantin ? 1 : 0) +
-      (_includeOcean ? 1 : 0) +
-      (_includeGunman ? 1 : 0) +
-      (_includeLeader ? 1 : 0) +
-      (_includeSherlock ? 1 : 0) +
-      (_includeGuard ? 1 : 0) +
-      (_includeDiscloser ? 1 : 0) +
-      (_includeWhiteBeard ? 1 : 0);
+  int get _mafiaTownRoleSlotsEnabled {
+    final scenario = _selectedScenario;
+    return scenario == null ? 0 : _enabledRoleCount(scenario, scenario.townTeamId);
+  }
 
   int get _mafiaGangTotal => _mafiaGangRoleSlotsEnabled + _mafiaCount;
   int get _mafiaTownTotal => _mafiaTownRoleSlotsEnabled + _simpleCitizenCount;
@@ -421,6 +369,13 @@ class _StartGameScreenState extends State<StartGameScreen> {
     );
   }
 
+  String _roleKeyForId(GameScenario scenario, String roleId) {
+    for (final key in scenario.roleIds.keys) {
+      if (scenario.roleIdFor(key) == roleId) return key;
+    }
+    return roleId;
+  }
+
   void _startGame() {
     final scenario = _selectedScenario;
     if (scenario == null) return;
@@ -429,28 +384,12 @@ class _StartGameScreenState extends State<StartGameScreen> {
       scenario: scenario,
       leaderCount: _standardLeaderTotal,
       independentCount: _independentTotal,
-      leaderRoleIds: [
-        if (_includeValiFaghih) scenario.roleIdFor('leaderRole'),
-        if (_includeForeignMinister) scenario.roleIdFor('negotiator'),
-        if (_includeJudiciaryChief) scenario.roleIdFor('judiciary'),
-        if (_includeCelebrity) scenario.roleIdFor('celebrity'),
-        if (_includeInterrogator) scenario.roleIdFor('interrogator'),
-        if (_includeIntelMinister) scenario.roleIdFor('intelligenceMinister'),
-        if (_includePoliceCommander) scenario.roleIdFor('policeCommander'),
-        if (_includeMercenary) scenario.roleIdFor('mercenary'),
-      ],
-      townRoleIds: [
-        if (_includeDoctor) scenario.roleIdFor('doctor'),
-        if (_includeHacker) scenario.roleIdFor('hacker'),
-        if (_includeRevolutionary) scenario.roleIdFor('revolutionary'),
-        if (_includeLawyer) scenario.roleIdFor('lawyer'),
-        if (_includeZhina) scenario.roleIdFor('zhina'),
-        if (_includeRapper) scenario.roleIdFor('rapper'),
-        if (_includeRebel) scenario.roleIdFor('rebel'),
-        if (_includeNationalHero) scenario.roleIdFor('nationalHero'),
-        if (_includeCivicActivist) scenario.roleIdFor('civicActivist'),
-        if (_includePoliticalAnalyst) scenario.roleIdFor('politicalAnalyst'),
-      ],
+      leaderRoleIds: scenario.setupRoleIdsForTeam(scenario.leaderTeamId)
+          .where((id) => _isRoleIncluded(_roleKeyForId(scenario, id)))
+          .toList(),
+      townRoleIds: scenario.setupRoleIdsForTeam(scenario.townTeamId)
+          .where((id) => _isRoleIncluded(_roleKeyForId(scenario, id)))
+          .toList(),
       independentEnabled: _isIndependentTeamEnabled(scenario),
       slaughterRoleId: scenario.leaderRoleId,
       revolutionaryRoleId: scenario.roleIdFor('revolutionary'),
@@ -469,31 +408,12 @@ class _StartGameScreenState extends State<StartGameScreen> {
       scenario: scenario,
       leaderCount: _mafiaGangTotal,
       independentCount: _zodiacTotal,
-      leaderRoleIds: [
-        if (_includeGodfather) scenario.roleIdFor('leaderRole'),
-        if (_includeNegotiator) scenario.negotiatorRoleId,
-        if (_includeEnchanter) scenario.roleIdFor('judiciary'),
-        if (_includeSpy) scenario.roleIdFor('spy'),
-        if (_includeKidnapper) scenario.roleIdFor('policeCommander'),
-        if (_includeTerrorist) scenario.roleIdFor('terrorist'),
-        if (_includeBomber) scenario.roleIdFor('bomber'),
-        if (_includeMistress) scenario.roleIdFor('mistress'),
-        if (_includeNatasha) scenario.roleIdFor('natasha'),
-        if (_includeSaboteur) scenario.roleIdFor('saboteur'),
-      ],
-      townRoleIds: [
-        if (_includeMafiaDoctor) scenario.roleIdFor('doctor'),
-        if (_includeDetective) scenario.roleIdFor('hacker'),
-        if (_includeProfessional) scenario.roleIdFor('revolutionary'),
-        if (_includeKonstantin) scenario.roleIdFor('lawyer'),
-        if (_includeOcean) scenario.roleIdFor('rapper'),
-        if (_includeGunman) scenario.roleIdFor('warGun'),
-        if (_includeLeader) scenario.roleIdFor('civicActivist'),
-        if (_includeSherlock) scenario.roleIdFor('politicalAnalyst'),
-        if (_includeGuard) scenario.roleIdFor('guard'),
-        if (_includeDiscloser) scenario.roleIdFor('discloser'),
-        if (_includeWhiteBeard) scenario.roleIdFor('guarantee'),
-      ],
+      leaderRoleIds: scenario.setupRoleIdsForTeam(scenario.leaderTeamId)
+          .where((id) => _isRoleIncluded(_roleKeyForId(scenario, id)))
+          .toList(),
+      townRoleIds: scenario.setupRoleIdsForTeam(scenario.townTeamId)
+          .where((id) => _isRoleIncluded(_roleKeyForId(scenario, id)))
+          .toList(),
       independentEnabled: _isIndependentTeamEnabled(scenario),
       slaughterRoleId: scenario.leaderRoleId,
       revolutionaryRoleId: scenario.roleIdFor('revolutionary'),
