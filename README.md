@@ -21,13 +21,11 @@
 ```text
 Home
   ↓
-ModernStartGameScreen
+StartGameScreen
   ↓
 انتخاب سناریو
   ↓
-ModernRoleSetupScreen(scenario)
-  ↓
-StartGameScreen(initialScenario: scenario)
+تنظیم بازیکنان / تیم‌ها / نقش‌ها
   ↓
 RoleRevealScreen
   ↓
@@ -52,8 +50,6 @@ lib/
 │
 ├── screens/
 │   ├── home_screen.dart
-│   ├── modern_start_game_screen.dart
-│   ├── modern_role_setup_screen.dart
 │   ├── start_game_screen.dart
 │   ├── role_reveal_screen.dart
 │   ├── modern_game_flow_screen.dart
@@ -68,11 +64,9 @@ lib/
 
 ## جریان شروع بازی
 
-`ModernStartGameScreen` سناریو را در قالب `GameScenario` نگه می‌دارد و پس از انتخاب، همان سناریو را به مرحله‌ی تنظیم نقش‌ها منتقل می‌کند.
+`StartGameScreen` مسیر واحد شروع بازی است: سناریو انتخاب می‌شود و سپس همان سناریو مبنای تنظیم بازیکنان، تیم‌ها و نقش‌ها و ادامه‌ی اجرای بازی قرار می‌گیرد.
 
-`ModernRoleSetupScreen` یک لایه‌ی بصری روی جریان اصلی `StartGameScreen` است و سناریوی انتخاب‌شده را با `initialScenario` وارد می‌کند. به این ترتیب state و منطق اصلی دوباره‌نویسی نشده‌اند.
-
-`StartGameScreen` نیز `initialScenario` را دریافت کرده و سناریوی انتخاب‌شده را در ادامه‌ی جریان حفظ می‌کند.
+برای جلوگیری از دو نسخه شدن منطق، UI عمومی نباید یک مسیر شروع موازی برای سناریوها ایجاد کند.
 
 ## UI / Design System
 
