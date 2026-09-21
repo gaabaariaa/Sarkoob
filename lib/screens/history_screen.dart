@@ -32,7 +32,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
   }
 
-  String _teamName(String teamId) => SarkoobTeams.byId(teamId)?.name ?? teamId;
+  String _teamName(String teamId) => GameTeams.byId(teamId)?.name ?? teamId;
 
   String _formatDate(DateTime dt) =>
       '${formatJalali(dt)} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
@@ -174,7 +174,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           iconColor: AppColors.gold,
           collapsedIconColor: AppColors.gold,
           children: entry.players.map((p) {
-            final role = p.roleId != null ? SarkoobRoles.byId(p.roleId!) : null;
+            final role = p.roleId != null ? GameRoles.byId(p.roleId!) : null;
             final status = p.wasOnWinningSide
                 ? 'برنده'
                 : (p.survived ? 'زنده ماند' : 'حذف شد');
