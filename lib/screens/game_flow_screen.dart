@@ -483,8 +483,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 ),
                 const SizedBox(height: 4),
                 ...list.map((p) {
-                  final role = p.roleId != null ? SarkoobRoles.byId(p.roleId!) : null;
-                  final teamName = SarkoobTeams.byId(p.teamId)?.name ?? p.teamId;
+                  final role = p.roleId != null ? GameRoles.byId(p.roleId!) : null;
+                  final teamName = GameTeams.byId(p.teamId)?.name ?? p.teamId;
                   final status =
                       !p.isAlive ? (p.isHalfAlive ? 'نیمه‌جان' : 'حذف‌شده') : 'زنده';
                   return ListTile(
@@ -907,7 +907,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     ...presentTeamIds.map(
                       (teamId) => DropdownMenuItem(
                         value: teamId,
-                        child: Text(SarkoobTeams.byId(teamId)?.name ?? teamId),
+                        child: Text(GameTeams.byId(teamId)?.name ?? teamId),
                       ),
                     ),
                     const DropdownMenuItem(value: 'unknown', child: Text('نامشخص')),
@@ -939,7 +939,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                                 if (!dialogContext.mounted) return;
                                 Navigator.of(dialogContext).pop();
                                 if (!mounted) return;
-                                final team = SarkoobTeams.byId(winnerId);
+                                final team = GameTeams.byId(winnerId);
                                 await showDialog<void>(
                                   context: context,
                                   barrierDismissible: false,
@@ -1072,7 +1072,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                '🛡️ «${controller.playerById(controller.guaranteedPlayerId!).name}» تضمینِ ${SarkoobRoles.byId(controller.playerById(controller.guaranteedPlayerId!).roleId!)?.name ?? "قهرمانِ ملی"} رو داره؛ '
+                '🛡️ «${controller.playerById(controller.guaranteedPlayerId!).name}» تضمینِ ${GameRoles.byId(controller.playerById(controller.guaranteedPlayerId!).roleId!)?.name ?? "قهرمانِ ملی"} رو داره؛ '
                 'امروز نمی‌تونه رأی بیاره و در امانه.',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
@@ -1270,7 +1270,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final notices = <Widget>[];
     if (controller.guaranteedPlayerId != null) {
       final player = controller.playerById(controller.guaranteedPlayerId!);
-      final roleName = SarkoobRoles.byId(player.roleId!)?.name ?? 'قهرمانِ ملی';
+      final roleName = GameRoles.byId(player.roleId!)?.name ?? 'قهرمانِ ملی';
       notices.add(_modernNotice(
         icon: Icons.shield_rounded,
         text: '«' + player.name + '» تضمینِ ' + roleName + ' رو داره؛ امروز نمی‌تونه رأی بیاره و در امانه.',
@@ -1653,7 +1653,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                   Expanded(child: Text(entry.value.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
                   if (entry.value.roleId != null)
                     Text(
-                      SarkoobRoles.byId(entry.value.roleId!)?.name ?? '',
+                      GameRoles.byId(entry.value.roleId!)?.name ?? '',
                       style: const TextStyle(color: AppColors.goldLight, fontSize: 11, fontWeight: FontWeight.w700),
                     ),
                 ],
@@ -2109,7 +2109,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   Widget _buildGameOverScreen() {
     final teamId = controller.autoDetectedWinnerTeamId!;
-    final team = SarkoobTeams.byId(teamId);
+    final team = GameTeams.byId(teamId);
     return ModernNightPanel(
       eyebrow: 'پایان بازی • نتیجه نهایی',
       title: 'بازی تموم شد!',
@@ -2699,7 +2699,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       ),
       child: Column(
         children: members.map((p) {
-          final role = p.roleId != null ? SarkoobRoles.byId(p.roleId!) : null;
+          final role = p.roleId != null ? GameRoles.byId(p.roleId!) : null;
           return Text(
             '👤 ${p.name} — ${role?.name ?? '$_plainLeaderTeamLabel (بدون نقشِ خاص)'}',
             style: const TextStyle(color: Colors.white),
@@ -4416,8 +4416,8 @@ class _PlayerScoreDetailScreen extends StatelessWidget {
             ...sorted.asMap().entries.map((entry) {
               final index = entry.key;
               final p = entry.value;
-              final teamName = SarkoobTeams.byId(p.teamId)?.name ?? p.teamId;
-              final roleName = p.roleId != null ? SarkoobRoles.byId(p.roleId!)?.name : null;
+              final teamName = GameTeams.byId(p.teamId)?.name ?? p.teamId;
+              final roleName = p.roleId != null ? GameRoles.byId(p.roleId!)?.name : null;
               final total = p.scoreTotal;
               final scoreColor = total > 0
                   ? AppColors.gold
