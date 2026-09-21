@@ -169,7 +169,7 @@ class _StatsScreenState extends State<StatsScreen> {
     });
   }
 
-  String _teamName(String teamId) => SarkoobTeams.byId(teamId)?.name ?? teamId;
+  String _teamName(String teamId) => GameTeams.byId(teamId)?.name ?? teamId;
 
   List<_PlayerAggregate> get _aggregates {
     final map = <String, _PlayerAggregate>{};
@@ -187,7 +187,7 @@ class _StatsScreenState extends State<StatsScreen> {
         agg.totalScoreSum += p.totalScore;
         agg.challengesGivenTotal += p.challengesGiven;
         agg.challengesReceivedTotal += p.challengesReceived;
-        final role = p.roleId != null ? SarkoobRoles.byId(p.roleId!) : null;
+        final role = p.roleId != null ? GameRoles.byId(p.roleId!) : null;
         agg.rows.add(
           _PlayerGameRow(
             playedAt: entry.playedAt,
@@ -214,7 +214,7 @@ class _StatsScreenState extends State<StatsScreen> {
     for (final entry in _history) {
       for (final p in entry.players) {
         if (p.roleId == null) continue;
-        final scenario = SarkoobScenarios.byId(entry.scenarioId);
+        final scenario = GameScenarios.byId(entry.scenarioId);
         if (scenario == null) continue;
         final metric = roleSuccessMetricsForScenario(scenario)[p.roleId];
         if (metric == null) continue;
@@ -232,7 +232,7 @@ class _StatsScreenState extends State<StatsScreen> {
     final result = <_RoleBest>[];
     for (final roleEntry in counts.entries) {
       if (roleEntry.value.isEmpty) continue;
-      final role = SarkoobRoles.byId(roleEntry.key);
+      final role = GameRoles.byId(roleEntry.key);
       if (role == null) continue;
       final rankings = roleEntry.value.entries
           .map((e) => _RoleRanking(playerName: displayNames[e.key] ?? e.key, count: e.value))
