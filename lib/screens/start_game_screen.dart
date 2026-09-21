@@ -1078,6 +1078,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
     });
   }
   void _showStandardLeaderTeamPage() {
+    final scenario = _selectedScenario;
+    if (scenario == null) return;
     _pushSection(scenarioTeam(scenario, scenario.leaderTeamId).name, scenarioTeam(scenario, scenario.leaderTeamId).color, (context) {
       return StatefulBuilder(
         builder: (context, setSheetState) => Column(
@@ -1154,6 +1156,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
   }
 
   void _showStandardTownTeamPage() {
+    final scenario = _selectedScenario;
+    if (scenario == null) return;
     _pushSection(scenarioTeam(scenario, scenario.townTeamId).name, scenarioTeam(scenario, scenario.townTeamId).color, (context) {
       return StatefulBuilder(
         builder: (context, setSheetState) => Column(
@@ -1240,6 +1244,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
   }
 
   void _showMafiaGangTeamPage() {
+    final scenario = _selectedScenario;
+    if (scenario == null) return;
     _pushSection(scenarioTeam(scenario, scenario.leaderTeamId).name, scenarioTeam(scenario, scenario.leaderTeamId).color, (context) {
       return StatefulBuilder(
         builder: (context, setSheetState) => Column(
@@ -1326,6 +1332,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
   }
 
   void _showMafiaTownTeamPage() {
+    final scenario = _selectedScenario;
+    if (scenario == null) return;
     _pushSection(scenarioTeam(scenario, scenario.townTeamId).name, scenarioTeam(scenario, scenario.townTeamId).color, (context) {
       return StatefulBuilder(
         builder: (context, setSheetState) => Column(
