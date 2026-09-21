@@ -44,7 +44,18 @@ class GameScenario {
   final String independentInvestigationNo;
   final Map<String, String> roleIds;
 
+  /// نقش‌های قابل انتخاب در صفحهٔ Setup، به تفکیک تیم و با حفظ ترتیب UI.
+  /// سناریو مالک این کاتالوگ است؛ صفحهٔ شروع نباید بداند کدام نقش‌ها متعلق
+  /// به «سرکوب» یا «مافیا» هستند.
+  final Map<String, List<String>> setupRoleKeysByTeam;
+
   String roleIdFor(String key) => roleIds[key] ?? key;
+
+  List<String> setupRoleKeysForTeam(String teamId) =>
+      List.unmodifiable(setupRoleKeysByTeam[teamId] ?? const <String>[]);
+
+  List<String> setupRoleIdsForTeam(String teamId) =>
+      setupRoleKeysForTeam(teamId).map(roleIdFor).toList(growable: false);
 
   const GameScenario({
     required this.id,
@@ -73,6 +84,7 @@ class GameScenario {
     required this.independentInvestigationYes,
     required this.independentInvestigationNo,
     required this.roleIds,
+    required this.setupRoleKeysByTeam,
   });
 }
 
@@ -148,6 +160,16 @@ class SarkoobScenarios {
       'mercenary': 'role_mercenary',
       'doctor': 'role_doctor',
     },
+    setupRoleKeysByTeam: {
+      'team_sorkoob': [
+        'leaderRole', 'negotiator', 'judiciary', 'celebrity',
+        'interrogator', 'intelligenceMinister', 'policeCommander', 'mercenary',
+      ],
+      'team_citizen': [
+        'doctor', 'hacker', 'revolutionary', 'lawyer', 'zhina', 'rapper',
+        'rebel', 'nationalHero', 'civicActivist', 'politicalAnalyst',
+      ],
+    },
   );
 
   static const mafia = GameScenario(
@@ -217,6 +239,16 @@ class SarkoobScenarios {
       'saboteur': 'role_saboteur',
       'guard': 'role_guard',
       'discloser': 'role_discloser',
+    },
+    setupRoleKeysByTeam: {
+      'team_mafia_gang': [
+        'leaderRole', 'negotiator', 'judiciary', 'spy', 'policeCommander',
+        'terrorist', 'bomber', 'mistress', 'natasha', 'saboteur',
+      ],
+      'team_mafia_town': [
+        'doctor', 'hacker', 'revolutionary', 'lawyer', 'rapper', 'warGun',
+        'civicActivist', 'politicalAnalyst', 'guard', 'discloser', 'guarantee',
+      ],
     },
   );
 
