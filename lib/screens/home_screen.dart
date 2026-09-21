@@ -7,7 +7,7 @@ import 'stats_screen.dart';
 import 'history_screen.dart';
 import 'rules_screen.dart';
 import 'settings_screen.dart';
-import 'modern_start_game_screen.dart';
+import 'start_game_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -23,7 +23,7 @@ class HomeScreen extends StatelessWidget {
         return SingleChildScrollView(physics: const BouncingScrollPhysics(), padding: EdgeInsets.fromLTRB(wide ? 40 : 18, 18, wide ? 40 : 18, 28), child: Center(child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 920), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           _TopBar(primary: primary, light: light, card: card, muted: muted), const SizedBox(height: 18),
           _HeroPanel(primary: primary, light: light, surface: surface, muted: muted), const SizedBox(height: 20),
-          _StartButton(onTap: () => _open(context, const ModernStartGameScreen()), primary: primary, light: light), const SizedBox(height: 22),
+          _StartButton(onTap: () => _open(context, const StartGameScreen()), primary: primary, light: light), const SizedBox(height: 22),
           _SectionTitle(title: 'مدیریت بازی', primary: light), const SizedBox(height: 10),
           GridView.count(crossAxisCount: wide ? 3 : 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: wide ? 1.55 : 1.28, children: [
             _HomeTile(title: 'بازیکنان', subtitle: 'لیست و نقش‌ها', icon: Icons.groups_rounded, onTap: () => _open(context, const RosterScreen()), primary: primary, dark: dark, card: card, muted: muted),
