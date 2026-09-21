@@ -211,10 +211,6 @@ class _StartGameScreenState extends State<StartGameScreen> {
   bool _isRoleIncluded(GameScenario scenario, String key) =>
       _includedRoles[_roleStateKey(scenario, key)] ?? false;
 
-  void _setRoleIncluded(GameScenario scenario, String key, bool value) {
-    setState(() => _includedRoles[_roleStateKey(scenario, key)] = value);
-  }
-
   int _enabledRoleCount(GameScenario scenario, String teamId) =>
       scenario.setupRoleKeysForTeam(teamId)
           .where((key) => _isRoleIncluded(scenario, key))
@@ -407,11 +403,13 @@ class _StartGameScreenState extends State<StartGameScreen> {
       scenario: scenario,
       leaderCount: _mafiaGangTotal,
       independentCount: _zodiacTotal,
-      leaderRoleIds: scenario.setupRoleIdsForTeam(scenario.leaderTeamId)
-          .where((id) => _isRoleIncluded(_roleKeyForId(scenario, id)))
+      leaderRoleIds: scenario.setupRoleKeysForTeam(scenario.leaderTeamId)
+          .where((key) => _isRoleIncluded(scenario, key))
+          .map(scenario.roleIdFor)
           .toList(),
-      townRoleIds: scenario.setupRoleIdsForTeam(scenario.townTeamId)
-          .where((id) => _isRoleIncluded(_roleKeyForId(scenario, id)))
+      townRoleIds: scenario.setupRoleKeysForTeam(scenario.townTeamId)
+          .where((key) => _isRoleIncluded(scenario, key))
+          .map(scenario.roleIdFor)
           .toList(),
       independentEnabled: _isIndependentTeamEnabled(scenario),
       slaughterRoleId: scenario.leaderRoleId,
