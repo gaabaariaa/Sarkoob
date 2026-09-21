@@ -17,7 +17,7 @@ class RoleInfoCard extends StatelessWidget {
     this.showScoringInfo = false,
   });
 
-  GameScenario get _scenarioForTeam => SarkoobScenarios.byId(team.scenarioId) ??
+  GameScenario get _scenarioForTeam => GameScenarios.byId(team.scenarioId) ??
       (throw StateError('Unknown scenario "${team.scenarioId}" for team ${team.id}'));
 
   @override
