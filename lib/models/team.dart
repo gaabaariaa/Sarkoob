@@ -20,15 +20,15 @@ class GameTeam {
 }
 
 /// همه‌ی تیم‌های همه‌ی سناریوها. چون تعریفشون به فیلدِ یه شیءِ `const`ِ
-/// دیگه (`SarkoobScenarios.x.id`) نیاز داره، اینجا هم مثلِ نقش‌ها از
+/// دیگه (`GameScenarios.x.id`) نیاز داره، اینجا هم مثلِ نقش‌ها از
 /// `final` استفاده می‌کنیم، نه `const`.
-class SarkoobTeams {
+class GameTeams {
   // ---------- سناریوی «سرکوب» ----------
   static final suppression = GameTeam(
     id: 'team_sorkoob',
     name: 'سرکوب',
     color: const Color(0xFFB71C1C),
-    scenarioId: SarkoobScenarios.sorkoob.id,
+    scenarioId: GameScenarios.sorkoob.id,
     description: 'نیروهای سرکوب‌گر حکومتی؛ هدفشون حذف مخفیانه‌ی مخالفان.',
   );
 
@@ -36,7 +36,7 @@ class SarkoobTeams {
     id: 'team_citizen',
     name: 'شهروند',
     color: const Color(0xFF2E7D32),
-    scenarioId: SarkoobScenarios.sorkoob.id,
+    scenarioId: GameScenarios.sorkoob.id,
     description: 'مردم عادی و فعالان مدنی؛ هدفشون شناسایی و حذف سرکوب‌گرهاست.',
   );
 
@@ -44,7 +44,7 @@ class SarkoobTeams {
     id: 'team_mossad',
     name: 'موساد',
     color: const Color(0xFF1976D2),
-    scenarioId: SarkoobScenarios.sorkoob.id,
+    scenarioId: GameScenarios.sorkoob.id,
     description: 'عامل نفوذی خارجی با اهداف و اقدامات مستقل خودش.',
   );
 
@@ -52,7 +52,7 @@ class SarkoobTeams {
     id: 'team_mek',
     name: 'مجاهدین خلق',
     color: const Color(0xFFF9A825),
-    scenarioId: SarkoobScenarios.sorkoob.id,
+    scenarioId: GameScenarios.sorkoob.id,
     description: 'گروه اپوزیسیون مسلح با اهداف و اقدامات مستقل خودش.',
   );
 
@@ -63,7 +63,7 @@ class SarkoobTeams {
     id: 'team_mafia_gang',
     name: 'مافیا',
     color: const Color(0xFFB71C1C),
-    scenarioId: SarkoobScenarios.mafia.id,
+    scenarioId: GameScenarios.mafia.id,
     description: 'شب‌ها با هم بیدار می‌شن و روی یه نفر برای حذف توافق می‌کنن.',
   );
 
@@ -73,7 +73,7 @@ class SarkoobTeams {
     id: 'team_mafia_town',
     name: 'شهروند',
     color: const Color(0xFF2E7D32),
-    scenarioId: SarkoobScenarios.mafia.id,
+    scenarioId: GameScenarios.mafia.id,
     description: 'بدونِ قابلیتِ ویژه؛ فقط با رأی و تحلیل دنبالِ مافیا می‌گردن.',
   );
 
@@ -83,7 +83,7 @@ class SarkoobTeams {
     id: 'team_zodiac',
     name: 'زودیاک',
     color: const Color(0xFFFBC02D),
-    scenarioId: SarkoobScenarios.mafia.id,
+    scenarioId: GameScenarios.mafia.id,
     description: 'مأمورِ رمزآلودِ مستقل، با اهداف و اقداماتِ مستقلِ خودش.',
   );
 
