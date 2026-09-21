@@ -1033,7 +1033,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     if (scenario == null) return;
     final team = scenarioTeam(scenario, scenario.independentTeamId);
     final role = scenarioRoleById(scenario, scenario.independentLeaderRoleId);
-    if (team == null || role == null) return;
+    if (team.id.isEmpty || role.id.isEmpty) return;
 
     _pushSection('تیمِ مستقل', team.color, (context) {
       final enabled = _isIndependentTeamEnabled(scenario);
