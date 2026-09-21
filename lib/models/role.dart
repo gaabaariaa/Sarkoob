@@ -186,11 +186,11 @@ class GameRole {
 }
 
 /// کتابخونه‌ی نقش‌های سناریوی سرکوب — نقش‌ها یکی‌یکی این‌جا اضافه می‌شن.
-class SarkoobRoles {
+class GameRoles {
   static final valiFaghih = GameRole(
     id: 'role_vali_faghih',
     name: 'ولی فقیه',
-    teamId: SarkoobTeams.suppression.id,
+    teamId: GameTeams.suppression.id,
     description:
         'رهبر تیم سرکوب و تصمیم‌گیرنده‌ی نهایی. هر شب با تیم سرکوب بیدار می‌شه؛ '
         'بقیه‌ی اعضا نظر می‌دن، ولی فقط اون تصمیم نهایی رو می‌گیره: یا شاتِ '
@@ -207,7 +207,7 @@ class SarkoobRoles {
   static final foreignMinister = GameRole(
     id: 'role_foreign_minister',
     name: 'وزیر امور خارجه',
-    teamId: SarkoobTeams.suppression.id,
+    teamId: GameTeams.suppression.id,
     description:
         'پس از بیرون رفتنِ یکی از اعضای تیم سرکوب از بازی، فعال می‌شه. از اون '
         'به بعد، تیم سرکوب می‌تونه یک‌بار در کلِ بازی، به‌جایِ شاتِ شبانه، از '
@@ -225,7 +225,7 @@ class SarkoobRoles {
   static final suppressor = GameRole(
     id: 'role_suppressor',
     name: 'سرکوبگر',
-    teamId: SarkoobTeams.suppression.id,
+    teamId: GameTeams.suppression.id,
     description:
         'یه عضوِ ساده‌ی تیم سرکوب و غلامِ حلقه‌به‌گوشِ ولی‌فقیهه؛ به‌خودی‌خود '
         'قابلیتِ ویژه‌ای نداره. معمولاً یا از اول همین نقش رو داشته، یا با '
@@ -238,7 +238,7 @@ class SarkoobRoles {
   static final judiciaryChief = GameRole(
     id: 'role_judiciary_chief',
     name: 'رئیس قوه قضاییه',
-    teamId: SarkoobTeams.suppression.id,
+    teamId: GameTeams.suppression.id,
     description:
         'یک‌بار در طول بازی، مستقل از تصمیمِ ولی‌فقیه، می‌تونه شب یه کلمه رو '
         'به گرداننده اعلام کنه. فردا صبح گرداننده اعلام می‌کنه که قوه‌ی '
@@ -251,7 +251,7 @@ class SarkoobRoles {
   static final doctor = GameRole(
     id: 'role_doctor',
     name: 'دکتر',
-    teamId: SarkoobTeams.citizen.id,
+    teamId: GameTeams.citizen.id,
     description:
         'هر شب می‌تونه یک یا چند بازیکن رو در برابر شاتِ شبِ تیم سرکوب نجات '
         'بده. ظرفیتِ هر شب به تعدادِ بازیکنانِ زنده‌ی همون‌موقع وابسته‌ست و هر '
@@ -269,7 +269,7 @@ class SarkoobRoles {
   static final hacker = GameRole(
     id: 'role_hacker',
     name: 'هکر',
-    teamId: SarkoobTeams.citizen.id,
+    teamId: GameTeams.citizen.id,
     description:
         'هر شب می‌تونه یکی از بازیکن‌ها رو استعلام بگیره تا بفهمه عضوِ '
         'واقعیِ تیمِ سرکوبه یا نه. جوابش همیشه دقیق نیست؛ به‌شکلِ خلاصه‌ی '
@@ -284,7 +284,7 @@ class SarkoobRoles {
   static final revolutionaryFighter = GameRole(
     id: 'role_revolutionary_fighter',
     name: 'مبارز انقلابی',
-    teamId: SarkoobTeams.citizen.id,
+    teamId: GameTeams.citizen.id,
     description:
         'هر شب می‌تونه یک نفر رو هدف بگیره: یا برای «اعدامِ انقلابی» (حذفِ '
         'معمولی) یا برای «سلاخی» (حدسِ نقش). در کلِ بازی، روی‌همِ این دو '
@@ -305,7 +305,7 @@ class SarkoobRoles {
   static final lawyer = GameRole(
     id: 'role_lawyer',
     name: 'وکیل',
-    teamId: SarkoobTeams.citizen.id,
+    teamId: GameTeams.citizen.id,
     description:
         'فقط یک‌بار در کلِ بازی، شبانه می‌تونه یکی از بازیکنانِ حذف‌شده رو '
         'به بازی برگردونه — حتی اگه عضوِ تیمِ سرکوب باشه. تا وقتی این '
@@ -322,7 +322,7 @@ class SarkoobRoles {
   static final rapper = GameRole(
     id: 'role_rapper',
     name: 'رپر معترض',
-    teamId: SarkoobTeams.citizen.id,
+    teamId: GameTeams.citizen.id,
     description:
         'هر شب اول از همه بیدار می‌شه و نامِ یه بازیکن رو به گرداننده اعلام '
         'می‌کنه تا بسنجه عضوِ شهروندِ قابل‌اعتماده یا نه. اگه هدف واقعاً '
@@ -340,7 +340,7 @@ class SarkoobRoles {
   static final zhina = GameRole(
     id: 'role_zhina',
     name: 'ژینا',
-    teamId: SarkoobTeams.citizen.id,
+    teamId: GameTeams.citizen.id,
     description:
         'هیچ‌وقت مستقیم تو ترتیبِ شب بیدار نمی‌شه و کاری عملیاتی نداره. '
         'ولی اگه از بازی حذف بشه — چه با رأی‌گیری، چه با شلیکِ شب، چه با '
@@ -355,7 +355,7 @@ class SarkoobRoles {
   static final governmentCelebrity = GameRole(
     id: 'role_government_celebrity',
     name: 'پرستوی نظام',
-    teamId: SarkoobTeams.suppression.id,
+    teamId: GameTeams.suppression.id,
     description:
         'در شب‌های اول و دوم هنوز به‌عنوانِ عضوِ سرکوب فعالیت نمی‌کنه: '
         'استعلامِ هکر روش دیس‌لایک نشون می‌ده، و اگه رپر معترض همین دو شبِ '
@@ -368,7 +368,7 @@ class SarkoobRoles {
   static final rebel = GameRole(
     id: 'role_rebel',
     name: 'شورشی',
-    teamId: SarkoobTeams.citizen.id,
+    teamId: GameTeams.citizen.id,
     description:
         'یه اسلحه‌ی جنگی (محدود) و اسلحه‌ی مشقی (نامحدود) داره که هر شب '
         'می‌تونه بینِ هر تعداد بازیکن که بخواد تقسیم کنه. تعدادِ کلِ '
@@ -386,7 +386,7 @@ class SarkoobRoles {
   static final interrogator = GameRole(
     id: 'role_interrogator',
     name: 'بازجو خبرنگار',
-    teamId: SarkoobTeams.suppression.id,
+    teamId: GameTeams.suppression.id,
     description:
         'فقط یک‌بار در کلِ بازی، شبانه می‌تونه یه نفر رو بازجویی کنه. اون '
         'فرد با چشمِ بسته باید صادقانه به یه سوال با لایک یا دیس‌لایک '
@@ -398,7 +398,7 @@ class SarkoobRoles {
   static final intelligenceMinister = GameRole(
     id: 'role_intelligence_minister',
     name: 'وزیر اطلاعات',
-    teamId: SarkoobTeams.suppression.id,
+    teamId: GameTeams.suppression.id,
     description:
         'هر شب می‌تونه یک سؤالِ اطلاعاتی راجع به «نقش‌دار بودنِ» یک یا چند '
         'بازیکن بپرسه؛ گرداننده فقط با لایک (همه‌شون نقش دارن) یا دیس‌لایک '
@@ -412,7 +412,7 @@ class SarkoobRoles {
   static final policeCommander = GameRole(
     id: 'role_police_commander',
     name: 'فرمانده نیروی انتظامی',
-    teamId: SarkoobTeams.suppression.id,
+    teamId: GameTeams.suppression.id,
     description:
         'هر شب می‌تونه یه بازیکن رو «بازداشت» کنه؛ اون بازیکن همون شب '
         'نمی‌تونه از قابلیتِ نقشِ خودش استفاده کنه. هر شب قابل‌استفاده‌ست، '
@@ -423,7 +423,7 @@ class SarkoobRoles {
   static final mercenary = GameRole(
     id: 'role_mercenary',
     name: 'مزدور لباس شخصی',
-    teamId: SarkoobTeams.suppression.id,
+    teamId: GameTeams.suppression.id,
     description:
         'می‌تونه یا شب (وقتی تیمِ سرکوب بیداره) یا هر لحظه از روز (به‌جز '
         'حینِ رأی‌گیری) یه بازیکن رو «ترور» کنه؛ اما با این‌کار خودش هم لو '
@@ -437,7 +437,7 @@ class SarkoobRoles {
   static final nationalHero = GameRole(
     id: 'role_national_hero',
     name: 'قهرمان ملی',
-    teamId: SarkoobTeams.citizen.id,
+    teamId: GameTeams.citizen.id,
     description:
         'شبانه می‌تونه یه بازیکن رو «تضمین» کنه؛ روزِ بعد، اون بازیکن '
         'نمی‌تونه رأی بیاره و کاملاً در امانه — حتی اگه اکثریتِ رأی هم '
@@ -452,7 +452,7 @@ class SarkoobRoles {
   static final grayCitizen = GameRole(
     id: 'role_gray_citizen',
     name: 'شهروند خاکستری',
-    teamId: SarkoobTeams.citizen.id,
+    teamId: GameTeams.citizen.id,
     description:
         'هیچ توانایی ویژه‌ای تو شب نداره. کارش اینه که با دقت تو صحبت‌ها، '
         'رأی‌گیری‌ها، و رفتارِ بقیه، سعی کنه اعضای تیمِ سرکوب یا دشمن رو '
@@ -462,7 +462,7 @@ class SarkoobRoles {
   static final mossadLeader = GameRole(
     id: 'role_mossad_leader',
     name: 'رهبر موساد',
-    teamId: SarkoobTeams.mossad.id,
+    teamId: GameTeams.mossad.id,
     description:
         'شبِ اول باید یه‌بار برای همیشه انتخاب کنه با چه شیوه‌ای بازی می‌کنه: '
         '«عملیاتِ ترور» یا «عملیاتِ سری». از شبِ دوم به بعد، فقط شب‌های زوج '
@@ -483,7 +483,7 @@ class SarkoobRoles {
   static final civicActivist = GameRole(
     id: 'role_civic_activist',
     name: 'فعال مدنی',
-    teamId: SarkoobTeams.citizen.id,
+    teamId: GameTeams.citizen.id,
     description:
         'فقط یک‌بار در کلِ بازی، شبانه می‌تونه از گرداننده تقاضای «رفراندوم» '
         'کنه. فردا صبح گرداننده اعلام می‌کنه که امروز، درست قبل از شروعِ '
@@ -499,7 +499,7 @@ class SarkoobRoles {
   static final politicalAnalyst = GameRole(
     id: 'role_political_analyst',
     name: 'تحلیلگر سیاسی',
-    teamId: SarkoobTeams.citizen.id,
+    teamId: GameTeams.citizen.id,
     description:
         'شب‌های زوجِ بازی (دوم، چهارم، ...) می‌تونه از گرداننده درباره‌ی یه '
         'بازیکنِ خاص استعلام بگیره: آیا این بازیکن عضوِ یه تیمِ مستقله؟ اگه '
@@ -518,7 +518,7 @@ class SarkoobRoles {
     id: 'role_godfather',
     imageAsset: 'assets/roles/godfather.webp',
     name: 'پدرخوانده',
-    teamId: SarkoobTeams.mafiaGang.id,
+    teamId: GameTeams.mafiaGang.id,
     description:
         'رهبرِ تیمِ مافیا و تصمیم‌گیرنده‌ی نهایی. هر شب با تیمِ مافیا بیدار '
         'می‌شه؛ بقیه‌ی اعضا نظر می‌دن، ولی فقط اون تصمیمِ نهایی رو می‌گیره: یا '
@@ -537,7 +537,7 @@ class SarkoobRoles {
     id: 'role_negotiator',
     imageAsset: 'assets/roles/negotiator.webp',
     name: 'مذاکره‌کننده',
-    teamId: SarkoobTeams.mafiaGang.id,
+    teamId: GameTeams.mafiaGang.id,
     description:
         'پس از بیرون‌رفتنِ یکی از اعضای تیمِ مافیا از بازی، فعال می‌شه. از اون '
         'به بعد، تیمِ مافیا می‌تونه یک‌بار در کلِ بازی، به‌جایِ شاتِ شبانه، از '
@@ -556,7 +556,7 @@ class SarkoobRoles {
     id: 'role_simple_mafia',
     imageAsset: 'assets/roles/simpleMafia.webp',
     name: 'مافیا ساده',
-    teamId: SarkoobTeams.mafiaGang.id,
+    teamId: GameTeams.mafiaGang.id,
     description:
         'یه عضوِ سادهٔ تیمِ مافیا و زیردستِ پدرخوانده؛ به‌خودی‌خود قابلیتِ '
         'ویژه‌ای نداره. معمولاً یا از اول همین نقش رو داشته، یا با موفقیتِ '
@@ -571,7 +571,7 @@ class SarkoobRoles {
     id: 'role_enchanter',
     imageAsset: 'assets/roles/enchanter.webp',
     name: 'افسونگر',
-    teamId: SarkoobTeams.mafiaGang.id,
+    teamId: GameTeams.mafiaGang.id,
     description:
         'یک‌بار در طولِ بازی، مستقل از تصمیمِ پدرخوانده، می‌تونه شب یه کلمه '
         'رو به گرداننده اعلام کنه. فردا صبح گرداننده اعلام می‌کنه یه طلسم '
@@ -586,7 +586,7 @@ class SarkoobRoles {
     id: 'role_mafia_doctor',
     imageAsset: 'assets/roles/mafiaDoctor.webp',
     name: 'دکتر',
-    teamId: SarkoobTeams.mafiaTown.id,
+    teamId: GameTeams.mafiaTown.id,
     description:
         'هر شب می‌تونه یک یا چند بازیکن رو در برابرِ شاتِ شبِ تیمِ مافیا نجات '
         'بده. ظرفیتِ هر شب به تعدادِ بازیکنانِ زنده‌ی همون‌موقع وابسته‌ست و هر '
@@ -603,7 +603,7 @@ class SarkoobRoles {
     id: 'role_detective',
     imageAsset: 'assets/roles/detective.webp',
     name: 'کارآگاه',
-    teamId: SarkoobTeams.mafiaTown.id,
+    teamId: GameTeams.mafiaTown.id,
     description:
         'هر شب می‌تونه یکی از بازیکن‌ها رو استعلام بگیره تا بفهمه عضوِ '
         'واقعیِ تیمِ مافیاست یا نه. جوابش همیشه دقیق نیست؛ به‌شکلِ خلاصه‌ی '
@@ -618,7 +618,7 @@ class SarkoobRoles {
     id: 'role_professional',
     imageAsset: 'assets/roles/professional.webp',
     name: 'حرفه‌ای',
-    teamId: SarkoobTeams.mafiaTown.id,
+    teamId: GameTeams.mafiaTown.id,
     description:
         'یه زرهِ یک‌بارمصرف داره: اولین شاتی که بهش بخوره فقط زره رو از '
         'بین می‌بره (خودش زنده می‌مونه)؛ شاتِ بعدی — همون شب یا شبِ دیگه '
@@ -642,7 +642,7 @@ class SarkoobRoles {
     id: 'role_konstantin',
     imageAsset: 'assets/roles/constantine.webp',
     name: 'کنستانتین',
-    teamId: SarkoobTeams.mafiaTown.id,
+    teamId: GameTeams.mafiaTown.id,
     description:
         'فقط یک‌بار در کلِ بازی، شبانه می‌تونه یکی از بازیکنانِ حذف‌شده رو '
         'به بازی برگردونه — حتی اگه عضوِ تیمِ مافیا باشه. تا وقتی این '
@@ -658,7 +658,7 @@ class SarkoobRoles {
     id: 'role_ocean',
     imageAsset: 'assets/roles/ocean.webp',
     name: 'اوشن',
-    teamId: SarkoobTeams.mafiaTown.id,
+    teamId: GameTeams.mafiaTown.id,
     description:
         'هر شب اول از همه بیدار می‌شه و نامِ یه بازیکن رو به گرداننده اعلام '
         'می‌کنه تا بسنجه عضوِ شهروندِ قابل‌اعتماده یا نه. اگه هدف واقعاً '
@@ -678,7 +678,7 @@ class SarkoobRoles {
     id: 'role_spy',
     imageAsset: 'assets/roles/spy.webp',
     name: 'جاسوس',
-    teamId: SarkoobTeams.mafiaGang.id,
+    teamId: GameTeams.mafiaGang.id,
     description:
         'از شبِ اول، کاملاً علنی، عضوِ تیمِ مافیاست: با بقیه‌ی مافیا بیدار '
         'می‌شه و استعلامِ کارآگاه روش همیشه لایک (مثبت) نشون می‌ده — دقیقاً '
@@ -695,7 +695,7 @@ class SarkoobRoles {
     id: 'role_gunman',
     imageAsset: 'assets/roles/gunman.webp',
     name: 'تفنگدار',
-    teamId: SarkoobTeams.mafiaTown.id,
+    teamId: GameTeams.mafiaTown.id,
     description:
         'یه اسلحه‌ی جنگی (محدود) و اسلحه‌ی مشقی (نامحدود) داره که هر شب '
         'می‌تونه بینِ هر تعداد بازیکن که بخواد تقسیم کنه. تعدادِ کلِ اسلحه‌ی '
@@ -711,7 +711,7 @@ class SarkoobRoles {
     id: 'role_kidnapper',
     imageAsset: 'assets/roles/kidnapper.webp',
     name: 'گروگانگیر',
-    teamId: SarkoobTeams.mafiaGang.id,
+    teamId: GameTeams.mafiaGang.id,
     description:
         'هر شب می‌تونه یه بازیکن رو «گروگان» بگیره؛ اون بازیکن همون شب '
         'نمی‌تونه از قابلیتِ نقشِ خودش استفاده کنه. هر شب قابل‌استفاده‌ست، '
@@ -724,7 +724,7 @@ class SarkoobRoles {
     id: 'role_terrorist',
     imageAsset: 'assets/roles/terrorist.webp',
     name: 'تروریست',
-    teamId: SarkoobTeams.mafiaGang.id,
+    teamId: GameTeams.mafiaGang.id,
     description:
         'می‌تونه یا شب (وقتی تیمِ مافیا بیداره) یا هر لحظه از روز (به‌جز '
         'حینِ رأی‌گیری) یه بازیکن رو منفجر کنه؛ اما با این‌کار خودش هم لو '
@@ -739,7 +739,7 @@ class SarkoobRoles {
     id: 'role_simple_citizen',
     imageAsset: 'assets/roles/simpleCitizen.webp',
     name: 'شهروند ساده',
-    teamId: SarkoobTeams.mafiaTown.id,
+    teamId: GameTeams.mafiaTown.id,
     description:
         'هیچ توانایی ویژه‌ای تو شب نداره. کارش اینه که با دقت تو صحبت‌ها، '
         'رأی‌گیری‌ها، و رفتارِ بقیه، سعی کنه اعضای تیمِ مافیا یا زودیاک رو '
@@ -753,7 +753,7 @@ class SarkoobRoles {
     id: 'role_zodiac',
     imageAsset: 'assets/roles/zodiac.webp',
     name: 'زودیاک',
-    teamId: SarkoobTeams.zodiac.id,
+    teamId: GameTeams.zodiac.id,
     description:
         'شب‌های زوجِ بازی (دوم، چهارم، ...) می‌تونه یه بازیکن رو هدف بگیره — '
         'مثلِ یه شاتِ ساده؛ اگه هدف زره داشته باشه (مثلِ پدرخوانده)، فقط زره '
@@ -770,7 +770,7 @@ class SarkoobRoles {
     id: 'role_leader',
     imageAsset: 'assets/roles/leader.webp',
     name: 'لیدر',
-    teamId: SarkoobTeams.mafiaTown.id,
+    teamId: GameTeams.mafiaTown.id,
     description:
         'فقط یک‌بار در کلِ بازی، شبانه می‌تونه از گرداننده تقاضای «رفراندوم» '
         'کنه. فردا صبح، درست قبل از شروعِ رأی‌گیریِ حذف، یه رفراندوم برگزار '
@@ -785,7 +785,7 @@ class SarkoobRoles {
     id: 'role_sherlock',
     imageAsset: 'assets/roles/sherlock.webp',
     name: 'شرلوک',
-    teamId: SarkoobTeams.mafiaTown.id,
+    teamId: GameTeams.mafiaTown.id,
     description:
         'شب‌های زوجِ بازی (دوم، چهارم، ...) می‌تونه از گرداننده درباره‌ی یه '
         'بازیکنِ خاص استعلام بگیره: آیا این بازیکن عضوِ زودیاکه؟ اگه درست '
@@ -802,7 +802,7 @@ class SarkoobRoles {
     id: 'role_bomber',
     imageAsset: 'assets/roles/bomber.webp',
     name: 'بمب‌گذار',
-    teamId: SarkoobTeams.mafiaGang.id,
+    teamId: GameTeams.mafiaGang.id,
     description:
         'یک‌بار در کلِ بازی، شب می‌تونه جلوی هر بازیکنی بمب بذاره (هدف فقط '
         'به گرداننده نشون داده می‌شه) و یه رمزِ خنثی‌سازی بینِ ۱ تا ۴ انتخاب '
@@ -822,7 +822,7 @@ class SarkoobRoles {
     id: 'role_guard',
     imageAsset: 'assets/roles/protector.webp',
     name: 'محافظ',
-    teamId: SarkoobTeams.mafiaTown.id,
+    teamId: GameTeams.mafiaTown.id,
     description:
         'قابلیتِ اصلی‌ش «فداشدن» برای خنثی‌سازیِ بمبِ بمب‌گذاره (توضیحِ '
         'کامل تو نقشِ بمب‌گذار): اگه خودش هدفِ بمب نباشه و بخواد به‌جای '
@@ -840,7 +840,7 @@ class SarkoobRoles {
     id: 'role_mistress',
     imageAsset: 'assets/roles/lover.webp',
     name: 'معشوقه',
-    teamId: SarkoobTeams.mafiaGang.id,
+    teamId: GameTeams.mafiaGang.id,
     description:
         'معشوقه‌ی پدرخوانده‌ست؛ خودش قابلیتِ فعالی نداره. اگه به هر '
         'شکلی — رأی‌گیریِ روز، شات، سلاخیِ حرفه‌ای، اقدامِ سایدِ مستقل '
@@ -855,7 +855,7 @@ class SarkoobRoles {
     id: 'role_natasha',
     imageAsset: 'assets/roles/natasha.webp',
     name: 'ناتاشا',
-    teamId: SarkoobTeams.mafiaGang.id,
+    teamId: GameTeams.mafiaGang.id,
     description:
         'یک‌بار در کلِ بازی، شب، یه بازیکن رو انتخاب می‌کنه و تا پایانِ '
         'روزِ بعد ساکتش می‌کنه: اون بازیکن نه نوبتِ صحبت داره، نه کسی '
@@ -869,7 +869,7 @@ class SarkoobRoles {
     id: 'role_saboteur',
     imageAsset: 'assets/roles/saboteur.webp',
     name: 'خرابکار',
-    teamId: SarkoobTeams.mafiaGang.id,
+    teamId: GameTeams.mafiaGang.id,
     description:
         'هر شب (نامحدود، بدونِ سهمیه) می‌تونه یه بازیکن رو انتخاب کنه و '
         'رو تفنگی که تفنگدار بهش داده خرابکاری کنه. اگه همون بازیکن بعداً '
@@ -883,7 +883,7 @@ class SarkoobRoles {
     id: 'role_discloser',
     imageAsset: 'assets/roles/discloser.webp',
     name: 'افشاگر',
-    teamId: SarkoobTeams.mafiaTown.id,
+    teamId: GameTeams.mafiaTown.id,
     description:
         'اگه در روز از بازی خارج بشه (رأی‌گیری، اسلحه‌ی جنگی، اخراجِ '
         'انضباطی، یا اخراجِ رهبرِ جامعه — نه با شاتِ شب)، همون‌لحظه '
@@ -898,7 +898,7 @@ class SarkoobRoles {
     id: 'role_white_beard',
     imageAsset: 'assets/roles/elder.webp',
     name: 'ریش‌سفید',
-    teamId: SarkoobTeams.mafiaTown.id,
+    teamId: GameTeams.mafiaTown.id,
     description:
         'شبانه می‌تونه یه بازیکن رو «تضمین» کنه؛ روزِ بعد، اون بازیکن '
         'نمی‌تونه رأی بیاره و کاملاً در امانه — حتی اگه اکثریتِ رأی هم '
@@ -972,7 +972,7 @@ class SarkoobRoles {
   /// سناریو تعلق داره، نه یه فیلدِ جداگونه‌ی scenarioId رو خودِ نقش.
   static List<GameRole> forScenario(String scenarioId) {
     final teamIds =
-        SarkoobTeams.forScenario(scenarioId).map((t) => t.id).toSet();
+        GameTeams.forScenario(scenarioId).map((t) => t.id).toSet();
     return all.where((r) => teamIds.contains(r.teamId)).toList();
   }
 }
