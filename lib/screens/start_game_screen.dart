@@ -25,8 +25,6 @@ class _StartGameScreenState extends State<StartGameScreen> {
   // سناریو بستگی دارن.
   GameScenario? _selectedScenario;
 
-  // ---- سناریوی «مافیا»: کاملاً موازیِ سرکوب — پدرخوانده اجباری،
-  // بقیه‌ی نقش‌ها اختیاری، دو شمارشگر برای اعضای سادهٔ هر تیم. ----
   final Map<String, bool> _independentTeamEnabled = <String, bool>{};
 
   /// وضعیتِ نقش‌های اختیاری کاملاً بر اساس کلید قراردادی سناریو نگه‌داری می‌شود.
@@ -186,8 +184,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
     });
   }
 
-  // فعلاً تنها تیمِ مستقلِ قابل‌انتخاب موسادِه؛ اگه بعداً یه تیمِ دیگه
-  // اضافه شد، اینجا `|| _includeXxx` هم اضافه می‌شه.
+  // فعال‌بودنِ تیم مستقل کاملاً از state سناریو می‌آید؛ نام یا هویتِ تیم
+  // مستقل نباید در صفحه‌ی شروع hard-code شود.
   bool get _includeIndependent {
     final scenario = _selectedScenario;
     return scenario != null && _isIndependentTeamEnabled(scenario);
@@ -211,7 +209,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
       _simpleRoleCounts[_simpleCountKey(scenario, roleId)] ?? 0;
 
   void _setSimpleRoleCount(GameScenario scenario, String roleId, int value) {
-    _simpleRoleCounts[_simpleCountKey(scenario, roleId)] = value.clamp(0, 999);
+    _simpleRoleCounts[_simpleCountKey(scenario, roleId)] = value.clamp(0, 999).toInt();
   }
 
   int _teamMemberCountFor(GameScenario scenario, String teamId) {
