@@ -16,53 +16,53 @@ class RoleSuccessMetric {
 /// حذف شدن — معیارِ معناداری برایِ «بهترینِ فلان نقش»شون وجود نداره.
 final Map<String, RoleSuccessMetric> roleSuccessMetrics = {
   // ---------------- سرکوب ----------------
-  SarkoobRoles.valiFaghih.id: RoleSuccessMetric(['شاتِ رهبر', 'سلاخیِ رهبر'], 'حذفِ موفق'),
-  SarkoobRoles.foreignMinister.id: RoleSuccessMetric(['مذاکره‌ی موفق'], 'مذاکره‌ی موفق'),
-  SarkoobRoles.judiciaryChief.id: RoleSuccessMetric(['حکمِ کلمه‌ی ممنوع'], 'حکمِ درست'),
-  SarkoobRoles.doctor.id: RoleSuccessMetric(['نجاتِ شبانه‌ی دکتر'], 'سیوِ صحیح'),
-  SarkoobRoles.hacker.id: RoleSuccessMetric(['استعلامِ هکر/کارآگاه'], 'استعلامِ درست'),
-  SarkoobRoles.revolutionaryFighter.id:
+  GameRoles.valiFaghih.id: RoleSuccessMetric(['شاتِ رهبر', 'سلاخیِ رهبر'], 'حذفِ موفق'),
+  GameRoles.foreignMinister.id: RoleSuccessMetric(['مذاکره‌ی موفق'], 'مذاکره‌ی موفق'),
+  GameRoles.judiciaryChief.id: RoleSuccessMetric(['حکمِ کلمه‌ی ممنوع'], 'حکمِ درست'),
+  GameRoles.doctor.id: RoleSuccessMetric(['نجاتِ شبانه‌ی دکتر'], 'سیوِ صحیح'),
+  GameRoles.hacker.id: RoleSuccessMetric(['استعلامِ هکر/کارآگاه'], 'استعلامِ درست'),
+  GameRoles.revolutionaryFighter.id:
       RoleSuccessMetric(['اعدامِ انقلابی', 'سلاخیِ مبارزِ انقلابی/حرفه‌ای'], 'حذفِ موفق'),
-  SarkoobRoles.lawyer.id: RoleSuccessMetric(['احیایِ وکیل/کنستانتین'], 'احیایِ موفق'),
-  SarkoobRoles.rapper.id: RoleSuccessMetric(['جذبِ مقاومتِ موفق'], 'جذبِ موفق'),
-  SarkoobRoles.rebel.id: RoleSuccessMetric(['توزیعِ اسلحه‌ی جنگی'], 'توزیعِ درست'),
-  SarkoobRoles.interrogator.id: RoleSuccessMetric(['بازجویی/جاسوسی'], 'بازجوییِ درست'),
-  SarkoobRoles.intelligenceMinister.id: RoleSuccessMetric(['سؤالِ اطلاعاتی'], 'سؤالِ مفید'),
-  SarkoobRoles.policeCommander.id: RoleSuccessMetric(['بازداشتِ شبانه'], 'بازداشتِ مؤثر'),
-  SarkoobRoles.mercenary.id: RoleSuccessMetric(['ترورِ مزدور/تروریست'], 'ترورِ موفق'),
-  SarkoobRoles.nationalHero.id: RoleSuccessMetric(['تضمینِ قهرمانِ ملی/ریش‌سفید'], 'تضمینِ مؤثر'),
-  SarkoobRoles.mossadLeader.id:
+  GameRoles.lawyer.id: RoleSuccessMetric(['احیایِ وکیل/کنستانتین'], 'احیایِ موفق'),
+  GameRoles.rapper.id: RoleSuccessMetric(['جذبِ مقاومتِ موفق'], 'جذبِ موفق'),
+  GameRoles.rebel.id: RoleSuccessMetric(['توزیعِ اسلحه‌ی جنگی'], 'توزیعِ درست'),
+  GameRoles.interrogator.id: RoleSuccessMetric(['بازجویی/جاسوسی'], 'بازجوییِ درست'),
+  GameRoles.intelligenceMinister.id: RoleSuccessMetric(['سؤالِ اطلاعاتی'], 'سؤالِ مفید'),
+  GameRoles.policeCommander.id: RoleSuccessMetric(['بازداشتِ شبانه'], 'بازداشتِ مؤثر'),
+  GameRoles.mercenary.id: RoleSuccessMetric(['ترورِ مزدور/تروریست'], 'ترورِ موفق'),
+  GameRoles.nationalHero.id: RoleSuccessMetric(['تضمینِ قهرمانِ ملی/ریش‌سفید'], 'تضمینِ مؤثر'),
+  GameRoles.mossadLeader.id:
       RoleSuccessMetric(['ترورِ رهبرِ تیمِ مستقل', 'شاتِ سریِ رهبرِ تیمِ مستقل'], 'حذفِ موفق'),
-  SarkoobRoles.civicActivist.id:
+  GameRoles.civicActivist.id:
       RoleSuccessMetric(['تحریکِ رفراندوم', 'انتخابِ اخراجِ رهبرِ جامعه'], 'تصمیمِ درست'),
-  SarkoobRoles.politicalAnalyst.id:
+  GameRoles.politicalAnalyst.id:
       RoleSuccessMetric(['استعلامِ تحلیلگرِ سیاسی/شرلوک'], 'شناساییِ درست'),
 
   // ---------------- مافیا ----------------
-  SarkoobRoles.godfather.id: RoleSuccessMetric(['شاتِ رهبر', 'سلاخیِ رهبر'], 'حذفِ موفق'),
-  SarkoobRoles.negotiator.id: RoleSuccessMetric(['مذاکره‌ی موفق'], 'مذاکره‌ی موفق'),
-  SarkoobRoles.enchanter.id: RoleSuccessMetric(['حکمِ کلمه‌ی ممنوع'], 'حکمِ درست'),
-  SarkoobRoles.mafiaDoctor.id: RoleSuccessMetric(['نجاتِ شبانه‌ی دکتر'], 'سیوِ صحیح'),
-  SarkoobRoles.detective.id: RoleSuccessMetric(['استعلامِ هکر/کارآگاه'], 'استعلامِ درست'),
-  SarkoobRoles.professional.id:
+  GameRoles.godfather.id: RoleSuccessMetric(['شاتِ رهبر', 'سلاخیِ رهبر'], 'حذفِ موفق'),
+  GameRoles.negotiator.id: RoleSuccessMetric(['مذاکره‌ی موفق'], 'مذاکره‌ی موفق'),
+  GameRoles.enchanter.id: RoleSuccessMetric(['حکمِ کلمه‌ی ممنوع'], 'حکمِ درست'),
+  GameRoles.mafiaDoctor.id: RoleSuccessMetric(['نجاتِ شبانه‌ی دکتر'], 'سیوِ صحیح'),
+  GameRoles.detective.id: RoleSuccessMetric(['استعلامِ هکر/کارآگاه'], 'استعلامِ درست'),
+  GameRoles.professional.id:
       RoleSuccessMetric(['اعدامِ انقلابی', 'سلاخیِ مبارزِ انقلابی/حرفه‌ای'], 'حذفِ موفق'),
-  SarkoobRoles.konstantin.id: RoleSuccessMetric(['احیایِ وکیل/کنستانتین'], 'احیایِ موفق'),
-  SarkoobRoles.ocean.id: RoleSuccessMetric(['جذبِ مقاومتِ موفق'], 'جذبِ موفق'),
-  SarkoobRoles.spy.id: RoleSuccessMetric(['بازجویی/جاسوسی'], 'بازجوییِ درست'),
-  SarkoobRoles.gunman.id: RoleSuccessMetric(['توزیعِ اسلحه‌ی جنگی'], 'توزیعِ درست'),
-  SarkoobRoles.kidnapper.id: RoleSuccessMetric(['بازداشتِ شبانه'], 'بازداشتِ مؤثر'),
-  SarkoobRoles.terrorist.id: RoleSuccessMetric(['ترورِ مزدور/تروریست'], 'ترورِ موفق'),
-  SarkoobRoles.zodiacRole.id:
+  GameRoles.konstantin.id: RoleSuccessMetric(['احیایِ وکیل/کنستانتین'], 'احیایِ موفق'),
+  GameRoles.ocean.id: RoleSuccessMetric(['جذبِ مقاومتِ موفق'], 'جذبِ موفق'),
+  GameRoles.spy.id: RoleSuccessMetric(['بازجویی/جاسوسی'], 'بازجوییِ درست'),
+  GameRoles.gunman.id: RoleSuccessMetric(['توزیعِ اسلحه‌ی جنگی'], 'توزیعِ درست'),
+  GameRoles.kidnapper.id: RoleSuccessMetric(['بازداشتِ شبانه'], 'بازداشتِ مؤثر'),
+  GameRoles.terrorist.id: RoleSuccessMetric(['ترورِ مزدور/تروریست'], 'ترورِ موفق'),
+  GameRoles.zodiacRole.id:
       RoleSuccessMetric(['ترورِ رهبرِ تیمِ مستقل', 'شاتِ سریِ رهبرِ تیمِ مستقل'], 'حذفِ موفق'),
-  SarkoobRoles.leader.id:
+  GameRoles.leader.id:
       RoleSuccessMetric(['تحریکِ رفراندوم', 'انتخابِ اخراجِ رهبرِ جامعه'], 'تصمیمِ درست'),
-  SarkoobRoles.sherlock.id: RoleSuccessMetric(['استعلامِ تحلیلگرِ سیاسی/شرلوک'], 'شناساییِ درست'),
-  SarkoobRoles.bomber.id: RoleSuccessMetric(['بمب‌گذاری'], 'انفجارِ موفق'),
-  SarkoobRoles.guard.id: RoleSuccessMetric(['فداکاریِ محافظ'], 'فداکاری'),
-  SarkoobRoles.natasha.id: RoleSuccessMetric(['ساکت‌کردنِ ناتاشا'], 'سکوتِ مؤثر'),
-  SarkoobRoles.saboteur.id: RoleSuccessMetric(['خرابکاریِ موفق'], 'خرابکاریِ موفق'),
-  SarkoobRoles.discloser.id: RoleSuccessMetric(['افشایِ عمومیِ تیم'], 'افشایِ مفید'),
-  SarkoobRoles.whiteBeard.id: RoleSuccessMetric(['تضمینِ قهرمانِ ملی/ریش‌سفید'], 'تضمینِ مؤثر'),
+  GameRoles.sherlock.id: RoleSuccessMetric(['استعلامِ تحلیلگرِ سیاسی/شرلوک'], 'شناساییِ درست'),
+  GameRoles.bomber.id: RoleSuccessMetric(['بمب‌گذاری'], 'انفجارِ موفق'),
+  GameRoles.guard.id: RoleSuccessMetric(['فداکاریِ محافظ'], 'فداکاری'),
+  GameRoles.natasha.id: RoleSuccessMetric(['ساکت‌کردنِ ناتاشا'], 'سکوتِ مؤثر'),
+  GameRoles.saboteur.id: RoleSuccessMetric(['خرابکاریِ موفق'], 'خرابکاریِ موفق'),
+  GameRoles.discloser.id: RoleSuccessMetric(['افشایِ عمومیِ تیم'], 'افشایِ مفید'),
+  GameRoles.whiteBeard.id: RoleSuccessMetric(['تضمینِ قهرمانِ ملی/ریش‌سفید'], 'تضمینِ مؤثر'),
 };
 
 /// کاتالوگِ معیارهایِ امتیازیِ قابل‌استفاده در یک سناریو.
@@ -70,9 +70,9 @@ final Map<String, RoleSuccessMetric> roleSuccessMetrics = {
 /// مختلف بتواند همان داده را بخواند؛ این accessor فقط نقش‌های همان سناریو را
 /// در اختیار لایه‌های UI/آمار می‌گذارد.
 Map<String, RoleSuccessMetric> roleSuccessMetricsForScenario(GameScenario scenario) {
-  final teamIds = SarkoobTeams.forScenario(scenario.id).map((t) => t.id).toSet();
+  final teamIds = GameTeams.forScenario(scenario.id).map((t) => t.id).toSet();
   return Map.unmodifiable({
     for (final entry in roleSuccessMetrics.entries)
-      if (SarkoobRoles.byId(entry.key) != null && teamIds.contains(SarkoobRoles.byId(entry.key)!.teamId)) entry.key: entry.value,
+      if (GameRoles.byId(entry.key) != null && teamIds.contains(GameRoles.byId(entry.key)!.teamId)) entry.key: entry.value,
   });
 }
