@@ -8,7 +8,7 @@ import '../widgets/role_info_card.dart';
 import 'modern_game_flow_screen.dart';
 
 GameTeam _teamOf(SessionPlayer p) {
-  for (final t in SarkoobTeams.all) {
+  for (final t in GameTeams.all) {
     if (t.id == p.teamId) return t;
   }
   throw StateError('Unknown team "${p.teamId}" for player ${p.id}');
@@ -77,7 +77,7 @@ class _PlayerRevealScreen extends StatefulWidget {
 }
 class _PlayerRevealScreenState extends State<_PlayerRevealScreen> {
   @override Widget build(BuildContext context) {
-    final player = widget.player; final team = widget.team; final role = player.roleId != null ? SarkoobRoles.byId(player.roleId!) : null;
+    final player = widget.player; final team = widget.team; final role = player.roleId != null ? GameRoles.byId(player.roleId!) : null;
     return Scaffold(appBar: AppBar(title: const Text('نمایش نقش')), body: SafeArea(child: Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 16), child: Column(children: [
       Container(width: double.infinity, padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppColors.gold.withAlpha(36))), child: Column(children: [const Text('گوشی دستِ:', style: TextStyle(color: AppColors.mutedText, fontSize: 12)), const SizedBox(height: 3), Text(player.name, style: AppTheme.headingFont(size: 26), textAlign: TextAlign.center)])),
       const SizedBox(height: 14), Expanded(child: Center(child: SingleChildScrollView(child: role != null ? RoleInfoCard(role: role, team: team) : _GenericTeamCard(team: team)))),
