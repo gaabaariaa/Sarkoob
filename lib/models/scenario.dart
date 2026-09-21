@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 /// شروعِ بازی، گرداننده اول سناریو رو انتخاب می‌کنه؛ از اون به بعد فقط
 /// تیم‌ها/نقش‌های همون سناریو قابل‌انتخابن. دو سناریو هیچ تیم/نقشی
 /// باهم مشترک ندارن (حتی اگه اسمِ نمایشی شبیه باشه، id ها جدان).
-enum GameScenarioSetupTemplate { standard, mafiaClassic }
-
 /// قواعدِ شروعِ بازی که به خودِ سناریو تعلق دارند، نه به UI شروع بازی.
 ///
 /// این آبجکت عمداً جزئیاتِ توازن و مقداردهی اولیه‌ی نقش‌ها را نگه می‌دارد
@@ -42,9 +40,6 @@ class GameScenarioSetupRules {
 
 class GameScenario {
   final String id;
-  /// اطلاعاتِ قدیمیِ نوعِ Setup؛ برای سازگاری داده‌ای نگه داشته شده و منطق
-  /// شروع بازی نباید بر اساس آن branch شود.
-  final GameScenarioSetupTemplate setupTemplate;
   final GameScenarioSetupRules setupRules;
   final String name;
   final String description;
@@ -96,7 +91,6 @@ class GameScenario {
 
   const GameScenario({
     required this.id,
-    required this.setupTemplate,
     required this.setupRules,
     required this.name,
     required this.description,
@@ -130,7 +124,6 @@ class GameScenario {
 class SarkoobScenarios {
   static const sorkoob = GameScenario(
     id: 'scenario_sorkoob',
-    setupTemplate: GameScenarioSetupTemplate.standard,
     setupRules: GameScenarioSetupRules(
       simpleLeaderRoleId: 'role_suppressor',
       simpleTownRoleId: 'role_gray_citizen',
@@ -225,7 +218,6 @@ class SarkoobScenarios {
 
   static const mafia = GameScenario(
     id: 'scenario_mafia',
-    setupTemplate: GameScenarioSetupTemplate.mafiaClassic,
     setupRules: GameScenarioSetupRules(
       simpleLeaderRoleId: 'role_simple_mafia',
       simpleTownRoleId: 'role_simple_citizen',
