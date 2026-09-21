@@ -6,9 +6,46 @@ import 'package:flutter/material.dart';
 /// باهم مشترک ندارن (حتی اگه اسمِ نمایشی شبیه باشه، id ها جدان).
 enum GameScenarioSetupTemplate { standard, mafiaClassic }
 
+/// قواعدِ شروعِ بازی که به خودِ سناریو تعلق دارند، نه به UI شروع بازی.
+///
+/// این آبجکت عمداً جزئیاتِ توازن و مقداردهی اولیه‌ی نقش‌ها را نگه می‌دارد
+/// تا StartGameScreen مجبور نباشد سناریوها را با if/switch از هم تشخیص بدهد.
+class GameScenarioSetupRules {
+  final String simpleLeaderRoleId;
+  final String simpleTownRoleId;
+  final int independentPlayerCount;
+  final double? maxLeaderTeamFraction;
+  final double? minTownTeamFraction;
+  final String? balanceWarning;
+  final String slaughterRoleId;
+  final String? revolutionaryRoleId;
+  final String? warGunRoleId;
+  final String? intelRoleId;
+  final String? guaranteeRoleId;
+  final Set<String> armorRoleIds;
+
+  const GameScenarioSetupRules({
+    required this.simpleLeaderRoleId,
+    required this.simpleTownRoleId,
+    this.independentPlayerCount = 0,
+    this.maxLeaderTeamFraction,
+    this.minTownTeamFraction,
+    this.balanceWarning,
+    required this.slaughterRoleId,
+    this.revolutionaryRoleId,
+    this.warGunRoleId,
+    this.intelRoleId,
+    this.guaranteeRoleId,
+    this.armorRoleIds = const <String>{},
+  });
+}
+
 class GameScenario {
   final String id;
+  /// اطلاعاتِ قدیمیِ نوعِ Setup؛ برای سازگاری داده‌ای نگه داشته شده و منطق
+  /// شروع بازی نباید بر اساس آن branch شود.
   final GameScenarioSetupTemplate setupTemplate;
+  final GameScenarioSetupRules setupRules;
   final String name;
   final String description;
   final Color color;
@@ -60,6 +97,7 @@ class GameScenario {
   const GameScenario({
     required this.id,
     required this.setupTemplate,
+    required this.setupRules,
     required this.name,
     required this.description,
     required this.color,
@@ -93,6 +131,19 @@ class SarkoobScenarios {
   static const sorkoob = GameScenario(
     id: 'scenario_sorkoob',
     setupTemplate: GameScenarioSetupTemplate.standard,
+    setupRules: GameScenarioSetupRules(
+      simpleLeaderRoleId: 'role_suppressor',
+      simpleTownRoleId: 'role_gray_citizen',
+      independentPlayerCount: 1,
+      minTownTeamFraction: 2 / 3,
+      balanceWarning: 'تعداد تیم مقاومت (شهروند) کمتر از دو‌سومِ کل نفراته؛ تیم مقاومت قدرت کمتری نسبت به بقیه‌ی تیم‌ها داره. می‌خوای همینطوری ادامه بدی؟',
+      slaughterRoleId: 'role_vali_faghih',
+      revolutionaryRoleId: 'role_revolutionary_fighter',
+      warGunRoleId: 'role_rebel',
+      intelRoleId: 'role_intelligence_minister',
+      guaranteeRoleId: 'role_national_hero',
+      armorRoleIds: {'role_vali_faghih'},
+    ),
     name: 'سرکوب',
     description:
         'فضاسازیِ فرهنگی-سیاسیِ ایرانی: تیمِ سرکوبِ حکومتی در برابرِ شهروندان، '
@@ -175,6 +226,19 @@ class SarkoobScenarios {
   static const mafia = GameScenario(
     id: 'scenario_mafia',
     setupTemplate: GameScenarioSetupTemplate.mafiaClassic,
+    setupRules: GameScenarioSetupRules(
+      simpleLeaderRoleId: 'role_simple_mafia',
+      simpleTownRoleId: 'role_simple_citizen',
+      independentPlayerCount: 1,
+      maxLeaderTeamFraction: 1 / 3,
+      balanceWarning: 'تعدادِ مافیا بیشتر از یک‌سومِ کل نفراته؛ تیمِ مافیا قدرتِ زیادی نسبت به اهالیِ شهر داره. می‌خوای همینطوری ادامه بدی؟',
+      slaughterRoleId: 'role_godfather',
+      revolutionaryRoleId: 'role_professional',
+      warGunRoleId: 'role_gunman',
+      intelRoleId: null,
+      guaranteeRoleId: 'role_white_beard',
+      armorRoleIds: {'role_godfather', 'role_professional'},
+    ),
     name: 'مافیا',
     description:
         'نسخه‌ی کلاسیکِ بازیِ مافیا: تیمِ مافیا شب‌ها با هم روی یه نفر برای '
