@@ -14,11 +14,11 @@ class RulesScreen extends StatefulWidget {
 }
 
 class _RulesScreenState extends State<RulesScreen> {
-  GameScenario _selectedScenario = SarkoobScenarios.defaultScenario;
+  GameScenario _selectedScenario = GameScenarios.defaultScenario;
 
   @override
   Widget build(BuildContext context) {
-    final teams = SarkoobTeams.selectableForScenario(_selectedScenario.id);
+    final teams = GameTeams.selectableForScenario(_selectedScenario.id);
 
     return Scaffold(
       appBar: AppBar(title: const Text('قوانین و نقش‌ها'), actions: [Padding(padding: const EdgeInsetsDirectional.only(end: 14), child: Center(child: Text(_selectedScenario.name, style: const TextStyle(color: AppColors.mutedText, fontSize: 12))))],),
@@ -30,7 +30,7 @@ class _RulesScreenState extends State<RulesScreen> {
             decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppColors.gold.withAlpha(46))),
             child: SegmentedButton<GameScenario>(
               showSelectedIcon: false,
-              segments: SarkoobScenarios.all
+              segments: GameScenarios.all
                   .map(
                     (s) => ButtonSegment<GameScenario>(
                       value: s,
@@ -85,7 +85,7 @@ class _TeamSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final roles = SarkoobRoles.forTeam(team.id);
+    final roles = GameRoles.forTeam(team.id);
     return Card(
       color: AppColors.surfaceCard,
       shape: RoundedRectangleBorder(
