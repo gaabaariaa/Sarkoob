@@ -65,7 +65,7 @@ class GameFlowController extends ChangeNotifier {
   int roundNumber = 0;
 
   /// سناریو از تنظیمات جلسه می‌آید؛ هیچ‌وقت از وجود/عدم وجود یک تیم استنتاج نمی‌شود.
-  GameScenario get scenario => SarkoobScenarios.byId(settings.scenarioId) ??
+  GameScenario get scenario => GameScenarios.byId(settings.scenarioId) ??
       (throw StateError('Unknown scenario: ${settings.scenarioId}'));
 
 
@@ -79,9 +79,9 @@ class GameFlowController extends ChangeNotifier {
   bool isTownTeam(String teamId) => teamId == scenario.townTeamId;
 
   String roleNameForScenario(String roleId) {
-    final role = SarkoobRoles.forScenario(scenario.id).firstWhere(
+    final role = GameRoles.forScenario(scenario.id).firstWhere(
       (r) => r.id == roleId,
-      orElse: () => SarkoobRoles.byId(roleId) ??
+      orElse: () => GameRoles.byId(roleId) ??
           (throw StateError('Unknown role: $roleId')),
     );
     return role.name;
@@ -189,9 +189,9 @@ class GameFlowController extends ChangeNotifier {
     ];
     return [
       for (final id in orderedIds)
-        if (presentTeamIds.contains(id) && SarkoobTeams.byId(id) != null)
+        if (presentTeamIds.contains(id) && GameTeams.byId(id) != null)
           MapEntry(
-            SarkoobTeams.byId(id)!,
+            GameTeams.byId(id)!,
             players.where((p) => p.teamId == id && p.isAlive).length,
           ),
     ];
@@ -200,10 +200,10 @@ class GameFlowController extends ChangeNotifier {
   /// نقش‌هایی که واقعاً تو همین جلسه انتخاب شدن (یعنی حداقل یه بازیکن
   /// دارتشون) — نه کلِ کتابخونه‌ی نقش‌ها. برای منوهای «حدسِ نقش» (سلاخی،
   /// ترورِ موساد) استفاده می‌شه تا فقط نقش‌های واقعاً درگیرِ این بازی
-  /// نشون داده بشن. ترتیب طبقِ همون ترتیبِ ثابتِ SarkoobRoles.all ـه.
+  /// نشون داده بشن. ترتیب طبقِ همون ترتیبِ ثابتِ GameRoles.all ـه.
   List<GameRole> get rolesInPlay {
     final idsInPlay = players.map((p) => p.roleId).whereType<String>().toSet();
-    return SarkoobRoles.forScenario(scenario.id)
+    return GameRoles.forScenario(scenario.id)
         .where((r) => idsInPlay.contains(r.id))
         .toList();
   }
@@ -1086,9 +1086,9 @@ class GameFlowController extends ChangeNotifier {
     final leaderTeamId = this.leaderTeamId;
     final townTeamId = this.townTeamId;
     final independentTeamId = this.independentTeamId;
-    final leaderTeamName = SarkoobTeams.byId(leaderTeamId)!.name;
-    final townTeamName = SarkoobTeams.byId(townTeamId)!.name;
-    final independentTeamName = SarkoobTeams.byId(independentTeamId)!.name;
+    final leaderTeamName = GameTeams.byId(leaderTeamId)!.name;
+    final townTeamName = GameTeams.byId(townTeamId)!.name;
+    final independentTeamName = GameTeams.byId(independentTeamId)!.name;
 
     final alive = alivePlayers;
     final count = alive.length;
@@ -1171,21 +1171,21 @@ class GameFlowController extends ChangeNotifier {
       winnerTeamId = independentTeamId;
       _declareWinner(
         independentTeamId,
-        '«${p1.name}» و «${p2.name}» با هم دست دادن و ${SarkoobTeams.byId(independentTeamId)!.name} '
+        '«${p1.name}» و «${p2.name}» با هم دست دادن و ${GameTeams.byId(independentTeamId)!.name} '
         'جزوِ این دو نفره.',
       );
     } else if (p1.teamId == p2.teamId) {
       winnerTeamId = p1.teamId;
       _declareWinner(
         p1.teamId,
-        '«${p1.name}» و «${p2.name}» (هردو ${SarkoobTeams.byId(p1.teamId)?.name}) با هم دست دادن.',
+        '«${p1.name}» و «${p2.name}» (هردو ${GameTeams.byId(p1.teamId)?.name}) با هم دست دادن.',
       );
     } else {
       winnerTeamId = leaderTeamId;
       _declareWinner(
         leaderTeamId,
-        '«${p1.name}» و «${p2.name}» با هم دست دادن (${SarkoobTeams.byId(townTeamId)!.name}+'
-        '${SarkoobTeams.byId(leaderTeamId)!.name})؛ ${SarkoobTeams.byId(independentTeamId)!.name} بیرون موند.',
+        '«${p1.name}» و «${p2.name}» با هم دست دادن (${GameTeams.byId(townTeamId)!.name}+'
+        '${GameTeams.byId(leaderTeamId)!.name})؛ ${GameTeams.byId(independentTeamId)!.name} بیرون موند.',
       );
     }
 
@@ -1245,8 +1245,8 @@ class GameFlowController extends ChangeNotifier {
     }
     return [
       for (final entry in counts.entries)
-        if (SarkoobTeams.byId(entry.key) != null)
-          MapEntry(SarkoobTeams.byId(entry.key)!, entry.value),
+        if (GameTeams.byId(entry.key) != null)
+          MapEntry(GameTeams.byId(entry.key)!, entry.value),
     ];
   }
 
@@ -1656,7 +1656,7 @@ class GameFlowController extends ChangeNotifier {
     final rapper = rapperPlayer;
     if (!canRapperActTonight || rapper == null) return;
     final target = playerById(targetId);
-    final targetRole = target.roleId != null ? SarkoobRoles.byId(target.roleId!) : null;
+    final targetRole = target.roleId != null ? GameRoles.byId(target.roleId!) : null;
     final isSleeperStillHidden = targetRole != null &&
         targetRole.investigationHiddenUntilNight > 0 &&
         roundNumber <= targetRole.investigationHiddenUntilNight;
@@ -1802,7 +1802,7 @@ class GameFlowController extends ChangeNotifier {
         return;
       }
       final target = playerById(targetId);
-      final teamName = SarkoobTeams.byId(target.teamId)?.name ?? target.teamId;
+      final teamName = GameTeams.byId(target.teamId)?.name ?? target.teamId;
       final shooterOpposing = _isOpposingTeam(shooter.teamId, target.teamId);
       _eliminatePlayer(target);
       gunFireResultMessage =
@@ -1949,7 +1949,7 @@ class GameFlowController extends ChangeNotifier {
   /// مستقل) همیشه دیس‌لایک می‌گیرن.
   InvestigationResult investigationResultFor(int targetId) {
     final target = playerById(targetId);
-    final role = target.roleId != null ? SarkoobRoles.byId(target.roleId!) : null;
+    final role = target.roleId != null ? GameRoles.byId(target.roleId!) : null;
     final onLeaderTeam = isLeaderTeam(target.teamId);
 
     if (!onLeaderTeam) return InvestigationResult.dislike;
@@ -2397,7 +2397,7 @@ class GameFlowController extends ChangeNotifier {
     final leader = playerById(communityLeaderId!);
     final target = playerById(targetId);
     if (!target.isAlive) return;
-    final teamName = SarkoobTeams.byId(target.teamId)?.name ?? target.teamId;
+    final teamName = GameTeams.byId(target.teamId)?.name ?? target.teamId;
     final opposing = _isOpposingTeam(leader.teamId, target.teamId);
     target.isAlive = false;
     target.isHalfAlive = false;
@@ -2712,7 +2712,7 @@ class GameFlowController extends ChangeNotifier {
         diedTonightFromHit[targetId] = false;
         return;
       }
-      final targetRole = target.roleId != null ? SarkoobRoles.byId(target.roleId!) : null;
+      final targetRole = target.roleId != null ? GameRoles.byId(target.roleId!) : null;
       if (targetRole?.hasPermanentNightArmor == true) {
         // زره‌ی همیشگی (رهبرِ موساد در سرکوب، زودیاک در مافیا): هیچ‌وقت
         // مصرف نمی‌شه، پس امشب زنده می‌مونه؛ نامِ نقش رو دینامیک از
