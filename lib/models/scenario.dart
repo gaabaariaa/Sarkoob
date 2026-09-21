@@ -121,7 +121,7 @@ class GameScenario {
 }
 
 /// سناریوهای موجودِ اپ.
-class SarkoobScenarios {
+class GameScenarios {
   static const sorkoob = GameScenario(
     id: 'scenario_sorkoob',
     setupRules: GameScenarioSetupRules(
