@@ -31,7 +31,7 @@ class Game3DColors {
     text: Color(0xFF2A1B02),
   );
 
-  static dark = Game3DColors(
+  static final dark = Game3DColors(
     top: AppTheme.uiCard,
     bottom: AppTheme.uiSurface,
     edge: AppTheme.uiBackground,
@@ -39,7 +39,7 @@ class Game3DColors {
     text: AppTheme.uiPrimaryLight,
   );
 
-  static danger = Game3DColors(
+  static final danger = Game3DColors(
     top: AppColors.bloodRedLight,
     bottom: AppColors.bloodRed,
     edge: Color(0xFF1E0505),
@@ -47,7 +47,7 @@ class Game3DColors {
     text: AppTheme.uiPrimaryLight,
   );
 
-  static disabled = Game3DColors(
+  static final disabled = Game3DColors(
     top: Color(0xFF4C4C4C),
     bottom: Color(0xFF2E2E2E),
     edge: Color(0xFF181818),
@@ -102,7 +102,7 @@ class Game3DSurface extends StatefulWidget {
   final EdgeInsetsGeometry padding;
   final String? semanticLabel;
 
-  Game3DSurface({
+  const Game3DSurface({
     super.key,
     required this.child,
     required this.onPressed,
@@ -184,7 +184,7 @@ class Game3DButton extends StatelessWidget {
   final Color? customColor;
   final double fontSize;
 
-  Game3DButton({
+  const Game3DButton({
     super.key,
     required this.label,
     required this.onPressed,
@@ -240,7 +240,7 @@ class Game3DTile extends StatelessWidget {
   final VoidCallback onTap;
   final Game3DPalette palette;
 
-  Game3DTile({
+  const Game3DTile({
     super.key,
     required this.title,
     required this.icon,
@@ -298,7 +298,7 @@ class Game3DIconButton extends StatelessWidget {
   final double size;
   final String? tooltip;
 
-  Game3DIconButton({
+  const Game3DIconButton({
     super.key,
     required this.icon,
     required this.onPressed,
@@ -338,7 +338,7 @@ class Game3DBottomBarButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool active;
 
-  Game3DBottomBarButton({
+  const Game3DBottomBarButton({
     super.key,
     required this.icon,
     required this.label,
