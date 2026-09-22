@@ -8,11 +8,13 @@ import '../theme/app_theme.dart';
 class CountdownTimerWidget extends StatefulWidget {
   final int totalSeconds;
   final VoidCallback? onFinished;
+  final VoidCallback? onSecondElapsed;
 
   const CountdownTimerWidget({
     super.key,
     required this.totalSeconds,
     this.onFinished,
+    this.onSecondElapsed,
   });
 
   @override
@@ -52,6 +54,7 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) { timer.cancel(); return; }
       if (_remaining == 10) _playTimerBeep();
+      widget.onSecondElapsed?.call();
       if (_remaining <= 0) {
         if (!_alarmStarted) {
           _alarmStarted = true;
