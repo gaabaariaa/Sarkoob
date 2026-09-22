@@ -6,7 +6,7 @@ import '../theme/app_theme.dart';
 class RosterScreen extends StatefulWidget {
   final bool selectionMode;
   final List<String> initialSelection;
-  RosterScreen({super.key, this.selectionMode = false, this.initialSelection = []});
+  RosterScreen({super.key, this.selectionMode = false, this.initialSelection = const []});
   @override State<RosterScreen> createState() => _RosterScreenState();
 }
 
