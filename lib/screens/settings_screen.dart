@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../services/music_service.dart';
+import '../theme/app_language.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/game_3d_button.dart';
@@ -202,6 +203,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SizedBox(height: 14),
           _ThemePicker(),
           SizedBox(height: 28),
+          _buildSectionHeader(Icons.language_rounded, 'تنظیمات زبان', 'زبان رابط کاربری برنامه را انتخاب کن'),
+          SizedBox(height: 14),
+          _LanguagePicker(),
+          SizedBox(height: 28),
           _buildSectionHeader(Icons.music_note_rounded, 'موزیک شب', 'موسیقی خودکار فازهای شب و خواب نیمروزی'),
           SizedBox(height: 8),
           Text('چندتا فایلِ موزیک از گوشیت انتخاب کن تا خودکار تو فازِ شب و «خواب نیمروزی» به‌صورتِ شافل پخش بشن و با شروعِ روز قطع بشن.', style: TextStyle(color: Colors.white60, fontSize: 13)),
@@ -291,9 +296,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           SizedBox(height: 32),
-          _buildSectionHeader(Icons.tune_rounded, 'بقیه‌ی تنظیمات', 'گزینه‌های بیشتر در نسخه‌های بعدی'),
-          SizedBox(height: 8),
-          Container(padding: EdgeInsets.all(16), decoration: BoxDecoration(color: AppTheme.uiCard, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppTheme.uiPrimary.withAlpha(31))), child: Row(children: [Icon(Icons.schedule_rounded, color: AppTheme.uiSubtleText), SizedBox(width: 10), Expanded(child: Text('تنظیمات ویبره و تایمر به‌زودی همینجا میاد.', style: TextStyle(color: AppTheme.uiSubtleText, fontSize: 12))) ])),
         ],
       ),
     );
@@ -311,16 +313,56 @@ class _ThemePicker extends StatelessWidget {
       valueListenable: AppThemeController.current,
       builder: (context, selected, _) {
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('🎨 ظاهر برنامه', style: AppTheme.headingFont(size: 20)),
-          SizedBox(height: 8),
-          Text('تم مورد علاقه‌ات را انتخاب کن؛ تغییر رنگ‌ها همان لحظه روی کل برنامه اعمال می‌شود و انتخابت ذخیره می‌شود.', style: TextStyle(color: Colors.white60, fontSize: 13)),
-          SizedBox(height: 14),
           ...AppThemeId.values.map((id) => Padding(
             padding: EdgeInsets.only(bottom: 10),
             child: _ThemeOption(id: id, selected: selected == id, onTap: () => AppThemeController.set(id)),
           )),
         ]);
       },
+    );
+  }
+}
+
+class _LanguagePicker extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<AppLanguage>(
+      valueListenable: AppLanguageController.current,
+      builder: (context, selected, _) => Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: AppTheme.uiCard,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppTheme.uiPrimary.withAlpha(31)),
+        ),
+        child: Row(
+          children: AppLanguage.values.map((language) => Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(3),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(13),
+                onTap: () => AppLanguageController.set(language),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  decoration: BoxDecoration(
+                    color: selected == language ? AppTheme.uiPrimaryDark.withAlpha(89) : Colors.transparent,
+                    borderRadius: BorderRadius.circular(13),
+                    border: Border.all(color: selected == language ? AppTheme.uiPrimary : Colors.transparent),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(language == AppLanguage.persian ? 'فارسی' : 'English', style: TextStyle(color: selected == language ? AppTheme.uiPrimaryLight : AppTheme.uiMutedText, fontWeight: FontWeight.w800)),
+                      const SizedBox(height: 2),
+                      Text(language == AppLanguage.persian ? 'پیش‌فرض' : 'English', style: TextStyle(color: AppTheme.uiSubtleText, fontSize: 10)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          )).toList(),
+        ),
+      ),
     );
   }
 }
@@ -333,7 +375,7 @@ class _ThemeOption extends StatelessWidget {
 
   String get title => switch (id) { AppThemeId.darkGold => 'طلایی سلطنتی', AppThemeId.midnight => 'نیمه‌شب', AppThemeId.crimson => 'قرمز سینمایی' };
   String get subtitle => switch (id) { AppThemeId.darkGold => 'تم اصلی دست خدا', AppThemeId.midnight => 'سرد، تاریک و مدرن', AppThemeId.crimson => 'تیره با حال‌وهوای پرتنش' };
-  Color get accent => switch (id) { AppThemeId.darkGold => AppTheme.uiPrimary, AppThemeId.midnight => Color(0xFF9DB9D5), AppThemeId.crimson => Color(0xFFB84A4A) };
+  Color get accent => switch (id) { AppThemeId.darkGold => AppColors.gold, AppThemeId.midnight => Color(0xFF9DB9D5), AppThemeId.crimson => Color(0xFFB84A4A) };
 
   @override
   Widget build(BuildContext context) {
