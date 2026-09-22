@@ -7,6 +7,7 @@ import '../models/team.dart';
 import '../services/storage_service.dart';
 import '../services/scenario_role_assigner.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 import '../widgets/game_3d_button.dart';
 import 'role_reveal_screen.dart';
 
@@ -96,7 +97,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
             children: [
               Padding(
                 padding: EdgeInsets.all(16),
-                child: Text('افزودن از لیستِ بازیکنان', style: AppTheme.headingFont(size: 18)),
+                child: Text('افزودن از لیستِ بازیکنان'.tr, style: AppTheme.headingFont(size: 18)),
               ),
               if (available.isEmpty)
                 Padding(
