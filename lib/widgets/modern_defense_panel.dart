@@ -56,7 +56,7 @@ class ModernDefensePanel extends StatelessWidget {
                   child: const Icon(Icons.gavel_rounded, color: AppColors.goldLight),
                 ),
                 const SizedBox(width: 10),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -90,7 +90,7 @@ class ModernDefensePanel extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text('نوبت دفاع'.tr.tr, style: TextStyle(color: Colors.white54, fontSize: 11, fontWeight: FontWeight.w700)),
+                Text('نوبت دفاع'.tr, style: TextStyle(color: Colors.white54, fontSize: 11, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 5),
                 Text(speakerName, textAlign: TextAlign.center, style: AppTheme.headingFont(size: 28)),
                 if (teamLabel != null) ...[
