@@ -129,7 +129,7 @@ class RoleInfoCard extends StatelessWidget {
   Widget _panel({
     required Widget child,
     Color? color,
-    Color borderColor = AppTheme.uiPrimary,
+    Color? borderColor,
   }) {
     return Container(
       width: double.infinity,
@@ -137,7 +137,7 @@ class RoleInfoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: color ?? AppTheme.uiCard,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: borderColor),
+        border: Border.all(color: borderColor ?? AppTheme.uiPrimary),
       ),
       child: child,
     );
