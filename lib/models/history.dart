@@ -41,6 +41,7 @@ class GameHistoryPlayerRecord {
     this.totalScore = 0,
     this.challengesGiven = 0,
     this.challengesReceived = 0,
+    this.totalSpeakingSeconds = 0,
     this.scoreEvents = const [],
   });
 
@@ -55,6 +56,7 @@ class GameHistoryPlayerRecord {
         'totalScore': totalScore,
         'challengesGiven': challengesGiven,
         'challengesReceived': challengesReceived,
+        'totalSpeakingSeconds': totalSpeakingSeconds,
         'scoreEvents': scoreEvents.map((e) => e.toJson()).toList(),
       };
 
@@ -72,6 +74,7 @@ class GameHistoryPlayerRecord {
       totalScore: json['totalScore'] as int? ?? 0,
       challengesGiven: json['challengesGiven'] as int? ?? 0,
       challengesReceived: json['challengesReceived'] as int? ?? 0,
+      totalSpeakingSeconds: json['totalSpeakingSeconds'] as int? ?? 0,
       scoreEvents: json['scoreEvents'] == null
           ? const []
           : (json['scoreEvents'] as List)
