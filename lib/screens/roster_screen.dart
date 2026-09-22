@@ -6,7 +6,7 @@ import '../theme/app_theme.dart';
 class RosterScreen extends StatefulWidget {
   final bool selectionMode;
   final List<String> initialSelection;
-  const RosterScreen({super.key, this.selectionMode = false, this.initialSelection = const []});
+  RosterScreen({super.key, this.selectionMode = false, this.initialSelection = []});
   @override State<RosterScreen> createState() => _RosterScreenState();
 }
 
@@ -41,12 +41,12 @@ class _RosterScreenState extends State<RosterScreen> {
   Future<void> _renamePlayer(SavedPlayerProfile profile) async {
     final controller = TextEditingController(text: profile.name);
     final newName = await showDialog<String>(context: context, builder: (dialogContext) => AlertDialog(
-      backgroundColor: AppColors.surfaceDark,
-      title: const Text('ویرایشِ اسم', style: TextStyle(color: AppColors.goldLight)),
-      content: TextField(controller: controller, style: const TextStyle(color: Colors.white), autofocus: true),
+      backgroundColor: AppTheme.uiSurface,
+      title: Text('ویرایشِ اسم', style: TextStyle(color: AppTheme.uiPrimaryLight)),
+      content: TextField(controller: controller, style: TextStyle(color: Colors.white), autofocus: true),
       actions: [
-        TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('انصراف')),
-        ElevatedButton(onPressed: () => Navigator.of(dialogContext).pop(controller.text.trim()), child: const Text('ذخیره')),
+        TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: Text('انصراف')),
+        ElevatedButton(onPressed: () => Navigator.of(dialogContext).pop(controller.text.trim()), child: Text('ذخیره')),
       ],
     ));
     controller.dispose();
@@ -97,14 +97,14 @@ class _RosterScreenState extends State<RosterScreen> {
           TextButton(onPressed: _finishSelection, child: Text('تأیید (${_selectedIds.length})')),
         ] : null,
       ),
-      body: _loading ? const Center(child: CircularProgressIndicator()) : Padding(
-        padding: const EdgeInsets.all(16),
+      body: _loading ? Center(child: CircularProgressIndicator()) : Padding(
+        padding: EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text(widget.selectionMode ? 'بازیکن‌ها را انتخاب کن. برای جابه‌جایی ترتیب، دستت را روی آیکون ☰ نگه دار و بکش.' : 'این لیست دائمیه و بینِ بازی‌های مختلف می‌مونه؛ موقعِ شروعِ بازیِ جدید می‌تونی مستقیم ازش اسم اضافه کنی.', style: const TextStyle(color: Colors.white60, fontSize: 12)),
-          const SizedBox(height: 12),
-          Row(children: [Expanded(child: TextField(controller: _nameController, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(labelText: 'اسمِ بازیکنِ جدید', border: OutlineInputBorder()), onSubmitted: (_) => _addPlayer())), const SizedBox(width: 8), ElevatedButton(onPressed: _addPlayer, child: const Text('افزودن'))]),
-          const SizedBox(height: 12),
-          Expanded(child: _roster.isEmpty ? const Center(child: Text('هنوز کسی تو لیست نیست.', style: TextStyle(color: Colors.white38))) : ReorderableListView.builder(
+          Text(widget.selectionMode ? 'بازیکن‌ها را انتخاب کن. برای جابه‌جایی ترتیب، دستت را روی آیکون ☰ نگه دار و بکش.' : 'این لیست دائمیه و بینِ بازی‌های مختلف می‌مونه؛ موقعِ شروعِ بازیِ جدید می‌تونی مستقیم ازش اسم اضافه کنی.', style: TextStyle(color: Colors.white60, fontSize: 12)),
+          SizedBox(height: 12),
+          Row(children: [Expanded(child: TextField(controller: _nameController, style: TextStyle(color: Colors.white), decoration: InputDecoration(labelText: 'اسمِ بازیکنِ جدید', border: OutlineInputBorder()), onSubmitted: (_) => _addPlayer())), SizedBox(width: 8), ElevatedButton(onPressed: _addPlayer, child: Text('افزودن'))]),
+          SizedBox(height: 12),
+          Expanded(child: _roster.isEmpty ? Center(child: Text('هنوز کسی تو لیست نیست.', style: TextStyle(color: Colors.white38))) : ReorderableListView.builder(
             itemCount: _roster.length,
             onReorder: _reorder,
             buildDefaultDragHandles: false,
@@ -113,25 +113,25 @@ class _RosterScreenState extends State<RosterScreen> {
               final selected = _selectedIds.contains(profile.id);
               return Card(
                 key: ValueKey(profile.id),
-                color: AppColors.surfaceCard,
-                margin: const EdgeInsets.only(bottom: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), side: BorderSide(color: selected ? AppColors.gold : AppColors.gold.withAlpha(77))),
+                color: AppTheme.uiCard,
+                margin: EdgeInsets.only(bottom: 8),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), side: BorderSide(color: selected ? AppTheme.uiPrimary : AppTheme.uiPrimary.withAlpha(77))),
                 child: ListTile(
                   onTap: widget.selectionMode ? () => setState(() => selected ? _selectedIds.remove(profile.id) : _selectedIds.add(profile.id)) : null,
                   leading: widget.selectionMode ? Checkbox(value: selected, onChanged: (_) => setState(() => selected ? _selectedIds.remove(profile.id) : _selectedIds.add(profile.id))): null,
-                  title: Text(profile.name, style: const TextStyle(color: Colors.white)),
+                  title: Text(profile.name, style: TextStyle(color: Colors.white)),
                   trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                    IconButton(icon: const Icon(Icons.edit, color: AppColors.goldLight), onPressed: () => _renamePlayer(profile)),
-                    IconButton(icon: const Icon(Icons.delete, color: AppColors.bloodRedLight), onPressed: () => _deletePlayer(profile)),
-                    ReorderableDragStartListener(index: index, child: const Padding(padding: EdgeInsets.all(8), child: Icon(Icons.drag_handle_rounded, color: AppColors.goldLight))),
+                    IconButton(icon: Icon(Icons.edit, color: AppTheme.uiPrimaryLight), onPressed: () => _renamePlayer(profile)),
+                    IconButton(icon: Icon(Icons.delete, color: AppColors.bloodRedLight), onPressed: () => _deletePlayer(profile)),
+                    ReorderableDragStartListener(index: index, child: Padding(padding: EdgeInsets.all(8), child: Icon(Icons.drag_handle_rounded, color: AppTheme.uiPrimaryLight))),
                   ]),
                 ),
               );
             },
           )),
           if (widget.selectionMode) ...[
-            const SizedBox(height: 10),
-            ElevatedButton.icon(onPressed: _finishSelection, icon: const Icon(Icons.check_rounded), label: Text('افزودن ${_selectedIds.length} بازیکن به میز')),
+            SizedBox(height: 10),
+            ElevatedButton.icon(onPressed: _finishSelection, icon: Icon(Icons.check_rounded), label: Text('افزودن ${_selectedIds.length} بازیکن به میز')),
           ],
         ]),
       ),
