@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 import 'countdown_timer_widget.dart';
 import 'game_3d_button.dart';
 
@@ -59,7 +60,7 @@ class ModernDefensePanel extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('فاز دفاع', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15)),
+                      Text('فاز دفاع'.tr, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15)),
                       SizedBox(height: 2),
                       Text('هر بازیکن فرصت دفاع از خودش را دارد.', style: TextStyle(color: Colors.white60, fontSize: 11)),
                     ],
@@ -89,7 +90,7 @@ class ModernDefensePanel extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text('نوبت دفاع', style: TextStyle(color: Colors.white54, fontSize: 11, fontWeight: FontWeight.w700)),
+                Text('نوبت دفاع'.tr.tr, style: TextStyle(color: Colors.white54, fontSize: 11, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 5),
                 Text(speakerName, textAlign: TextAlign.center, style: AppTheme.headingFont(size: 28)),
                 if (teamLabel != null) ...[
@@ -120,7 +121,7 @@ class ModernDefensePanel extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: Game3DButton(
-              label: 'پایان دفاع و نفر بعدی',
+              label: 'پایان دفاع و نفر بعدی'.tr,
               icon: Icons.arrow_back_rounded,
               onPressed: onNext,
             ),
