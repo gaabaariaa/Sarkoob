@@ -1688,10 +1688,18 @@ class GameFlowController extends ChangeNotifier {
           'نفوذیِ همیشگیِ $leaderTeamLabel هست — مخفیانه جاش گرفته.';
       _award(rapper, -1, 'جذبِ ناخواسته‌ی نفوذی');
     } else {
-      _eliminatePlayer(rapper);
-      _tonightEliminatedIds.add(rapper.id);
-      rapperResultMessage = 'انتخاب اشتباه بود! خودِ «${rapper.name}» همون‌لحظه حذف شد.';
-      _award(rapper, -2, 'جذبِ اشتباه (خودحذفی)');
+      // حذفِ اوشن تا پایانِ شب معلق می‌ماند تا نقش‌هایی مثل کنستانتین
+      // بتوانند همان شب او را برگردانند. نتیجه‌ی انتخاب همچنان ثبت می‌شود
+      // ولی مرگِ واقعی در finishNight انجام می‌شود.
+      rapperResultMessage = 'انتخاب اشتباه بود! «${rapper.name}» در پایان شب حذف می‌شود.';
+      _pendingHits[rapper.id] = (_pendingHits[rapper.id] ?? 0) + 1;
+      _pendingHitAttributions.add(
+        _HitAttribution(
+          actorId: rapper.id,
+          targetId: rapper.id,
+          mechanism: 'جذبِ اشتباه (خودحذفی)',
+        ),
+      );
     }
     notifyListeners();
   }
