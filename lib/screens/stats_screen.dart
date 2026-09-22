@@ -7,6 +7,7 @@ import '../models/scenario.dart';
 import '../models/team.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 import '../utils/jalali_date.dart';
 
 class StatsScreen extends StatefulWidget {
@@ -254,14 +255,14 @@ class _StatsScreenState extends State<StatsScreen> {
   Widget build(BuildContext context) {
     if (_loading) {
       return Scaffold(
-        appBar: AppBar(title: Text('آمار')),
+        appBar: AppBar(title: Text('آمار'.tr)),
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_history.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: Text('آمار')),
+        appBar: AppBar(title: Text('آمار'.tr)),
         body: Center(
           child: Text(
             'هنوز هیچ بازی‌ای ثبت نشده.\nبعدِ تمام‌شدنِ اولین بازی، آمار همینجا نشون داده می‌شه.',
@@ -309,7 +310,7 @@ class _StatsScreenState extends State<StatsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('آمار و عملکرد'),
+        title: Text('آمار و عملکرد'.tr),
         actions: [
           Padding(
             padding: EdgeInsetsDirectional.only(end: 14),
