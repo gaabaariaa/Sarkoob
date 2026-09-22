@@ -14,6 +14,7 @@ class ModernSpeakingPanel extends StatelessWidget {
   final VoidCallback? onFinishChallenge;
   final VoidCallback? onChooseChallenge;
   final VoidCallback? onTimerFinished;
+  final VoidCallback? onSecondElapsed;
   final String nextLabel;
   final String? eyebrow;
 
@@ -27,6 +28,7 @@ class ModernSpeakingPanel extends StatelessWidget {
     this.onFinishChallenge,
     this.onChooseChallenge,
     this.onTimerFinished,
+    this.onSecondElapsed,
     this.nextLabel = 'نفر بعدی',
     this.eyebrow,
   });
@@ -93,6 +95,7 @@ class ModernSpeakingPanel extends StatelessWidget {
                     // including `seconds` here would recreate the timer every second.
                     totalSeconds: seconds!,
                     onFinished: onTimerFinished,
+                    onSecondElapsed: onSecondElapsed,
                   ),
                 const SizedBox(height: 22),
                 Row(
