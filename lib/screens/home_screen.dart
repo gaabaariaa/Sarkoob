@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 import '../widgets/game_3d_button.dart';
 import 'roster_screen.dart';
 import 'stats_screen.dart';
@@ -58,7 +59,7 @@ class _TopBar extends StatelessWidget {
     Container(width: compact ? 40 : 44, height: compact ? 40 : 44, decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: card, border: Border.all(color: primary.withAlpha(71))), child: Icon(Icons.auto_awesome, color: light, size: compact ? 20 : 22)),
     SizedBox(width: compact ? 8 : 12),
     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text('دست خدا', style: AppTheme.headingFont(size: compact ? 22 : 25, color: light)),
+      Text('دست خدا'.tr, style: AppTheme.headingFont(size: compact ? 22 : 25, color: light)),
     ])),
   ]);
 });
@@ -67,7 +68,7 @@ class _TopBar extends StatelessWidget {
 class _HeroPanel extends StatelessWidget {
   final Color primary, light, surface, muted;
   const _HeroPanel({required this.primary, required this.light, required this.surface, required this.muted});
-  @override Widget build(BuildContext context) => Container(padding: const EdgeInsets.fromLTRB(22, 25, 22, 22), decoration: BoxDecoration(borderRadius: BorderRadius.circular(26), gradient: LinearGradient(begin: Alignment.topRight, end: Alignment.bottomLeft, colors: [AppTheme.uiElevated, surface]), border: Border.all(color: primary.withAlpha(61)), boxShadow: [BoxShadow(color: Colors.black.withAlpha(89), blurRadius: 24, offset: const Offset(0, 12))]), child: Column(children: [Container(width: 76, height: 76, decoration: BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [light, primary]), boxShadow: [BoxShadow(color: primary.withAlpha(46), blurRadius: 26, spreadRadius: 2)]), child: const Icon(Icons.theater_comedy_rounded, color: Color(0xFF151515), size: 38)), const SizedBox(height: 16), Text('میز بازی', style: AppTheme.headingFont(size: 31, color: light)), const SizedBox(height: 4), Text('همه‌چیز برای اجرای یک شب پرتنش آماده است.', textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: muted, height: 1.7)), const SizedBox(height: 17), Row(mainAxisAlignment: MainAxisAlignment.center, children: [_HeroTag(icon: Icons.shield_outlined, text: 'نقش مخفی', primary: primary, light: light), const SizedBox(width: 8), _HeroTag(icon: Icons.theater_comedy_rounded, text: 'چند سناریو', primary: primary, light: light)])]));
+  @override Widget build(BuildContext context) => Container(padding: const EdgeInsets.fromLTRB(22, 25, 22, 22), decoration: BoxDecoration(borderRadius: BorderRadius.circular(26), gradient: LinearGradient(begin: Alignment.topRight, end: Alignment.bottomLeft, colors: [AppTheme.uiElevated, surface]), border: Border.all(color: primary.withAlpha(61)), boxShadow: [BoxShadow(color: Colors.black.withAlpha(89), blurRadius: 24, offset: const Offset(0, 12))]), child: Column(children: [Container(width: 76, height: 76, decoration: BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [light, primary]), boxShadow: [BoxShadow(color: primary.withAlpha(46), blurRadius: 26, spreadRadius: 2)]), child: const Icon(Icons.theater_comedy_rounded, color: Color(0xFF151515), size: 38)), const SizedBox(height: 16), Text('میز بازی'.tr, style: AppTheme.headingFont(size: 31, color: light)), const SizedBox(height: 4), Text('همه‌چیز برای اجرای یک شب پرتنش آماده است.', textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: muted, height: 1.7)), const SizedBox(height: 17), Row(mainAxisAlignment: MainAxisAlignment.center, children: [_HeroTag(icon: Icons.shield_outlined, text: 'نقش مخفی'.tr, primary: primary, light: light), const SizedBox(width: 8), _HeroTag(icon: Icons.theater_comedy_rounded, text: 'چند سناریو'.tr, primary: primary, light: light)])]));
 }
 
 class _HeroTag extends StatelessWidget {
@@ -79,13 +80,13 @@ class _HeroTag extends StatelessWidget {
 class _StartButton extends StatelessWidget {
   final VoidCallback onTap; final Color primary, light;
   const _StartButton({required this.onTap, required this.primary, required this.light});
-  @override Widget build(BuildContext context) => Game3DSurface(onPressed: onTap, customColors: Game3DColors.fromColor(primary), depth: 6, borderRadius: BorderRadius.circular(19), padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18), semanticLabel: 'شروع بازی', child: Row(children: [Container(width: 48, height: 48, decoration: BoxDecoration(color: Colors.black.withAlpha(31), borderRadius: BorderRadius.circular(15)), child: Icon(Icons.play_arrow_rounded, size: 31, color: primary)), const SizedBox(width: 14), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('شروع بازی', style: AppTheme.headingFont(size: 23, color: primary)), Text('بازیکنان را انتخاب کن و سناریو را مشخص کن', style: TextStyle(color: primary.withAlpha(184), fontWeight: FontWeight.w600, fontSize: 12))])), Icon(Icons.arrow_back_rounded, color: primary)]));
+  @override Widget build(BuildContext context) => Game3DSurface(onPressed: onTap, customColors: Game3DColors.fromColor(primary), depth: 6, borderRadius: BorderRadius.circular(19), padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18), semanticLabel: 'شروع بازی'.tr, child: Row(children: [Container(width: 48, height: 48, decoration: BoxDecoration(color: Colors.black.withAlpha(31), borderRadius: BorderRadius.circular(15)), child: Icon(Icons.play_arrow_rounded, size: 31, color: primary)), const SizedBox(width: 14), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('شروع بازی'.tr, style: AppTheme.headingFont(size: 23, color: primary)), Text('بازیکنان را انتخاب کن و سناریو را مشخص کن'.tr, style: TextStyle(color: primary.withAlpha(184), fontWeight: FontWeight.w600, fontSize: 12))])), Icon(Icons.arrow_back_rounded, color: primary)]));
 }
 
 class _SettingsButton extends StatelessWidget {
   final VoidCallback onTap; final Color primary, light, dark, muted;
   const _SettingsButton({required this.onTap, required this.primary, required this.light, required this.dark, required this.muted});
-  @override Widget build(BuildContext context) => Game3DSurface(onPressed: onTap, customColors: Game3DColors.fromColor(AppTheme.uiCard), depth: 5, borderRadius: BorderRadius.circular(19), padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16), semanticLabel: 'تنظیمات', child: Row(children: [Container(width: 46, height: 46, decoration: BoxDecoration(color: primary.withAlpha(23), borderRadius: BorderRadius.circular(14), border: Border.all(color: primary.withAlpha(41))), child: Icon(Icons.tune_rounded, color: primary, size: 24)), const SizedBox(width: 13), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('تنظیمات', style: AppTheme.headingFont(size: 21, color: light)), Text('ظاهر، تم و صدای بازی', style: TextStyle(color: muted, fontSize: 11))])), Icon(Icons.chevron_left_rounded, color: dark)]));
+  @override Widget build(BuildContext context) => Game3DSurface(onPressed: onTap, customColors: Game3DColors.fromColor(AppTheme.uiCard), depth: 5, borderRadius: BorderRadius.circular(19), padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16), semanticLabel: 'تنظیمات'.tr, child: Row(children: [Container(width: 46, height: 46, decoration: BoxDecoration(color: primary.withAlpha(23), borderRadius: BorderRadius.circular(14), border: Border.all(color: primary.withAlpha(41))), child: Icon(Icons.tune_rounded, color: primary, size: 24)), const SizedBox(width: 13), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('تنظیمات'.tr, style: AppTheme.headingFont(size: 21, color: light)), Text('ظاهر، تم و صدای بازی'.tr, style: TextStyle(color: muted, fontSize: 11))])), Icon(Icons.chevron_left_rounded, color: dark)]));
 }
 
 class _SectionTitle extends StatelessWidget {
