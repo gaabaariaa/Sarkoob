@@ -28,6 +28,7 @@ class GameHistoryPlayerRecord {
   final int totalScore; // جمعِ امتیازِ این بازیکن تو این بازی (سندِ طراحیِ امتیازدهی)
   final int challengesGiven; // کلِ چالش‌هایی که این بازیکن تو کلِ همین بازی داد
   final int challengesReceived; // کلِ چالش‌هایی که این بازیکن تو کلِ همین بازی گرفت
+  final int totalSpeakingSeconds; // مجموعِ ثانیه‌های واقعیِ صحبت/چالش در همین بازی
   final List<ScoreEvent> scoreEvents; // ریزِ رویدادهایِ امتیازی — برایِ «بهترینِ هر نقش» و جزئیات
 
   GameHistoryPlayerRecord({
