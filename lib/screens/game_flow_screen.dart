@@ -1076,7 +1076,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 '🛡️ «${controller.playerById(controller.guaranteedPlayerId!).name}» تضمینِ ${GameRoles.byId(controller.playerById(controller.guaranteedPlayerId!).roleId!)?.name ?? "قهرمانِ ملی"} رو داره؛ '
                 'امروز نمی‌تونه رأی بیاره و در امانه.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.bold),
+                style: TextStyle(
+              color: result.contains('انتخاب اشتباه') ? AppColors.bloodRedLight : AppTheme.uiPrimaryLight,
+              fontWeight: FontWeight.bold,
+            ),
               ),
             ),
           if (!isIntro && controller.referendumScheduledToday)
@@ -3347,13 +3350,11 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final rapper = controller.rapperPlayer!;
     final result = controller.rapperResultMessage;
     final resistance = controller.activeResistanceMembers;
-    // نکته‌ی مهم: اگه انتخابِ رپر معترض غلط بوده باشه، خودش حذف می‌شه —
-    // ولی این نتیجه رو همین‌جا نشون نمی‌دیم، وگرنه معلوم می‌شه که دقیقاً
-    // همین نوبت باعثِ حذفش شده و نقشش لو می‌ره. اون حذف فقط تو جمع‌بندیِ
-    // آخرِ شب (کنارِ بقیه‌ی کشته‌ها) اعلام می‌شه. isStillActiveTonight
-    // (نه isAlive خام) چون اگه یکیِ دیگه (نه خودِ نتیجه‌ی این نوبت) امشب
-    // سلاخی/ترورش کرده باشه، نتیجه‌ی موفقِ خودِ همین نوبت باید دیده بشه.
-    final showResult = result != null && controller.isStillActiveTonight(rapper);
+    // نتیجه‌ی انتخابِ اوشن باید همان لحظه برای خودش مشخص باشد؛ اگر انتخاب
+    // اشتباه بوده، اوشن حذف شده ولی پیام نباید به اعلامِ صبح موکول شود.
+    // دکمه‌ی پایینِ پنل همان «چشمش رو ببنده» است و بعد از دیدنِ نتیجه
+    // می‌تواند به مرحله‌ی بعد برود.
+    final showResult = result != null;
     return Column(
       children: [
         Text(
