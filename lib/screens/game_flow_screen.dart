@@ -1077,9 +1077,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 'امروز نمی‌تونه رأی بیاره و در امانه.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-              color: result.contains('انتخاب اشتباه') ? AppColors.bloodRedLight : AppTheme.uiPrimaryLight,
-              fontWeight: FontWeight.bold,
-            ),
+                  color: AppTheme.uiPrimaryLight,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           if (!isIntro && controller.referendumScheduledToday)
