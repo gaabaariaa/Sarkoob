@@ -4,6 +4,7 @@ import '../models/role.dart';
 import '../models/team.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 import '../utils/jalali_date.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -41,7 +42,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('تاریخچه بازی‌ها'),
+        title: Text('تاریخچه بازی‌ها'.tr),
         actions: [
           Padding(
             padding: EdgeInsetsDirectional.only(end: 14),
