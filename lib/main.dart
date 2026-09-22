@@ -26,7 +26,7 @@ class HiddenRoleApp extends StatelessWidget {
           locale: AppLanguageController.locale,
           builder: (context, child) {
             return Directionality(
-              textDirection: TextDirection.rtl,
+              textDirection: AppLanguageController.current.value == AppLanguage.english ? TextDirection.ltr : TextDirection.rtl,
               child: child ?? const SizedBox.shrink(),
             );
           },
