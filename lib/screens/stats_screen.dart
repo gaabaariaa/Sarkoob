@@ -25,6 +25,7 @@ class _PlayerAggregate {
   int totalScoreSum = 0; // مجموعِ خامِ همه‌ی totalScoreهای این بازیکن — فقط برایِ محاسبه‌ی میانگین
   int challengesGivenTotal = 0; // مجموعِ کلِ همه‌ی بازی‌ها — برای «چالش‌بده‌ترین»
   int challengesReceivedTotal = 0; // مجموعِ کلِ همه‌ی بازی‌ها — برای «چالش‌بگیرترین»
+  int totalSpeakingSeconds = 0; // مجموعِ واقعیِ ثانیه‌های صحبت/چالش در همه‌ی بازی‌ها
   final List<_PlayerGameRow> rows = [];
 
   _PlayerAggregate({required this.key, required this.displayName});
@@ -187,6 +188,7 @@ class _StatsScreenState extends State<StatsScreen> {
         agg.totalScoreSum += p.totalScore;
         agg.challengesGivenTotal += p.challengesGiven;
         agg.challengesReceivedTotal += p.challengesReceived;
+        agg.totalSpeakingSeconds += p.totalSpeakingSeconds;
         final role = p.roleId != null ? GameRoles.byId(p.roleId!) : null;
         agg.rows.add(
           _PlayerGameRow(
@@ -293,6 +295,16 @@ class _StatsScreenState extends State<StatsScreen> {
     final byChallengesReceived = aggregates.where((a) => a.challengesReceivedTotal > 0).toList()
       ..sort((a, b) => b.challengesReceivedTotal.compareTo(a.challengesReceivedTotal));
     final topChallengeReceiver = byChallengesReceived.isEmpty ? null : byChallengesReceived.first;
+    final speakingLeaderboard = aggregates.toList()
+      ..sort((a, b) => b.totalSpeakingSeconds.compareTo(a.totalSpeakingSeconds));
+    final mostTalkative = speakingLeaderboard.isEmpty ? null : speakingLeaderboard.first;
+    final leastTalkative = speakingLeaderboard.isEmpty ? null : speakingLeaderboard.last;
+    String formatSpeakingTime(int seconds) {
+      final minutes = seconds ~/ 60;
+      final secs = seconds % 60;
+      if (minutes == 0) return '$secs ثانیه';
+      return '$minutes دقیقه و $secs ثانیه';
+    }
     final bestPerRole = _bestPerRole;
 
     return Scaffold(
@@ -411,6 +423,34 @@ class _StatsScreenState extends State<StatsScreen> {
               playerName: mostUndisciplined.displayName,
               reason: 'نمره‌ی انضباطیِ تجمعی: ${mostUndisciplined.disciplineScore} '
                   '(مجموعِ مراحلِ تنبیه در همه‌ی بازی‌هاش)',
+            ),
+          ],
+          if (mostTalkative != null) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _HighlightCard(
+                    icon: Icons.record_voice_over,
+                    color: AppColors.gold,
+                    title: 'پُرحرف‌ترین بازیکن',
+                    playerName: mostTalkative.displayName,
+                    reason: formatSpeakingTime(mostTalkative.totalSpeakingSeconds),
+                  ),
+                ),
+                if (leastTalkative != null && leastTalkative.key != mostTalkative.key) ...[
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _HighlightCard(
+                      icon: Icons.volume_off_outlined,
+                      color: AppColors.bloodRedLight,
+                      title: 'کم‌حرف‌ترین بازیکن',
+                      playerName: leastTalkative.displayName,
+                      reason: formatSpeakingTime(leastTalkative.totalSpeakingSeconds),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ],
           if (topChallengeReceiver != null || topChallengeGiver != null) ...[
