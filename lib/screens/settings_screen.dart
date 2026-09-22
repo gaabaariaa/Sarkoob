@@ -153,12 +153,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.uiCard,
-        title: Text('وارد کردنِ بک‌آپ'),
-        content: Text('داده‌های فایل به داده‌های فعلی اضافه بشن یا کاملاً جایگزین بشن؟'),
+        title: Text('وارد کردنِ بک‌آپ'.tr),
+        content: Text('داده‌های فایل به داده‌های فعلی اضافه بشن یا کاملاً جایگزین بشن؟'.tr),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, null), child: Text('انصراف'.tr)),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('افزودن به داده‌ی فعلی')),
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('جایگزینیِ کامل', style: TextStyle(color: AppColors.bloodRedLight))),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('افزودن به داده‌ی فعلی'.tr)),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('جایگزینیِ کامل'.tr, style: TextStyle(color: AppColors.bloodRedLight))),
         ],
       ),
     );
@@ -168,11 +168,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         context: context,
         builder: (ctx) => AlertDialog(
           backgroundColor: AppTheme.uiCard,
-          title: Text('مطمئنی؟'),
-          content: Text('روستر و تاریخچه‌ی فعلی پاک می‌شن و با فایل جایگزین می‌شن.'),
+          title: Text('مطمئنی؟'.tr),
+          content: Text('روستر و تاریخچه‌ی فعلی پاک می‌شن و با فایل جایگزین می‌شن.'.tr),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('انصراف'.tr)),
-            TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('جایگزین کن', style: TextStyle(color: AppColors.bloodRedLight))),
+            TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('جایگزین کن'.tr, style: TextStyle(color: AppColors.bloodRedLight))),
           ],
         ),
       );
@@ -220,11 +220,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
             SizedBox(height: 12),
             Wrap(spacing: 8, runSpacing: 8, children: [
-              ElevatedButton.icon(icon: Icon(Icons.audio_file), label: Text('انتخابِ موزیک'), onPressed: _busy ? null : _pickFiles),
+              ElevatedButton.icon(icon: Icon(Icons.audio_file), label: Text('انتخابِ موزیک'.tr.tr), onPressed: _busy ? null : _pickFiles),
               if (_trackPaths.isNotEmpty) ...[
                 OutlinedButton.icon(icon: Icon(_previewing ? Icons.stop : Icons.play_arrow), label: Text(_previewing ? 'توقفِ پخشِ آزمایشی' : 'پخشِ آزمایشی'), onPressed: _togglePreview),
-                if (_previewing) OutlinedButton.icon(icon: Icon(Icons.skip_next), label: Text('بعدی'), onPressed: () => MusicService.instance.skipToNext()),
-                OutlinedButton.icon(icon: Icon(Icons.delete_outline), label: Text('حذف'), style: OutlinedButton.styleFrom(foregroundColor: AppColors.bloodRedLight), onPressed: _clearMusic),
+                if (_previewing) OutlinedButton.icon(icon: Icon(Icons.skip_next), label: Text('بعدی'.tr.tr), onPressed: () => MusicService.instance.skipToNext()),
+                OutlinedButton.icon(icon: Icon(Icons.delete_outline), label: Text('حذف'.tr.tr), style: OutlinedButton.styleFrom(foregroundColor: AppColors.bloodRedLight), onPressed: _clearMusic),
               ],
             ]),
             if (_busy) ...[SizedBox(height: 12), LinearProgressIndicator()],
@@ -232,7 +232,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SizedBox(height: 32),
           _buildSectionHeader(Icons.backup_rounded, 'بک‌آپ و بازیابی', 'انتقال و بازیابی اطلاعات بازی'),
           SizedBox(height: 8),
-          Text('روستر و تاریخچه‌ی بازی‌ها را در یک فایل ذخیره کن تا بتوانی به گوشی دیگر منتقل یا از فایل قبلی بازیابی کنی.', style: TextStyle(color: Colors.white60, fontSize: 13)),
+          Text('روستر و تاریخچه‌ی بازی‌ها را در یک فایل ذخیره کن تا بتوانی به گوشی دیگر منتقل یا از فایل قبلی بازیابی کنی.'.tr, style: TextStyle(color: Colors.white60, fontSize: 13)),
           SizedBox(height: 16),
           Container(
             padding: EdgeInsets.all(16),
