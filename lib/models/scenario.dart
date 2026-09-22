@@ -283,6 +283,7 @@ class GameScenarios {
       'lawyer': 'role_konstantin',
       'judiciary': 'role_enchanter',
       'policeCommander': 'role_kidnapper',
+      'negotiator': 'role_negotiator',
       'leaderRole': 'role_godfather',
       'warGun': 'role_gunman',
       'guarantee': 'role_white_beard',
