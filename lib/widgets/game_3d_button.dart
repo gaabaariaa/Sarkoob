@@ -15,7 +15,7 @@ class Game3DColors {
   final Color border;
   final Color text;
 
-  const Game3DColors({
+  Game3DColors({
     required this.top,
     required this.bottom,
     required this.edge,
@@ -23,31 +23,31 @@ class Game3DColors {
     required this.text,
   });
 
-  static const gold = Game3DColors(
-    top: AppColors.goldLight,
-    bottom: AppColors.gold,
-    edge: AppColors.goldDark,
-    border: AppColors.goldDark,
+  static final gold = Game3DColors(
+    top: AppTheme.uiPrimaryLight,
+    bottom: AppTheme.uiPrimary,
+    edge: AppTheme.uiPrimaryDark,
+    border: AppTheme.uiPrimaryDark,
     text: Color(0xFF2A1B02),
   );
 
-  static const dark = Game3DColors(
-    top: AppColors.surfaceCard,
-    bottom: AppColors.surfaceDark,
-    edge: AppColors.background,
-    border: AppColors.gold,
-    text: AppColors.goldLight,
+  static dark = Game3DColors(
+    top: AppTheme.uiCard,
+    bottom: AppTheme.uiSurface,
+    edge: AppTheme.uiBackground,
+    border: AppTheme.uiPrimary,
+    text: AppTheme.uiPrimaryLight,
   );
 
-  static const danger = Game3DColors(
+  static danger = Game3DColors(
     top: AppColors.bloodRedLight,
     bottom: AppColors.bloodRed,
     edge: Color(0xFF1E0505),
     border: AppColors.bloodRedLight,
-    text: AppColors.goldLight,
+    text: AppTheme.uiPrimaryLight,
   );
 
-  static const disabled = Game3DColors(
+  static disabled = Game3DColors(
     top: Color(0xFF4C4C4C),
     bottom: Color(0xFF2E2E2E),
     edge: Color(0xFF181818),
@@ -79,7 +79,7 @@ class Game3DColors {
       bottom: bottom,
       edge: edge,
       border: edge,
-      text: isLight ? const Color(0xFF1A1408) : Colors.white,
+      text: isLight ? Color(0xFF1A1408) : Colors.white,
     );
   }
 }
@@ -102,15 +102,15 @@ class Game3DSurface extends StatefulWidget {
   final EdgeInsetsGeometry padding;
   final String? semanticLabel;
 
-  const Game3DSurface({
+  Game3DSurface({
     super.key,
     required this.child,
     required this.onPressed,
     this.palette = Game3DPalette.gold,
     this.customColors,
-    this.borderRadius = const BorderRadius.all(Radius.circular(16)),
+    this.borderRadius = BorderRadius.all(Radius.circular(16)),
     this.depth = 5,
-    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    this.padding = EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     this.semanticLabel,
   });
 
@@ -144,7 +144,7 @@ class _Game3DSurfaceState extends State<Game3DSurface> {
         onTapCancel: () => _setPressed(false),
         onTap: widget.onPressed,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 90),
+          duration: Duration(milliseconds: 90),
           curve: Curves.easeOut,
           margin: EdgeInsets.only(top: _pressed ? d : 0, bottom: _pressed ? 0 : d),
           padding: widget.padding,
@@ -184,7 +184,7 @@ class Game3DButton extends StatelessWidget {
   final Color? customColor;
   final double fontSize;
 
-  const Game3DButton({
+  Game3DButton({
     super.key,
     required this.label,
     required this.onPressed,
@@ -204,14 +204,14 @@ class Game3DButton extends StatelessWidget {
       palette: palette,
       customColors: customColors,
       semanticLabel: label,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           if (icon != null) ...[
             Icon(icon, color: c.text, size: fontSize + 6),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
           ],
           Flexible(
             child: Text(
@@ -222,7 +222,7 @@ class Game3DButton extends StatelessWidget {
                 color: c.text,
                 fontWeight: FontWeight.w800,
                 fontSize: fontSize,
-                shadows: [Shadow(color: Colors.black.withAlpha(77), offset: const Offset(0, 1), blurRadius: 2)],
+                shadows: [Shadow(color: Colors.black.withAlpha(77), offset: Offset(0, 1), blurRadius: 2)],
               ),
             ),
           ),
@@ -240,7 +240,7 @@ class Game3DTile extends StatelessWidget {
   final VoidCallback onTap;
   final Game3DPalette palette;
 
-  const Game3DTile({
+  Game3DTile({
     super.key,
     required this.title,
     required this.icon,
@@ -257,7 +257,7 @@ class Game3DTile extends StatelessWidget {
       depth: 6,
       borderRadius: BorderRadius.circular(18),
       semanticLabel: title,
-      padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 8),
+      padding: EdgeInsets.symmetric(vertical: 13, horizontal: 8),
       child: FittedBox(
         fit: BoxFit.scaleDown,
         child: Column(
@@ -274,7 +274,7 @@ class Game3DTile extends StatelessWidget {
               ),
               child: Icon(icon, color: c.text, size: 24),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               title,
               textAlign: TextAlign.center,
@@ -298,7 +298,7 @@ class Game3DIconButton extends StatelessWidget {
   final double size;
   final String? tooltip;
 
-  const Game3DIconButton({
+  Game3DIconButton({
     super.key,
     required this.icon,
     required this.onPressed,
@@ -338,7 +338,7 @@ class Game3DBottomBarButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool active;
 
-  const Game3DBottomBarButton({
+  Game3DBottomBarButton({
     super.key,
     required this.icon,
     required this.label,
@@ -355,7 +355,7 @@ class Game3DBottomBarButton extends StatelessWidget {
       palette: palette,
       depth: 3,
       borderRadius: BorderRadius.circular(13),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       semanticLabel: label,
       child: FittedBox(
         fit: BoxFit.scaleDown,
@@ -363,7 +363,7 @@ class Game3DBottomBarButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, color: c.text, size: 19),
-            const SizedBox(height: 2),
+            SizedBox(height: 2),
             Text(label, style: TextStyle(color: c.text, fontSize: 9.5, fontWeight: FontWeight.w700)),
           ],
         ),
