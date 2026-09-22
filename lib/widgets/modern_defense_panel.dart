@@ -10,6 +10,7 @@ class ModernDefensePanel extends StatelessWidget {
   final int seconds;
   final VoidCallback onNext;
   final VoidCallback onTimerFinished;
+  final VoidCallback? onSecondElapsed;
   final String? teamLabel;
 
   const ModernDefensePanel({
@@ -20,6 +21,7 @@ class ModernDefensePanel extends StatelessWidget {
     required this.seconds,
     required this.onNext,
     required this.onTimerFinished,
+    this.onSecondElapsed,
     this.teamLabel,
   });
 
@@ -103,6 +105,7 @@ class ModernDefensePanel extends StatelessWidget {
                   key: ValueKey('modern-defense-$speakerName-$currentIndex'),
                   totalSeconds: seconds,
                   onFinished: onTimerFinished,
+                  onSecondElapsed: onSecondElapsed,
                 ),
                 const SizedBox(height: 18),
                 Text(
