@@ -110,10 +110,26 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer playerById(int id) => players.firstWhere((p) => p.id == id);
 
+  /// تعداد ثانیه‌های صحبت/چالش هر بازیکن در دورِ جاری.
+  /// این شمارنده با شروعِ هر روزِ جدید صفر می‌شود و برای قانونِ
+  /// «هر ۵ ثانیه صحبتِ اضافه = -۱» فقط در همان دور استفاده می‌شود.
+  final Map<int, int> _speakingSecondsThisRound = {};
+
   /// هر تیک واقعیِ تایمرِ نوبت صحبت/چالش را برای همان بازیکن ثبت می‌کند.
+  /// بعد از تمام‌شدنِ زمانِ مجازِ صحبتِ دور، هر ۵ ثانیه‌ی اضافه یک امتیاز منفی ثبت می‌شود.
   void addSpeakingSecond(int playerId) {
     final player = playerById(playerId);
     player.totalSpeakingSeconds++;
+
+    if (phase != GamePhaseType.day) return;
+
+    final seconds = (_speakingSecondsThisRound[playerId] ?? 0) + 1;
+    _speakingSecondsThisRound[playerId] = seconds;
+
+    final extraSeconds = seconds - settings.speakSeconds;
+    if (extraSeconds > 0 && extraSeconds % 5 == 0) {
+      _award(player, -1, 'صحبتِ اضافه (' + extraSeconds.toString() + ' ثانیه)');
+    }
   }
 
   // ---------- موتورِ امتیازدهیِ بهترین/بدترین بازیکن ----------
@@ -581,6 +597,8 @@ class GameFlowController extends ChangeNotifier {
     _phaseHistory.add(_PhaseSnapshot(phase, roundNumber));
     phase = GamePhaseType.day;
     roundNumber = dayNumber;
+    // شمارشِ صحبتِ اضافه برای قانونِ امتیازدهی از هر دورِ جدید جدا می‌شود.
+    _speakingSecondsThisRound.clear();
     // شروع‌کننده‌ی صحبت ثابت نیست: روزِ اول همون شروع‌کننده‌ی روزِ
     // معارفه‌ست؛ از روزِ دوم به بعد، هر روز سه نفرِ زنده‌یِ بعد از
     // شروع‌کننده‌ی روزِ قبل (طبقِ ترتیبِ ثابتِ صندلی، ردکردنِ مرده‌ها).
