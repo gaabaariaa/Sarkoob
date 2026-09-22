@@ -26,15 +26,15 @@ class HomeScreen extends StatelessWidget {
         return SingleChildScrollView(physics: const BouncingScrollPhysics(), padding: EdgeInsets.fromLTRB(wide ? 40 : 18, 18, wide ? 40 : 18, 28), child: Center(child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 920), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           _TopBar(primary: primary, light: light, card: card, muted: muted), const SizedBox(height: 18),
           _HeroPanel(primary: primary, light: light, surface: surface, muted: muted), const SizedBox(height: 20),
-          _StartButton(onTap: () => _open(context, const StartGameScreen()), primary: primary, light: light), const SizedBox(height: 22),
+          _StartButton(onTap: () => _open(context, StartGameScreen()), primary: primary, light: light), const SizedBox(height: 22),
           _SectionTitle(title: 'مدیریت بازی', primary: light), const SizedBox(height: 10),
           GridView.count(crossAxisCount: wide ? 3 : 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: wide ? 1.55 : 1.28, children: [
-            _HomeTile(title: 'بازیکنان', subtitle: 'لیست و نقش‌ها', icon: Icons.groups_rounded, onTap: () => _open(context, const RosterScreen()), primary: primary, dark: dark, card: card, muted: muted),
-            _HomeTile(title: 'آمار', subtitle: 'نتایج و عملکرد', icon: Icons.insights_rounded, onTap: () => _open(context, const StatsScreen()), primary: primary, dark: dark, card: card, muted: muted),
-            _HomeTile(title: 'تاریخچه', subtitle: 'بازی‌های قبلی', icon: Icons.history_rounded, onTap: () => _open(context, const HistoryScreen()), primary: primary, dark: dark, card: card, muted: muted),
-            _HomeTile(title: 'سناریوها', subtitle: 'قوانین و سناریوهای بازی', icon: Icons.menu_book_rounded, onTap: () => _open(context, const RulesScreen()), primary: primary, dark: dark, card: card, muted: muted),
+            _HomeTile(title: 'بازیکنان', subtitle: 'لیست و نقش‌ها', icon: Icons.groups_rounded, onTap: () => _open(context, RosterScreen()), primary: primary, dark: dark, card: card, muted: muted),
+            _HomeTile(title: 'آمار', subtitle: 'نتایج و عملکرد', icon: Icons.insights_rounded, onTap: () => _open(context, StatsScreen()), primary: primary, dark: dark, card: card, muted: muted),
+            _HomeTile(title: 'تاریخچه', subtitle: 'بازی‌های قبلی', icon: Icons.history_rounded, onTap: () => _open(context, HistoryScreen()), primary: primary, dark: dark, card: card, muted: muted),
+            _HomeTile(title: 'سناریوها', subtitle: 'قوانین و سناریوهای بازی', icon: Icons.menu_book_rounded, onTap: () => _open(context, RulesScreen()), primary: primary, dark: dark, card: card, muted: muted),
           ]), const SizedBox(height: 12),
-          _SettingsButton(onTap: () => _open(context, const SettingsScreen()), primary: primary, light: light, dark: dark, muted: muted), const SizedBox(height: 18),
+          _SettingsButton(onTap: () => _open(context, SettingsScreen()), primary: primary, light: light, dark: dark, muted: muted), const SizedBox(height: 18),
         ]))));
       }))
     ]));
