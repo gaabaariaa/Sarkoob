@@ -3,6 +3,7 @@ import '../models/role.dart';
 import '../models/scenario.dart';
 import '../models/team.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 import '../widgets/role_card.dart';
 import '../widgets/role_info_card.dart';
 
@@ -21,7 +22,7 @@ class _RulesScreenState extends State<RulesScreen> {
     final teams = GameTeams.selectableForScenario(_selectedScenario.id);
 
     return Scaffold(
-      appBar: AppBar(title: Text('قوانین و نقش‌ها'), actions: [Padding(padding: EdgeInsetsDirectional.only(end: 14), child: Center(child: Text(_selectedScenario.name, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12))))],),
+      appBar: AppBar(title: Text('قوانین و نقش‌ها'.tr), actions: [Padding(padding: EdgeInsetsDirectional.only(end: 14), child: Center(child: Text(_selectedScenario.name, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12))))],),
       body: Column(
         children: [
           Container(
