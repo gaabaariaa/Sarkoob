@@ -110,6 +110,12 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer playerById(int id) => players.firstWhere((p) => p.id == id);
 
+  /// هر تیک واقعیِ تایمرِ نوبت صحبت/چالش را برای همان بازیکن ثبت می‌کند.
+  void addSpeakingSecond(int playerId) {
+    final player = playerById(playerId);
+    player.totalSpeakingSeconds++;
+  }
+
   // ---------- موتورِ امتیازدهیِ بهترین/بدترین بازیکن ----------
   // طبقِ سندِ طراحی: sarkoob-scoring-system-design.md. سه فیلدِ ردیابیِ
   // موقتِ زیر فقط برایِ همین سیستم‌ان و به هیچ منطقِ دیگه‌ای دست نمی‌زنن.
