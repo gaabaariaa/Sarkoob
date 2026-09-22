@@ -3,6 +3,7 @@ import '../models/game_session.dart';
 import '../models/role.dart';
 import '../models/team.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 import '../widgets/game_3d_button.dart';
 import '../widgets/role_info_card.dart';
 import 'modern_game_flow_screen.dart';
@@ -33,7 +34,7 @@ class _RoleRevealScreenState extends State<RoleRevealScreen> {
   @override Widget build(BuildContext context) {
     final allSeen = _seenIds.length == widget.players.length;
     return Scaffold(
-      appBar: AppBar(title: Text('نمایش نقش‌ها'), actions: [Padding(padding: EdgeInsetsDirectional.only(end: 14), child: Center(child: Text(_seenIds.length.toString() + '/' + widget.players.length.toString(), style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.w800))))]),
+      appBar: AppBar(title: Text('نمایش نقش‌ها'.tr), actions: [Padding(padding: EdgeInsetsDirectional.only(end: 14), child: Center(child: Text(_seenIds.length.toString() + '/' + widget.players.length.toString(), style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.w800))))]),
       body: SafeArea(child: LayoutBuilder(builder: (context, constraints) {
         final compact = constraints.maxWidth < 380;
         final columns = constraints.maxWidth >= 1000 ? 4 : constraints.maxWidth >= 650 ? 3 : 2;
