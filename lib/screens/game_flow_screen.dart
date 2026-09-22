@@ -820,6 +820,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               totalScore: p.scoreTotal,
               challengesGiven: p.challengesGivenTotal,
               challengesReceived: p.challengesReceivedTotal,
+              totalSpeakingSeconds: p.totalSpeakingSeconds,
               scoreEvents: List.of(p.scoreEvents),
             ),
           )
@@ -1149,6 +1150,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     _showChallengePicker();
                   }
                 : null,
+            onSecondElapsed: () => controller.addSpeakingSecond(speaker.id),
             nextLabel: isChallenge ? 'پایان چالش' : 'نفر بعدی',
             eyebrow: isIntro ? 'معارفه' : 'نوبت صحبت',
           ),
@@ -2091,6 +2093,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         controller.advanceDefenseSpeaker();
       },
       onTimerFinished: () => MusicService.instance.playAlertLoop(),
+      onSecondElapsed: () => controller.addSpeakingSecond(speaker.id),
     );
   }
 
