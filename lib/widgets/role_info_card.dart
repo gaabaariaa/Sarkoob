@@ -10,7 +10,7 @@ class RoleInfoCard extends StatelessWidget {
   final GameTeam team;
   final bool showScoringInfo;
 
-  const RoleInfoCard({
+  RoleInfoCard({
     super.key,
     required this.role,
     required this.team,
@@ -23,8 +23,8 @@ class RoleInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.background,
-      padding: const EdgeInsets.all(14),
+      color: AppTheme.uiBackground,
+      padding: EdgeInsets.all(14),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -40,7 +40,7 @@ class RoleInfoCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(6),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     team.name,
@@ -55,11 +55,11 @@ class RoleInfoCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: AppColors.surfaceCard,
+              color: AppTheme.uiCard,
               borderRadius: BorderRadius.circular(22),
               border: Border.all(color: team.color.withAlpha(71)),
             ),
@@ -80,42 +80,42 @@ class RoleInfoCard extends StatelessWidget {
                     ),
                   ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           _panel(
-            borderColor: AppColors.gold.withAlpha(56),
+            borderColor: AppTheme.uiPrimary.withAlpha(56),
             child: Center(
               child: Text(role.name, style: AppTheme.headingFont(size: 23)),
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           _panel(
-            color: AppColors.surfaceDark,
+            color: AppTheme.uiSurface,
             borderColor: Colors.transparent,
             child: Text(
               role.description,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white70, height: 1.7, fontSize: 13),
+              style: TextStyle(color: Colors.white70, height: 1.7, fontSize: 13),
             ),
           ),
           if (showScoringInfo && roleScoringInfoForScenario(_scenarioForTeam).containsKey(role.id)) ...[
-            const SizedBox(height: 14),
+            SizedBox(height: 14),
             _panel(
-              borderColor: AppColors.gold.withAlpha(71),
+              borderColor: AppTheme.uiPrimary.withAlpha(71),
               child: Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.emoji_events_rounded, color: AppColors.goldLight, size: 20),
-                      const SizedBox(width: 8),
+                      Icon(Icons.emoji_events_rounded, color: AppTheme.uiPrimaryLight, size: 20),
+                      SizedBox(width: 8),
                       Text('امتیازدهی', style: AppTheme.headingFont(size: 17)),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   Text(
                     roleScoringInfoForScenario(_scenarioForTeam)[role.id]!,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white60, height: 1.7, fontSize: 12),
+                    style: TextStyle(color: Colors.white60, height: 1.7, fontSize: 12),
                   ),
                 ],
               ),
@@ -129,13 +129,13 @@ class RoleInfoCard extends StatelessWidget {
   Widget _panel({
     required Widget child,
     Color? color,
-    Color borderColor = AppColors.gold,
+    Color borderColor = AppTheme.uiPrimary,
   }) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(15),
+      padding: EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: color ?? AppColors.surfaceCard,
+        color: color ?? AppTheme.uiCard,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: borderColor),
       ),
