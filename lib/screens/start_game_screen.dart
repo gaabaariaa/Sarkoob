@@ -35,7 +35,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   /// کلید شامل scenario.id است تا تغییر سناریو state را قاطی نکند.
   final Map<String, int> _simpleRoleCounts = <String, int>{};
 
-  static const int _minPlayers = 9;
+  static const int _minPlayers = 6;
 
   @override
   void initState() {
