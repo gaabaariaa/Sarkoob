@@ -1646,6 +1646,9 @@ class GameFlowController extends ChangeNotifier {
 
   bool _rapperActedTonight = false;
   String? rapperResultMessage;
+  // حذفِ اوشن در انتخابِ اشتباه تا پایانِ شب معلق می‌ماند؛ چون وکیل/کنستانتین
+  // باید قبل از اعلامِ پایانِ شب اصلاً نداند اوشن از بازی خارج شده است.
+  int? _rapperPendingWrongChoiceEliminationId;
 
   bool get canRapperActTonight {
     final rapper = rapperPlayer;
@@ -1688,18 +1691,12 @@ class GameFlowController extends ChangeNotifier {
           'نفوذیِ همیشگیِ $leaderTeamLabel هست — مخفیانه جاش گرفته.';
       _award(rapper, -1, 'جذبِ ناخواسته‌ی نفوذی');
     } else {
-      // حذفِ اوشن تا پایانِ شب معلق می‌ماند تا نقش‌هایی مثل کنستانتین
-      // بتوانند همان شب او را برگردانند. نتیجه‌ی انتخاب همچنان ثبت می‌شود
-      // ولی مرگِ واقعی در finishNight انجام می‌شود.
+      // حذفِ اوشن تا پایانِ شب معلق می‌ماند؛ کنستانتین/وکیل باید قبل از
+      // اعلامِ پایانِ شب اصلاً نداند اوشن از بازی خارج شده است، بنابراین
+      // اوشن در لیستِ حذف‌شده‌های قابلِ احیا قرار نمی‌گیرد و همان شب قابلِ
+      // انتخاب نیست. حذفِ واقعی در finishNight انجام می‌شود.
       rapperResultMessage = 'انتخاب اشتباه بود! «${rapper.name}» در پایان شب حذف می‌شود.';
-      _pendingHits[rapper.id] = (_pendingHits[rapper.id] ?? 0) + 1;
-      _pendingHitAttributions.add(
-        _HitAttribution(
-          actorId: rapper.id,
-          targetId: rapper.id,
-          mechanism: 'جذبِ اشتباه (خودحذفی)',
-        ),
-      );
+      _rapperPendingWrongChoiceEliminationId = rapper.id;
     }
     notifyListeners();
   }
@@ -2653,6 +2650,7 @@ class GameFlowController extends ChangeNotifier {
     revolutionaryResultMessage = null;
     _rapperActedTonight = false;
     rapperResultMessage = null;
+    _rapperPendingWrongChoiceEliminationId = null;
     _intelQuestionUsedTonight = false;
     lastIntelQuestionResult = null;
     lastIntelQuestionTargetNames = null;
@@ -2714,6 +2712,10 @@ class GameFlowController extends ChangeNotifier {
   /// برای اعلامِ عمومی (سه دسته‌ی ثابت)، یکی برای یادداشتِ خصوصیِ گرداننده.
   void finishNight() {
     final privateNotes = <String>[];
+    // انتخابِ اشتباهِ اوشن عمداً خارج از _pendingHits نگه داشته می‌شود:
+    // وکیل/کنستانتین در طولِ شب او را هنوز «حذف‌شده» نمی‌بیند. فقط بعد از
+    // اینکه همه‌ی نقش‌های شبانه فرصتِ عملشان را تمام کردند، حذف واقعی می‌شود.
+
     final Map<int, bool> diedTonightFromHit = {}; // targetId -> آیا نهایتاً حذف شد؟
     _pendingHits.forEach((targetId, hitCount) {
       final target = playerById(targetId);
@@ -2780,6 +2782,19 @@ class GameFlowController extends ChangeNotifier {
       _award(actor, points, attribution.mechanism);
     }
     _pendingHitAttributions.clear();
+
+    // حالا که نوبتِ همه‌ی نقش‌های شبانه تمام شده، حذفِ معلقِ اوشن را اعمال
+    // می‌کنیم. بنابراین کنستانتین همان شب هیچ راهی برای دیدن/انتخابِ او ندارد.
+    final rapperPendingId = _rapperPendingWrongChoiceEliminationId;
+    if (rapperPendingId != null) {
+      final rapperPending = playerById(rapperPendingId);
+      if (rapperPending.isAlive) {
+        _eliminatePlayer(rapperPending);
+        _tonightEliminatedIds.add(rapperPending.id);
+        _award(rapperPending, -2, 'جذبِ اشتباه (خودحذفی)');
+      }
+    }
+    _rapperPendingWrongChoiceEliminationId = null;
 
     // امتیازدهیِ نجاتِ دکتر — طبقِ sarkoob-action-scoring-template.xlsx:
     // چهار حالت، بر اساسِ اینکه هدف واقعاً امشب موردِ حمله بوده یا نه
