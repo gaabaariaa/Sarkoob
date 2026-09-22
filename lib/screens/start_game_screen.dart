@@ -847,14 +847,16 @@ class _StartGameScreenState extends State<StartGameScreen> {
     _pushSection('تیمِ مستقل', team.color, (context) {
       final enabled = _isIndependentTeamEnabled(scenario);
       return StatefulBuilder(
-        builder: (context, setSheetState) => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('اختیاریه.', style: TextStyle(color: Colors.white60, fontSize: 12)),
-            const SizedBox(height: 8),
-            RadioListTile<String>(
-              value: 'none',
-              groupValue: enabled ? team.id : 'none',
+        builder: (context, setSheetState) {
+          final enabled = _isIndependentTeamEnabled(scenario);
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('اختیاریه.', style: TextStyle(color: Colors.white60, fontSize: 12)),
+              const SizedBox(height: 8),
+              RadioListTile<String>(
+                value: 'none',
+                groupValue: enabled ? team.id : 'none',
               onChanged: (_) {
                 _setIndependentTeamEnabled(scenario, false);
                 setSheetState(() {});
@@ -881,8 +883,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
               const SizedBox(height: 4),
               _mandatoryRoleRow(role),
             ],
-          ],
-        ),
+            ],
+          );
+        },
       );
     });
   }
