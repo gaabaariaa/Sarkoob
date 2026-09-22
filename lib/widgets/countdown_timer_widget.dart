@@ -27,6 +27,13 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
   void initState() {
     super.initState();
     _remaining = widget.totalSeconds;
+    // تایمرِ مرحله باید با ورود به مرحله خودش شروع شود؛
+    // Play/Pause/Stop فقط کنترل دستیِ همین شمارش هستند.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_running && _remaining > 0) {
+        _start();
+      }
+    });
   }
 
   void _start() {
@@ -55,7 +62,7 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
     setState(() => _running = false);
   }
 
-  void _reset() {
+  void _stop() {
     _timer?.cancel();
     setState(() {
       _running = false;
@@ -160,14 +167,16 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
                 child: ElevatedButton.icon(
                   onPressed: _running ? _pause : _start,
                   icon: Icon(_running ? Icons.pause : Icons.play_arrow, size: 18),
-                  label: Text(_running ? 'توقف' : 'شروع'),
+                  label: Text(_running ? 'مکث' : 'پخش'),
                 ),
               ),
-              const SizedBox(width: 10),
-              OutlinedButton.icon(
-                onPressed: _reset,
-                icon: const Icon(Icons.restart_alt, size: 18),
-                label: const Text('ریست'),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _stop,
+                  icon: const Icon(Icons.stop, size: 18),
+                  label: const Text('توقف'),
+                ),
               ),
             ],
           ),
