@@ -845,7 +845,6 @@ class _StartGameScreenState extends State<StartGameScreen> {
     if (team.id.isEmpty || role.id.isEmpty) return;
 
     _pushSection('تیمِ مستقل', team.color, (context) {
-      final enabled = _isIndependentTeamEnabled(scenario);
       return StatefulBuilder(
         builder: (context, setSheetState) {
           final enabled = _isIndependentTeamEnabled(scenario);
