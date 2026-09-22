@@ -83,6 +83,8 @@ class SessionPlayer {
   bool challengeGivenToday;
   int challengesGivenTotal = 0;
   int challengesReceivedTotal = 0;
+  /// مجموع ثانیه‌هایی که این بازیکن واقعاً در نوبت‌های صحبت/چالش صحبت کرده.
+  int totalSpeakingSeconds = 0;
   bool hasSpokenThisRound;
   String? roleId;
   bool hasArmor;
