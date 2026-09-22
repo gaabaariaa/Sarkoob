@@ -12,7 +12,7 @@ import '../theme/app_theme.dart';
 import '../widgets/game_3d_button.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  SettingsScreen({super.key});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -142,7 +142,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       );
       if (!mounted) return;
       setState(() => _backupBusy = false);
-      if (savedPath != null) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('✅ بک‌آپ ذخیره شد.')));
+      if (savedPath != null) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('✅ بک‌آپ ذخیره شد.')));
     } catch (e) { _showBackupError('خطا تو گرفتنِ خروجی: $e'); }
   }
 
@@ -150,12 +150,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final mode = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surfaceCard,
-        title: const Text('وارد کردنِ بک‌آپ'),
-        content: const Text('داده‌های فایل به داده‌های فعلی اضافه بشن یا کاملاً جایگزین بشن؟'),
+        backgroundColor: AppTheme.uiCard,
+        title: Text('وارد کردنِ بک‌آپ'),
+        content: Text('داده‌های فایل به داده‌های فعلی اضافه بشن یا کاملاً جایگزین بشن؟'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, null), child: const Text('انصراف')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('افزودن به داده‌ی فعلی')),
+          TextButton(onPressed: () => Navigator.pop(ctx, null), child: Text('انصراف')),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('افزودن به داده‌ی فعلی')),
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('جایگزینیِ کامل', style: TextStyle(color: AppColors.bloodRedLight))),
         ],
       ),
@@ -165,11 +165,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final confirm = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          backgroundColor: AppColors.surfaceCard,
-          title: const Text('مطمئنی؟'),
-          content: const Text('روستر و تاریخچه‌ی فعلی پاک می‌شن و با فایل جایگزین می‌شن.'),
+          backgroundColor: AppTheme.uiCard,
+          title: Text('مطمئنی؟'),
+          content: Text('روستر و تاریخچه‌ی فعلی پاک می‌شن و با فایل جایگزین می‌شن.'),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('انصراف')),
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('انصراف')),
             TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('جایگزین کن', style: TextStyle(color: AppColors.bloodRedLight))),
           ],
         ),
@@ -189,51 +189,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
     catch (e) { _showBackupError('فایل خونده نشد یا خرابه: $e'); }
   }
 
-  Widget _buildSectionHeader(IconData icon, String title, String subtitle) => Padding(padding: const EdgeInsets.only(left: 2, right: 2), child: Row(children: [Container(width: 40, height: 40, decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(46), borderRadius: BorderRadius.circular(12)), child: Icon(icon, color: AppColors.goldLight, size: 20)), const SizedBox(width: 11), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: AppTheme.headingFont(size: 19)), const SizedBox(height: 2), Text(subtitle, style: const TextStyle(color: AppColors.mutedText, fontSize: 11))]))]));
+  Widget _buildSectionHeader(IconData icon, String title, String subtitle) => Padding(padding: EdgeInsets.only(left: 2, right: 2), child: Row(children: [Container(width: 40, height: 40, decoration: BoxDecoration(color: AppTheme.uiPrimaryDark.withAlpha(46), borderRadius: BorderRadius.circular(12)), child: Icon(icon, color: AppTheme.uiPrimaryLight, size: 20)), SizedBox(width: 11), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: AppTheme.headingFont(size: 19)), SizedBox(height: 2), Text(subtitle, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 11))]))]));
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('تنظیمات'), actions: [Padding(padding: const EdgeInsetsDirectional.only(end: 14), child: Center(child: Text('دست خدا', style: const TextStyle(color: AppColors.mutedText, fontSize: 12))))],),
+      appBar: AppBar(title: Text('تنظیمات'), actions: [Padding(padding: EdgeInsetsDirectional.only(end: 14), child: Center(child: Text('دست خدا', style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12))))],),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         children: [
           _buildSectionHeader(Icons.palette_rounded, 'ظاهر برنامه', 'شخصی‌سازی ظاهر میز بازی'),
-          const SizedBox(height: 14),
-          const _ThemePicker(),
-          const SizedBox(height: 28),
+          SizedBox(height: 14),
+          _ThemePicker(),
+          SizedBox(height: 28),
           _buildSectionHeader(Icons.music_note_rounded, 'موزیک شب', 'موسیقی خودکار فازهای شب و خواب نیمروزی'),
-          const SizedBox(height: 8),
-          const Text('چندتا فایلِ موزیک از گوشیت انتخاب کن تا خودکار تو فازِ شب و «خواب نیمروزی» به‌صورتِ شافل پخش بشن و با شروعِ روز قطع بشن.', style: TextStyle(color: Colors.white60, fontSize: 13)),
-          const SizedBox(height: 16),
-          Container(decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.gold.withAlpha(41))), child: Padding(padding: const EdgeInsets.all(14), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          SizedBox(height: 8),
+          Text('چندتا فایلِ موزیک از گوشیت انتخاب کن تا خودکار تو فازِ شب و «خواب نیمروزی» به‌صورتِ شافل پخش بشن و با شروعِ روز قطع بشن.', style: TextStyle(color: Colors.white60, fontSize: 13)),
+          SizedBox(height: 16),
+          Container(decoration: BoxDecoration(color: AppTheme.uiCard, borderRadius: BorderRadius.circular(20), border: Border.all(color: AppTheme.uiPrimary.withAlpha(41))), child: Padding(padding: EdgeInsets.all(14), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(_trackPaths.isEmpty ? 'هیچ موزیکی انتخاب نشده' : _trackPaths.length == 1 ? _displayName(_trackPaths.first) : '${_trackPaths.length} فایلِ موزیک انتخاب شده', style: TextStyle(color: _trackPaths.isNotEmpty ? Colors.white : Colors.white38, fontWeight: FontWeight.bold)),
             if (_trackPaths.length > 1) ...[
-              const SizedBox(height: 8),
-              ConstrainedBox(constraints: const BoxConstraints(maxHeight: 140), child: ListView.builder(shrinkWrap: true, itemCount: _trackPaths.length, itemBuilder: (_, i) => Text('${i + 1}. ${_displayName(_trackPaths[i])}', style: const TextStyle(color: Colors.white54, fontSize: 12), overflow: TextOverflow.ellipsis))),
+              SizedBox(height: 8),
+              ConstrainedBox(constraints: BoxConstraints(maxHeight: 140), child: ListView.builder(shrinkWrap: true, itemCount: _trackPaths.length, itemBuilder: (_, i) => Text('${i + 1}. ${_displayName(_trackPaths[i])}', style: TextStyle(color: Colors.white54, fontSize: 12), overflow: TextOverflow.ellipsis))),
             ],
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Wrap(spacing: 8, runSpacing: 8, children: [
-              ElevatedButton.icon(icon: const Icon(Icons.audio_file), label: const Text('انتخابِ موزیک'), onPressed: _busy ? null : _pickFiles),
+              ElevatedButton.icon(icon: Icon(Icons.audio_file), label: Text('انتخابِ موزیک'), onPressed: _busy ? null : _pickFiles),
               if (_trackPaths.isNotEmpty) ...[
                 OutlinedButton.icon(icon: Icon(_previewing ? Icons.stop : Icons.play_arrow), label: Text(_previewing ? 'توقفِ پخشِ آزمایشی' : 'پخشِ آزمایشی'), onPressed: _togglePreview),
-                if (_previewing) OutlinedButton.icon(icon: const Icon(Icons.skip_next), label: const Text('بعدی'), onPressed: () => MusicService.instance.skipToNext()),
-                OutlinedButton.icon(icon: const Icon(Icons.delete_outline), label: const Text('حذف'), style: OutlinedButton.styleFrom(foregroundColor: AppColors.bloodRedLight), onPressed: _clearMusic),
+                if (_previewing) OutlinedButton.icon(icon: Icon(Icons.skip_next), label: Text('بعدی'), onPressed: () => MusicService.instance.skipToNext()),
+                OutlinedButton.icon(icon: Icon(Icons.delete_outline), label: Text('حذف'), style: OutlinedButton.styleFrom(foregroundColor: AppColors.bloodRedLight), onPressed: _clearMusic),
               ],
             ]),
-            if (_busy) ...[const SizedBox(height: 12), const LinearProgressIndicator()],
+            if (_busy) ...[SizedBox(height: 12), LinearProgressIndicator()],
           ]))),
-          const SizedBox(height: 32),
+          SizedBox(height: 32),
           _buildSectionHeader(Icons.backup_rounded, 'بک‌آپ و بازیابی', 'انتقال و بازیابی اطلاعات بازی'),
-          const SizedBox(height: 8),
-          const Text('روستر و تاریخچه‌ی بازی‌ها را در یک فایل ذخیره کن تا بتوانی به گوشی دیگر منتقل یا از فایل قبلی بازیابی کنی.', style: TextStyle(color: Colors.white60, fontSize: 13)),
-          const SizedBox(height: 16),
+          SizedBox(height: 8),
+          Text('روستر و تاریخچه‌ی بازی‌ها را در یک فایل ذخیره کن تا بتوانی به گوشی دیگر منتقل یا از فایل قبلی بازیابی کنی.', style: TextStyle(color: Colors.white60, fontSize: 13)),
+          SizedBox(height: 16),
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.surfaceCard,
+              color: AppTheme.uiCard,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.gold.withAlpha(56)),
+              border: Border.all(color: AppTheme.uiPrimary.withAlpha(56)),
             ),
             child: Column(
               children: [
@@ -243,13 +243,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       width: 46,
                       height: 46,
                       decoration: BoxDecoration(
-                        color: AppColors.goldDark.withAlpha(46),
+                        color: AppTheme.uiPrimaryDark.withAlpha(46),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const Icon(Icons.cloud_sync_rounded, color: AppColors.goldLight),
+                      child: Icon(Icons.cloud_sync_rounded, color: AppTheme.uiPrimaryLight),
                     ),
-                    const SizedBox(width: 12),
-                    const Expanded(
+                    SizedBox(width: 12),
+                    Expanded(
                       child: Text(
                         'نسخه پشتیبان اطلاعات',
                         style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15),
@@ -257,7 +257,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: 14),
                 Row(
                   children: [
                     Expanded(
@@ -268,7 +268,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         fontSize: 13,
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10),
                     Expanded(
                       child: Game3DButton(
                         label: 'بازیابی',
@@ -281,19 +281,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ),
                 if (_backupBusy) ...[
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: const LinearProgressIndicator(minHeight: 5),
+                    child: LinearProgressIndicator(minHeight: 5),
                   ),
                 ],
               ],
             ),
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: 32),
           _buildSectionHeader(Icons.tune_rounded, 'بقیه‌ی تنظیمات', 'گزینه‌های بیشتر در نسخه‌های بعدی'),
-          const SizedBox(height: 8),
-          Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppColors.gold.withAlpha(31))), child: const Row(children: [Icon(Icons.schedule_rounded, color: AppColors.subtleText), SizedBox(width: 10), Expanded(child: Text('تنظیمات ویبره و تایمر به‌زودی همینجا میاد.', style: TextStyle(color: AppColors.subtleText, fontSize: 12))) ])),
+          SizedBox(height: 8),
+          Container(padding: EdgeInsets.all(16), decoration: BoxDecoration(color: AppTheme.uiCard, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppTheme.uiPrimary.withAlpha(31))), child: Row(children: [Icon(Icons.schedule_rounded, color: AppTheme.uiSubtleText), SizedBox(width: 10), Expanded(child: Text('تنظیمات ویبره و تایمر به‌زودی همینجا میاد.', style: TextStyle(color: AppTheme.uiSubtleText, fontSize: 12))) ])),
         ],
       ),
     );
@@ -301,7 +301,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 }
 
 class _ThemePicker extends StatelessWidget {
-  const _ThemePicker();
+  _ThemePicker();
 
 
 
@@ -312,11 +312,11 @@ class _ThemePicker extends StatelessWidget {
       builder: (context, selected, _) {
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text('🎨 ظاهر برنامه', style: AppTheme.headingFont(size: 20)),
-          const SizedBox(height: 8),
-          const Text('تم مورد علاقه‌ات را انتخاب کن؛ تغییر رنگ‌ها همان لحظه روی کل برنامه اعمال می‌شود و انتخابت ذخیره می‌شود.', style: TextStyle(color: Colors.white60, fontSize: 13)),
-          const SizedBox(height: 14),
+          SizedBox(height: 8),
+          Text('تم مورد علاقه‌ات را انتخاب کن؛ تغییر رنگ‌ها همان لحظه روی کل برنامه اعمال می‌شود و انتخابت ذخیره می‌شود.', style: TextStyle(color: Colors.white60, fontSize: 13)),
+          SizedBox(height: 14),
           ...AppThemeId.values.map((id) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: EdgeInsets.only(bottom: 10),
             child: _ThemeOption(id: id, selected: selected == id, onTap: () => AppThemeController.set(id)),
           )),
         ]);
@@ -329,11 +329,11 @@ class _ThemeOption extends StatelessWidget {
   final AppThemeId id;
   final bool selected;
   final VoidCallback onTap;
-  const _ThemeOption({required this.id, required this.selected, required this.onTap});
+  _ThemeOption({required this.id, required this.selected, required this.onTap});
 
   String get title => switch (id) { AppThemeId.darkGold => 'طلایی سلطنتی', AppThemeId.midnight => 'نیمه‌شب', AppThemeId.crimson => 'قرمز سینمایی' };
   String get subtitle => switch (id) { AppThemeId.darkGold => 'تم اصلی دست خدا', AppThemeId.midnight => 'سرد، تاریک و مدرن', AppThemeId.crimson => 'تیره با حال‌وهوای پرتنش' };
-  Color get accent => switch (id) { AppThemeId.darkGold => AppColors.gold, AppThemeId.midnight => const Color(0xFF9DB9D5), AppThemeId.crimson => const Color(0xFFB84A4A) };
+  Color get accent => switch (id) { AppThemeId.darkGold => AppTheme.uiPrimary, AppThemeId.midnight => Color(0xFF9DB9D5), AppThemeId.crimson => Color(0xFFB84A4A) };
 
   @override
   Widget build(BuildContext context) {
@@ -341,18 +341,18 @@ class _ThemeOption extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(18),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.all(14),
+        duration: Duration(milliseconds: 180),
+        padding: EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.surfaceCard,
+          color: AppTheme.uiCard,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: selected ? accent : AppColors.gold.withAlpha(26), width: selected ? 1.5 : 1),
+          border: Border.all(color: selected ? accent : AppTheme.uiPrimary.withAlpha(26), width: selected ? 1.5 : 1),
         ),
         child: Row(children: [
           Container(width: 48, height: 48, decoration: BoxDecoration(gradient: LinearGradient(colors: [accent.withAlpha(230), accent.withAlpha(89)]), borderRadius: BorderRadius.circular(15)), child: Icon(Icons.palette_outlined, color: Colors.white.withAlpha(230))),
-          const SizedBox(width: 13),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15)), const SizedBox(height: 3), Text(subtitle, style: const TextStyle(color: AppColors.mutedText, fontSize: 11))])),
-          AnimatedSwitcher(duration: const Duration(milliseconds: 180), child: selected ? Icon(Icons.check_circle_rounded, key: const ValueKey('selected'), color: accent) : Icon(Icons.radio_button_unchecked, key: const ValueKey('unselected'), color: AppColors.subtleText)),
+          SizedBox(width: 13),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15)), SizedBox(height: 3), Text(subtitle, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 11))])),
+          AnimatedSwitcher(duration: Duration(milliseconds: 180), child: selected ? Icon(Icons.check_circle_rounded, key: ValueKey('selected'), color: accent) : Icon(Icons.radio_button_unchecked, key: ValueKey('unselected'), color: AppTheme.uiSubtleText)),
         ]),
       ),
     );
