@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 import 'countdown_timer_widget.dart';
 
 /// Presentation-only panel for the moderator speaking phase.
@@ -60,7 +61,7 @@ class ModernSpeakingPanel extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Expanded(child: _StatusChip(icon: Icons.record_voice_over, text: 'در حال صحبت')),
+                    Expanded(child: _StatusChip(icon: Icons.record_voice_over, text: 'در حال صحبت'.tr)),
                     SizedBox(width: 8),
                     _StatusChip(
                       icon: challengeActive ? Icons.flash_on : Icons.groups,
@@ -119,7 +120,7 @@ class ModernSpeakingPanel extends StatelessWidget {
                         child: OutlinedButton.icon(
                           onPressed: onFinishChallenge,
                           icon: Icon(Icons.stop_circle_outlined),
-                          label: Text('پایان چالش'),
+                          label: Text('پایان چالش'.tr.tr),
                           style: OutlinedButton.styleFrom(
                             minimumSize: Size.fromHeight(52),
                             foregroundColor: AppTheme.uiPrimaryLight,
@@ -136,7 +137,7 @@ class ModernSpeakingPanel extends StatelessWidget {
                   TextButton.icon(
                     onPressed: onChooseChallenge,
                     icon: Icon(Icons.bolt_outlined, size: 20),
-                    label: Text('انتخاب چالش'),
+                    label: Text('انتخاب چالش'.tr.tr),
                     style: TextButton.styleFrom(foregroundColor: AppTheme.uiPrimaryLight),
                   ),
                 ],
@@ -191,7 +192,7 @@ class _PhaseHeader extends StatelessWidget {
             children: [
               Text(eyebrow, style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 18, fontWeight: FontWeight.w800)),
               SizedBox(height: 2),
-              Text('کنترل میز بازی', style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12)),
+              Text('کنترل میز بازی'.tr, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12)),
             ],
           ),
         ],
