@@ -10,6 +10,7 @@ import '../services/music_service.dart';
 import '../theme/app_language.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 import '../widgets/game_3d_button.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -155,7 +156,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: Text('وارد کردنِ بک‌آپ'),
         content: Text('داده‌های فایل به داده‌های فعلی اضافه بشن یا کاملاً جایگزین بشن؟'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, null), child: Text('انصراف')),
+          TextButton(onPressed: () => Navigator.pop(ctx, null), child: Text('انصراف'.tr)),
           TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('افزودن به داده‌ی فعلی')),
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('جایگزینیِ کامل', style: TextStyle(color: AppColors.bloodRedLight))),
         ],
@@ -170,7 +171,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title: Text('مطمئنی؟'),
           content: Text('روستر و تاریخچه‌ی فعلی پاک می‌شن و با فایل جایگزین می‌شن.'),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('انصراف')),
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('انصراف'.tr)),
             TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('جایگزین کن', style: TextStyle(color: AppColors.bloodRedLight))),
           ],
         ),
@@ -195,7 +196,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('تنظیمات'), actions: [Padding(padding: EdgeInsetsDirectional.only(end: 14), child: Center(child: Text('دست خدا', style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12))))],),
+      appBar: AppBar(title: Text('تنظیمات'.tr), actions: [Padding(padding: EdgeInsetsDirectional.only(end: 14), child: Center(child: Text('دست خدا'.tr, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12))))],),
       body: ListView(
         padding: EdgeInsets.all(16),
         children: [
