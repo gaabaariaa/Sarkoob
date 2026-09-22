@@ -108,9 +108,9 @@ class Game3DSurface extends StatefulWidget {
     required this.onPressed,
     this.palette = Game3DPalette.gold,
     this.customColors,
-    this.borderRadius = BorderRadius.all(Radius.circular(16)),
+    this.borderRadius = const BorderRadius.all(Radius.circular(16)),
     this.depth = 5,
-    this.padding = EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     this.semanticLabel,
   });
 
