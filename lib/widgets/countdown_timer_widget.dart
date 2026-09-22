@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
 import '../theme/app_theme.dart';
 
 /// تایمر اصلیِ بازی. منطقِ شمارش معکوس دست‌نخورده است؛ این ویجت فقط
@@ -21,7 +22,9 @@ class CountdownTimerWidget extends StatefulWidget {
 class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
   late int _remaining;
   Timer? _timer;
+  final AudioPlayer _soundPlayer = AudioPlayer();
   bool _running = false;
+  bool _alarmStarted = false;
 
   @override
   void initState() {
@@ -36,21 +39,26 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
     });
   }
 
+  Future<void> _playTimerBeep() async {
+    try {
+      await _soundPlayer.stop();
+      await _soundPlayer.play(AssetSource('sounds/timer_end.wav'));
+    } catch (_) {}
+  }
+
   void _start() {
     if (_running) return;
     setState(() => _running = true);
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-      if (_remaining <= 1) {
-        timer.cancel();
-        setState(() {
-          _remaining = 0;
-          _running = false;
-        });
-        widget.onFinished?.call();
+      if (!mounted) { timer.cancel(); return; }
+      if (_remaining == 10) _playTimerBeep();
+      if (_remaining <= 0) {
+        if (!_alarmStarted) {
+          _alarmStarted = true;
+          widget.onFinished?.call();
+        }
+        _playTimerBeep();
+        setState(() => _remaining--);
         return;
       }
       setState(() => _remaining--);
@@ -59,14 +67,17 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
 
   void _pause() {
     _timer?.cancel();
+    _soundPlayer.stop();
     setState(() => _running = false);
   }
 
   void _stop() {
     _timer?.cancel();
+    _soundPlayer.stop();
     setState(() {
       _running = false;
       _remaining = widget.totalSeconds;
+      _alarmStarted = false;
     });
   }
 
@@ -75,9 +86,11 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.totalSeconds != widget.totalSeconds) {
       _timer?.cancel();
+      _soundPlayer.stop();
       setState(() {
         _remaining = widget.totalSeconds;
         _running = false;
+        _alarmStarted = false;
       });
     }
   }
@@ -85,13 +98,16 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
   @override
   void dispose() {
     _timer?.cancel();
+    _soundPlayer.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final minutes = (_remaining ~/ 60).toString().padLeft(2, '0');
-    final seconds = (_remaining % 60).toString().padLeft(2, '0');
+    final isNegative = _remaining < 0;
+    final absoluteRemaining = _remaining.abs();
+    final minutes = (absoluteRemaining ~/ 60).toString().padLeft(2, '0');
+    final seconds = (absoluteRemaining % 60).toString().padLeft(2, '0');
     final progress = widget.totalSeconds <= 0
         ? 0.0
         : (_remaining / widget.totalSeconds).clamp(0.0, 1.0);
@@ -139,7 +155,7 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
           ),
           const SizedBox(height: 4),
           Text(
-            '$minutes:$seconds',
+            '${isNegative ? '-' : ''}$minutes:$seconds',
             style: TextStyle(
               fontSize: 52,
               height: 1,
