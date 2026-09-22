@@ -8,6 +8,7 @@ import '../models/team.dart';
 import '../services/music_service.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 import '../widgets/countdown_timer_widget.dart';
 import '../widgets/game_3d_button.dart';
 import '../widgets/modern_speaking_panel.dart';
@@ -317,7 +318,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                       children: [
                         Text('یادداشتِ گرداننده', style: AppTheme.headingFont(size: 20)),
                         SizedBox(height: 3),
-                        Text('نکته‌های مهم میز بازی را ثبت کن.', style: TextStyle(color: AppTheme.uiMutedText, fontSize: 11)),
+                        Text('نکته‌های مهم میز بازی را ثبت کن.'.tr, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 11)),
                       ],
                     ),
                   ),
@@ -360,7 +361,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                   Expanded(
                     child: TextButton(
                       onPressed: () => Navigator.of(dialogContext).pop(),
-                      child: Text('انصراف'),
+                      child: Text('انصراف'.tr),
                     ),
                   ),
                   SizedBox(width: 10),
@@ -748,7 +749,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                   children: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(),
-                child: Text('انصراف'),
+                child: Text('انصراف'.tr),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -921,7 +922,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     Expanded(
                       child: TextButton(
                         onPressed: () => Navigator.of(dialogContext).pop(),
-                        child: Text('انصراف'),
+                        child: Text('انصراف'.tr),
                       ),
                     ),
                     SizedBox(width: 10),
@@ -1552,7 +1553,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                       Expanded(
                         child: TextButton(
                           onPressed: () => Navigator.of(dialogContext).pop(),
-                          child: Text('انصراف'),
+                          child: Text('انصراف'.tr),
                         ),
                       ),
                       SizedBox(width: 10),
@@ -3611,7 +3612,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text('انصراف'),
+            child: Text('انصراف'.tr),
           ),
           Game3DButton(
             label: 'ثبت حکم',
@@ -3695,7 +3696,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)))),
           ]),
           actions: [
-            TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: Text('انصراف')),
+            TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: Text('انصراف'.tr)),
             Game3DButton(label: 'ثبت بازجویی', icon: Icons.check_rounded,
               onPressed: selectedTarget != null ? () {
                 controller.interrogate(selectedTarget!.id, question: questionController.text);
@@ -3775,7 +3776,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               )),
             ])),
           actions: [
-            TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: Text('انصراف')),
+            TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: Text('انصراف'.tr)),
             Game3DButton(label: 'پرسیدن سؤال', icon: Icons.arrow_back_rounded,
               onPressed: selected.isNotEmpty ? () {
                 controller.askIntelQuestion(selected.toList());
@@ -3955,7 +3956,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             ),
           ]),
           actions: [
-            TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: Text('انصراف')),
+            TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: Text('انصراف'.tr)),
             Game3DButton(label: 'تحویل اسلحه', icon: Icons.check_rounded,
               onPressed: selectedTarget != null ? () {
                 controller.giveGun(selectedTarget!.id, selectedType);
