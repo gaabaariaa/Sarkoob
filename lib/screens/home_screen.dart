@@ -14,7 +14,10 @@ class HomeScreen extends StatelessWidget {
   void _open(BuildContext context, Widget page) => Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
   @override
   Widget build(BuildContext context) {
-    final primary = AppTheme.uiPrimary, light = AppTheme.uiPrimaryLight, dark = AppTheme.uiPrimaryDark;
+    return ValueListenableBuilder<AppThemeId>(
+      valueListenable: AppThemeController.current,
+      builder: (context, _, __) {
+        final primary = AppTheme.uiPrimary, light = AppTheme.uiPrimaryLight, dark = AppTheme.uiPrimaryDark;
     final bg = AppTheme.uiBackground, card = AppTheme.uiCard, surface = AppTheme.uiSurface, muted = AppTheme.uiMutedText;
     return Scaffold(body: Stack(children: [
       Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(color: bg, gradient: RadialGradient(center: const Alignment(0, -.85), radius: 1.15, colors: [primary.withAlpha(28), bg], stops: const [0, .72])), child: Stack(children: [Positioned(top: -90, right: -70, child: _GlowOrb(size: 220, color: primary, opacity: .045)), Positioned(bottom: 40, left: -100, child: _GlowOrb(size: 260, color: primary, opacity: .025))]))),
@@ -32,10 +35,11 @@ class HomeScreen extends StatelessWidget {
             _HomeTile(title: 'سناریوها', subtitle: 'قوانین و سناریوهای بازی', icon: Icons.menu_book_rounded, onTap: () => _open(context, const RulesScreen()), primary: primary, dark: dark, card: card, muted: muted),
           ]), const SizedBox(height: 12),
           _SettingsButton(onTap: () => _open(context, const SettingsScreen()), primary: primary, light: light, dark: dark, muted: muted), const SizedBox(height: 18),
-          Text('دست خدا  •  گرداننده‌ی بازی نقش مخفی', textAlign: TextAlign.center, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: dark, letterSpacing: .2)),
         ]))));
       }))
     ]));
+      },
+    );
   }
 }
 
@@ -55,13 +59,6 @@ class _TopBar extends StatelessWidget {
     SizedBox(width: compact ? 8 : 12),
     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text('دست خدا', style: AppTheme.headingFont(size: compact ? 22 : 25, color: light)),
-      Text('دستیار گرداننده بازی نقش مخفی', maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: muted)),
-    ])),
-    SizedBox(width: compact ? 6 : 10),
-    Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7), decoration: BoxDecoration(color: primary.withAlpha(20), borderRadius: BorderRadius.circular(20), border: Border.all(color: primary.withAlpha(51))), child: Row(mainAxisSize: MainAxisSize.min, children: [
-      Container(width: 6, height: 6, decoration: BoxDecoration(color: primary, shape: BoxShape.circle)),
-      const SizedBox(width: 5),
-      Text('آماده', style: Theme.of(context).textTheme.labelMedium?.copyWith(color: light, fontWeight: FontWeight.w700)),
     ])),
   ]);
 });
