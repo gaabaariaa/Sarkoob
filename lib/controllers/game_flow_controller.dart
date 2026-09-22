@@ -2832,6 +2832,12 @@ class GameFlowController extends ChangeNotifier {
     if (_tonightRevivedId != null) {
       announcement.add('✅ برگشتن به بازی: ${playerById(_tonightRevivedId!).name}');
     }
+    if (bombTargetId != null) {
+      final bombTarget = bombTargetPlayer;
+      if (bombTarget != null) {
+        announcement.add('💣 دیشب جلویِ «${bombTarget.name}» بمب گذاشته شد.');
+      }
+    }
     if (_natashaSilencedTonightId != null) {
       announcement.add('🤐 «${playerById(_natashaSilencedTonightId!).name}» امروز حقِ صحبت و چالش‌گرفتن نداره.');
     }
