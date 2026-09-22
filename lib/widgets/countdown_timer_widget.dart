@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 
 /// تایمر اصلیِ بازی. منطقِ شمارش معکوس دست‌نخورده است؛ این ویجت فقط
 /// ظاهرِ میز بازی را مدرن‌تر می‌کند و از رنگ‌های هویتیِ ثابت استفاده می‌کند.
@@ -194,7 +195,7 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
                 child: OutlinedButton.icon(
                   onPressed: _stop,
                   icon: Icon(Icons.stop, size: 18),
-                  label: Text('توقف'),
+                  label: Text('توقف'.tr.tr),
                 ),
               ),
             ],
