@@ -103,7 +103,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                 Padding(
                   padding: EdgeInsets.all(16),
                   child: Text(
-                    'همه‌ی بازیکنانِ لیستِ دائمی از قبل تو این بازی هستن.'.tr,
+                    'همه‌ی بازیکنانِ لیستِ دائمی از قبل تو این بازی هستن.'.tr.tr,
                     style: TextStyle(color: Colors.white38),
                   ),
                 )
@@ -115,7 +115,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                   tristate: true,
                   activeColor: AppTheme.uiPrimary,
                   title: Text(
-                    'انتخابِ همه'.tr.tr,
+                    'انتخابِ همه'.tr.tr.tr,
                     style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.bold),
                   ),
                   onChanged: (_) => setSheetState(() {
@@ -280,16 +280,16 @@ class _StartGameScreenState extends State<StartGameScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: AppTheme.uiSurface,
-        title: Text('قدرت بازی بالانس نیست'.tr.tr, style: TextStyle(color: AppTheme.uiPrimaryLight)),
+        title: Text('قدرت بازی بالانس نیست'.tr.tr.tr, style: TextStyle(color: AppTheme.uiPrimaryLight)),
         content: Text(message, style: TextStyle(color: Colors.white70)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text('بازگشت و تغییر'.tr),
+            child: Text('بازگشت و تغییر'.tr.tr),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text('همینطوری ادامه بده'.tr),
+            child: Text('همینطوری ادامه بده'.tr.tr),
           ),
         ],
       ),
@@ -409,7 +409,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
         title: Text('شروع بازی — ${_selectedScenario!.name}'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded),
-          tooltip: 'تغییر سناریو'.tr,
+          tooltip: 'تغییر سناریو'.tr.tr,
           onPressed: () => setState(() => _selectedScenario = null),
         ),
       ),
@@ -570,8 +570,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
                             controller: _locationController,
                             style: TextStyle(color: Colors.white),
                             decoration: InputDecoration(
-                              labelText: 'محل بازی (اختیاری)'.tr,
-                              hintText: 'مثلاً خانه، کافه...'.tr,
+                              labelText: 'محل بازی (اختیاری)'.tr.tr,
+                              hintText: 'مثلاً خانه، کافه...'.tr.tr,
                               prefixIcon: Icon(Icons.location_on_outlined, color: AppTheme.uiPrimary),
                               filled: true,
                               fillColor: AppTheme.uiSurface,
@@ -740,7 +740,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                     controller: _nameController,
                     style: TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      labelText: 'اسم بازیکن'.tr,
+                      labelText: 'اسم بازیکن'.tr.tr,
                       border: OutlineInputBorder(),
                     ),
                     onSubmitted: (_) {
@@ -755,7 +755,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                     _addPlayer();
                     setSheetState(() {});
                   },
-                  child: Text('افزودن'.tr),
+                  child: Text('افزودن'.tr.tr),
                 ),
               ],
             ),
@@ -772,7 +772,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
             ),
             SizedBox(height: 12),
             Text(
-              'با نگه‌داشتن و کشیدن، می‌تونی ترتیبِ بازیکن‌ها رو عوض کنی.'.tr,
+              'با نگه‌داشتن و کشیدن، می‌تونی ترتیبِ بازیکن‌ها رو عوض کنی.'.tr.tr,
               style: TextStyle(color: Colors.white38, fontSize: 11),
             ),
             SizedBox(height: 4),
@@ -852,7 +852,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('اختیاریه.'.tr, style: TextStyle(color: Colors.white60, fontSize: 12)),
+              Text('اختیاریه.'.tr.tr, style: TextStyle(color: Colors.white60, fontSize: 12)),
               SizedBox(height: 8),
               RadioListTile<String>(
                 value: 'none',
@@ -862,7 +862,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                 setSheetState(() {});
               },
               activeColor: AppTheme.uiPrimary,
-              title: Text('بدون تیم مستقل'.tr.tr, style: TextStyle(color: Colors.white)),
+              title: Text('بدون تیم مستقل'.tr.tr.tr, style: TextStyle(color: Colors.white)),
             ),
             RadioListTile<String>(
               value: team.id,
@@ -923,12 +923,12 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
   Widget _buildScenarioPicker() {
     return Scaffold(
-      appBar: AppBar(title: Text('شروع بازی — انتخابِ سناریو'.tr.tr)),
+      appBar: AppBar(title: Text('شروع بازی — انتخابِ سناریو'.tr.tr.tr)),
       body: ListView(
         padding: EdgeInsets.all(16),
         children: [
           Text(
-            'اول سناریوی بازی رو انتخاب کن — تیم‌ها و نقش‌های قابل‌انتخاب '.tr
+            'اول سناریوی بازی رو انتخاب کن — تیم‌ها و نقش‌های قابل‌انتخاب '.tr.tr
             'کاملاً به همین انتخاب بستگی دارن.',
             style: TextStyle(color: Colors.white60, fontSize: 13),
           ),
@@ -1031,7 +1031,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
       dense: true,
       leading: Icon(Icons.check_circle, color: AppTheme.uiPrimary),
       title: Text(role.localizedName, style: TextStyle(color: Colors.white)),
-      trailing: Text('همیشه فعال'.tr, style: TextStyle(color: Colors.white38, fontSize: 12)),
+      trailing: Text('همیشه فعال'.tr.tr, style: TextStyle(color: Colors.white38, fontSize: 12)),
     );
   }
 }
