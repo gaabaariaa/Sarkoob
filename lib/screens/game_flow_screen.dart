@@ -41,7 +41,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   // «تیمِ رهبرِ» این جلسه سرکوبه یا مافیا؟ چندجا تو UIی مرحله‌ی تیمِ رهبر
   // لازمه، برای همینم یه getterِ مشترکه به‌جایِ محاسبه‌ی پراکنده.
-  String get _leaderTeamName => controller.scenario.name;
+  String get _leaderTeamName => controller.scenario.localizedName;
   String get _leaderRoleName => controller.roleNameForScenario(controller.scenario.leaderRoleId);
   String get _plainCitizenLabel => _roleName(controller.scenario.townDefaultRoleId);
   String get _plainLeaderTeamLabel => _roleName(controller.scenario.leaderDefaultRoleId);
@@ -492,7 +492,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     dense: true,
                     title: Text(p.name, style: TextStyle(color: Colors.white)),
                     subtitle: Text(
-                      '$teamName${role != null ? ' — ${role.name}' : ''}'
+                      '$teamName${role != null ? ' — ${role.localizedName}' : ''}'
                       '${p.disciplineStage > 0 ? ' — ${disciplineStageLabel(p.disciplineStage)}' : ''}'
                       '${!controller.hasVotingRightsToday(p) ? ' — 🚫 بدونِ حقِ رأیِ امروز' : ''}',
                       style: TextStyle(color: AppTheme.uiPrimaryLight),
@@ -1620,7 +1620,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
     return ModernNightPanel(
       eyebrow: 'شب معارفه',
-      title: 'اعضای ${controller.scenario.name} بیدار شوند',
+      title: 'اعضای ${controller.scenario.localizedName} بیدار شوند',
       icon: Icons.groups_rounded,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
