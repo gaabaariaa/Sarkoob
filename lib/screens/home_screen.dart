@@ -72,7 +72,7 @@ class _HeroPanel extends StatelessWidget {
 }
 
 class _HeroTag extends StatelessWidget {
-  final IconData icon; final String text,; final Color primary, light;
+  final IconData icon; final String text; final Color primary, light;
   const _HeroTag({required this.icon, required this.text, required this.primary, required this.light});
   @override Widget build(BuildContext context) => Container(padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7), decoration: BoxDecoration(color: Colors.black.withAlpha(46), borderRadius: BorderRadius.circular(14), border: Border.all(color: primary.withAlpha(36))), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, size: 15, color: primary), const SizedBox(width: 5), Text(text, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: light))]));
 }
