@@ -144,7 +144,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       );
       if (!mounted) return;
       setState(() => _backupBusy = false);
-      if (savedPath != null) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('✅ بک‌آپ ذخیره شد.'.tr)));
+      if (savedPath != null) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('✅ بک‌آپ ذخیره شد.'.tr.tr)));
     } catch (e) { _showBackupError('خطا تو گرفتنِ خروجی: $e'); }
   }
 
@@ -153,7 +153,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.uiCard,
-        title: Text('وارد کردنِ بک‌آپ'.tr.tr.tr),
+        title: Text('وارد کردنِ بک‌آپ'.tr.tr.tr.tr),
         content: Text('داده‌های فایل به داده‌های فعلی اضافه بشن یا کاملاً جایگزین بشن؟'.tr.tr),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, null), child: Text('انصراف'.tr.tr)),
@@ -168,7 +168,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         context: context,
         builder: (ctx) => AlertDialog(
           backgroundColor: AppTheme.uiCard,
-          title: Text('مطمئنی؟'.tr.tr.tr),
+          title: Text('مطمئنی؟'.tr.tr.tr.tr),
           content: Text('روستر و تاریخچه‌ی فعلی پاک می‌شن و با فایل جایگزین می‌شن.'.tr.tr),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('انصراف'.tr.tr)),
@@ -196,7 +196,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('تنظیمات'.tr.tr.tr), actions: [Padding(padding: EdgeInsetsDirectional.only(end: 14), child: Center(child: Text('دست خدا'.tr.tr, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12))))],),
+      appBar: AppBar(title: Text('تنظیمات'.tr.tr.tr.tr), actions: [Padding(padding: EdgeInsetsDirectional.only(end: 14), child: Center(child: Text('دست خدا'.tr.tr, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12))))],),
       body: ListView(
         padding: EdgeInsets.all(16),
         children: [
@@ -210,7 +210,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SizedBox(height: 28),
           _buildSectionHeader(Icons.music_note_rounded, 'موزیک شب', 'موسیقی خودکار فازهای شب و خواب نیمروزی'),
           SizedBox(height: 8),
-          Text('چندتا فایلِ موزیک از گوشیت انتخاب کن تا خودکار تو فازِ شب و «خواب نیمروزی» به‌صورتِ شافل پخش بشن و با شروعِ روز قطع بشن.'.tr, style: TextStyle(color: Colors.white60, fontSize: 13)),
+          Text('چندتا فایلِ موزیک از گوشیت انتخاب کن تا خودکار تو فازِ شب و «خواب نیمروزی» به‌صورتِ شافل پخش بشن و با شروعِ روز قطع بشن.'.tr.tr, style: TextStyle(color: Colors.white60, fontSize: 13)),
           SizedBox(height: 16),
           Container(decoration: BoxDecoration(color: AppTheme.uiCard, borderRadius: BorderRadius.circular(20), border: Border.all(color: AppTheme.uiPrimary.withAlpha(41))), child: Padding(padding: EdgeInsets.all(14), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(_trackPaths.isEmpty ? 'هیچ موزیکی انتخاب نشده' : _trackPaths.length == 1 ? _displayName(_trackPaths.first) : '${_trackPaths.length} فایلِ موزیک انتخاب شده', style: TextStyle(color: _trackPaths.isNotEmpty ? Colors.white : Colors.white38, fontWeight: FontWeight.bold)),
@@ -220,11 +220,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
             SizedBox(height: 12),
             Wrap(spacing: 8, runSpacing: 8, children: [
-              ElevatedButton.icon(icon: Icon(Icons.audio_file), label: Text('انتخابِ موزیک'.tr.tr.tr), onPressed: _busy ? null : _pickFiles),
+              ElevatedButton.icon(icon: Icon(Icons.audio_file), label: Text('انتخابِ موزیک'.tr.tr.tr.tr), onPressed: _busy ? null : _pickFiles),
               if (_trackPaths.isNotEmpty) ...[
                 OutlinedButton.icon(icon: Icon(_previewing ? Icons.stop : Icons.play_arrow), label: Text(_previewing ? 'توقفِ پخشِ آزمایشی' : 'پخشِ آزمایشی'), onPressed: _togglePreview),
-                if (_previewing) OutlinedButton.icon(icon: Icon(Icons.skip_next), label: Text('بعدی'.tr.tr.tr), onPressed: () => MusicService.instance.skipToNext()),
-                OutlinedButton.icon(icon: Icon(Icons.delete_outline), label: Text('حذف'.tr.tr.tr), style: OutlinedButton.styleFrom(foregroundColor: AppColors.bloodRedLight), onPressed: _clearMusic),
+                if (_previewing) OutlinedButton.icon(icon: Icon(Icons.skip_next), label: Text('بعدی'.tr.tr.tr.tr), onPressed: () => MusicService.instance.skipToNext()),
+                OutlinedButton.icon(icon: Icon(Icons.delete_outline), label: Text('حذف'.tr.tr.tr.tr), style: OutlinedButton.styleFrom(foregroundColor: AppColors.bloodRedLight), onPressed: _clearMusic),
               ],
             ]),
             if (_busy) ...[SizedBox(height: 12), LinearProgressIndicator()],
@@ -257,7 +257,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'نسخه پشتیبان اطلاعات'.tr,
+                        'نسخه پشتیبان اطلاعات'.tr.tr,
                         style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15),
                       ),
                     ),
