@@ -42,7 +42,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('تاریخچه بازی‌ها'.tr),
+        title: Text('تاریخچه بازی‌ها'.tr.tr.tr),
         actions: [
           Padding(
             padding: EdgeInsetsDirectional.only(end: 14),
@@ -106,10 +106,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('مرکز تاریخچه', style: AppTheme.headingFont(size: 21)),
+                Text('مرکز تاریخچه'.tr, style: AppTheme.headingFont(size: 21)),
                 SizedBox(height: 5),
                 Text(
-                  'نتایج بازی‌ها و عملکرد بازیکنان را مرور کن.',
+                  'نتایج بازی‌ها و عملکرد بازیکنان را مرور کن.'.tr,
                   style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12, height: 1.45),
                 ),
               ],
@@ -250,10 +250,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 child: Icon(Icons.history_toggle_off_rounded, color: AppTheme.uiPrimaryLight, size: 36),
               ),
               SizedBox(height: 18),
-              Text('هنوز بازی‌ای ثبت نشده', style: AppTheme.headingFont(size: 22)),
+              Text('هنوز بازی‌ای ثبت نشده'.tr, style: AppTheme.headingFont(size: 22)),
               SizedBox(height: 8),
               Text(
-                'بعد از پایان یک بازی، نتیجه را ثبت کن تا اینجا برای مرور و آمار نگه‌داری شود.',
+                'بعد از پایان یک بازی، نتیجه را ثبت کن تا اینجا برای مرور و آمار نگه‌داری شود.'.tr,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12, height: 1.6),
               ),
