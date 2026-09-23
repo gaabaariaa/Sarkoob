@@ -102,10 +102,10 @@ class _TeamSection extends StatelessWidget {
             ),
             leading: Container(width: 44, height: 44, decoration: BoxDecoration(color: team.color.withAlpha(46), shape: BoxShape.circle, border: Border.all(color: team.color.withAlpha(115))), child: Icon(Icons.groups_rounded, color: team.color)),
             title: Text(
-              team.name,
+              team.localizedName,
               style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.bold),
             ),
-            subtitle: Text(team.description, style: TextStyle(color: Colors.white60)),
+            subtitle: Text(team.localizedDescription, style: TextStyle(color: Colors.white60)),
             trailing: Icon(Icons.chevron_left_rounded, color: AppTheme.uiPrimary),
           ),
           if (roles.isEmpty)
@@ -121,7 +121,7 @@ class _TeamSection extends StatelessWidget {
             ...roles.map(
               (role) => ListTile(
                 dense: true,
-                title: Text(role.name, style: TextStyle(color: Colors.white)),
+                title: Text(role.localizedName, style: TextStyle(color: Colors.white)),
                 trailing: Icon(Icons.chevron_left_rounded, color: AppTheme.uiPrimary, size: 19),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
@@ -144,7 +144,7 @@ class _TeamPreviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('پیش‌نمایش کارت — ${team.name}')),
+      appBar: AppBar(title: Text('پیش‌نمایش کارت — ${team.localizedName}')),
       body: Center(
         child: TeamRevealCard(team: team, playerName: 'بازیکن نمونه'),
       ),
@@ -160,7 +160,7 @@ class _RolePreviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(role.name)),
+      appBar: AppBar(title: Text(role.localizedName)),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: RoleInfoCard(role: role, team: team, showScoringInfo: true),
