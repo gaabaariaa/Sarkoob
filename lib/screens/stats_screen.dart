@@ -255,17 +255,17 @@ class _StatsScreenState extends State<StatsScreen> {
   Widget build(BuildContext context) {
     if (_loading) {
       return Scaffold(
-        appBar: AppBar(title: Text('آمار'.tr.tr.tr)),
+        appBar: AppBar(title: Text('آمار'.tr.tr.tr.tr)),
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_history.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: Text('آمار'.tr.tr.tr)),
+        appBar: AppBar(title: Text('آمار'.tr.tr.tr.tr)),
         body: Center(
           child: Text(
-            'هنوز هیچ بازی‌ای ثبت نشده.\nبعدِ تمام‌شدنِ اولین بازی، آمار همینجا نشون داده می‌شه.'.tr,
+            'هنوز هیچ بازی‌ای ثبت نشده.\nبعدِ تمام‌شدنِ اولین بازی، آمار همینجا نشون داده می‌شه.'.tr.tr,
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.white38),
           ),
@@ -310,7 +310,7 @@ class _StatsScreenState extends State<StatsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('آمار و عملکرد'.tr.tr.tr),
+        title: Text('آمار و عملکرد'.tr.tr.tr.tr),
         actions: [
           Padding(
             padding: EdgeInsetsDirectional.only(end: 14),
@@ -485,10 +485,10 @@ class _StatsScreenState extends State<StatsScreen> {
           ],
           if (bestPerRole.isNotEmpty) ...[
             SizedBox(height: 20),
-            Text('بهترین‌هایِ هر نقش'.tr, style: AppTheme.headingFont(size: 16)),
+            Text('بهترین‌هایِ هر نقش'.tr.tr, style: AppTheme.headingFont(size: 16)),
             SizedBox(height: 4),
             Text(
-              'بر اساسِ تعدادِ کارهایِ موفقِ اون نقش، رویِ مجموعِ همه‌ی بازی‌هایی که '.tr
+              'بر اساسِ تعدادِ کارهایِ موفقِ اون نقش، رویِ مجموعِ همه‌ی بازی‌هایی که '.tr.tr
               'کسی اون نقش رو بازی کرده.',
               style: TextStyle(color: Colors.white38, fontSize: 12),
             ),
@@ -505,7 +505,7 @@ class _StatsScreenState extends State<StatsScreen> {
           _sectionTitle('میانگینِ امتیاز بازیکنان'),
           SizedBox(height: 4),
           Text(
-            'میانگینِ امتیازِ هر بازیکن رو کلِ بازی‌هاش (طبقِ سیستمِ امتیازدهیِ رأی/شات/'.tr
+            'میانگینِ امتیازِ هر بازیکن رو کلِ بازی‌هاش (طبقِ سیستمِ امتیازدهیِ رأی/شات/'.tr.tr
             'سلاخی/نجات/استعلام/انضباط و بقیه‌ی قابلیت‌ها).',
             style: TextStyle(color: Colors.white70),
           ),
@@ -516,7 +516,7 @@ class _StatsScreenState extends State<StatsScreen> {
           _sectionTitle('تاریخچه‌ی کامل هر بازیکن'),
           SizedBox(height: 4),
           Text(
-            'با زدن روی هر بازیکن، لیستِ همه‌ی بازی‌هاش و نتیجه‌ی هرکدوم نشون داده می‌شه.'.tr,
+            'با زدن روی هر بازیکن، لیستِ همه‌ی بازی‌هاش و نتیجه‌ی هرکدوم نشون داده می‌شه.'.tr.tr,
             style: TextStyle(color: Colors.white70),
           ),
           SizedBox(height: 10),
@@ -597,7 +597,7 @@ class _StatsHero extends StatelessWidget {
       Expanded(child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('مرکز آمار'.tr, style: AppTheme.headingFont(size: 21)),
+          Text('مرکز آمار'.tr.tr, style: AppTheme.headingFont(size: 21)),
           SizedBox(height: 4),
           Text('$historyCount بازی ثبت‌شده • $playerCount بازیکن',
             style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12)),
