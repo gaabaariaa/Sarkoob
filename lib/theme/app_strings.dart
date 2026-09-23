@@ -102,6 +102,120 @@ class AppStrings {
     'کنترل میز بازی':'Table Controls','زمانِ صحبت':'Speaking Time','تایمر متوقف است':'Timer Paused','مکث':'Pause','پخش':'Start','توقف':'Stop',
   };
 
+  static String roleName(String id, String fallback) =>
+      AppLanguageController.current.value == AppLanguage.english
+          ? (_roleNamesEn[id] ?? fallback)
+          : fallback;
+
+  static String roleDescription(String id, String fallback) =>
+      AppLanguageController.current.value == AppLanguage.english
+          ? (_roleDescriptionsEn[id] ?? fallback)
+          : fallback;
+
+  static String teamName(String id, String fallback) =>
+      AppLanguageController.current.value == AppLanguage.english
+          ? (_teamNamesEn[id] ?? fallback)
+          : fallback;
+
+  static String teamDescription(String id, String fallback) =>
+      AppLanguageController.current.value == AppLanguage.english
+          ? (_teamDescriptionsEn[id] ?? fallback)
+          : fallback;
+
+  static String scenarioName(String id, String fallback) =>
+      AppLanguageController.current.value == AppLanguage.english
+          ? (_scenarioNamesEn[id] ?? fallback)
+          : fallback;
+
+  static String scenarioDescription(String id, String fallback) =>
+      AppLanguageController.current.value == AppLanguage.english
+          ? (_scenarioDescriptionsEn[id] ?? fallback)
+          : fallback;
+
+  static const _roleNamesEn = <String, String>{
+    'role_vali_faghih':'Supreme Leader','role_foreign_minister':'Foreign Minister','role_suppressor':'Suppressor',
+    'role_judiciary_chief':'Judiciary Chief','role_doctor':'Doctor','role_hacker':'Hacker','role_revolutionary_fighter':'Revolutionary Fighter',
+    'role_lawyer':'Lawyer','role_rapper':'Protest Rapper','role_zhina':'Zhina','role_government_celebrity':'Government Celebrity',
+    'role_rebel':'Rebel','role_interrogator':'Investigative Journalist','role_intelligence_minister':'Intelligence Minister',
+    'role_police_commander':'Police Commander','role_mercenary':'Plainclothes Mercenary','role_national_hero':'National Hero',
+    'role_gray_citizen':'Gray Citizen','role_mossad_leader':'Mossad Leader','role_civic_activist':'Civic Activist',
+    'role_political_analyst':'Political Analyst','role_godfather':'Godfather','role_negotiator':'Negotiator',
+    'role_simple_mafia':'Simple Mafia','role_enchanter':'Enchanter','role_mafia_doctor':'Mafia Doctor','role_detective':'Detective',
+    'role_professional':'Professional','role_konstantin':'Constantine','role_ocean':'Ocean','role_spy':'Spy','role_gunman':'Gunsmith',
+    'role_kidnapper':'Kidnapper','role_terrorist':'Terrorist','role_simple_citizen':'Simple Citizen','role_zodiac':'Zodiac',
+    'role_leader':'Leader','role_sherlock':'Sherlock','role_bomber':'Bomber','role_guard':'Guardian','role_mistress':'Mistress',
+    'role_natasha':'Natasha','role_saboteur':'Saboteur','role_discloser':'Revealer','role_white_beard':'White Beard',
+  };
+
+  static const _roleDescriptionsEn = <String, String>{
+    'role_vali_faghih':'Leader of the suppression team. Makes the final night decision and has a night armor.',
+    'role_foreign_minister':'Can negotiate once to recruit a gray citizen into the suppression team after a teammate is eliminated.',
+    'role_suppressor':'A basic suppression-team member with no special ability.',
+    'role_judiciary_chief':'Once per game, announces a forbidden word; anyone saying it the next day is eliminated.',
+    'role_doctor':'Protects one or more players from night attacks, with a limited number of self-saves.',
+    'role_hacker':'Investigates whether a player belongs to the suppression team, subject to role-specific exceptions.',
+    'role_revolutionary_fighter':'Can perform revolutionary executions or role-guessing slaughters with a limited total quota.',
+    'role_lawyer':'Can revive one eliminated player; ordinary eliminations can remain half-alive until the revival is used.',
+    'role_rapper':'Can attempt to recruit a player into the resistance; a wrong choice causes a delayed self-elimination.',
+    'role_zhina':'When eliminated, disables the suppression team’s special ability on the following night.',
+    'role_government_celebrity':'A suppression member who can appear innocent to the hacker for several early nights.',
+    'role_rebel':'Can distribute real and practice weapons to players.',
+    'role_interrogator':'Can perform a one-time interrogation of a player.',
+    'role_intelligence_minister':'Can ask a special intelligence question during the night.',
+    'role_police_commander':'Can detain a player during the night.',
+    'role_mercenary':'Can assassinate a target as a special night action.',
+    'role_national_hero':'Can guarantee or protect a player from a vote-related elimination.',
+    'role_gray_citizen':'A basic citizen role without a special ability.',
+    'role_mossad_leader':'Independent leader who chooses a night playstyle and later performs its corresponding action.',
+    'role_civic_activist':'Can request a referendum once during the game.',
+    'role_political_analyst':'Investigates whether a player belongs to the independent team.',
+    'role_godfather':'Leader of the Mafia team who directs the night elimination and can use the team’s special powers.',
+    'role_negotiator':'A Mafia support role focused on negotiation and recruitment.',
+    'role_simple_mafia':'Basic Mafia member and loyal follower of the Godfather.',
+    'role_enchanter':'Writes a cursed word; anyone saying it the next day leaves the game.',
+    'role_mafia_doctor':'Mafia-side doctor who can protect players from night attacks.',
+    'role_detective':'Investigates whether a player belongs to the Mafia team.',
+    'role_professional':'Can eliminate a target with a professional kill, with special rules for role guesses.',
+    'role_konstantin':'Can revive an eliminated player.',
+    'role_ocean':'Leads the Ocean/resistance recruitment attempt.',
+    'role_spy':'An infiltrator who can permanently enter the Ocean/resistance team when targeted.',
+    'role_gunman':'Can distribute real and practice weapons.',
+    'role_kidnapper':'Can kidnap or detain a player as a special night action.',
+    'role_terrorist':'Can trigger a bomb-related elimination according to the Mafia scenario rules.',
+    'role_simple_citizen':'Basic citizen role without a special ability.',
+    'role_zodiac':'Independent role with its own win condition and night actions.',
+    'role_leader':'Can seek consensus votes to lead the community.',
+    'role_sherlock':'Investigates whether a player is the Zodiac.',
+    'role_bomber':'Plants a bomb on a target; the bomb resolves according to the scenario rules.',
+    'role_guard':'Protects citizens against the bomber and counters certain Zodiac attacks.',
+    'role_mistress':'If eliminated while the Godfather is alive, enrages the Godfather for the following night.',
+    'role_natasha':'Can silence one rival-team player for a limited period.',
+    'role_saboteur':'Can sabotage a player’s weapon so a real shot can backfire.',
+    'role_discloser':'Can reveal whether a selected player belongs to the Mafia when eliminated during the day.',
+    'role_white_beard':'Can guarantee or protect a player from vote-related elimination.',
+  };
+
+  static const _teamNamesEn = <String, String>{
+    'team_sorkoob':'Suppression','team_citizen':'Citizens','team_mossad':'Mossad','team_mek':'People’s Mojahedin Organization',
+    'team_mafia_gang':'Mafia','team_mafia_town':'Citizens','team_zodiac':'Zodiac',
+  };
+  static const _teamDescriptionsEn = <String, String>{
+    'team_sorkoob':'Government suppression forces seeking to eliminate opponents secretly.',
+    'team_citizen':'Ordinary people and civic activists seeking to identify and eliminate suppressors.',
+    'team_mossad':'An independent foreign operative with separate goals and actions.',
+    'team_mek':'An armed opposition group with separate goals and actions.',
+    'team_mafia_gang':'Mafia members who wake together and agree on a target at night.',
+    'team_mafia_town':'Citizens with no special team ability who rely on voting and analysis.',
+    'team_zodiac':'A mysterious independent operative with separate goals and actions.',
+  };
+  static const _scenarioNamesEn = <String, String>{
+    'scenario_sorkoob':'Suppression','scenario_mafia':'Mafia',
+  };
+  static const _scenarioDescriptionsEn = <String, String>{
+    'scenario_sorkoob':'An Iranian political-themed scenario pitting a government suppression team against citizens, with an optional independent team.',
+    'scenario_mafia':'A classic Mafia scenario where the Mafia coordinates nightly eliminations against the town, with an optional independent team.',
+  };
+
   static String get(String key) => t(key);
 }
 
