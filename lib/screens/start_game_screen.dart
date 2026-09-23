@@ -872,12 +872,12 @@ class _StartGameScreenState extends State<StartGameScreen> {
                 setSheetState(() {});
               },
               activeColor: team.color,
-              title: Text(team.name, style: TextStyle(color: Colors.white)),
+              title: Text(team.localizedName, style: TextStyle(color: Colors.white)),
             ),
             if (enabled) ...[
               SizedBox(height: 4),
               Text(
-                'فعلاً تنها نقشِ این تیم «${role.name}» است، پس این تیم همیشه دقیقاً ۱ نفره:',
+                'فعلاً تنها نقشِ این تیم «${role.localizedName}» است، پس این تیم همیشه دقیقاً ۱ نفره:',
                 style: TextStyle(color: Colors.white60, fontSize: 12),
               ),
               SizedBox(height: 4),
@@ -898,7 +898,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
     void setDefaultCount(int value) => _setSimpleRoleCount(scenario, simpleRoleId, value);
 
-    _pushSection(team.name, team.color, (context) {
+    _pushSection(team.localizedName, team.color, (context) {
       return StatefulBuilder(
         builder: (context, setSheetState) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -909,7 +909,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
             SizedBox(height: 4),
             _roleCountStepper(role: defaultRole, value: defaultCount, onDecrement: () => setSheetState(() => setDefaultCount(defaultCount > 0 ? defaultCount - 1 : 0)), onIncrement: () => setSheetState(() => setDefaultCount(defaultCount + 1))),
             SizedBox(height: 4),
-            Text('مجموعِ ${team.name}: ${_teamMemberCountFor(scenario, teamId)} نفر', style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 13, fontWeight: FontWeight.bold)),
+            Text('مجموعِ ${team.localizedName}: ${_teamMemberCountFor(scenario, teamId)} نفر', style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 13, fontWeight: FontWeight.bold)),
           ],
         ),
       );
@@ -954,14 +954,14 @@ class _StartGameScreenState extends State<StartGameScreen> {
                           Text(scenario.emoji, style: TextStyle(fontSize: 26)),
                           SizedBox(width: 10),
                           Text(
-                            scenario.name,
+                            scenario.localizedName,
                             style: AppTheme.headingFont(size: 22, color: scenario.color),
                           ),
                         ],
                       ),
                       SizedBox(height: 8),
                       Text(
-                        scenario.description,
+                        scenario.localizedDescription,
                         style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
                       ),
                     ],
@@ -984,7 +984,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
       value: value,
       onChanged: (v) => onChanged(v),
       activeColor: AppTheme.uiPrimary,
-      title: Text(role.name, style: TextStyle(color: Colors.white)),
+      title: Text(role.localizedName, style: TextStyle(color: Colors.white)),
       dense: true,
     );
   }
@@ -1003,7 +1003,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
       child: Row(
         children: [
           Expanded(
-            child: Text(role.name, style: TextStyle(color: Colors.white70, fontSize: 14)),
+            child: Text(role.localizedName, style: TextStyle(color: Colors.white70, fontSize: 14)),
           ),
           IconButton(
             icon: Icon(Icons.remove, color: AppTheme.uiPrimary),
@@ -1030,7 +1030,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     return ListTile(
       dense: true,
       leading: Icon(Icons.check_circle, color: AppTheme.uiPrimary),
-      title: Text(role.name, style: TextStyle(color: Colors.white)),
+      title: Text(role.localizedName, style: TextStyle(color: Colors.white)),
       trailing: Text('همیشه فعال', style: TextStyle(color: Colors.white38, fontSize: 12)),
     );
   }
