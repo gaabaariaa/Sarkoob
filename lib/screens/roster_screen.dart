@@ -43,7 +43,7 @@ class _RosterScreenState extends State<RosterScreen> {
     final controller = TextEditingController(text: profile.name);
     final newName = await showDialog<String>(context: context, builder: (dialogContext) => AlertDialog(
       backgroundColor: AppTheme.uiSurface,
-      title: Text('ویرایشِ اسم'.tr.tr.tr, style: TextStyle(color: AppTheme.uiPrimaryLight)),
+      title: Text('ویرایشِ اسم'.tr.tr.tr.tr, style: TextStyle(color: AppTheme.uiPrimaryLight)),
       content: TextField(controller: controller, style: TextStyle(color: Colors.white), autofocus: true),
       actions: [
         TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: Text('انصراف'.tr.tr)),
@@ -103,7 +103,7 @@ class _RosterScreenState extends State<RosterScreen> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Text(widget.selectionMode ? 'بازیکن‌ها را انتخاب کن. برای جابه‌جایی ترتیب، دستت را روی آیکون ☰ نگه دار و بکش.' : 'این لیست دائمیه و بینِ بازی‌های مختلف می‌مونه؛ موقعِ شروعِ بازیِ جدید می‌تونی مستقیم ازش اسم اضافه کنی.', style: TextStyle(color: Colors.white60, fontSize: 12)),
           SizedBox(height: 12),
-          Row(children: [Expanded(child: TextField(controller: _nameController, style: TextStyle(color: Colors.white), decoration: InputDecoration(labelText: 'اسمِ بازیکنِ جدید'.tr, border: OutlineInputBorder()), onSubmitted: (_) => _addPlayer())), SizedBox(width: 8), ElevatedButton(onPressed: _addPlayer, child: Text('افزودن'.tr.tr))]),
+          Row(children: [Expanded(child: TextField(controller: _nameController, style: TextStyle(color: Colors.white), decoration: InputDecoration(labelText: 'اسمِ بازیکنِ جدید'.tr.tr, border: OutlineInputBorder()), onSubmitted: (_) => _addPlayer())), SizedBox(width: 8), ElevatedButton(onPressed: _addPlayer, child: Text('افزودن'.tr.tr))]),
           SizedBox(height: 12),
           Expanded(child: _roster.isEmpty ? Center(child: Text('هنوز کسی تو لیست نیست.'.tr.tr, style: TextStyle(color: Colors.white38))) : ReorderableListView.builder(
             itemCount: _roster.length,
