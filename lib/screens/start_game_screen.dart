@@ -928,8 +928,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
         padding: EdgeInsets.all(16),
         children: [
           Text(
-            'اول سناریوی بازی رو انتخاب کن — تیم‌ها و نقش‌های قابل‌انتخاب '.tr.tr
-            'کاملاً به همین انتخاب بستگی دارن.',
+            ('اول سناریوی بازی رو انتخاب کن — تیم‌ها و نقش‌های قابل‌انتخاب '
+            'کاملاً به همین انتخاب بستگی دارن.').tr,
             style: TextStyle(color: Colors.white60, fontSize: 13),
           ),
           SizedBox(height: 16),
