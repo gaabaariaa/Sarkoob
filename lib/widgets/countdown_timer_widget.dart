@@ -195,7 +195,7 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
                 child: OutlinedButton.icon(
                   onPressed: _stop,
                   icon: Icon(Icons.stop, size: 18),
-                  label: Text('توقف'.tr.tr),
+                  label: Text('توقف'.tr.tr.tr),
                 ),
               ),
             ],
