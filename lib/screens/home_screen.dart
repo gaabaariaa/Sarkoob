@@ -27,7 +27,7 @@ class HomeScreen extends StatelessWidget {
         return SingleChildScrollView(physics: const BouncingScrollPhysics(), padding: EdgeInsets.fromLTRB(wide ? 40 : 18, 18, wide ? 40 : 18, 28), child: Center(child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 920), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           _TopBar(primary: primary, light: light, card: card, muted: muted), const SizedBox(height: 18),
           _HeroPanel(primary: primary, light: light, surface: surface, muted: muted), const SizedBox(height: 20),
-          _StartButton(onTap: () => _open(context, StartGameScreen()), primary: primary, light: light), const SizedBox(height: 22),
+          _StartButton(onTap: () => _open(context, StartGameScreen()), primary: primary, light: light, dark: dark), const SizedBox(height: 22),
           _SectionTitle(title: 'مدیریت بازی', primary: light), const SizedBox(height: 10),
           GridView.count(crossAxisCount: wide ? 3 : 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: wide ? 1.55 : 1.28, children: [
             _HomeTile(title: 'بازیکنان', subtitle: 'لیست و نقش‌ها', icon: Icons.groups_rounded, onTap: () => _open(context, RosterScreen()), primary: primary, dark: dark, card: card, muted: muted),
@@ -72,15 +72,15 @@ class _HeroPanel extends StatelessWidget {
 }
 
 class _HeroTag extends StatelessWidget {
-  final IconData icon; final String text; final Color primary, light;
+  final IconData icon; final String text,; final Color primary, light;
   const _HeroTag({required this.icon, required this.text, required this.primary, required this.light});
   @override Widget build(BuildContext context) => Container(padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7), decoration: BoxDecoration(color: Colors.black.withAlpha(46), borderRadius: BorderRadius.circular(14), border: Border.all(color: primary.withAlpha(36))), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, size: 15, color: primary), const SizedBox(width: 5), Text(text, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: light))]));
 }
 
 class _StartButton extends StatelessWidget {
-  final VoidCallback onTap; final Color primary, light;
-  const _StartButton({required this.onTap, required this.primary, required this.light});
-  @override Widget build(BuildContext context) => Game3DSurface(onPressed: onTap, customColors: Game3DColors.fromColor(primary), depth: 6, borderRadius: BorderRadius.circular(19), padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18), semanticLabel: 'شروع بازی'.tr.tr, child: Row(children: [Container(width: 48, height: 48, decoration: BoxDecoration(color: Colors.black.withAlpha(31), borderRadius: BorderRadius.circular(15)), child: Icon(Icons.play_arrow_rounded, size: 31, color: primary)), const SizedBox(width: 14), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('شروع بازی'.tr.tr, style: AppTheme.headingFont(size: 23, color: primary)), Text('بازیکنان را انتخاب کن و سناریو را مشخص کن'.tr.tr, style: TextStyle(color: primary.withAlpha(184), fontWeight: FontWeight.w600, fontSize: 12))])), Icon(Icons.arrow_back_rounded, color: primary)]));
+  final VoidCallback onTap; final Color primary, light, dark;
+  const _StartButton({required this.onTap, required this.primary, required this.light, required this.dark});
+  @override Widget build(BuildContext context) => Game3DSurface(onPressed: onTap, customColors: Game3DColors.fromColor(primary), depth: 6, borderRadius: BorderRadius.circular(19), padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18), semanticLabel: 'شروع بازی'.tr.tr, child: Row(children: [Container(width: 48, height: 48, decoration: BoxDecoration(color: Colors.black.withAlpha(31), borderRadius: BorderRadius.circular(15)), child: Icon(Icons.play_arrow_rounded, size: 31, color: dark)), const SizedBox(width: 14), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('شروع بازی'.tr.tr, style: AppTheme.headingFont(size: 23, color: dark)), Text('بازیکنان را انتخاب کن و سناریو را مشخص کن'.tr.tr, style: TextStyle(color: dark.withAlpha(184), fontWeight: FontWeight.w600, fontSize: 12))])), Icon(Icons.arrow_back_rounded, color: dark)]));
 }
 
 class _SettingsButton extends StatelessWidget {
