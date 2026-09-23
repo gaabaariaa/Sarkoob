@@ -242,7 +242,7 @@ class _StatsScreenState extends State<StatsScreen> {
           .toList()
         ..sort((a, b) => b.count.compareTo(a.count));
       result.add(_RoleBest(
-        roleName: role.name,
+        roleName: role.localizedName,
         unitLabel: metricsByRoleId[roleEntry.key]!.unitLabel,
         rankings: rankings,
       ));
