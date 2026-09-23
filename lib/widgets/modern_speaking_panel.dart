@@ -72,7 +72,7 @@ class ModernSpeakingPanel extends StatelessWidget {
                 ),
                 SizedBox(height: 22),
                 Text(
-                  'نوبتِ',
+                  'نوبتِ'.tr,
                   style: TextStyle(color: AppTheme.uiMutedText, fontSize: 13, fontWeight: FontWeight.w600),
                 ),
                 SizedBox(height: 4),
@@ -120,7 +120,7 @@ class ModernSpeakingPanel extends StatelessWidget {
                         child: OutlinedButton.icon(
                           onPressed: onFinishChallenge,
                           icon: Icon(Icons.stop_circle_outlined),
-                          label: Text('پایان چالش'.tr.tr),
+                          label: Text('پایان چالش'.tr.tr.tr),
                           style: OutlinedButton.styleFrom(
                             minimumSize: Size.fromHeight(52),
                             foregroundColor: AppTheme.uiPrimaryLight,
@@ -137,7 +137,7 @@ class ModernSpeakingPanel extends StatelessWidget {
                   TextButton.icon(
                     onPressed: onChooseChallenge,
                     icon: Icon(Icons.bolt_outlined, size: 20),
-                    label: Text('انتخاب چالش'.tr.tr),
+                    label: Text('انتخاب چالش'.tr.tr.tr),
                     style: TextButton.styleFrom(foregroundColor: AppTheme.uiPrimaryLight),
                   ),
                 ],
@@ -158,7 +158,7 @@ class ModernSpeakingPanel extends StatelessWidget {
                 SizedBox(width: 9),
                 Expanded(
                   child: Text(
-                    'گرداننده، وضعیت و زمان را از این پنل کنترل می‌کند.',
+                    'گرداننده، وضعیت و زمان را از این پنل کنترل می‌کند.'.tr,
                     style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12.5, height: 1.4),
                   ),
                 ),
@@ -192,7 +192,7 @@ class _PhaseHeader extends StatelessWidget {
             children: [
               Text(eyebrow, style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 18, fontWeight: FontWeight.w800)),
               SizedBox(height: 2),
-              Text('کنترل میز بازی'.tr, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12)),
+              Text('کنترل میز بازی'.tr.tr, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12)),
             ],
           ),
         ],
