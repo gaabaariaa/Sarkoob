@@ -52,8 +52,8 @@ class _RulesScreenState extends State<RulesScreen> {
                 Row(children: [Icon(Icons.groups_rounded, color: AppTheme.uiPrimaryLight, size: 19), SizedBox(width: 8), Text('تیم‌ها و نقش‌ها'.tr.tr, style: AppTheme.headingFont(size: 19))]),
                 SizedBox(height: 4),
                 Text(
-                  'نقش‌ها به‌مرور اضافه می‌شن. روی اسم تیم بزن تا کارت پیش‌نمایش '.tr.tr
-                  'تیم رو ببینی؛ روی هر نقش بزن تا کارت کاملش رو ببینی.',
+                  ('نقش‌ها به‌مرور اضافه می‌شن. روی اسم تیم بزن تا کارت پیش‌نمایش '
+                  'تیم رو ببینی؛ روی هر نقش بزن تا کارت کاملش رو ببینی.').tr,
                   style: TextStyle(color: Colors.white70),
                 ),
                 SizedBox(height: 6),
