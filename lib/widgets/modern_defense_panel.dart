@@ -62,7 +62,7 @@ class ModernDefensePanel extends StatelessWidget {
                     children: [
                       Text('فاز دفاع'.tr.tr, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15)),
                       SizedBox(height: 2),
-                      Text('هر بازیکن فرصت دفاع از خودش را دارد.'.tr, style: TextStyle(color: Colors.white60, fontSize: 11)),
+                      Text('هر بازیکن فرصت دفاع از خودش را دارد.'.tr.tr, style: TextStyle(color: Colors.white60, fontSize: 11)),
                     ],
                   ),
                 ),
@@ -110,7 +110,7 @@ class ModernDefensePanel extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 Text(
-                  'صحبتت را کامل کن؛ بعد از پایان دفاع، نوبت نفر بعدی می‌رسد.'.tr,
+                  'صحبتت را کامل کن؛ بعد از پایان دفاع، نوبت نفر بعدی می‌رسد.'.tr.tr,
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.white54, fontSize: 12, height: 1.5),
                 ),
