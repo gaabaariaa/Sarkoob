@@ -34,7 +34,7 @@ class _RoleRevealScreenState extends State<RoleRevealScreen> {
   @override Widget build(BuildContext context) {
     final allSeen = _seenIds.length == widget.players.length;
     return Scaffold(
-      appBar: AppBar(title: Text('نمایش نقش‌ها'.tr), actions: [Padding(padding: EdgeInsetsDirectional.only(end: 14), child: Center(child: Text(_seenIds.length.toString() + '/' + widget.players.length.toString(), style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.w800))))]),
+      appBar: AppBar(title: Text('نمایش نقش‌ها'.tr.tr.tr), actions: [Padding(padding: EdgeInsetsDirectional.only(end: 14), child: Center(child: Text(_seenIds.length.toString() + '/' + widget.players.length.toString(), style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.w800))))]),
       body: SafeArea(child: LayoutBuilder(builder: (context, constraints) {
         final compact = constraints.maxWidth < 380;
         final columns = constraints.maxWidth >= 1000 ? 4 : constraints.maxWidth >= 650 ? 3 : 2;
@@ -56,7 +56,7 @@ class _RevealHeader extends StatelessWidget {
   @override Widget build(BuildContext context) {
     final progress = total == 0 ? 0.0 : (seen / total).clamp(0.0, 1.0);
     return Container(width: double.infinity, padding: EdgeInsets.all(18), decoration: BoxDecoration(color: AppTheme.uiCard, borderRadius: BorderRadius.circular(22), border: Border.all(color: AppTheme.uiPrimary.withAlpha(46)), boxShadow: [BoxShadow(color: Colors.black.withAlpha(56), blurRadius: 20, offset: Offset(0, 10))]), child: Column(children: [
-      Row(children: [Container(width: 46, height: 46, decoration: BoxDecoration(color: AppTheme.uiPrimaryDark.withAlpha(46), borderRadius: BorderRadius.circular(15)), child: Icon(Icons.visibility_rounded, color: AppTheme.uiPrimaryLight)), SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('نمایش خصوصی نقش', style: AppTheme.headingFont(size: 18)), SizedBox(height: 3), Text('هر بازیکن فقط نقش خودش را ببیند؛ سپس گوشی را به نفر بعدی بده.', style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12, height: 1.45))])), Text(seen.toString() + ' / ' + total.toString(), style: AppTheme.headingFont(size: 18, color: AppTheme.uiPrimaryLight))]),
+      Row(children: [Container(width: 46, height: 46, decoration: BoxDecoration(color: AppTheme.uiPrimaryDark.withAlpha(46), borderRadius: BorderRadius.circular(15)), child: Icon(Icons.visibility_rounded, color: AppTheme.uiPrimaryLight)), SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('نمایش خصوصی نقش'.tr, style: AppTheme.headingFont(size: 18)), SizedBox(height: 3), Text('هر بازیکن فقط نقش خودش را ببیند؛ سپس گوشی را به نفر بعدی بده.'.tr, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12, height: 1.45))])), Text(seen.toString() + ' / ' + total.toString(), style: AppTheme.headingFont(size: 18, color: AppTheme.uiPrimaryLight))]),
       SizedBox(height: 14), ClipRRect(borderRadius: BorderRadius.circular(99), child: LinearProgressIndicator(minHeight: 7, value: progress, backgroundColor: Colors.white.withAlpha(15), valueColor: AlwaysStoppedAnimation(AppTheme.uiPrimary))),
     ]));
   }
@@ -79,8 +79,8 @@ class _PlayerRevealScreen extends StatefulWidget {
 class _PlayerRevealScreenState extends State<_PlayerRevealScreen> {
   @override Widget build(BuildContext context) {
     final player = widget.player; final team = widget.team; final role = player.roleId != null ? GameRoles.byId(player.roleId!) : null;
-    return Scaffold(appBar: AppBar(title: Text('نمایش نقش')), body: SafeArea(child: Padding(padding: EdgeInsets.fromLTRB(16, 8, 16, 16), child: Column(children: [
-      Container(width: double.infinity, padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12), decoration: BoxDecoration(color: AppTheme.uiCard, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppTheme.uiPrimary.withAlpha(36))), child: Column(children: [Text('گوشی دستِ:', style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12)), SizedBox(height: 3), Text(player.name, style: AppTheme.headingFont(size: 26), textAlign: TextAlign.center)])),
+    return Scaffold(appBar: AppBar(title: Text('نمایش نقش'.tr.tr)), body: SafeArea(child: Padding(padding: EdgeInsets.fromLTRB(16, 8, 16, 16), child: Column(children: [
+      Container(width: double.infinity, padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12), decoration: BoxDecoration(color: AppTheme.uiCard, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppTheme.uiPrimary.withAlpha(36))), child: Column(children: [Text('گوشی دستِ:'.tr, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12)), SizedBox(height: 3), Text(player.name, style: AppTheme.headingFont(size: 26), textAlign: TextAlign.center)])),
       SizedBox(height: 14), Expanded(child: Center(child: SingleChildScrollView(child: role != null ? RoleInfoCard(role: role, team: team) : _GenericTeamCard(team: team)))),
       SizedBox(height: 12), SizedBox(width: double.infinity, child: Game3DButton(label: 'دیدم، برگرد', icon: Icons.check_rounded, onPressed: () => Navigator.of(context).pop(true))),
     ]))));
