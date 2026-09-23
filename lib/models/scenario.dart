@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_strings.dart';
 
 /// یه سناریوی کاملاً مستقل: مجموعه‌ی خودش از تیم‌ها و نقش‌ها. موقعِ
 /// شروعِ بازی، گرداننده اول سناریو رو انتخاب می‌کنه؛ از اون به بعد فقط
@@ -80,6 +81,9 @@ class GameScenario {
   /// سناریو مالک این کاتالوگ است؛ صفحهٔ شروع نباید بداند کدام نقش‌ها متعلق
   /// به «سرکوب» یا «مافیا» هستند.
   final Map<String, List<String>> setupRoleKeysByTeam;
+
+  String get localizedName => AppStrings.scenarioName(id, name);
+  String get localizedDescription => AppStrings.scenarioDescription(id, description);
 
   String roleIdFor(String key) => roleIds[key] ?? key;
 
