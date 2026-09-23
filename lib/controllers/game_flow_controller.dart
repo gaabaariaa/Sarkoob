@@ -84,7 +84,7 @@ class GameFlowController extends ChangeNotifier {
       orElse: () => GameRoles.byId(roleId) ??
           (throw StateError('Unknown role: $roleId')),
     );
-    return role.name;
+    return role.localizedName;
   }
 
   GameFlowController({required this.players, required this.settings}) {
