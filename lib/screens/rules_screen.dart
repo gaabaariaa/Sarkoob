@@ -22,7 +22,7 @@ class _RulesScreenState extends State<RulesScreen> {
     final teams = GameTeams.selectableForScenario(_selectedScenario.id);
 
     return Scaffold(
-      appBar: AppBar(title: Text('قوانین و نقش‌ها'.tr.tr.tr), actions: [Padding(padding: EdgeInsetsDirectional.only(end: 14), child: Center(child: Text(_selectedScenario.name, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12))))],),
+      appBar: AppBar(title: Text('قوانین و نقش‌ها'.tr.tr.tr.tr), actions: [Padding(padding: EdgeInsetsDirectional.only(end: 14), child: Center(child: Text(_selectedScenario.name, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12))))],),
       body: Column(
         children: [
           Container(
@@ -48,17 +48,17 @@ class _RulesScreenState extends State<RulesScreen> {
             child: ListView(
               padding: EdgeInsets.all(16),
               children: [
-                Container(padding: EdgeInsets.all(20), margin: EdgeInsets.only(bottom: 14), decoration: BoxDecoration(color: AppTheme.uiCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: _selectedScenario.color.withAlpha(102))), child: Row(children: [Container(width: 56, height: 56, decoration: BoxDecoration(color: _selectedScenario.color.withAlpha(46), shape: BoxShape.circle), child: Center(child: Text(_selectedScenario.emoji, style: TextStyle(fontSize: 26)))), SizedBox(width: 14), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('راهنمای سناریو'.tr, style: AppTheme.headingFont(size: 21)), SizedBox(height: 5), Text(_selectedScenario.description, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 11, height: 1.45))]))]),),
-                Row(children: [Icon(Icons.groups_rounded, color: AppTheme.uiPrimaryLight, size: 19), SizedBox(width: 8), Text('تیم‌ها و نقش‌ها'.tr, style: AppTheme.headingFont(size: 19))]),
+                Container(padding: EdgeInsets.all(20), margin: EdgeInsets.only(bottom: 14), decoration: BoxDecoration(color: AppTheme.uiCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: _selectedScenario.color.withAlpha(102))), child: Row(children: [Container(width: 56, height: 56, decoration: BoxDecoration(color: _selectedScenario.color.withAlpha(46), shape: BoxShape.circle), child: Center(child: Text(_selectedScenario.emoji, style: TextStyle(fontSize: 26)))), SizedBox(width: 14), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('راهنمای سناریو'.tr.tr, style: AppTheme.headingFont(size: 21)), SizedBox(height: 5), Text(_selectedScenario.description, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 11, height: 1.45))]))]),),
+                Row(children: [Icon(Icons.groups_rounded, color: AppTheme.uiPrimaryLight, size: 19), SizedBox(width: 8), Text('تیم‌ها و نقش‌ها'.tr.tr, style: AppTheme.headingFont(size: 19))]),
                 SizedBox(height: 4),
                 Text(
-                  'نقش‌ها به‌مرور اضافه می‌شن. روی اسم تیم بزن تا کارت پیش‌نمایش '.tr
+                  'نقش‌ها به‌مرور اضافه می‌شن. روی اسم تیم بزن تا کارت پیش‌نمایش '.tr.tr
                   'تیم رو ببینی؛ روی هر نقش بزن تا کارت کاملش رو ببینی.',
                   style: TextStyle(color: Colors.white70),
                 ),
                 SizedBox(height: 6),
                 Text(
-                  '🏆 علاوه‌بر امتیازدهیِ اختصاصیِ هر نقش (که زیرِ خودش نوشته شده)، '.tr
+                  '🏆 علاوه‌بر امتیازدهیِ اختصاصیِ هر نقش (که زیرِ خودش نوشته شده)، '.tr.tr
                   'همه‌ی بازیکنان از رأی‌گیری (رأیِ خروج)، رأیِ رهبری، بقا، و سیستمِ '
                   'انضباطی هم امتیاز می‌گیرن — این‌ها مشترکه و زیرِ هر نقش تکرار نشده. '
                   'امتیازِ رأی/رفراندوم بر اساسِ نقش ضریب می‌خوره: شهروندِ‌خاکستری/'
@@ -113,7 +113,7 @@ class _TeamSection extends StatelessWidget {
               padding: EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Align(
                 alignment: Alignment.centerRight,
-                child: Text('هنوز نقشی برای این تیم اضافه نشده.'.tr,
+                child: Text('هنوز نقشی برای این تیم اضافه نشده.'.tr.tr,
                     style: TextStyle(color: Colors.white38, fontSize: 12)),
               ),
             )
