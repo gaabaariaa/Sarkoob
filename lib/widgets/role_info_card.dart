@@ -43,7 +43,7 @@ class RoleInfoCard extends StatelessWidget {
                 SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    team.name,
+                    team.localizedName,
                     style: TextStyle(
                       color: team.color,
                       fontWeight: FontWeight.w800,
@@ -84,7 +84,7 @@ class RoleInfoCard extends StatelessWidget {
           _panel(
             borderColor: AppTheme.uiPrimary.withAlpha(56),
             child: Center(
-              child: Text(role.name, style: AppTheme.headingFont(size: 23)),
+              child: Text(role.localizedName, style: AppTheme.headingFont(size: 23)),
             ),
           ),
           SizedBox(height: 12),
@@ -92,7 +92,7 @@ class RoleInfoCard extends StatelessWidget {
             color: AppTheme.uiSurface,
             borderColor: Colors.transparent,
             child: Text(
-              role.description,
+              role.localizedDescription,
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white70, height: 1.7, fontSize: 13),
             ),
