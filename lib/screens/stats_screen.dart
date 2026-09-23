@@ -488,8 +488,8 @@ class _StatsScreenState extends State<StatsScreen> {
             Text('بهترین‌هایِ هر نقش'.tr.tr, style: AppTheme.headingFont(size: 16)),
             SizedBox(height: 4),
             Text(
-              'بر اساسِ تعدادِ کارهایِ موفقِ اون نقش، رویِ مجموعِ همه‌ی بازی‌هایی که '.tr.tr
-              'کسی اون نقش رو بازی کرده.',
+              ('بر اساسِ تعدادِ کارهایِ موفقِ اون نقش، رویِ مجموعِ همه‌ی بازی‌هایی که '
+              'کسی اون نقش رو بازی کرده.').tr,
               style: TextStyle(color: Colors.white38, fontSize: 12),
             ),
             SizedBox(height: 8),
