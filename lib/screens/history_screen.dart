@@ -203,7 +203,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
                 ),
                 subtitle: Text(
-                  '${_teamName(p.teamId)}${role != null ? ' — ${role.name}' : ''}',
+                  '${_teamName(p.teamId)}${role != null ? ' — ${role.localizedName}' : ''}',
                   style: TextStyle(color: AppTheme.uiMutedText, fontSize: 11),
                 ),
                 trailing: Container(
