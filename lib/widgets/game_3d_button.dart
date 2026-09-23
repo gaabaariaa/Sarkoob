@@ -23,15 +23,15 @@ class Game3DColors {
     required this.text,
   });
 
-  static final gold = Game3DColors(
+  static Game3DColors get gold => Game3DColors(
     top: AppTheme.uiPrimaryLight,
     bottom: AppTheme.uiPrimary,
     edge: AppTheme.uiPrimaryDark,
     border: AppTheme.uiPrimaryDark,
-    text: Color(0xFF2A1B02),
+    text: AppTheme.uiPrimaryLight.computeLuminance() > 0.55 ? Colors.black : Colors.white,
   );
 
-  static final dark = Game3DColors(
+  static Game3DColors get dark => Game3DColors(
     top: AppTheme.uiCard,
     bottom: AppTheme.uiSurface,
     edge: AppTheme.uiBackground,
@@ -39,7 +39,7 @@ class Game3DColors {
     text: AppTheme.uiPrimaryLight,
   );
 
-  static final danger = Game3DColors(
+  static Game3DColors get danger => Game3DColors(
     top: AppColors.bloodRedLight,
     bottom: AppColors.bloodRed,
     edge: Color(0xFF1E0505),
@@ -47,7 +47,7 @@ class Game3DColors {
     text: AppTheme.uiPrimaryLight,
   );
 
-  static final disabled = Game3DColors(
+  static Game3DColors get disabled => Game3DColors(
     top: Color(0xFF4C4C4C),
     bottom: Color(0xFF2E2E2E),
     edge: Color(0xFF181818),
