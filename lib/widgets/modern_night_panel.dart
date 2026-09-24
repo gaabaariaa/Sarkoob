@@ -100,6 +100,7 @@ class ModernNightPanel extends StatelessWidget {
             CountdownTimerWidget(
               key: timerKey == null ? null : ValueKey(timerKey),
               totalSeconds: timerSeconds!,
+              label: 'زمانِ اکشن شب',
             ),
           ],
           SizedBox(height: 12),
