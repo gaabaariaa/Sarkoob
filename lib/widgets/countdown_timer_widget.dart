@@ -10,12 +10,14 @@ class CountdownTimerWidget extends StatefulWidget {
   final int totalSeconds;
   final VoidCallback? onFinished;
   final VoidCallback? onSecondElapsed;
+  final String label;
 
   CountdownTimerWidget({
     super.key,
     required this.totalSeconds,
     this.onFinished,
     this.onSecondElapsed,
+    this.label = 'زمانِ صحبت',
   });
 
   @override
@@ -148,7 +150,7 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
               ),
               SizedBox(width: 7),
               Text(
-                _running ? 'زمانِ صحبت' : 'تایمر متوقف است',
+                _running ? widget.label : 'تایمر متوقف است',
                 style: TextStyle(
                   color: AppTheme.uiMutedText,
                   fontSize: 12,
