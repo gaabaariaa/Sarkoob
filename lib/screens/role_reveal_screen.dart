@@ -82,7 +82,7 @@ class _PlayerRevealScreenState extends State<_PlayerRevealScreen> {
     return Scaffold(appBar: AppBar(title: Text('نمایش نقش'.tr.tr.tr)), body: SafeArea(child: Padding(padding: EdgeInsets.fromLTRB(16, 8, 16, 16), child: Column(children: [
       Container(width: double.infinity, padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12), decoration: BoxDecoration(color: AppTheme.uiCard, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppTheme.uiPrimary.withAlpha(36))), child: Column(children: [Text('گوشی دستِ:'.tr.tr, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12)), SizedBox(height: 3), Text(player.name, style: AppTheme.headingFont(size: 26), textAlign: TextAlign.center)])),
       SizedBox(height: 14), Expanded(child: Center(child: SingleChildScrollView(child: role != null ? RoleInfoCard(role: role, team: team) : _GenericTeamCard(team: team)))),
-      SizedBox(height: 12), SizedBox(width: double.infinity, child: Game3DButton(label: 'دیدم، برگرد', icon: Icons.check_rounded, onPressed: () => Navigator.of(context).pop(true))),
+      SizedBox(height: 12), SizedBox(width: double.infinity, child: Game3DButton(label: 'متوجه شدم', icon: Icons.check_rounded, onPressed: () => Navigator.of(context).pop(true))),
     ]))));
   }
 }
