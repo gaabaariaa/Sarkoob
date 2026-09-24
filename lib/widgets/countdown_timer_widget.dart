@@ -58,13 +58,19 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
       if (!mounted) { timer.cancel(); return; }
       if (_remaining == 10) _playTimerBeep();
       widget.onSecondElapsed?.call();
-      if (_remaining <= 0) {
+      if (_remaining <= 1) {
         if (!_alarmStarted) {
           _alarmStarted = true;
+          _playTimerBeep();
           widget.onFinished?.call();
         }
-        _playTimerBeep();
-        setState(() => _remaining--);
+        timer.cancel();
+        if (mounted) {
+          setState(() {
+            _remaining = 0;
+            _running = false;
+          });
+        }
         return;
       }
       setState(() => _remaining--);
