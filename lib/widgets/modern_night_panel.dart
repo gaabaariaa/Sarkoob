@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'game_3d_button.dart';
+import 'countdown_timer_widget.dart';
 
 class ModernNightPanel extends StatelessWidget {
   final String eyebrow;
@@ -11,8 +12,12 @@ class ModernNightPanel extends StatelessWidget {
   final VoidCallback? onAction;
   final IconData icon;
   final IconData actionIcon;
+  /// زمان اختصاصی هر اکشن شب؛ در صورت null تایمر نمایش داده نمی‌شود.
+  final int? timerSeconds;
+  final String? timerKey;
+  final VoidCallback? onTimerFinished;
 
-  const ModernNightPanel({
+  ModernNightPanel({
     super.key,
     required this.eyebrow,
     required this.title,
@@ -22,21 +27,24 @@ class ModernNightPanel extends StatelessWidget {
     this.playerName,
     this.icon = Icons.nightlight_round,
     this.actionIcon = Icons.arrow_back_rounded,
+    this.timerSeconds,
+    this.timerKey,
+    this.onTimerFinished,
   });
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding: EdgeInsets.only(bottom: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: 15, vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
+              color: AppTheme.uiSurface,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.gold.withAlpha(56)),
+              border: Border.all(color: AppTheme.uiPrimary.withAlpha(56)),
             ),
             child: Row(
               children: [
@@ -44,52 +52,61 @@ class ModernNightPanel extends StatelessWidget {
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
-                    color: AppColors.goldDark.withAlpha(56),
+                    color: AppTheme.uiPrimaryDark.withAlpha(56),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(icon, color: AppColors.goldLight, size: 22),
+                  child: Icon(icon, color: AppTheme.uiPrimaryLight, size: 22),
                 ),
-                const SizedBox(width: 11),
+                SizedBox(width: 11),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(eyebrow, style: const TextStyle(color: AppColors.goldLight, fontSize: 11, fontWeight: FontWeight.w800)),
-                      const SizedBox(height: 2),
-                      Text(title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
+                      Text(eyebrow, style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 11, fontWeight: FontWeight.w800)),
+                      SizedBox(height: 2),
+                      Text(title, style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
                     ],
                   ),
                 ),
                 if (playerName != null)
                   Flexible(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: AppColors.goldDark.withAlpha(46),
+                        color: AppTheme.uiPrimaryDark.withAlpha(46),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         playerName!,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: AppColors.goldLight, fontSize: 11, fontWeight: FontWeight.w700),
+                        style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 11, fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Container(
-            padding: const EdgeInsets.all(18),
+            padding: EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: AppColors.surfaceCard,
+              color: AppTheme.uiCard,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.gold.withAlpha(51)),
+              border: Border.all(color: AppTheme.uiPrimary.withAlpha(51)),
             ),
             child: body,
           ),
-          const SizedBox(height: 12),
+          if (timerSeconds != null) ...[
+            SizedBox(height: 12),
+            CountdownTimerWidget(
+              key: timerKey == null ? null : ValueKey(timerKey),
+              totalSeconds: timerSeconds!,
+              label: 'زمانِ اکشن شب',
+              onFinished: onTimerFinished,
+            ),
+          ],
+          SizedBox(height: 12),
           SafeArea(
             top: false,
             child: SizedBox(

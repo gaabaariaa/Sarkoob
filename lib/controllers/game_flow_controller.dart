@@ -84,7 +84,7 @@ class GameFlowController extends ChangeNotifier {
       orElse: () => GameRoles.byId(roleId) ??
           (throw StateError('Unknown role: $roleId')),
     );
-    return role.name;
+    return role.localizedName;
   }
 
   GameFlowController({required this.players, required this.settings}) {
@@ -110,10 +110,26 @@ class GameFlowController extends ChangeNotifier {
 
   SessionPlayer playerById(int id) => players.firstWhere((p) => p.id == id);
 
+  /// تعداد ثانیه‌های صحبت/چالش هر بازیکن در دورِ جاری.
+  /// این شمارنده با شروعِ هر روزِ جدید صفر می‌شود و برای قانونِ
+  /// «هر ۵ ثانیه صحبتِ اضافه = -۱» فقط در همان دور استفاده می‌شود.
+  final Map<int, int> _speakingSecondsThisRound = {};
+
   /// هر تیک واقعیِ تایمرِ نوبت صحبت/چالش را برای همان بازیکن ثبت می‌کند.
+  /// بعد از تمام‌شدنِ زمانِ مجازِ صحبتِ دور، هر ۵ ثانیه‌ی اضافه یک امتیاز منفی ثبت می‌شود.
   void addSpeakingSecond(int playerId) {
     final player = playerById(playerId);
     player.totalSpeakingSeconds++;
+
+    if (phase != GamePhaseType.day) return;
+
+    final seconds = (_speakingSecondsThisRound[playerId] ?? 0) + 1;
+    _speakingSecondsThisRound[playerId] = seconds;
+
+    final extraSeconds = seconds - settings.speakSeconds;
+    if (extraSeconds > 0 && extraSeconds % 5 == 0) {
+      _award(player, -1, 'صحبتِ اضافه (' + extraSeconds.toString() + ' ثانیه)');
+    }
   }
 
   // ---------- موتورِ امتیازدهیِ بهترین/بدترین بازیکن ----------
@@ -146,6 +162,72 @@ class GameFlowController extends ChangeNotifier {
       roundNumber: roundNumber,
       phaseLabel: _currentPhaseLabel,
     ));
+  }
+
+  /// ثبتِ جریمه‌ی تمام‌شدنِ زمانِ اکشن شب برای یک بازیکن.
+  final Set<String> _nightTimeoutPenalties = {};
+
+  void recordNightTimeout(int playerId) {
+    final player = playerById(playerId);
+    if (!player.isAlive) return;
+    final key = '${roundNumber}:${currentNightStep.name}:$playerId';
+    if (!_nightTimeoutPenalties.add(key)) return;
+    _award(player, -1, 'تمام‌شدنِ زمانِ اکشن شب');
+    notifyListeners();
+  }
+
+  /// تایمِ تیمِ رهبر مشترک است؛ با تمام‌شدنِ یک دقیقه، هر عضوِ زنده‌ی تیم
+  /// یک امتیازِ منفی می‌گیرد.
+  void recordNightTimeoutForLeaderTeam() {
+    final teamId = leaderTeamId;
+    for (final player in players.where((p) => p.teamId == teamId && p.isAlive)) {
+      final key = '${roundNumber}:${currentNightStep.name}:${player.id}';
+      if (_nightTimeoutPenalties.add(key)) {
+        _award(player, -1, 'تمام‌شدنِ زمانِ اکشن شبِ تیم');
+      }
+    }
+    notifyListeners();
+  }
+
+  /// تایمِ نقشِ فعلی تمام شده؛ جریمه برای صاحب همان نقش ثبت می‌شود.
+  void recordNightTimeoutForCurrentRole() {
+    SessionPlayer? player;
+    switch (currentNightStep) {
+      case NightStepKind.independentLeader:
+        player = independentLeaderPlayer;
+        break;
+      case NightStepKind.rapper:
+        player = rapperPlayer;
+        break;
+      case NightStepKind.hacker:
+        player = hackerPlayer;
+        break;
+      case NightStepKind.politicalAnalyst:
+        player = politicalAnalystPlayer;
+        break;
+      case NightStepKind.doctor:
+        player = doctorPlayer;
+        break;
+      case NightStepKind.rebel:
+        player = rebelPlayer;
+        break;
+      case NightStepKind.nationalHero:
+        player = nationalHeroPlayer;
+        break;
+      case NightStepKind.revolutionary:
+        player = revolutionaryFighterPlayer;
+        break;
+      case NightStepKind.civicActivist:
+        player = civicActivistPlayer;
+        break;
+      case NightStepKind.lawyer:
+        player = lawyerPlayer;
+        break;
+      case NightStepKind.leaderTeam:
+      case NightStepKind.done:
+        return;
+    }
+    if (player != null) recordNightTimeout(player.id);
   }
 
   /// آیا تیمِ هدف نسبت‌به تیمِ عامل «مقابل» حساب می‌شه؟ (بخشِ ۲ی سندِ
@@ -581,6 +663,8 @@ class GameFlowController extends ChangeNotifier {
     _phaseHistory.add(_PhaseSnapshot(phase, roundNumber));
     phase = GamePhaseType.day;
     roundNumber = dayNumber;
+    // شمارشِ صحبتِ اضافه برای قانونِ امتیازدهی از هر دورِ جدید جدا می‌شود.
+    _speakingSecondsThisRound.clear();
     // شروع‌کننده‌ی صحبت ثابت نیست: روزِ اول همون شروع‌کننده‌ی روزِ
     // معارفه‌ست؛ از روزِ دوم به بعد، هر روز سه نفرِ زنده‌یِ بعد از
     // شروع‌کننده‌ی روزِ قبل (طبقِ ترتیبِ ثابتِ صندلی، ردکردنِ مرده‌ها).
@@ -1646,6 +1730,9 @@ class GameFlowController extends ChangeNotifier {
 
   bool _rapperActedTonight = false;
   String? rapperResultMessage;
+  // حذفِ اوشن در انتخابِ اشتباه تا پایانِ شب معلق می‌ماند؛ چون وکیل/کنستانتین
+  // باید قبل از اعلامِ پایانِ شب اصلاً نداند اوشن از بازی خارج شده است.
+  int? _rapperPendingWrongChoiceEliminationId;
 
   bool get canRapperActTonight {
     final rapper = rapperPlayer;
@@ -1688,10 +1775,12 @@ class GameFlowController extends ChangeNotifier {
           'نفوذیِ همیشگیِ $leaderTeamLabel هست — مخفیانه جاش گرفته.';
       _award(rapper, -1, 'جذبِ ناخواسته‌ی نفوذی');
     } else {
-      _eliminatePlayer(rapper);
-      _tonightEliminatedIds.add(rapper.id);
-      rapperResultMessage = 'انتخاب اشتباه بود! خودِ «${rapper.name}» همون‌لحظه حذف شد.';
-      _award(rapper, -2, 'جذبِ اشتباه (خودحذفی)');
+      // حذفِ اوشن تا پایانِ شب معلق می‌ماند؛ کنستانتین/وکیل باید قبل از
+      // اعلامِ پایانِ شب اصلاً نداند اوشن از بازی خارج شده است، بنابراین
+      // اوشن در لیستِ حذف‌شده‌های قابلِ احیا قرار نمی‌گیرد و همان شب قابلِ
+      // انتخاب نیست. حذفِ واقعی در finishNight انجام می‌شود.
+      rapperResultMessage = 'انتخاب اشتباه بود! «${rapper.name}» در پایان شب حذف می‌شود.';
+      _rapperPendingWrongChoiceEliminationId = rapper.id;
     }
     notifyListeners();
   }
@@ -2645,6 +2734,7 @@ class GameFlowController extends ChangeNotifier {
     revolutionaryResultMessage = null;
     _rapperActedTonight = false;
     rapperResultMessage = null;
+    _rapperPendingWrongChoiceEliminationId = null;
     _intelQuestionUsedTonight = false;
     lastIntelQuestionResult = null;
     lastIntelQuestionTargetNames = null;
@@ -2668,6 +2758,7 @@ class GameFlowController extends ChangeNotifier {
     saboteurTargetPlayerId = null;
     _natashaSilencedTonightId = null;
     _nightActionTaken = false;
+    _nightTimeoutPenalties.clear();
     slaughterResultMessage = null;
     negotiateResultMessage = null;
     lastNightSummary = null;
@@ -2706,6 +2797,10 @@ class GameFlowController extends ChangeNotifier {
   /// برای اعلامِ عمومی (سه دسته‌ی ثابت)، یکی برای یادداشتِ خصوصیِ گرداننده.
   void finishNight() {
     final privateNotes = <String>[];
+    // انتخابِ اشتباهِ اوشن عمداً خارج از _pendingHits نگه داشته می‌شود:
+    // وکیل/کنستانتین در طولِ شب او را هنوز «حذف‌شده» نمی‌بیند. فقط بعد از
+    // اینکه همه‌ی نقش‌های شبانه فرصتِ عملشان را تمام کردند، حذف واقعی می‌شود.
+
     final Map<int, bool> diedTonightFromHit = {}; // targetId -> آیا نهایتاً حذف شد؟
     _pendingHits.forEach((targetId, hitCount) {
       final target = playerById(targetId);
@@ -2773,6 +2868,19 @@ class GameFlowController extends ChangeNotifier {
     }
     _pendingHitAttributions.clear();
 
+    // حالا که نوبتِ همه‌ی نقش‌های شبانه تمام شده، حذفِ معلقِ اوشن را اعمال
+    // می‌کنیم. بنابراین کنستانتین همان شب هیچ راهی برای دیدن/انتخابِ او ندارد.
+    final rapperPendingId = _rapperPendingWrongChoiceEliminationId;
+    if (rapperPendingId != null) {
+      final rapperPending = playerById(rapperPendingId);
+      if (rapperPending.isAlive) {
+        _eliminatePlayer(rapperPending);
+        _tonightEliminatedIds.add(rapperPending.id);
+        _award(rapperPending, -2, 'جذبِ اشتباه (خودحذفی)');
+      }
+    }
+    _rapperPendingWrongChoiceEliminationId = null;
+
     // امتیازدهیِ نجاتِ دکتر — طبقِ sarkoob-action-scoring-template.xlsx:
     // چهار حالت، بر اساسِ اینکه هدف واقعاً امشب موردِ حمله بوده یا نه
     // («معنی‌دار»بودنِ نجات) و اینکه هدف هم‌تیمیِ دکتر بوده یا دشمن —
@@ -2831,6 +2939,12 @@ class GameFlowController extends ChangeNotifier {
     }
     if (_tonightRevivedId != null) {
       announcement.add('✅ برگشتن به بازی: ${playerById(_tonightRevivedId!).name}');
+    }
+    if (bombTargetId != null) {
+      final bombTarget = bombTargetPlayer;
+      if (bombTarget != null) {
+        announcement.add('💣 دیشب جلویِ «${bombTarget.name}» بمب گذاشته شد.');
+      }
     }
     if (_natashaSilencedTonightId != null) {
       announcement.add('🤐 «${playerById(_natashaSilencedTonightId!).name}» امروز حقِ صحبت و چالش‌گرفتن نداره.');

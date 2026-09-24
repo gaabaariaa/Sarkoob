@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 
 /// تایمر اصلیِ بازی. منطقِ شمارش معکوس دست‌نخورده است؛ این ویجت فقط
 /// ظاهرِ میز بازی را مدرن‌تر می‌کند و از رنگ‌های هویتیِ ثابت استفاده می‌کند.
@@ -9,12 +10,14 @@ class CountdownTimerWidget extends StatefulWidget {
   final int totalSeconds;
   final VoidCallback? onFinished;
   final VoidCallback? onSecondElapsed;
+  final String label;
 
-  const CountdownTimerWidget({
+  CountdownTimerWidget({
     super.key,
     required this.totalSeconds,
     this.onFinished,
     this.onSecondElapsed,
+    this.label = 'زمانِ صحبت',
   });
 
   @override
@@ -51,17 +54,23 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
   void _start() {
     if (_running) return;
     setState(() => _running = true);
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (!mounted) { timer.cancel(); return; }
       if (_remaining == 10) _playTimerBeep();
       widget.onSecondElapsed?.call();
-      if (_remaining <= 0) {
+      if (_remaining <= 1) {
         if (!_alarmStarted) {
           _alarmStarted = true;
+          _playTimerBeep();
           widget.onFinished?.call();
         }
-        _playTimerBeep();
-        setState(() => _remaining--);
+        timer.cancel();
+        if (mounted) {
+          setState(() {
+            _remaining = 0;
+            _running = false;
+          });
+        }
         return;
       }
       setState(() => _remaining--);
@@ -118,19 +127,19 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
+      padding: EdgeInsets.fromLTRB(18, 16, 18, 14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceCard,
+        color: AppTheme.uiCard,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: (urgent ? AppColors.bloodRedLight : AppColors.gold).withAlpha(184),
+          color: (urgent ? AppColors.bloodRedLight : AppTheme.uiPrimary).withAlpha(184),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(82),
             blurRadius: 18,
-            offset: const Offset(0, 8),
+            offset: Offset(0, 8),
           ),
         ],
       ),
@@ -143,20 +152,20 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
               Icon(
                 _running ? Icons.timer_outlined : Icons.pause_circle_outline,
                 size: 17,
-                color: urgent ? AppColors.bloodRedLight : AppColors.goldLight,
+                color: urgent ? AppColors.bloodRedLight : AppTheme.uiPrimaryLight,
               ),
-              const SizedBox(width: 7),
+              SizedBox(width: 7),
               Text(
-                _running ? 'زمانِ صحبت' : 'تایمر متوقف است',
-                style: const TextStyle(
-                  color: AppColors.mutedText,
+                _running ? widget.label : 'تایمر متوقف است',
+                style: TextStyle(
+                  color: AppTheme.uiMutedText,
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             '${isNegative ? '-' : ''}$minutes:$seconds',
             style: TextStyle(
@@ -164,22 +173,22 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
               height: 1,
               fontWeight: FontWeight.w900,
               letterSpacing: 2,
-              color: urgent ? AppColors.bloodRedLight : AppColors.goldLight,
+              color: urgent ? AppColors.bloodRedLight : AppTheme.uiPrimaryLight,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           ClipRRect(
             borderRadius: BorderRadius.circular(99),
             child: LinearProgressIndicator(
               minHeight: 5,
               value: progress,
-              backgroundColor: AppColors.background,
+              backgroundColor: AppTheme.uiBackground,
               valueColor: AlwaysStoppedAnimation<Color>(
-                urgent ? AppColors.bloodRedLight : AppColors.gold,
+                urgent ? AppColors.bloodRedLight : AppTheme.uiPrimary,
               ),
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           Row(
             children: [
               Expanded(
@@ -189,12 +198,12 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
                   label: Text(_running ? 'مکث' : 'پخش'),
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: _stop,
-                  icon: const Icon(Icons.stop, size: 18),
-                  label: const Text('توقف'),
+                  icon: Icon(Icons.stop, size: 18),
+                  label: Text('توقف'.tr.tr.tr),
                 ),
               ),
             ],

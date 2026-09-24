@@ -4,10 +4,11 @@ import '../models/role.dart';
 import '../models/team.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 import '../utils/jalali_date.dart';
 
 class HistoryScreen extends StatefulWidget {
-  const HistoryScreen({super.key});
+  HistoryScreen({super.key});
 
   @override
   State<HistoryScreen> createState() => _HistoryScreenState();
@@ -41,25 +42,25 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('تاریخچه بازی‌ها'),
+        title: Text('تاریخچه بازی‌ها'.tr.tr.tr.tr),
         actions: [
           Padding(
-            padding: const EdgeInsetsDirectional.only(end: 14),
+            padding: EdgeInsetsDirectional.only(end: 14),
             child: Center(
               child: Text(
                 '${_history.length} بازی',
-                style: const TextStyle(color: AppColors.mutedText, fontSize: 12),
+                style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12),
               ),
             ),
           ),
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : _history.isEmpty
               ? _buildEmptyState()
               : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 28),
+                  padding: EdgeInsets.fromLTRB(16, 14, 16, 28),
                   itemCount: _history.length + 1,
                   itemBuilder: (context, index) {
                     if (index == 0) {
@@ -74,17 +75,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Widget _buildHero() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
+      margin: EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surfaceCard,
+        color: AppTheme.uiCard,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.gold.withAlpha(61)),
+        border: Border.all(color: AppTheme.uiPrimary.withAlpha(61)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(61),
             blurRadius: 22,
-            offset: const Offset(0, 10),
+            offset: Offset(0, 10),
           ),
         ],
       ),
@@ -94,22 +95,22 @@ class _HistoryScreenState extends State<HistoryScreen> {
             width: 58,
             height: 58,
             decoration: BoxDecoration(
-              color: AppColors.goldDark.withAlpha(56),
+              color: AppTheme.uiPrimaryDark.withAlpha(56),
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.gold.withAlpha(71)),
+              border: Border.all(color: AppTheme.uiPrimary.withAlpha(71)),
             ),
-            child: const Icon(Icons.history_rounded, color: AppColors.goldLight, size: 29),
+            child: Icon(Icons.history_rounded, color: AppTheme.uiPrimaryLight, size: 29),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('مرکز تاریخچه', style: AppTheme.headingFont(size: 21)),
-                const SizedBox(height: 5),
+                Text('مرکز تاریخچه'.tr.tr, style: AppTheme.headingFont(size: 21)),
+                SizedBox(height: 5),
                 Text(
-                  'نتایج بازی‌ها و عملکرد بازیکنان را مرور کن.',
-                  style: const TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.45),
+                  'نتایج بازی‌ها و عملکرد بازیکنان را مرور کن.'.tr.tr,
+                  style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12, height: 1.45),
                 ),
               ],
             ),
@@ -124,89 +125,89 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final winner = isUnknown ? 'نتیجه نامشخص' : _teamName(entry.winningTeamId);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceCard,
+        color: AppTheme.uiCard,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.gold.withAlpha(51)),
+        border: Border.all(color: AppTheme.uiPrimary.withAlpha(51)),
       ),
       child: Theme(
         data: Theme.of(context).copyWith(
           dividerColor: Colors.transparent,
-          splashColor: AppColors.gold.withAlpha(15),
+          splashColor: AppTheme.uiPrimary.withAlpha(15),
         ),
         child: ExpansionTile(
-          tilePadding: const EdgeInsets.fromLTRB(18, 8, 12, 8),
-          childrenPadding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+          tilePadding: EdgeInsets.fromLTRB(18, 8, 12, 8),
+          childrenPadding: EdgeInsets.fromLTRB(10, 0, 10, 10),
           title: Text(
             _formatDate(entry.playedAt),
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
           ),
           subtitle: Padding(
-            padding: const EdgeInsets.only(top: 6),
+            padding: EdgeInsets.only(top: 6),
             child: Row(
               children: [
                 Icon(
                   isUnknown ? Icons.help_outline_rounded : Icons.emoji_events_rounded,
-                  color: isUnknown ? AppColors.mutedText : AppColors.goldLight,
+                  color: isUnknown ? AppTheme.uiMutedText : AppTheme.uiPrimaryLight,
                   size: 16,
                 ),
-                const SizedBox(width: 6),
+                SizedBox(width: 6),
                 Flexible(
                   child: Text(
                     winner,
-                    style: const TextStyle(color: AppColors.goldLight, fontSize: 12),
+                    style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 12),
                   ),
                 ),
                 if (entry.location.trim().isNotEmpty) ...[
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10),
                   Flexible(
                     child: Text(
                       entry.location.trim(),
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: AppColors.mutedText, fontSize: 11),
+                      style: TextStyle(color: AppTheme.uiMutedText, fontSize: 11),
                     ),
                   ),
                 ],
               ],
             ),
           ),
-          iconColor: AppColors.gold,
-          collapsedIconColor: AppColors.gold,
+          iconColor: AppTheme.uiPrimary,
+          collapsedIconColor: AppTheme.uiPrimary,
           children: entry.players.map((p) {
             final role = p.roleId != null ? GameRoles.byId(p.roleId!) : null;
             final status = p.wasOnWinningSide
                 ? 'برنده'
                 : (p.survived ? 'زنده ماند' : 'حذف شد');
-            final statusColor = p.wasOnWinningSide ? AppColors.goldLight : AppColors.mutedText;
+            final statusColor = p.wasOnWinningSide ? AppTheme.uiPrimaryLight : AppTheme.uiMutedText;
 
             return Container(
-              margin: const EdgeInsets.only(bottom: 7),
+              margin: EdgeInsets.only(bottom: 7),
               decoration: BoxDecoration(
-                color: AppColors.surfaceDark,
+                color: AppTheme.uiSurface,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: ListTile(
                 dense: true,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 2),
                 leading: CircleAvatar(
                   radius: 18,
-                  backgroundColor: AppColors.goldDark.withAlpha(46),
+                  backgroundColor: AppTheme.uiPrimaryDark.withAlpha(46),
                   child: Text(
                     p.name.isEmpty ? '?' : p.name.characters.first,
-                    style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.bold),
                   ),
                 ),
                 title: Text(
                   p.name,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
                 ),
                 subtitle: Text(
-                  '${_teamName(p.teamId)}${role != null ? ' — ${role.name}' : ''}',
-                  style: const TextStyle(color: AppColors.mutedText, fontSize: 11),
+                  '${_teamName(p.teamId)}${role != null ? ' — ${role.localizedName}' : ''}',
+                  style: TextStyle(color: AppTheme.uiMutedText, fontSize: 11),
                 ),
                 trailing: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                  padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                   decoration: BoxDecoration(
                     color: statusColor.withAlpha(26),
                     borderRadius: BorderRadius.circular(10),
@@ -227,14 +228,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget _buildEmptyState() {
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(28),
+        padding: EdgeInsets.all(28),
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 440),
-          padding: const EdgeInsets.all(26),
+          constraints: BoxConstraints(maxWidth: 440),
+          padding: EdgeInsets.all(26),
           decoration: BoxDecoration(
-            color: AppColors.surfaceCard,
+            color: AppTheme.uiCard,
             borderRadius: BorderRadius.circular(26),
-            border: Border.all(color: AppColors.gold.withAlpha(56)),
+            border: Border.all(color: AppTheme.uiPrimary.withAlpha(56)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -243,18 +244,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 width: 74,
                 height: 74,
                 decoration: BoxDecoration(
-                  color: AppColors.goldDark.withAlpha(46),
+                  color: AppTheme.uiPrimaryDark.withAlpha(46),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.history_toggle_off_rounded, color: AppColors.goldLight, size: 36),
+                child: Icon(Icons.history_toggle_off_rounded, color: AppTheme.uiPrimaryLight, size: 36),
               ),
-              const SizedBox(height: 18),
-              Text('هنوز بازی‌ای ثبت نشده', style: AppTheme.headingFont(size: 22)),
-              const SizedBox(height: 8),
-              const Text(
-                'بعد از پایان یک بازی، نتیجه را ثبت کن تا اینجا برای مرور و آمار نگه‌داری شود.',
+              SizedBox(height: 18),
+              Text('هنوز بازی‌ای ثبت نشده'.tr.tr, style: AppTheme.headingFont(size: 22)),
+              SizedBox(height: 8),
+              Text(
+                'بعد از پایان یک بازی، نتیجه را ثبت کن تا اینجا برای مرور و آمار نگه‌داری شود.'.tr.tr,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.6),
+                style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12, height: 1.6),
               ),
             ],
           ),

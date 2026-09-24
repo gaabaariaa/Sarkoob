@@ -7,6 +7,7 @@ import '../models/team.dart';
 import '../services/storage_service.dart';
 import '../services/scenario_role_assigner.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 import '../widgets/game_3d_button.dart';
 import 'role_reveal_screen.dart';
 
@@ -35,7 +36,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   /// کلید شامل scenario.id است تا تغییر سناریو state را قاطی نکند.
   final Map<String, int> _simpleRoleCounts = <String, int>{};
 
-  static const int _minPlayers = 6;
+  static int _minPlayers = 6;
 
   @override
   void initState() {
@@ -85,7 +86,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final selected = <SavedPlayerProfile>{};
     await showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surfaceDark,
+      backgroundColor: AppTheme.uiSurface,
       isScrollControlled: true,
       builder: (_) => StatefulBuilder(
         builder: (context, setSheetState) => DraggableScrollableSheet(
@@ -95,14 +96,14 @@ class _StartGameScreenState extends State<StartGameScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text('افزودن از لیستِ بازیکنان', style: AppTheme.headingFont(size: 18)),
+                padding: EdgeInsets.all(16),
+                child: Text('افزودن از لیستِ بازیکنان'.tr.tr, style: AppTheme.headingFont(size: 18)),
               ),
               if (available.isEmpty)
-                const Padding(
+                Padding(
                   padding: EdgeInsets.all(16),
                   child: Text(
-                    'همه‌ی بازیکنانِ لیستِ دائمی از قبل تو این بازی هستن.',
+                    'همه‌ی بازیکنانِ لیستِ دائمی از قبل تو این بازی هستن.'.tr.tr,
                     style: TextStyle(color: Colors.white38),
                   ),
                 )
@@ -112,10 +113,10 @@ class _StartGameScreenState extends State<StartGameScreen> {
                       ? false
                       : (selected.length == available.length ? true : null),
                   tristate: true,
-                  activeColor: AppColors.gold,
-                  title: const Text(
-                    'انتخابِ همه',
-                    style: TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+                  activeColor: AppTheme.uiPrimary,
+                  title: Text(
+                    'انتخابِ همه'.tr.tr.tr,
+                    style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.bold),
                   ),
                   onChanged: (_) => setSheetState(() {
                     if (selected.length == available.length) {
@@ -134,8 +135,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
                       .map(
                         (p) => CheckboxListTile(
                           value: selected.contains(p),
-                          activeColor: AppColors.gold,
-                          title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                          activeColor: AppTheme.uiPrimary,
+                          title: Text(p.name, style: TextStyle(color: Colors.white)),
                           onChanged: (v) => setSheetState(() {
                             if (v ?? false) {
                               selected.add(p);
@@ -149,7 +150,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 child: ElevatedButton(
                   onPressed: selected.isEmpty
                       ? null
@@ -278,17 +279,17 @@ class _StartGameScreenState extends State<StartGameScreen> {
     return showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppColors.surfaceDark,
-        title: const Text('قدرت بازی بالانس نیست', style: TextStyle(color: AppColors.goldLight)),
-        content: Text(message, style: const TextStyle(color: Colors.white70)),
+        backgroundColor: AppTheme.uiSurface,
+        title: Text('قدرت بازی بالانس نیست'.tr.tr.tr, style: TextStyle(color: AppTheme.uiPrimaryLight)),
+        content: Text(message, style: TextStyle(color: Colors.white70)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('بازگشت و تغییر'),
+            child: Text('بازگشت و تغییر'.tr.tr),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('همینطوری ادامه بده'),
+            child: Text('همینطوری ادامه بده'.tr.tr),
           ),
         ],
       ),
@@ -407,8 +408,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
       appBar: AppBar(
         title: Text('شروع بازی — ${_selectedScenario!.name}'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          tooltip: 'تغییر سناریو',
+          icon: Icon(Icons.arrow_back_rounded),
+          tooltip: 'تغییر سناریو'.tr.tr,
           onPressed: () => setState(() => _selectedScenario = null),
         ),
       ),
@@ -418,17 +419,17 @@ class _StartGameScreenState extends State<StartGameScreen> {
             final wide = constraints.maxWidth >= 800;
             return Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1080),
+                constraints: BoxConstraints(maxWidth: 1080),
                 child: ListView(
                   padding: EdgeInsets.fromLTRB(wide ? 28 : 16, 16, wide ? 28 : 16, 28),
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(18),
+                      padding: EdgeInsets.all(18),
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceCard,
+                        color: AppTheme.uiCard,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(color: _selectedScenario!.color.withAlpha(64)),
-                        boxShadow: [BoxShadow(color: Colors.black.withAlpha(56), blurRadius: 24, offset: const Offset(0, 10))],
+                        boxShadow: [BoxShadow(color: Colors.black.withAlpha(56), blurRadius: 24, offset: Offset(0, 10))],
                       ),
                       child: Row(
                         children: [
@@ -440,28 +441,28 @@ class _StartGameScreenState extends State<StartGameScreen> {
                               borderRadius: BorderRadius.circular(17),
                             ),
                             alignment: Alignment.center,
-                            child: Text(_selectedScenario!.emoji, style: const TextStyle(fontSize: 29)),
+                            child: Text(_selectedScenario!.emoji, style: TextStyle(fontSize: 29)),
                           ),
-                          const SizedBox(width: 13),
+                          SizedBox(width: 13),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(_selectedScenario!.name, style: AppTheme.headingFont(size: 22)),
-                                const SizedBox(height: 3),
+                                SizedBox(height: 3),
                                 Text(
                                   _selectedScenario!.description,
-                                  style: const TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.45),
+                                  style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12, height: 1.45),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Text('$total نفر', style: AppTheme.headingFont(size: 17, color: AppColors.goldLight)),
+                          SizedBox(width: 8),
+                          Text('$total نفر', style: AppTheme.headingFont(size: 17, color: AppTheme.uiPrimaryLight)),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     _buildSetupSection(
                       icon: Icons.groups_rounded,
                       title: 'بازیکن‌ها',
@@ -472,7 +473,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                         onPressed: _showPlayersPage,
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    SizedBox(height: 14),
                     _buildSetupSection(
                       icon: Icons.hub_rounded,
                       title: 'تیم‌ها و نقش‌ها',
@@ -481,7 +482,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                         children: [
                           ...teams.map(
                             (entry) => Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
+                              padding: EdgeInsets.only(bottom: 10),
                               child: _teamNavButton(
                                 label: entry.$1.name,
                                 color: entry.$1.color,
@@ -494,21 +495,21 @@ class _StartGameScreenState extends State<StartGameScreen> {
                             label: 'تیمِ مستقل',
                             color: _isIndependentTeamEnabled(scenario)
                                 ? scenarioTeam(scenario, scenario.independentTeamId).color
-                                : AppColors.subtleText,
+                                : AppTheme.uiSubtleText,
                             count: _isIndependentTeamEnabled(scenario) ? 1 : 0,
                             onTap: _showIndependentTeamPage,
                           ),
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                             decoration: BoxDecoration(
                               color: (assigned == total && total > 0)
-                                  ? AppColors.gold.withAlpha(18)
+                                  ? AppTheme.uiPrimary.withAlpha(18)
                                   : AppColors.bloodRed.withAlpha(51),
                               borderRadius: BorderRadius.circular(15),
                               border: Border.all(
                                 color: assigned == total && total > 0
-                                    ? AppColors.gold.withAlpha(89)
+                                    ? AppTheme.uiPrimary.withAlpha(89)
                                     : AppColors.bloodRedLight.withAlpha(140),
                               ),
                             ),
@@ -516,14 +517,14 @@ class _StartGameScreenState extends State<StartGameScreen> {
                               children: [
                                 Icon(
                                   assigned == total && total > 0 ? Icons.check_circle_rounded : Icons.info_outline_rounded,
-                                  color: assigned == total && total > 0 ? AppColors.goldLight : AppColors.bloodRedLight,
+                                  color: assigned == total && total > 0 ? AppTheme.uiPrimaryLight : AppColors.bloodRedLight,
                                 ),
-                                const SizedBox(width: 9),
+                                SizedBox(width: 9),
                                 Expanded(
                                   child: Text(
                                     'نقش‌بندی‌شده: $assigned از $total نفر',
                                     style: TextStyle(
-                                      color: assigned == total && total > 0 ? AppColors.goldLight : AppColors.bloodRedLight,
+                                      color: assigned == total && total > 0 ? AppTheme.uiPrimaryLight : AppColors.bloodRedLight,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
@@ -534,7 +535,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    SizedBox(height: 14),
                     _buildSetupSection(
                       icon: Icons.tune_rounded,
                       title: 'تنظیمات میز بازی',
@@ -548,15 +549,15 @@ class _StartGameScreenState extends State<StartGameScreen> {
                             onMinus: () => setState(() { if (_speakSeconds > 10) _speakSeconds -= 10; }),
                             onPlus: () => setState(() => _speakSeconds += 10),
                           ),
-                          const SizedBox(height: 6),
+                          SizedBox(height: 6),
                           Align(
                             alignment: AlignmentDirectional.centerStart,
                             child: Text(
                               'معارفه و چالش: $introSeconds ثانیه',
-                              style: const TextStyle(color: AppColors.mutedText, fontSize: 12),
+                              style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12),
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12),
                           _buildSettingRow(
                             icon: Icons.health_and_safety_outlined,
                             title: 'نجات خودِ دکتر',
@@ -564,29 +565,29 @@ class _StartGameScreenState extends State<StartGameScreen> {
                             onMinus: () => setState(() { if (_doctorMaxSelfSaves > 0) _doctorMaxSelfSaves--; }),
                             onPlus: () => setState(() => _doctorMaxSelfSaves++),
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12),
                           TextField(
                             controller: _locationController,
-                            style: const TextStyle(color: Colors.white),
+                            style: TextStyle(color: Colors.white),
                             decoration: InputDecoration(
-                              labelText: 'محل بازی (اختیاری)',
-                              hintText: 'مثلاً خانه، کافه...',
-                              prefixIcon: const Icon(Icons.location_on_outlined, color: AppColors.gold),
+                              labelText: 'محل بازی (اختیاری)'.tr.tr,
+                              hintText: 'مثلاً خانه، کافه...'.tr.tr,
+                              prefixIcon: Icon(Icons.location_on_outlined, color: AppTheme.uiPrimary),
                               filled: true,
-                              fillColor: AppColors.surfaceDark,
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: AppColors.goldDark.withAlpha(89))),
-                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: AppColors.goldDark.withAlpha(89))),
-                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: const BorderSide(color: AppColors.gold)),
+                              fillColor: AppTheme.uiSurface,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: AppTheme.uiPrimaryDark.withAlpha(89))),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: AppTheme.uiPrimaryDark.withAlpha(89))),
+                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: AppTheme.uiPrimary)),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     if (error != null)
                       Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(14),
+                        margin: EdgeInsets.only(bottom: 12),
+                        padding: EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: AppColors.bloodRed.withAlpha(56),
                           borderRadius: BorderRadius.circular(16),
@@ -594,9 +595,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.warning_amber_rounded, color: AppColors.bloodRedLight),
-                            const SizedBox(width: 10),
-                            Expanded(child: Text(error, style: const TextStyle(color: AppColors.bloodRedLight, fontWeight: FontWeight.w700))),
+                            Icon(Icons.warning_amber_rounded, color: AppColors.bloodRedLight),
+                            SizedBox(width: 10),
+                            Expanded(child: Text(error, style: TextStyle(color: AppColors.bloodRedLight, fontWeight: FontWeight.w700))),
                           ],
                         ),
                       ),
@@ -622,11 +623,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
     required Widget child,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
+        color: AppTheme.uiSurface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.gold.withAlpha(26)),
+        border: Border.all(color: AppTheme.uiPrimary.withAlpha(26)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -637,25 +638,25 @@ class _StartGameScreenState extends State<StartGameScreen> {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: AppColors.goldDark.withAlpha(36),
+                  color: AppTheme.uiPrimaryDark.withAlpha(36),
                   borderRadius: BorderRadius.circular(13),
                 ),
-                child: Icon(icon, color: AppColors.goldLight),
+                child: Icon(icon, color: AppTheme.uiPrimaryLight),
               ),
-              const SizedBox(width: 11),
+              SizedBox(width: 11),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title, style: AppTheme.headingFont(size: 17)),
-                    const SizedBox(height: 2),
-                    Text(subtitle, style: const TextStyle(color: AppColors.mutedText, fontSize: 12)),
+                    SizedBox(height: 2),
+                    Text(subtitle, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12)),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 13),
+          SizedBox(height: 13),
           child,
         ],
       ),
@@ -671,12 +672,12 @@ class _StartGameScreenState extends State<StartGameScreen> {
   }) {
     return Row(
       children: [
-        Icon(icon, color: AppColors.goldLight, size: 22),
-        const SizedBox(width: 10),
-        Expanded(child: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
-        IconButton(onPressed: onMinus, icon: const Icon(Icons.remove_circle_outline_rounded), color: AppColors.gold),
-        Text(value, style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w900)),
-        IconButton(onPressed: onPlus, icon: const Icon(Icons.add_circle_outline_rounded), color: AppColors.gold),
+        Icon(icon, color: AppTheme.uiPrimaryLight, size: 22),
+        SizedBox(width: 10),
+        Expanded(child: Text(title, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
+        IconButton(onPressed: onMinus, icon: Icon(Icons.remove_circle_outline_rounded), color: AppTheme.uiPrimary),
+        Text(value, style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.w900)),
+        IconButton(onPressed: onPlus, icon: Icon(Icons.add_circle_outline_rounded), color: AppTheme.uiPrimary),
       ],
     );
   }
@@ -689,7 +690,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
     required VoidCallback onTap,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: 10),
       child: SizedBox(
         width: double.infinity,
         child: Game3DButton(
@@ -713,11 +714,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
         builder: (context) => Scaffold(
           appBar: AppBar(
             title: Text(title),
-            backgroundColor: Color.alphaBlend(appBarTint.withAlpha(71), AppColors.surfaceDark),
+            backgroundColor: Color.alphaBlend(appBarTint.withAlpha(71), AppTheme.uiSurface),
           ),
           body: StatefulBuilder(
             builder: (context, setSheetState) => SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16),
               child: builder(context),
             ),
           ),
@@ -727,7 +728,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   }
 
   void _showPlayersPage() {
-    _pushSection('بازیکن‌ها', AppColors.gold, (context) {
+    _pushSection('بازیکن‌ها', AppTheme.uiPrimary, (context) {
       return StatefulBuilder(
         builder: (context, setSheetState) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -737,9 +738,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
                 Expanded(
                   child: TextField(
                     controller: _nameController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: const InputDecoration(
-                      labelText: 'اسم بازیکن',
+                    style: TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'اسم بازیکن'.tr.tr,
                       border: OutlineInputBorder(),
                     ),
                     onSubmitted: (_) {
@@ -748,19 +749,19 @@ class _StartGameScreenState extends State<StartGameScreen> {
                     },
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 ElevatedButton(
                   onPressed: () {
                     _addPlayer();
                     setSheetState(() {});
                   },
-                  child: const Text('افزودن'),
+                  child: Text('افزودن'.tr.tr),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             OutlinedButton.icon(
-              icon: const Icon(Icons.groups, color: AppColors.gold),
+              icon: Icon(Icons.groups, color: AppTheme.uiPrimary),
               label: Text('افزودن از لیستِ بازیکنان (${_roster.length} نفر)'),
               onPressed: _roster.isEmpty
                   ? null
@@ -769,15 +770,15 @@ class _StartGameScreenState extends State<StartGameScreen> {
                       setSheetState(() {});
                     },
             ),
-            const SizedBox(height: 12),
-            const Text(
-              'با نگه‌داشتن و کشیدن، می‌تونی ترتیبِ بازیکن‌ها رو عوض کنی.',
+            SizedBox(height: 12),
+            Text(
+              'با نگه‌داشتن و کشیدن، می‌تونی ترتیبِ بازیکن‌ها رو عوض کنی.'.tr.tr,
               style: TextStyle(color: Colors.white38, fontSize: 11),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             ReorderableListView(
               shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
+              physics: NeverScrollableScrollPhysics(),
               onReorder: (oldIndex, newIndex) {
                 _reorderDraftPlayers(oldIndex, newIndex);
                 setSheetState(() {});
@@ -787,17 +788,17 @@ class _StartGameScreenState extends State<StartGameScreen> {
                 final name = entry.value;
                 return Card(
                   key: ValueKey('draft-player-$index-$name'),
-                  color: AppColors.surfaceCard,
-                  margin: const EdgeInsets.only(bottom: 8),
+                  color: AppTheme.uiCard,
+                  margin: EdgeInsets.only(bottom: 8),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
-                    side: BorderSide(color: AppColors.gold.withAlpha(77)),
+                    side: BorderSide(color: AppTheme.uiPrimary.withAlpha(77)),
                   ),
                   child: ListTile(
-                    leading: const Icon(Icons.drag_handle, color: Colors.white38),
-                    title: Text(name, style: const TextStyle(color: Colors.white)),
+                    leading: Icon(Icons.drag_handle, color: Colors.white38),
+                    title: Text(name, style: TextStyle(color: Colors.white)),
                     trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: AppColors.bloodRedLight),
+                      icon: Icon(Icons.delete, color: AppColors.bloodRedLight),
                       onPressed: () {
                         _removePlayer(index);
                         setSheetState(() {});
@@ -851,8 +852,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('اختیاریه.', style: TextStyle(color: Colors.white60, fontSize: 12)),
-              const SizedBox(height: 8),
+              Text('اختیاریه.'.tr.tr, style: TextStyle(color: Colors.white60, fontSize: 12)),
+              SizedBox(height: 8),
               RadioListTile<String>(
                 value: 'none',
                 groupValue: enabled ? team.id : 'none',
@@ -860,8 +861,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
                 _setIndependentTeamEnabled(scenario, false);
                 setSheetState(() {});
               },
-              activeColor: AppColors.gold,
-              title: const Text('بدون تیم مستقل', style: TextStyle(color: Colors.white)),
+              activeColor: AppTheme.uiPrimary,
+              title: Text('بدون تیم مستقل'.tr.tr.tr, style: TextStyle(color: Colors.white)),
             ),
             RadioListTile<String>(
               value: team.id,
@@ -871,15 +872,15 @@ class _StartGameScreenState extends State<StartGameScreen> {
                 setSheetState(() {});
               },
               activeColor: team.color,
-              title: Text(team.name, style: const TextStyle(color: Colors.white)),
+              title: Text(team.localizedName, style: TextStyle(color: Colors.white)),
             ),
             if (enabled) ...[
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(
-                'فعلاً تنها نقشِ این تیم «${role.name}» است، پس این تیم همیشه دقیقاً ۱ نفره:',
-                style: const TextStyle(color: Colors.white60, fontSize: 12),
+                'فعلاً تنها نقشِ این تیم «${role.localizedName}» است، پس این تیم همیشه دقیقاً ۱ نفره:',
+                style: TextStyle(color: Colors.white60, fontSize: 12),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               _mandatoryRoleRow(role),
             ],
             ],
@@ -897,18 +898,18 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
     void setDefaultCount(int value) => _setSimpleRoleCount(scenario, simpleRoleId, value);
 
-    _pushSection(team.name, team.color, (context) {
+    _pushSection(team.localizedName, team.color, (context) {
       return StatefulBuilder(
         builder: (context, setSheetState) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(isLeader ? 'جلوی هر نقش، تعدادش رو مشخص کن؛ خودِ برنامه موقعِ شروعِ بازی کاملاً تصادفی مشخص می‌کنه کدوم بازیکن کدوم نقش رو می‌گیره.' : 'همینطور جلوی هر نقشِ این تیم، تعدادش رو مشخص کن؛ عضوِ ساده همون عضوِ بدونِ قابلیتِ خاصه.', style: const TextStyle(color: Colors.white60, fontSize: 12)),
-            const SizedBox(height: 8),
+            Text(isLeader ? 'جلوی هر نقش، تعدادش رو مشخص کن؛ خودِ برنامه موقعِ شروعِ بازی کاملاً تصادفی مشخص می‌کنه کدوم بازیکن کدوم نقش رو می‌گیره.' : 'همینطور جلوی هر نقشِ این تیم، تعدادش رو مشخص کن؛ عضوِ ساده همون عضوِ بدونِ قابلیتِ خاصه.', style: TextStyle(color: Colors.white60, fontSize: 12)),
+            SizedBox(height: 8),
             ...scenario.setupRoleKeysForTeam(teamId).map((key) => _roleToggle(role: scenarioRole(scenario, key), value: _isRoleIncluded(scenario, key), onChanged: (v) => setSheetState(() => _includedRoles[_roleStateKey(scenario, key)] = v))),
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             _roleCountStepper(role: defaultRole, value: defaultCount, onDecrement: () => setSheetState(() => setDefaultCount(defaultCount > 0 ? defaultCount - 1 : 0)), onIncrement: () => setSheetState(() => setDefaultCount(defaultCount + 1))),
-            const SizedBox(height: 4),
-            Text('مجموعِ ${team.name}: ${_teamMemberCountFor(scenario, teamId)} نفر', style: const TextStyle(color: AppColors.goldLight, fontSize: 13, fontWeight: FontWeight.bold)),
+            SizedBox(height: 4),
+            Text('مجموعِ ${team.localizedName}: ${_teamMemberCountFor(scenario, teamId)} نفر', style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 13, fontWeight: FontWeight.bold)),
           ],
         ),
       );
@@ -922,20 +923,20 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
   Widget _buildScenarioPicker() {
     return Scaffold(
-      appBar: AppBar(title: const Text('شروع بازی — انتخابِ سناریو')),
+      appBar: AppBar(title: Text('شروع بازی — انتخابِ سناریو'.tr.tr.tr)),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         children: [
-          const Text(
-            'اول سناریوی بازی رو انتخاب کن — تیم‌ها و نقش‌های قابل‌انتخاب '
-            'کاملاً به همین انتخاب بستگی دارن.',
+          Text(
+            ('اول سناریوی بازی رو انتخاب کن — تیم‌ها و نقش‌های قابل‌انتخاب '
+            'کاملاً به همین انتخاب بستگی دارن.').tr,
             style: TextStyle(color: Colors.white60, fontSize: 13),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           ...GameScenarios.all.map(
             (scenario) => Card(
-              color: AppColors.surfaceCard,
-              margin: const EdgeInsets.only(bottom: 12),
+              color: AppTheme.uiCard,
+              margin: EdgeInsets.only(bottom: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
                 side: BorderSide(color: scenario.color.withAlpha(153), width: 1.5),
@@ -944,24 +945,24 @@ class _StartGameScreenState extends State<StartGameScreen> {
                 borderRadius: BorderRadius.circular(12),
                 onTap: () => setState(() => _selectedScenario = scenario),
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Text(scenario.emoji, style: const TextStyle(fontSize: 26)),
-                          const SizedBox(width: 10),
+                          Text(scenario.emoji, style: TextStyle(fontSize: 26)),
+                          SizedBox(width: 10),
                           Text(
-                            scenario.name,
+                            scenario.localizedName,
                             style: AppTheme.headingFont(size: 22, color: scenario.color),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       Text(
-                        scenario.description,
-                        style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
+                        scenario.localizedDescription,
+                        style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
                       ),
                     ],
                   ),
@@ -982,8 +983,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
     return SwitchListTile(
       value: value,
       onChanged: (v) => onChanged(v),
-      activeColor: AppColors.gold,
-      title: Text(role.name, style: const TextStyle(color: Colors.white)),
+      activeColor: AppTheme.uiPrimary,
+      title: Text(role.localizedName, style: TextStyle(color: Colors.white)),
       dense: true,
     );
   }
@@ -998,14 +999,14 @@ class _StartGameScreenState extends State<StartGameScreen> {
     required VoidCallback onIncrement,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
           Expanded(
-            child: Text(role.name, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+            child: Text(role.localizedName, style: TextStyle(color: Colors.white70, fontSize: 14)),
           ),
           IconButton(
-            icon: const Icon(Icons.remove, color: AppColors.gold),
+            icon: Icon(Icons.remove, color: AppTheme.uiPrimary),
             onPressed: onDecrement,
           ),
           SizedBox(
@@ -1013,11 +1014,11 @@ class _StartGameScreenState extends State<StartGameScreen> {
             child: Text(
               '$value',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.goldLight, fontSize: 16),
+              style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 16),
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.add, color: AppColors.gold),
+            icon: Icon(Icons.add, color: AppTheme.uiPrimary),
             onPressed: onIncrement,
           ),
         ],
@@ -1028,9 +1029,9 @@ class _StartGameScreenState extends State<StartGameScreen> {
   Widget _mandatoryRoleRow(GameRole role) {
     return ListTile(
       dense: true,
-      leading: const Icon(Icons.check_circle, color: AppColors.gold),
-      title: Text(role.name, style: const TextStyle(color: Colors.white)),
-      trailing: const Text('همیشه فعال', style: TextStyle(color: Colors.white38, fontSize: 12)),
+      leading: Icon(Icons.check_circle, color: AppTheme.uiPrimary),
+      title: Text(role.localizedName, style: TextStyle(color: Colors.white)),
+      trailing: Text('همیشه فعال'.tr.tr, style: TextStyle(color: Colors.white38, fontSize: 12)),
     );
   }
 }
@@ -1038,7 +1039,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
 class StartGameScreen extends StatefulWidget {
   final GameScenario? initialScenario;
 
-  const StartGameScreen({
+  StartGameScreen({
     super.key,
     this.initialScenario,
   });

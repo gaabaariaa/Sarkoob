@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 import 'countdown_timer_widget.dart';
 
 /// Presentation-only panel for the moderator speaking phase.
@@ -18,7 +19,7 @@ class ModernSpeakingPanel extends StatelessWidget {
   final String nextLabel;
   final String? eyebrow;
 
-  const ModernSpeakingPanel({
+  ModernSpeakingPanel({
     super.key,
     required this.speakerName,
     required this.remainingPlayers,
@@ -36,23 +37,23 @@ class ModernSpeakingPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(2, 4, 2, 18),
+      padding: EdgeInsets.fromLTRB(2, 4, 2, 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _PhaseHeader(eyebrow: eyebrow ?? 'نوبت صحبت'),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Container(
-            padding: const EdgeInsets.all(18),
+            padding: EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: AppColors.surfaceCard,
+              color: AppTheme.uiCard,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.gold.withAlpha(87)),
+              border: Border.all(color: AppTheme.uiPrimary.withAlpha(87)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withAlpha(77),
                   blurRadius: 22,
-                  offset: const Offset(0, 10),
+                  offset: Offset(0, 10),
                 ),
               ],
             ),
@@ -60,8 +61,8 @@ class ModernSpeakingPanel extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Expanded(child: _StatusChip(icon: Icons.record_voice_over, text: 'در حال صحبت')),
-                    const SizedBox(width: 8),
+                    Expanded(child: _StatusChip(icon: Icons.record_voice_over, text: 'در حال صحبت'.tr)),
+                    SizedBox(width: 8),
                     _StatusChip(
                       icon: challengeActive ? Icons.flash_on : Icons.groups,
                       text: challengeActive ? 'چالش فعال' : '$remainingPlayers نفر باقی',
@@ -69,25 +70,25 @@ class ModernSpeakingPanel extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 22),
-                const Text(
-                  'نوبتِ',
-                  style: TextStyle(color: AppColors.mutedText, fontSize: 13, fontWeight: FontWeight.w600),
+                SizedBox(height: 22),
+                Text(
+                  'نوبتِ'.tr,
+                  style: TextStyle(color: AppTheme.uiMutedText, fontSize: 13, fontWeight: FontWeight.w600),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   speakerName,
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontSize: 28,
                     fontWeight: FontWeight.w900,
                     height: 1.15,
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
                 if (seconds != null)
                   CountdownTimerWidget(
                     // Timer state must survive parent rebuilds while the countdown ticks.
@@ -97,33 +98,33 @@ class ModernSpeakingPanel extends StatelessWidget {
                     onFinished: onTimerFinished,
                     onSecondElapsed: onSecondElapsed,
                   ),
-                const SizedBox(height: 22),
+                SizedBox(height: 22),
                 Row(
                   children: [
                     Expanded(
                       child: FilledButton.icon(
                         onPressed: onNext,
-                        icon: const Icon(Icons.arrow_back_rounded),
+                        icon: Icon(Icons.arrow_back_rounded),
                         label: Text(nextLabel),
                         style: FilledButton.styleFrom(
-                          minimumSize: const Size.fromHeight(52),
-                          backgroundColor: AppColors.gold,
+                          minimumSize: Size.fromHeight(52),
+                          backgroundColor: AppTheme.uiPrimary,
                           foregroundColor: Colors.black,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                         ),
                       ),
                     ),
                     if (challengeActive && onFinishChallenge != null) ...[
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: onFinishChallenge,
-                          icon: const Icon(Icons.stop_circle_outlined),
-                          label: const Text('پایان چالش'),
+                          icon: Icon(Icons.stop_circle_outlined),
+                          label: Text('پایان چالش'.tr.tr.tr),
                           style: OutlinedButton.styleFrom(
-                            minimumSize: const Size.fromHeight(52),
-                            foregroundColor: AppColors.goldLight,
-                            side: BorderSide(color: AppColors.gold.withAlpha(115)),
+                            minimumSize: Size.fromHeight(52),
+                            foregroundColor: AppTheme.uiPrimaryLight,
+                            side: BorderSide(color: AppTheme.uiPrimary.withAlpha(115)),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                           ),
                         ),
@@ -132,33 +133,33 @@ class ModernSpeakingPanel extends StatelessWidget {
                   ],
                 ),
                 if (onChooseChallenge != null) ...[
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   TextButton.icon(
                     onPressed: onChooseChallenge,
-                    icon: const Icon(Icons.bolt_outlined, size: 20),
-                    label: const Text('انتخاب چالش'),
-                    style: TextButton.styleFrom(foregroundColor: AppColors.goldLight),
+                    icon: Icon(Icons.bolt_outlined, size: 20),
+                    label: Text('انتخاب چالش'.tr.tr.tr),
+                    style: TextButton.styleFrom(foregroundColor: AppTheme.uiPrimaryLight),
                   ),
                 ],
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
+              color: AppTheme.uiSurface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.white.withAlpha(15)),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.info_outline, color: AppColors.mutedText, size: 18),
+                Icon(Icons.info_outline, color: AppTheme.uiMutedText, size: 18),
                 SizedBox(width: 9),
                 Expanded(
                   child: Text(
-                    'گرداننده، وضعیت و زمان را از این پنل کنترل می‌کند.',
-                    style: TextStyle(color: AppColors.mutedText, fontSize: 12.5, height: 1.4),
+                    'گرداننده، وضعیت و زمان را از این پنل کنترل می‌کند.'.tr,
+                    style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12.5, height: 1.4),
                   ),
                 ),
               ],
@@ -172,7 +173,7 @@ class ModernSpeakingPanel extends StatelessWidget {
 
 class _PhaseHeader extends StatelessWidget {
   final String eyebrow;
-  const _PhaseHeader({required this.eyebrow});
+  _PhaseHeader({required this.eyebrow});
 
   @override
   Widget build(BuildContext context) => Row(
@@ -181,17 +182,17 @@ class _PhaseHeader extends StatelessWidget {
             width: 7,
             height: 34,
             decoration: BoxDecoration(
-              color: AppColors.gold,
+              color: AppTheme.uiPrimary,
               borderRadius: BorderRadius.circular(99),
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(eyebrow, style: const TextStyle(color: AppColors.goldLight, fontSize: 18, fontWeight: FontWeight.w800)),
-              const SizedBox(height: 2),
-              const Text('کنترل میز بازی', style: TextStyle(color: AppColors.mutedText, fontSize: 12)),
+              Text(eyebrow, style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 18, fontWeight: FontWeight.w800)),
+              SizedBox(height: 2),
+              Text('کنترل میز بازی'.tr.tr, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12)),
             ],
           ),
         ],
@@ -202,22 +203,22 @@ class _StatusChip extends StatelessWidget {
   final IconData icon;
   final String text;
   final bool active;
-  const _StatusChip({required this.icon, required this.text, this.active = false});
+  _StatusChip({required this.icon, required this.text, this.active = false});
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: active ? AppColors.gold.withAlpha(31) : Colors.white.withAlpha(9),
+          color: active ? AppTheme.uiPrimary.withAlpha(31) : Colors.white.withAlpha(9),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: active ? AppColors.gold.withAlpha(71) : Colors.white.withAlpha(15)),
+          border: Border.all(color: active ? AppTheme.uiPrimary.withAlpha(71) : Colors.white.withAlpha(15)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: active ? AppColors.goldLight : AppColors.mutedText),
-            const SizedBox(width: 6),
-            Text(text, style: TextStyle(color: active ? AppColors.goldLight : AppColors.mutedText, fontSize: 11.5, fontWeight: FontWeight.w700)),
+            Icon(icon, size: 16, color: active ? AppTheme.uiPrimaryLight : AppTheme.uiMutedText),
+            SizedBox(width: 6),
+            Text(text, style: TextStyle(color: active ? AppTheme.uiPrimaryLight : AppTheme.uiMutedText, fontSize: 11.5, fontWeight: FontWeight.w700)),
           ],
         ),
       );
