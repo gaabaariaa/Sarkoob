@@ -2800,6 +2800,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       ),
       actionLabel: 'اعضای $teamLabel چشم‌هاشون رو ببندن',
       onAction: controller.canAdvancePastLeaderTeamStep ? controller.advanceNightStep : null,
+      timerSeconds: 30,
+      timerKey: 'night-action-\${controller.roundNumber}-leader-team',
     );
   }
 
@@ -3109,6 +3111,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       body: body,
       actionLabel: sleepLabel,
       onAction: canAdvance ? controller.advanceNightStep : null,
+      timerSeconds: 30,
+      timerKey: 'night-action-\${controller.roundNumber}-\${controller.currentNightStep.index}',
     );
   }
 
