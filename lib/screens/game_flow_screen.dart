@@ -2609,6 +2609,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         return _buildRoleNightStep(
           wakeLabel: '$_rapperRoleName بیدار بشه',
           sleepLabel: '$_rapperRoleName چشمش رو ببنده',
+          timerSeconds: 60,
           playerName: controller.rapperPlayer?.name,
           body: _buildRapperSection(),
         );
@@ -2800,8 +2801,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       ),
       actionLabel: 'اعضای $teamLabel چشم‌هاشون رو ببندن',
       onAction: controller.canAdvancePastLeaderTeamStep ? controller.advanceNightStep : null,
-      timerSeconds: 30,
+      timerSeconds: 60,
       timerKey: 'night-action-${controller.roundNumber}-leader-team',
+      onTimerFinished: () => controller.recordNightTimeoutForLeaderTeam(),
     );
   }
 
@@ -3102,6 +3104,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     required Widget body,
     String? playerName,
     bool canAdvance = true,
+    int timerSeconds = 30,
   }) {
     return ModernNightPanel(
       eyebrow: 'شب ${controller.roundNumber}',
@@ -3111,8 +3114,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       body: body,
       actionLabel: sleepLabel,
       onAction: canAdvance ? controller.advanceNightStep : null,
-      timerSeconds: 30,
+      timerSeconds: timerSeconds,
       timerKey: 'night-action-${controller.roundNumber}-${controller.currentNightStep.index}',
+      onTimerFinished: () => controller.recordNightTimeoutForCurrentRole(),
     );
   }
 
