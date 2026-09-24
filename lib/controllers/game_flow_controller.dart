@@ -164,6 +164,65 @@ class GameFlowController extends ChangeNotifier {
     ));
   }
 
+  /// ثبتِ جریمه‌ی تمام‌شدنِ زمانِ اکشن شب برای یک بازیکن.
+  void recordNightTimeout(int playerId) {
+    final player = playerById(playerId);
+    if (!player.isAlive) return;
+    _award(player, -1, 'تمام‌شدنِ زمانِ اکشن شب');
+    notifyListeners();
+  }
+
+  /// تایمِ تیمِ رهبر مشترک است؛ با تمام‌شدنِ یک دقیقه، هر عضوِ زنده‌ی تیم
+  /// یک امتیازِ منفی می‌گیرد.
+  void recordNightTimeoutForLeaderTeam() {
+    final teamId = leaderTeamId;
+    for (final player in players.where((p) => p.teamId == teamId && p.isAlive)) {
+      _award(player, -1, 'تمام‌شدنِ زمانِ اکشن شبِ تیم');
+    }
+    notifyListeners();
+  }
+
+  /// تایمِ نقشِ فعلی تمام شده؛ جریمه برای صاحب همان نقش ثبت می‌شود.
+  void recordNightTimeoutForCurrentRole() {
+    SessionPlayer? player;
+    switch (currentNightStep) {
+      case NightStepKind.independentLeader:
+        player = independentLeaderPlayer;
+        break;
+      case NightStepKind.rapper:
+        player = rapperPlayer;
+        break;
+      case NightStepKind.hacker:
+        player = hackerPlayer;
+        break;
+      case NightStepKind.politicalAnalyst:
+        player = politicalAnalystPlayer;
+        break;
+      case NightStepKind.doctor:
+        player = doctorPlayer;
+        break;
+      case NightStepKind.rebel:
+        player = rebelPlayer;
+        break;
+      case NightStepKind.nationalHero:
+        player = nationalHeroPlayer;
+        break;
+      case NightStepKind.revolutionary:
+        player = revolutionaryFighterPlayer;
+        break;
+      case NightStepKind.civicActivist:
+        player = civicActivistPlayer;
+        break;
+      case NightStepKind.lawyer:
+        player = lawyerPlayer;
+        break;
+      case NightStepKind.leaderTeam:
+      case NightStepKind.done:
+        return;
+    }
+    if (player != null) recordNightTimeout(player.id);
+  }
+
   /// آیا تیمِ هدف نسبت‌به تیمِ عامل «مقابل» حساب می‌شه؟ (بخشِ ۲ی سندِ
   /// طراحی: نسبیه، نه یه لیستِ ثابت — همینکه teamId فرق کنه کافیه، چون
   /// تو یه بازی فقط یه سناریو درگیره و تیم‌هاش هیچ‌وقت قاطی نمی‌شن.)
