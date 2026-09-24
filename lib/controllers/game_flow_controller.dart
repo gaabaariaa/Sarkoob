@@ -165,9 +165,13 @@ class GameFlowController extends ChangeNotifier {
   }
 
   /// ثبتِ جریمه‌ی تمام‌شدنِ زمانِ اکشن شب برای یک بازیکن.
+  final Set<String> _nightTimeoutPenalties = {};
+
   void recordNightTimeout(int playerId) {
     final player = playerById(playerId);
     if (!player.isAlive) return;
+    final key = '${roundNumber}:${currentNightStep.name}:$playerId';
+    if (!_nightTimeoutPenalties.add(key)) return;
     _award(player, -1, 'تمام‌شدنِ زمانِ اکشن شب');
     notifyListeners();
   }
@@ -177,7 +181,10 @@ class GameFlowController extends ChangeNotifier {
   void recordNightTimeoutForLeaderTeam() {
     final teamId = leaderTeamId;
     for (final player in players.where((p) => p.teamId == teamId && p.isAlive)) {
-      _award(player, -1, 'تمام‌شدنِ زمانِ اکشن شبِ تیم');
+      final key = '${roundNumber}:${currentNightStep.name}:${player.id}';
+      if (_nightTimeoutPenalties.add(key)) {
+        _award(player, -1, 'تمام‌شدنِ زمانِ اکشن شبِ تیم');
+      }
     }
     notifyListeners();
   }
@@ -2751,6 +2758,7 @@ class GameFlowController extends ChangeNotifier {
     saboteurTargetPlayerId = null;
     _natashaSilencedTonightId = null;
     _nightActionTaken = false;
+    _nightTimeoutPenalties.clear();
     slaughterResultMessage = null;
     negotiateResultMessage = null;
     lastNightSummary = null;
