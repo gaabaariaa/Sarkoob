@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'game_3d_button.dart';
+import 'countdown_timer_widget.dart';
 
 class ModernNightPanel extends StatelessWidget {
   final String eyebrow;
@@ -11,6 +12,9 @@ class ModernNightPanel extends StatelessWidget {
   final VoidCallback? onAction;
   final IconData icon;
   final IconData actionIcon;
+  /// زمان اختصاصی هر اکشن شب؛ در صورت null تایمر نمایش داده نمی‌شود.
+  final int? timerSeconds;
+  final String? timerKey;
 
   ModernNightPanel({
     super.key,
@@ -22,6 +26,8 @@ class ModernNightPanel extends StatelessWidget {
     this.playerName,
     this.icon = Icons.nightlight_round,
     this.actionIcon = Icons.arrow_back_rounded,
+    this.timerSeconds,
+    this.timerKey,
   });
 
   @override
@@ -89,6 +95,13 @@ class ModernNightPanel extends StatelessWidget {
             ),
             child: body,
           ),
+          if (timerSeconds != null) ...[
+            SizedBox(height: 12),
+            CountdownTimerWidget(
+              key: timerKey == null ? null : ValueKey(timerKey),
+              totalSeconds: timerSeconds!,
+            ),
+          ],
           SizedBox(height: 12),
           SafeArea(
             top: false,
