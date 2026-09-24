@@ -15,6 +15,7 @@ class ModernNightPanel extends StatelessWidget {
   /// زمان اختصاصی هر اکشن شب؛ در صورت null تایمر نمایش داده نمی‌شود.
   final int? timerSeconds;
   final String? timerKey;
+  final VoidCallback? onTimerFinished;
 
   ModernNightPanel({
     super.key,
@@ -28,6 +29,7 @@ class ModernNightPanel extends StatelessWidget {
     this.actionIcon = Icons.arrow_back_rounded,
     this.timerSeconds,
     this.timerKey,
+    this.onTimerFinished,
   });
 
   @override
@@ -101,6 +103,7 @@ class ModernNightPanel extends StatelessWidget {
               key: timerKey == null ? null : ValueKey(timerKey),
               totalSeconds: timerSeconds!,
               label: 'زمانِ اکشن شب',
+              onFinished: onTimerFinished,
             ),
           ],
           SizedBox(height: 12),
