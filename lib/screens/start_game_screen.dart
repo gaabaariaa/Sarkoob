@@ -163,7 +163,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                           });
                           Navigator.of(context).pop();
                         },
-                  child: Text('افزودنِ ${selected.length} نفر'),
+                  child: Text('افزودنِ ${selected.length} نفر'.tr),
                 ),
               ),
             ],
@@ -233,16 +233,16 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final scenario = _selectedScenario;
     if (scenario == null) return 'سناریوی بازی انتخاب نشده'.tr;
     final total = _draftPlayers.length;
-    if (total < _minPlayers) return 'حداقل $_minPlayers بازیکن لازمه (الان $total نفر)';
+    if (total < _minPlayers) return 'حداقل $_minPlayers بازیکن لازمه (الان $total نفر)'.tr;
     final townTotal = _townTeamTotal(scenario);
     final assigned = _assignedTotalFor(scenario);
     final townTeam = scenarioTeam(scenario, scenario.townTeamId);
     final simpleTown = scenarioRoleById(scenario, scenario.setupRules.simpleTownRoleId);
-    if (townTotal < 1) return 'باید حداقل ۱ نفر در ${townTeam.name} باشه — تعدادِ ${simpleTown.name} رو زیاد کن';
+    if (townTotal < 1) return 'باید حداقل ۱ نفر در ${townTeam.name} باشه — تعدادِ ${simpleTown.name} رو زیاد کن'.tr;
     final diff = total - assigned;
     final simpleLeader = scenarioRoleById(scenario, scenario.setupRules.simpleLeaderRoleId);
-    if (diff > 0) return 'هنوز $diff نفر نقش نگرفتن — تعدادِ ${simpleLeader.name} یا ${simpleTown.name} رو زیاد کن';
-    if (diff < 0) return 'مجموعِ نقش‌ها ${-diff} نفر بیشتر از بازیکن‌هاست — تعدادِ ${simpleLeader.name} یا ${simpleTown.name} رو کم کن';
+    if (diff > 0) return 'هنوز $diff نفر نقش نگرفتن — تعدادِ ${simpleLeader.name} یا ${simpleTown.name} رو زیاد کن'.tr;
+    if (diff < 0) return 'مجموعِ نقش‌ها ${-diff} نفر بیشتر از بازیکن‌هاست — تعدادِ ${simpleLeader.name} یا ${simpleTown.name} رو کم کن'.tr;
     return null;
   }
 
@@ -406,7 +406,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('شروع بازی — ${_selectedScenario!.name}'),
+        title: Text('شروع بازی — ${_selectedScenario!.name}'.tr),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded),
           tooltip: 'تغییر سناریو'.tr,
@@ -458,7 +458,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                             ),
                           ),
                           SizedBox(width: 8),
-                          Text('$total نفر', style: AppTheme.headingFont(size: 17, color: AppTheme.uiPrimaryLight)),
+                          Text('$total نفر'.tr, style: AppTheme.headingFont(size: 17, color: AppTheme.uiPrimaryLight)),
                         ],
                       ),
                     ),
@@ -466,7 +466,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                     _buildSetupSection(
                       icon: Icons.groups_rounded,
                       title: 'بازیکن‌ها'.tr,
-                      subtitle: total == 0 ? 'بازیکن‌ها را اضافه کن'.tr : '$total بازیکن آماده است',
+                      subtitle: total == 0 ? 'بازیکن‌ها را اضافه کن'.tr : '$total بازیکن آماده است'.tr,
                       child: Game3DButton(
                         label: 'مدیریت بازیکن‌ها'.tr,
                         icon: Icons.manage_accounts_rounded,
@@ -477,7 +477,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                     _buildSetupSection(
                       icon: Icons.hub_rounded,
                       title: 'تیم‌ها و نقش‌ها'.tr,
-                      subtitle: '$assigned از $total نفر نقش‌بندی شده',
+                      subtitle: '$assigned از $total نفر نقش‌بندی شده'.tr,
                       child: Column(
                         children: [
                           ...teams.map(
@@ -522,7 +522,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                                 SizedBox(width: 9),
                                 Expanded(
                                   child: Text(
-                                    'نقش‌بندی‌شده: $assigned از $total نفر',
+                                    'نقش‌بندی‌شده: $assigned از $total نفر'.tr,
                                     style: TextStyle(
                                       color: assigned == total && total > 0 ? AppTheme.uiPrimaryLight : AppColors.bloodRedLight,
                                       fontWeight: FontWeight.w800,
@@ -545,7 +545,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                           _buildSettingRow(
                             icon: Icons.timer_outlined,
                             title: 'زمان صحبت'.tr,
-                            value: '$_speakSeconds ثانیه',
+                            value: '$_speakSeconds ثانیه'.tr,
                             onMinus: () => setState(() { if (_speakSeconds > 10) _speakSeconds -= 10; }),
                             onPlus: () => setState(() => _speakSeconds += 10),
                           ),
@@ -553,7 +553,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                           Align(
                             alignment: AlignmentDirectional.centerStart,
                             child: Text(
-                              'معارفه و چالش: $introSeconds ثانیه',
+                              'معارفه و چالش: $introSeconds ثانیه'.tr,
                               style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12),
                             ),
                           ),
@@ -561,7 +561,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                           _buildSettingRow(
                             icon: Icons.health_and_safety_outlined,
                             title: 'نجات خودِ دکتر'.tr,
-                            value: '$_doctorMaxSelfSaves بار',
+                            value: '$_doctorMaxSelfSaves بار'.tr,
                             onMinus: () => setState(() { if (_doctorMaxSelfSaves > 0) _doctorMaxSelfSaves--; }),
                             onPlus: () => setState(() => _doctorMaxSelfSaves++),
                           ),
@@ -762,7 +762,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
             SizedBox(height: 8),
             OutlinedButton.icon(
               icon: Icon(Icons.groups, color: AppTheme.uiPrimary),
-              label: Text('افزودن از لیستِ بازیکنان (${_roster.length} نفر)'),
+              label: Text('افزودن از لیستِ بازیکنان (${_roster.length} نفر)'.tr),
               onPressed: _roster.isEmpty
                   ? null
                   : () async {
@@ -877,7 +877,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
             if (enabled) ...[
               SizedBox(height: 4),
               Text(
-                'فعلاً تنها نقشِ این تیم «${role.localizedName}» است، پس این تیم همیشه دقیقاً ۱ نفره:',
+                'فعلاً تنها نقشِ این تیم «${role.localizedName}» است، پس این تیم همیشه دقیقاً ۱ نفره:'.tr,
                 style: TextStyle(color: Colors.white60, fontSize: 12),
               ),
               SizedBox(height: 4),
@@ -909,7 +909,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
             SizedBox(height: 4),
             _roleCountStepper(role: defaultRole, value: defaultCount, onDecrement: () => setSheetState(() => setDefaultCount(defaultCount > 0 ? defaultCount - 1 : 0)), onIncrement: () => setSheetState(() => setDefaultCount(defaultCount + 1))),
             SizedBox(height: 4),
-            Text('مجموعِ ${team.localizedName}: ${_teamMemberCountFor(scenario, teamId)} نفر', style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 13, fontWeight: FontWeight.bold)),
+            Text('مجموعِ ${team.localizedName}: ${_teamMemberCountFor(scenario, teamId)} نفر'.tr, style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 13, fontWeight: FontWeight.bold)),
           ],
         ),
       );
