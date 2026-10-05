@@ -255,17 +255,17 @@ class _StatsScreenState extends State<StatsScreen> {
   Widget build(BuildContext context) {
     if (_loading) {
       return Scaffold(
-        appBar: AppBar(title: Text('آمار'.tr.tr.tr.tr)),
+        appBar: AppBar(title: Text('آمار'.tr)),
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_history.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: Text('آمار'.tr.tr.tr.tr)),
+        appBar: AppBar(title: Text('آمار'.tr)),
         body: Center(
           child: Text(
-            'هنوز هیچ بازی‌ای ثبت نشده.\nبعدِ تمام‌شدنِ اولین بازی، آمار همینجا نشون داده می‌شه.'.tr.tr,
+            'هنوز هیچ بازی‌ای ثبت نشده.\nبعدِ تمام‌شدنِ اولین بازی، آمار همینجا نشون داده می‌شه.'.tr,
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.white38),
           ),
@@ -310,7 +310,7 @@ class _StatsScreenState extends State<StatsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('آمار و عملکرد'.tr.tr.tr.tr),
+        title: Text('آمار و عملکرد'.tr),
         actions: [
           Padding(
             padding: EdgeInsetsDirectional.only(end: 14),
@@ -326,7 +326,7 @@ class _StatsScreenState extends State<StatsScreen> {
         children: [
           _StatsHero(historyCount: _history.length, playerCount: aggregates.length),
           SizedBox(height: 18),
-          _sectionTitle('نتیجه‌ی آخرین بازی'),
+          _sectionTitle('نتیجه‌ی آخرین بازی'.tr),
           SizedBox(height: 10),
           Row(
             children: [
@@ -335,7 +335,7 @@ class _StatsScreenState extends State<StatsScreen> {
                   child: _HighlightCard(
                     icon: Icons.emoji_events,
                     color: AppTheme.uiPrimary,
-                    title: 'طرفِ برنده',
+                    title: 'طرفِ برنده'.tr,
                     playerName: winner.map((p) => p.name).join('، '),
                     reason: _teamName(lastGame.winningTeamId),
                   ),
@@ -346,7 +346,7 @@ class _StatsScreenState extends State<StatsScreen> {
                   child: _HighlightCard(
                     icon: Icons.sentiment_dissatisfied,
                     color: AppColors.bloodRedLight,
-                    title: 'طرفِ بازنده',
+                    title: 'طرفِ بازنده'.tr,
                     playerName: '${loser.length} نفر',
                     reason: 'حذف‌شده‌ها: ${loser.where((p) => !p.survived).length} نفر',
                   ),
@@ -361,7 +361,7 @@ class _StatsScreenState extends State<StatsScreen> {
                   child: _HighlightCard(
                     icon: Icons.star,
                     color: AppTheme.uiPrimary,
-                    title: 'بهترین بازیکنِ این بازی',
+                    title: 'بهترین بازیکنِ این بازی'.tr,
                     playerName: bestOfLastGame.name,
                     reason: 'امتیاز: ${bestOfLastGame.totalScore >= 0 ? '+' : ''}${bestOfLastGame.totalScore}',
                   ),
@@ -371,7 +371,7 @@ class _StatsScreenState extends State<StatsScreen> {
                   child: _HighlightCard(
                     icon: Icons.sentiment_very_dissatisfied,
                     color: AppColors.bloodRedLight,
-                    title: 'بدترین بازیکنِ این بازی',
+                    title: 'بدترین بازیکنِ این بازی'.tr,
                     playerName: worstOfLastGame.name,
                     reason:
                         'امتیاز: ${worstOfLastGame.totalScore >= 0 ? '+' : ''}${worstOfLastGame.totalScore}',
@@ -382,7 +382,7 @@ class _StatsScreenState extends State<StatsScreen> {
           ],
           SizedBox(height: 28),
           SizedBox(height: 14),
-          _sectionTitle('آمارِ کلِ بازی‌ها'),
+          _sectionTitle('آمارِ کلِ بازی‌ها'.tr),
           SizedBox(height: 4),
           Text(
             'روی مجموعِ ${_history.length} بازیِ ثبت‌شده.',
@@ -396,7 +396,7 @@ class _StatsScreenState extends State<StatsScreen> {
                   child: _HighlightCard(
                     icon: Icons.star,
                     color: AppTheme.uiPrimary,
-                    title: 'بهترین بازیکن (کلِ تاریخچه)',
+                    title: 'بهترین بازیکن (کلِ تاریخچه)'.tr,
                     playerName: overallBest.displayName,
                     reason: 'میانگینِ امتیاز: ${overallBest.avgScore >= 0 ? '+' : ''}'
                         '${overallBest.avgScore.toStringAsFixed(1)}',
@@ -407,7 +407,7 @@ class _StatsScreenState extends State<StatsScreen> {
                   child: _HighlightCard(
                     icon: Icons.sentiment_very_dissatisfied,
                     color: AppColors.bloodRedLight,
-                    title: 'بدترین بازیکن (کلِ تاریخچه)',
+                    title: 'بدترین بازیکن (کلِ تاریخچه)'.tr,
                     playerName: overallWorst.displayName,
                     reason: 'میانگینِ امتیاز: ${overallWorst.avgScore >= 0 ? '+' : ''}'
                         '${overallWorst.avgScore.toStringAsFixed(1)}',
@@ -420,10 +420,10 @@ class _StatsScreenState extends State<StatsScreen> {
             _HighlightCard(
               icon: Icons.gavel,
               color: AppColors.bloodRedLight,
-              title: 'بی‌انضباط‌ترین بازیکن',
+              title: 'بی‌انضباط‌ترین بازیکن'.tr,
               playerName: mostUndisciplined.displayName,
               reason: 'نمره‌ی انضباطیِ تجمعی: ${mostUndisciplined.disciplineScore} '
-                  '(مجموعِ مراحلِ تنبیه در همه‌ی بازی‌هاش)',
+                  '(مجموعِ مراحلِ تنبیه در همه‌ی بازی‌هاش)'.tr,
             ),
           ],
           if (mostTalkative != null) ...[
@@ -434,7 +434,7 @@ class _StatsScreenState extends State<StatsScreen> {
                   child: _HighlightCard(
                     icon: Icons.record_voice_over,
                     color: AppTheme.uiPrimary,
-                    title: 'پُرحرف‌ترین بازیکن',
+                    title: 'پُرحرف‌ترین بازیکن'.tr,
                     playerName: mostTalkative.displayName,
                     reason: formatSpeakingTime(mostTalkative.totalSpeakingSeconds),
                   ),
@@ -445,7 +445,7 @@ class _StatsScreenState extends State<StatsScreen> {
                     child: _HighlightCard(
                       icon: Icons.volume_off_outlined,
                       color: AppColors.bloodRedLight,
-                      title: 'کم‌حرف‌ترین بازیکن',
+                      title: 'کم‌حرف‌ترین بازیکن'.tr,
                       playerName: leastTalkative.displayName,
                       reason: formatSpeakingTime(leastTalkative.totalSpeakingSeconds),
                     ),
@@ -463,7 +463,7 @@ class _StatsScreenState extends State<StatsScreen> {
                     child: _HighlightCard(
                       icon: Icons.record_voice_over,
                       color: AppTheme.uiPrimaryLight,
-                      title: 'چالش‌بگیرترین بازیکن',
+                      title: 'چالش‌بگیرترین بازیکن'.tr,
                       playerName: topChallengeReceiver.displayName,
                       reason: '${topChallengeReceiver.challengesReceivedTotal} بار چالش گرفته',
                     ),
@@ -475,7 +475,7 @@ class _StatsScreenState extends State<StatsScreen> {
                     child: _HighlightCard(
                       icon: Icons.campaign,
                       color: AppTheme.uiPrimaryLight,
-                      title: 'چالش‌بده‌ترین بازیکن',
+                      title: 'چالش‌بده‌ترین بازیکن'.tr,
                       playerName: topChallengeGiver.displayName,
                       reason: '${topChallengeGiver.challengesGivenTotal} بار چالش داده',
                     ),
@@ -485,7 +485,7 @@ class _StatsScreenState extends State<StatsScreen> {
           ],
           if (bestPerRole.isNotEmpty) ...[
             SizedBox(height: 20),
-            Text('بهترین‌هایِ هر نقش'.tr.tr, style: AppTheme.headingFont(size: 16)),
+            Text('بهترین‌هایِ هر نقش'.tr, style: AppTheme.headingFont(size: 16)),
             SizedBox(height: 4),
             Text(
               ('بر اساسِ تعدادِ کارهایِ موفقِ اون نقش، رویِ مجموعِ همه‌ی بازی‌هایی که '
@@ -497,12 +497,12 @@ class _StatsScreenState extends State<StatsScreen> {
           ],
           SizedBox(height: 28),
           SizedBox(height: 14),
-          _sectionTitle('جدول رتبه‌بندی'),
+          _sectionTitle('جدول رتبه‌بندی'.tr),
           SizedBox(height: 10),
           ...aggregates.map((agg) => _LeaderboardRow(agg: agg)),
           SizedBox(height: 28),
           SizedBox(height: 14),
-          _sectionTitle('میانگینِ امتیاز بازیکنان'),
+          _sectionTitle('میانگینِ امتیاز بازیکنان'.tr),
           SizedBox(height: 4),
           Text(
             ('میانگینِ امتیازِ هر بازیکن رو کلِ بازی‌هاش (طبقِ سیستمِ امتیازدهیِ رأی/شات/'
@@ -513,10 +513,10 @@ class _StatsScreenState extends State<StatsScreen> {
           ...scoreLeaderboard.map((agg) => _ScoreLeaderboardRow(agg: agg)),
           SizedBox(height: 28),
           SizedBox(height: 14),
-          _sectionTitle('تاریخچه‌ی کامل هر بازیکن'),
+          _sectionTitle('تاریخچه‌ی کامل هر بازیکن'.tr),
           SizedBox(height: 4),
           Text(
-            'با زدن روی هر بازیکن، لیستِ همه‌ی بازی‌هاش و نتیجه‌ی هرکدوم نشون داده می‌شه.'.tr.tr,
+            'با زدن روی هر بازیکن، لیستِ همه‌ی بازی‌هاش و نتیجه‌ی هرکدوم نشون داده می‌شه.'.tr,
             style: TextStyle(color: Colors.white70),
           ),
           SizedBox(height: 10),
@@ -548,7 +548,7 @@ class _StatsScreenState extends State<StatsScreen> {
                           child: Text(
                             '${formatJalali(row.playedAt)} — '
                             'نقش: ${row.roleName ?? row.teamName}، تیم: ${row.teamName}، '
-                            '${row.won ? 'برنده' : 'بازنده'}'
+                            '${row.won ? 'برنده'.tr : 'بازنده'.tr}'
                             '${row.disciplineStage > 0 ? '، ${disciplineStageLabel(row.disciplineStage)}' : ''}'
                             '، امتیاز: ${row.score >= 0 ? '+' : ''}${row.score}',
                             style: TextStyle(color: Colors.white70, height: 1.6),
@@ -597,7 +597,7 @@ class _StatsHero extends StatelessWidget {
       Expanded(child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('مرکز آمار'.tr.tr, style: AppTheme.headingFont(size: 21)),
+          Text('مرکز آمار'.tr, style: AppTheme.headingFont(size: 21)),
           SizedBox(height: 4),
           Text('$historyCount بازی ثبت‌شده • $playerCount بازیکن',
             style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12)),
