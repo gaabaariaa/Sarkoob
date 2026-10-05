@@ -374,8 +374,8 @@ class _ThemeOption extends StatelessWidget {
   final VoidCallback onTap;
   _ThemeOption({required this.id, required this.selected, required this.onTap});
 
-  String get title => switch (id) { AppThemeId.darkGold => 'طلایی سلطنتی', AppThemeId.midnight => 'نیمه‌شب', AppThemeId.crimson => 'قرمز سینمایی' };
-  String get subtitle => switch (id) { AppThemeId.darkGold => 'تم اصلی دست خدا', AppThemeId.midnight => 'سرد، تاریک و مدرن', AppThemeId.crimson => 'تیره با حال‌وهوای پرتنش' };
+  String get title => switch (id) { AppThemeId.darkGold => 'طلایی سلطنتی'.tr, AppThemeId.midnight => 'نیمه‌شب'.tr, AppThemeId.crimson => 'قرمز سینمایی'.tr };
+  String get subtitle => switch (id) { AppThemeId.darkGold => 'تم اصلی دست خدا'.tr, AppThemeId.midnight => 'سرد، تاریک و مدرن'.tr, AppThemeId.crimson => 'تیره با حال‌وهوای پرتنش'.tr };
   Color get accent => switch (id) { AppThemeId.darkGold => AppColors.gold, AppThemeId.midnight => Color(0xFF9DB9D5), AppThemeId.crimson => Color(0xFFB84A4A) };
 
   @override
