@@ -42,7 +42,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('تاریخچه بازی‌ها'.tr.tr.tr.tr),
+        title: Text('تاریخچه بازی‌ها'.tr),
         actions: [
           Padding(
             padding: EdgeInsetsDirectional.only(end: 14),
@@ -106,10 +106,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('مرکز تاریخچه'.tr.tr, style: AppTheme.headingFont(size: 21)),
+                Text('مرکز تاریخچه'.tr, style: AppTheme.headingFont(size: 21)),
                 SizedBox(height: 5),
                 Text(
-                  'نتایج بازی‌ها و عملکرد بازیکنان را مرور کن.'.tr.tr,
+                  'نتایج بازی‌ها و عملکرد بازیکنان را مرور کن.'.tr,
                   style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12, height: 1.45),
                 ),
               ],
@@ -122,7 +122,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Widget _buildHistoryCard(GameHistoryEntry entry) {
     final isUnknown = entry.winningTeamId == 'unknown';
-    final winner = isUnknown ? 'نتیجه نامشخص' : _teamName(entry.winningTeamId);
+    final winner = isUnknown ? 'نتیجه نامشخص'.tr : _teamName(entry.winningTeamId);
 
     return Container(
       margin: EdgeInsets.only(bottom: 12),
@@ -177,8 +177,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
           children: entry.players.map((p) {
             final role = p.roleId != null ? GameRoles.byId(p.roleId!) : null;
             final status = p.wasOnWinningSide
-                ? 'برنده'
-                : (p.survived ? 'زنده ماند' : 'حذف شد');
+                ? 'برنده'.tr
+                : (p.survived ? 'زنده ماند'.tr : 'حذف شد'.tr);
             final statusColor = p.wasOnWinningSide ? AppTheme.uiPrimaryLight : AppTheme.uiMutedText;
 
             return Container(
@@ -250,10 +250,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 child: Icon(Icons.history_toggle_off_rounded, color: AppTheme.uiPrimaryLight, size: 36),
               ),
               SizedBox(height: 18),
-              Text('هنوز بازی‌ای ثبت نشده'.tr.tr, style: AppTheme.headingFont(size: 22)),
+              Text('هنوز بازی‌ای ثبت نشده'.tr, style: AppTheme.headingFont(size: 22)),
               SizedBox(height: 8),
               Text(
-                'بعد از پایان یک بازی، نتیجه را ثبت کن تا اینجا برای مرور و آمار نگه‌داری شود.'.tr.tr,
+                'بعد از پایان یک بازی، نتیجه را ثبت کن تا اینجا برای مرور و آمار نگه‌داری شود.'.tr,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12, height: 1.6),
               ),
