@@ -43,11 +43,11 @@ class _RosterScreenState extends State<RosterScreen> {
     final controller = TextEditingController(text: profile.name);
     final newName = await showDialog<String>(context: context, builder: (dialogContext) => AlertDialog(
       backgroundColor: AppTheme.uiSurface,
-      title: Text('ویرایشِ اسم'.tr.tr.tr.tr, style: TextStyle(color: AppTheme.uiPrimaryLight)),
+      title: Text('ویرایشِ اسم'.tr, style: TextStyle(color: AppTheme.uiPrimaryLight)),
       content: TextField(controller: controller, style: TextStyle(color: Colors.white), autofocus: true),
       actions: [
-        TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: Text('انصراف'.tr.tr)),
-        ElevatedButton(onPressed: () => Navigator.of(dialogContext).pop(controller.text.trim()), child: Text('ذخیره'.tr.tr)),
+        TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: Text('انصراف'.tr)),
+        ElevatedButton(onPressed: () => Navigator.of(dialogContext).pop(controller.text.trim()), child: Text('ذخیره'.tr)),
       ],
     ));
     controller.dispose();
@@ -92,20 +92,20 @@ class _RosterScreenState extends State<RosterScreen> {
     final allSelected = _roster.isNotEmpty && _selectedIds.length == _roster.length;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.selectionMode ? 'انتخاب بازیکنان' : 'بازیکنان'),
+        title: Text(widget.selectionMode ? 'انتخاب بازیکنان'.tr : 'بازیکنان'.tr),
         actions: widget.selectionMode ? [
-          TextButton.icon(onPressed: _toggleAll, icon: Icon(allSelected ? Icons.deselect_rounded : Icons.select_all_rounded), label: Text(allSelected ? 'لغو همه' : 'انتخاب همه')),
+          TextButton.icon(onPressed: _toggleAll, icon: Icon(allSelected ? Icons.deselect_rounded : Icons.select_all_rounded), label: Text(allSelected ? 'لغو همه'.tr : 'انتخاب همه'.tr)),
           TextButton(onPressed: _finishSelection, child: Text('تأیید (${_selectedIds.length})')),
         ] : null,
       ),
       body: _loading ? Center(child: CircularProgressIndicator()) : Padding(
         padding: EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text(widget.selectionMode ? 'بازیکن‌ها را انتخاب کن. برای جابه‌جایی ترتیب، دستت را روی آیکون ☰ نگه دار و بکش.' : 'این لیست دائمیه و بینِ بازی‌های مختلف می‌مونه؛ موقعِ شروعِ بازیِ جدید می‌تونی مستقیم ازش اسم اضافه کنی.', style: TextStyle(color: Colors.white60, fontSize: 12)),
+          Text(widget.selectionMode ? 'بازیکن‌ها را انتخاب کن. برای جابه‌جایی ترتیب، دستت را روی آیکون ☰ نگه دار و بکش.'.tr : 'این لیست دائمیه و بینِ بازی‌های مختلف می‌مونه؛ موقعِ شروعِ بازیِ جدید می‌تونی مستقیم ازش اسم اضافه کنی.'.tr, style: TextStyle(color: Colors.white60, fontSize: 12)),
           SizedBox(height: 12),
-          Row(children: [Expanded(child: TextField(controller: _nameController, style: TextStyle(color: Colors.white), decoration: InputDecoration(labelText: 'اسمِ بازیکنِ جدید'.tr.tr, border: OutlineInputBorder()), onSubmitted: (_) => _addPlayer())), SizedBox(width: 8), ElevatedButton(onPressed: _addPlayer, child: Text('افزودن'.tr.tr))]),
+          Row(children: [Expanded(child: TextField(controller: _nameController, style: TextStyle(color: Colors.white), decoration: InputDecoration(labelText: 'اسمِ بازیکنِ جدید'.tr, border: OutlineInputBorder()), onSubmitted: (_) => _addPlayer())), SizedBox(width: 8), ElevatedButton(onPressed: _addPlayer, child: Text('افزودن'.tr))]),
           SizedBox(height: 12),
-          Expanded(child: _roster.isEmpty ? Center(child: Text('هنوز کسی تو لیست نیست.'.tr.tr, style: TextStyle(color: Colors.white38))) : ReorderableListView.builder(
+          Expanded(child: _roster.isEmpty ? Center(child: Text('هنوز کسی تو لیست نیست.'.tr, style: TextStyle(color: Colors.white38))) : ReorderableListView.builder(
             itemCount: _roster.length,
             onReorder: _reorder,
             buildDefaultDragHandles: false,
