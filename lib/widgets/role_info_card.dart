@@ -4,6 +4,7 @@ import '../models/role_scoring_info.dart';
 import '../models/scenario.dart';
 import '../models/team.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 
 class RoleInfoCard extends StatelessWidget {
   final GameRole role;
