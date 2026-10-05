@@ -413,6 +413,11 @@ class AppStrings {
     "استعلام روی کی؟":"Who should be investigated?",
     "ناتاشا کی رو ساکت کنه؟":"Who should Natasha silence?",
     "خرابکار رو تفنگِ کی خرابکاری کنه؟":"Whose weapon should the Saboteur sabotage?",
+    "بدونِ سابقه":"No history",
+    "اخطار گرفته":"Warning received",
+    "یک‌روز از چالش‌گرفتن منع شده":"Challenge ban for one day",
+    "برای‌همیشه از چالش‌گرفتن منع شده و سکوتِ انضباطی خورده":"Permanent challenge ban + disciplinary silence",
+    "از بازی اخراج شده":"Expelled from game",
   };
 
   static String roleName(String id, String fallback) =>
