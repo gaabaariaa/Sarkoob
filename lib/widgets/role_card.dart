@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/team.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 
 /// کارت تعاملی نمایش تیم برای پیش‌نمایش نقش.
 class TeamRevealCard extends StatefulWidget {
