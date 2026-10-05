@@ -30,7 +30,7 @@ class ModernSpeakingPanel extends StatelessWidget {
     this.onChooseChallenge,
     this.onTimerFinished,
     this.onSecondElapsed,
-    this.nextLabel = 'نفر بعدی',
+    this.nextLabel = 'نفر بعدی'.tr,
     this.eyebrow,
   });
 
@@ -41,7 +41,7 @@ class ModernSpeakingPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _PhaseHeader(eyebrow: eyebrow ?? 'نوبت صحبت'),
+          _PhaseHeader(eyebrow: eyebrow ?? 'نوبت صحبت'.tr),
           SizedBox(height: 12),
           Container(
             padding: EdgeInsets.all(18),
@@ -65,7 +65,7 @@ class ModernSpeakingPanel extends StatelessWidget {
                     SizedBox(width: 8),
                     _StatusChip(
                       icon: challengeActive ? Icons.flash_on : Icons.groups,
-                      text: challengeActive ? 'چالش فعال' : '$remainingPlayers نفر باقی',
+                      text: challengeActive ? 'چالش فعال'.tr : '$remainingPlayers نفر باقی',
                       active: challengeActive,
                     ),
                   ],
@@ -120,7 +120,7 @@ class ModernSpeakingPanel extends StatelessWidget {
                         child: OutlinedButton.icon(
                           onPressed: onFinishChallenge,
                           icon: Icon(Icons.stop_circle_outlined),
-                          label: Text('پایان چالش'.tr.tr.tr),
+                          label: Text('پایان چالش'.tr),
                           style: OutlinedButton.styleFrom(
                             minimumSize: Size.fromHeight(52),
                             foregroundColor: AppTheme.uiPrimaryLight,
@@ -137,7 +137,7 @@ class ModernSpeakingPanel extends StatelessWidget {
                   TextButton.icon(
                     onPressed: onChooseChallenge,
                     icon: Icon(Icons.bolt_outlined, size: 20),
-                    label: Text('انتخاب چالش'.tr.tr.tr),
+                    label: Text('انتخاب چالش'.tr),
                     style: TextButton.styleFrom(foregroundColor: AppTheme.uiPrimaryLight),
                   ),
                 ],
@@ -192,7 +192,7 @@ class _PhaseHeader extends StatelessWidget {
             children: [
               Text(eyebrow, style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 18, fontWeight: FontWeight.w800)),
               SizedBox(height: 2),
-              Text('کنترل میز بازی'.tr.tr, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12)),
+              Text('کنترل میز بازی'.tr, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12)),
             ],
           ),
         ],
