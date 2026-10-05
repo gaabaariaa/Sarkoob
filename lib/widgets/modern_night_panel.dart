@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'game_3d_button.dart';
 import 'countdown_timer_widget.dart';
+import '../theme/app_strings.dart';
 
 class ModernNightPanel extends StatelessWidget {
   final String eyebrow;
