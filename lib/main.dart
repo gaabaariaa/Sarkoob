@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'theme/app_theme.dart';
 import 'theme/app_language.dart';
+import 'theme/app_strings.dart';
 import 'screens/home_screen.dart';
 
 Future<void> main() async {
@@ -20,7 +21,7 @@ class HiddenRoleApp extends StatelessWidget {
       builder: (context, _) {
         final themeId = AppThemeController.current.value;
         return MaterialApp(
-          title: 'دست خدا',
+          title: 'دست خدا'.tr,
           debugShowCheckedModeBanner: false,
           theme: AppTheme.forId(themeId),
           locale: AppLanguageController.locale,
