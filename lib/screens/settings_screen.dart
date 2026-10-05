@@ -92,7 +92,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final paths = result.files.map((f) => f.path).whereType<String>().toList();
       if (paths.isEmpty) { _showError('فایل‌های انتخاب‌شده قابلِ‌خوندن نبودن.'.tr); return; }
       await _applySelection(paths);
-    } catch (e) { _showError('خطا تو انتخابِ موزیک: $e'); }
+    } catch (e) { _showError(('خطا تو انتخابِ موزیک: $e').tr); }
   }
 
   Future<void> _clearMusic() async {
@@ -145,7 +145,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (!mounted) return;
       setState(() => _backupBusy = false);
       if (savedPath != null) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('✅ بک‌آپ ذخیره شد.'.tr)));
-    } catch (e) { _showBackupError('خطا تو گرفتنِ خروجی: $e'); }
+    } catch (e) { _showBackupError(('خطا تو گرفتنِ خروجی: $e').tr); }
   }
 
   Future<void> _importBackup() async {
@@ -186,9 +186,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final imported = await _storage.importBackupJson(await File(path).readAsString(), merge: mode);
       if (!mounted) return;
       setState(() => _backupBusy = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mode ? '✅ ${imported.rosterCount} بازیکنِ جدید و ${imported.historyCount} بازیِ جدید اضافه شد.' : '✅ بازیابی شد: ${imported.rosterCount} بازیکن، ${imported.historyCount} بازی.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text((mode ? '✅ ${imported.rosterCount} بازیکنِ جدید و ${imported.historyCount} بازیِ جدید اضافه شد.' : '✅ بازیابی شد: ${imported.rosterCount} بازیکن، ${imported.historyCount} بازی.').tr)));
     } on FormatException catch (e) { _showBackupError(e.message); }
-    catch (e) { _showBackupError('فایل خونده نشد یا خرابه: $e'); }
+    catch (e) { _showBackupError(('فایل خونده نشد یا خرابه: $e').tr); }
   }
 
   Widget _buildSectionHeader(IconData icon, String title, String subtitle) => Padding(padding: EdgeInsets.only(left: 2, right: 2), child: Row(children: [Container(width: 40, height: 40, decoration: BoxDecoration(color: AppTheme.uiPrimaryDark.withAlpha(46), borderRadius: BorderRadius.circular(12)), child: Icon(icon, color: AppTheme.uiPrimaryLight, size: 20)), SizedBox(width: 11), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: AppTheme.headingFont(size: 19)), SizedBox(height: 2), Text(subtitle, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 11))]))]));
