@@ -95,16 +95,16 @@ class _RoleBestRow extends StatelessWidget {
             style: TextStyle(color: Colors.white, fontSize: 13),
             children: [
               TextSpan(
-                text: 'بهترین ${best.roleName}: ',
+                text: 'بهترین ${best.roleName}: '.tr,
                 style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.bold),
               ),
-              TextSpan(text: '${top.playerName} با ${top.count} ${best.unitLabel}'),
+              TextSpan(text: '${top.playerName} با ${top.count} ${best.unitLabel}'.tr),
             ],
           ),
         ),
         subtitle: best.rankings.length > 1
             ? Text(
-                '${best.rankings.length} بازیکن این نقش رو بازی کرده‌ن — بزن تا بقیه‌ی رتبه‌ها رو ببینی',
+                '${best.rankings.length} بازیکن این نقش رو بازی کرده‌ن — بزن تا بقیه‌ی رتبه‌ها رو ببینی'.tr,
                 style: TextStyle(color: Colors.white38, fontSize: 11),
               )
             : null,
@@ -348,7 +348,7 @@ class _StatsScreenState extends State<StatsScreen> {
                     color: AppColors.bloodRedLight,
                     title: 'طرفِ بازنده'.tr,
                     playerName: '${loser.length} نفر',
-                    reason: 'حذف‌شده‌ها: ${loser.where((p) => !p.survived).length} نفر',
+                    reason: 'حذف‌شده‌ها: ${loser.where((p) => !p.survived).length} نفر'.tr,
                   ),
                 ),
             ],
@@ -363,7 +363,7 @@ class _StatsScreenState extends State<StatsScreen> {
                     color: AppTheme.uiPrimary,
                     title: 'بهترین بازیکنِ این بازی'.tr,
                     playerName: bestOfLastGame.name,
-                    reason: 'امتیاز: ${bestOfLastGame.totalScore >= 0 ? '+' : ''}${bestOfLastGame.totalScore}',
+                    reason: 'امتیاز: ${bestOfLastGame.totalScore >= 0 ? '+' : ''}${bestOfLastGame.totalScore}'.tr,
                   ),
                 ),
                 SizedBox(width: 12),
@@ -374,7 +374,7 @@ class _StatsScreenState extends State<StatsScreen> {
                     title: 'بدترین بازیکنِ این بازی'.tr,
                     playerName: worstOfLastGame.name,
                     reason:
-                        'امتیاز: ${worstOfLastGame.totalScore >= 0 ? '+' : ''}${worstOfLastGame.totalScore}',
+                        'امتیاز: ${worstOfLastGame.totalScore >= 0 ? '+' : ''}${worstOfLastGame.totalScore}'.tr,
                   ),
                 ),
               ],
@@ -385,7 +385,7 @@ class _StatsScreenState extends State<StatsScreen> {
           _sectionTitle('آمارِ کلِ بازی‌ها'.tr),
           SizedBox(height: 4),
           Text(
-            'روی مجموعِ ${_history.length} بازیِ ثبت‌شده.',
+            'روی مجموعِ ${_history.length} بازیِ ثبت‌شده.'.tr,
             style: TextStyle(color: Colors.white70),
           ),
           SizedBox(height: 10),
@@ -465,7 +465,7 @@ class _StatsScreenState extends State<StatsScreen> {
                       color: AppTheme.uiPrimaryLight,
                       title: 'چالش‌بگیرترین بازیکن'.tr,
                       playerName: topChallengeReceiver.displayName,
-                      reason: '${topChallengeReceiver.challengesReceivedTotal} بار چالش گرفته',
+                      reason: '${topChallengeReceiver.challengesReceivedTotal} بار چالش گرفته'.tr,
                     ),
                   ),
                 if (topChallengeReceiver != null && topChallengeGiver != null)
@@ -477,7 +477,7 @@ class _StatsScreenState extends State<StatsScreen> {
                       color: AppTheme.uiPrimaryLight,
                       title: 'چالش‌بده‌ترین بازیکن'.tr,
                       playerName: topChallengeGiver.displayName,
-                      reason: '${topChallengeGiver.challengesGivenTotal} بار چالش داده',
+                      reason: '${topChallengeGiver.challengesGivenTotal} بار چالش داده'.tr,
                     ),
                   ),
               ],
@@ -536,7 +536,7 @@ class _StatsScreenState extends State<StatsScreen> {
                   style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  '${agg.games} بازی — ${agg.wins} برد',
+                  '${agg.games} بازی — ${agg.wins} برد'.tr,
                   style: TextStyle(color: Colors.white60),
                 ),
                 children: agg.rows
@@ -550,7 +550,7 @@ class _StatsScreenState extends State<StatsScreen> {
                             'نقش: ${row.roleName ?? row.teamName}، تیم: ${row.teamName}، '
                             '${row.won ? 'برنده'.tr : 'بازنده'.tr}'
                             '${row.disciplineStage > 0 ? '، ${disciplineStageLabel(row.disciplineStage)}' : ''}'
-                            '، امتیاز: ${row.score >= 0 ? '+' : ''}${row.score}',
+                            '، امتیاز: ${row.score >= 0 ? '+' : ''}${row.score}'.tr,
                             style: TextStyle(color: Colors.white70, height: 1.6),
                           ),
                         ),
@@ -599,7 +599,7 @@ class _StatsHero extends StatelessWidget {
         children: [
           Text('مرکز آمار'.tr, style: AppTheme.headingFont(size: 21)),
           SizedBox(height: 4),
-          Text('$historyCount بازی ثبت‌شده • $playerCount بازیکن',
+          Text('$historyCount بازی ثبت‌شده • $playerCount بازیکن'.tr,
             style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12)),
         ],
       )),
@@ -682,9 +682,9 @@ class _LeaderboardRow extends StatelessWidget {
           Expanded(
             child: Text(agg.displayName, style: TextStyle(color: Colors.white)),
           ),
-          Text('${agg.games} بازی', style: TextStyle(color: Colors.white60)),
+          Text('${agg.games} بازی'.tr, style: TextStyle(color: Colors.white60)),
           SizedBox(width: 12),
-          Text('$rate% برد', style: TextStyle(color: AppTheme.uiPrimaryLight)),
+          Text('$rate% برد'.tr, style: TextStyle(color: AppTheme.uiPrimaryLight)),
         ],
       ),
     );
@@ -719,7 +719,7 @@ class _ScoreLeaderboardRow extends StatelessWidget {
           Text('${agg.games} بازی', style: TextStyle(color: Colors.white60)),
           SizedBox(width: 12),
           Text(
-            '${avg >= 0 ? '+' : ''}${avg.toStringAsFixed(1)} میانگین',
+            '${avg >= 0 ? '+' : ''}${avg.toStringAsFixed(1)} میانگین'.tr,
             style: TextStyle(color: color, fontWeight: FontWeight.bold),
           ),
         ],
