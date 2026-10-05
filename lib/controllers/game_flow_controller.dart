@@ -4,6 +4,7 @@ import '../models/role.dart';
 import '../models/scenario.dart';
 import '../models/team.dart';
 import '../models/score_event.dart';
+import '../theme/app_strings.dart';
 
 /// نتیجه‌ی نهاییِ حل‌وفصلِ رأی‌گیریِ یه روز.
 class VoteResolution {
