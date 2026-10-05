@@ -100,52 +100,15 @@ class AppStrings {
     'نمایش نقش‌ها':'Reveal Roles','انتخابِ همه':'Select All','فاز دفاع':'Defense Phase','نوبت دفاع':'Defense Turn','پایان دفاع و نفر بعدی':'End Defense & Next',
     'نوبتِ':'Turn','در حال صحبت':'Speaking','چالش فعال':'Challenge Active','نفر بعدی':'Next Player','پایان چالش':'End Challenge','انتخاب چالش':'Choose Challenge',
     'کنترل میز بازی':'Table Controls','زمانِ صحبت':'Speaking Time','تایمر متوقف است':'Timer Paused','مکث':'Pause','پخش':'Start','توقف':'Stop',
-  };
-
-  static String roleName(String id, String fallback) =>
-      AppLanguageController.current.value == AppLanguage.english
-          ? (_roleNamesEn[id] ?? fallback)
-          : fallback;
-
-  static String roleDescription(String id, String fallback) =>
-      AppLanguageController.current.value == AppLanguage.english
-          ? (_roleDescriptionsEn[id] ?? fallback)
-          : fallback;
-
-  static String teamName(String id, String fallback) =>
-      AppLanguageController.current.value == AppLanguage.english
-          ? (_teamNamesEn[id] ?? fallback)
-          : fallback;
-
-  static String teamDescription(String id, String fallback) =>
-      AppLanguageController.current.value == AppLanguage.english
-          ? (_teamDescriptionsEn[id] ?? fallback)
-          : fallback;
-
-  static String scenarioName(String id, String fallback) =>
-      AppLanguageController.current.value == AppLanguage.english
-          ? (_scenarioNamesEn[id] ?? fallback)
-          : fallback;
-
-  static String scenarioDescription(String id, String fallback) =>
-      AppLanguageController.current.value == AppLanguage.english
-          ? (_scenarioDescriptionsEn[id] ?? fallback)
-          : fallback;
-
-  // Additional UI translations completed for the English interface.
-    "مدیریت بازی":"Game Management",
     "بازیکنان":"Players",
     "لیست و نقش‌ها":"Roster & Roles",
     "آمار":"Stats",
     "نتایج و عملکرد":"Results & Performance",
     "تاریخچه":"History",
     "بازی‌های قبلی":"Previous Games",
-    "سناریوها":"Scenarios",
     "قوانین و سناریوهای بازی":"Game Rules & Scenarios",
-    "دست خدا":"Hand of God",
     "میز بازی":"Game Table",
     "همه‌چیز برای اجرای یک شب پرتنش آماده است.":"Everything is ready for an intense night.",
-    "نقش مخفی":"Hidden Role",
     "چند سناریو":"Multiple Scenarios",
     "شروع بازی":"Start Game",
     "بازیکنان را انتخاب کن و سناریو را مشخص کن":"Choose players and select a scenario",
@@ -178,41 +141,14 @@ class AppStrings {
     "بدون تیم مستقل":"No independent team",
     "همیشه فعال":"Always enabled",
     "فایل‌های انتخاب‌شده قابلِ‌خوندن نبودن.":"The selected files could not be read.",
-    "ذخیره‌ی فایلِ بک‌آپ":"Save Backup File",
     "✅ بک‌آپ ذخیره شد.":"✅ Backup saved.",
-    "وارد کردنِ بک‌آپ":"Import Backup",
-    "داده‌های فایل به داده‌های فعلی اضافه بشن یا کاملاً جایگزین بشن؟":"Add the file data to the current data or replace it completely?",
     "انصراف":"Cancel",
-    "افزودن به داده‌ی فعلی":"Add to Current Data",
-    "جایگزینیِ کامل":"Replace All",
-    "مطمئنی؟":"Are you sure?",
-    "روستر و تاریخچه‌ی فعلی پاک می‌شن و با فایل جایگزین می‌شن.":"The current roster and history will be replaced by the file.",
-    "جایگزین کن":"Replace",
-    "ظاهر برنامه":"Appearance",
-    "شخصی‌سازی ظاهر میز بازی":"Customize the game table appearance",
-    "تنظیمات زبان":"Language Settings",
-    "زبان رابط کاربری برنامه را انتخاب کن":"Choose the app interface language",
-    "موزیک شب":"Night Music",
-    "موسیقی خودکار فازهای شب و خواب نیمروزی":"Automatic music for night phases and nap",
-    "هیچ موزیکی انتخاب نشده":"No music selected",
-    "انتخابِ موزیک":"Choose Music",
-    "توقفِ پخشِ آزمایشی":"Stop Preview",
-    "پخشِ آزمایشی":"Preview",
-    "بعدی":"Next",
-    "حذف":"Delete",
-    "بک‌آپ و بازیابی":"Backup & Restore",
-    "انتقال و بازیابی اطلاعات بازی":"Transfer and restore game data",
-    "روستر و تاریخچه‌ی بازی‌ها را در یک فایل ذخیره کن تا بتوانی به گوشی دیگر منتقل یا از فایل قبلی بازیابی کنی.":"Save your roster and game history in one file to transfer them to another phone or restore them later.",
-    "نسخه پشتیبان اطلاعات":"Data Backup",
     "خروجی گرفتن":"Export",
-    "بازیابی":"Restore",
     "ویرایشِ اسم":"Edit Name",
-    "انتخاب بازیکنان":"Select Players",
     "لغو همه":"Deselect All",
     "انتخاب همه":"Select All",
     "بازیکن‌ها را انتخاب کن. برای جابه‌جایی ترتیب، دستت را روی آیکون ☰ نگه دار و بکش.":"Select players. Hold and drag the ☰ icon to reorder them.",
     "این لیست دائمیه و بینِ بازی‌های مختلف می‌مونه؛ موقعِ شروعِ بازیِ جدید می‌تونی مستقیم ازش اسم اضافه کنی.":"This is the permanent list shared across games; you can add names from it when starting a new game.",
-    "اسمِ بازیکنِ جدید":"New player name",
     "هنوز کسی تو لیست نیست.":"No players in the list yet.",
     "قوانین و نقش‌ها":"Rules & Roles",
     "راهنمای سناریو":"Scenario Guide",
@@ -248,7 +184,6 @@ class AppStrings {
     "تاریخچه‌ی کامل هر بازیکن":"Complete Player History",
     "بازنده":"Loser",
     "مرکز آمار":"Stats Center",
-    "نمایش نقش‌ها":"Reveal Roles",
     "همه نقش‌ها دیده شد • شروع بازی":"All roles revealed • Start Game",
     "بعد از دیدن همه نقش‌ها شروع کن":"Start after viewing all roles",
     "نمایش خصوصی نقش":"Private Role Reveal",
@@ -260,21 +195,15 @@ class AppStrings {
     "برای مخفی کردن دوباره لمس کن":"Tap again to hide",
     "امتیازدهی":"Scoring",
     "فاز دفاع":"Defense Phase",
-    "هر بازیکن فرصت دفاع از خودش را دارد.":"Each player gets a chance to defend themselves.",
     "نوبت دفاع":"Defense Turn",
-    "صحبتت را کامل کن؛ بعد از پایان دفاع، نوبت نفر بعدی می‌رسد.":"Finish your defense; then it is the next player's turn.",
     "پایان دفاع و نفر بعدی":"End Defense & Next",
     "زمانِ اکشن شب":"Night Action Time",
     "نفر بعدی":"Next Player",
     "نوبت صحبت":"Speaking Turn",
     "در حال صحبت":"Speaking",
     "چالش فعال":"Challenge Active",
-    "نوبتِ":"Turn",
     "پایان چالش":"End Challenge",
     "انتخاب چالش":"Choose Challenge",
-    "گرداننده، وضعیت و زمان را از این پنل کنترل می‌کند.":"The moderator controls status and timing from this panel.",
-    "کنترل میز بازی":"Table Controls",
-
     "جلوی هر نقش، تعدادش رو مشخص کن؛ خودِ برنامه موقعِ شروعِ بازی کاملاً تصادفی مشخص می‌کنه کدوم بازیکن کدوم نقش رو می‌گیره.":"Set the count for each role; the app randomly assigns the selected roles to players when the game starts.",
     "همینطور جلوی هر نقشِ این تیم، تعدادش رو مشخص کن؛ عضوِ ساده همون عضوِ بدونِ قابلیتِ خاصه.":"Set the count for each role in this team; the simple member is the role without a special ability.",
     "اول سناریوی بازی رو انتخاب کن — تیم‌ها و نقش‌های قابل‌انتخاب ":"First select the game scenario — the available teams and roles ",
@@ -283,8 +212,39 @@ class AppStrings {
     "🏆 علاوه‌بر امتیازدهیِ اختصاصیِ هر نقش (که زیرِ خودش نوشته شده)، همه‌ی بازیکنان از رأی‌گیری (رأیِ خروج)، رأیِ رهبری، بقا، و سیستمِ انضباطی هم امتیاز می‌گیرن — این‌ها مشترکه و زیرِ هر نقش تکرار نشده. امتیازِ رأی/رفراندوم بر اساسِ نقش ضریب می‌خوره: شهروندِ‌خاکستری/simpleCitizen چون هیچ اکشنِ اختصاصی ندارن x۲، سرکوبگر/simpleMafia x۱.۵، رهبرِ موساد/زودیاک (که خودشون اکشنِ اختصاصیِ پرامتیاز دارن) x۰.۵، بقیه x۱. فازِ آشوب (سه‌نفرِ آخر) هم امتیازِ خودشو داره: دو نفری که با هم دست دادن اگه تیمشون برد +۳، اگه به‌اشتباه به سودِ حریف بود -۳؛ نفرِ سومی که بیرون موند و تیمش باخت -۱.":"🏆 In addition to each role's own scoring rules, all players also score from elimination votes, leadership votes, survival, and discipline. These shared rules are not repeated under every role. Vote/referendum scores are role-weighted: Gray Citizen/simpleCitizen x2, Suppressor/simpleMafia x1.5, Mossad Leader/Zodiac x0.5, and other roles x1. The final three-player chaos phase also has its own scoring: the two players who team up get +3 if their team wins, -3 if they accidentally help the opponent; the third player who stays out gets -1 if their team loses.",
     "بر اساسِ تعدادِ کارهایِ موفقِ اون نقش، رویِ مجموعِ همه‌ی بازی‌هایی که کسی اون نقش رو بازی کرده.":"Based on the number of successful actions for that role across all games in which the role was played.",
     "میانگینِ امتیازِ هر بازیکن رو کلِ بازی‌هاش (طبقِ سیستمِ امتیازدهیِ رأی/شات/سلاخی/نجات/استعلام/انضباط و بقیه‌ی قابلیت‌ها).":"Each player's average score across all of their games, using the voting, shot, slaughter, rescue, inquiry, discipline, and other ability scoring systems.",
+  };
 
-  static const _roleNamesEn = <String, String>{
+  static String roleName(String id, String fallback) =>
+      AppLanguageController.current.value == AppLanguage.english
+          ? (_roleNamesEn[id] ?? fallback)
+          : fallback;
+
+  static String roleDescription(String id, String fallback) =>
+      AppLanguageController.current.value == AppLanguage.english
+          ? (_roleDescriptionsEn[id] ?? fallback)
+          : fallback;
+
+  static String teamName(String id, String fallback) =>
+      AppLanguageController.current.value == AppLanguage.english
+          ? (_teamNamesEn[id] ?? fallback)
+          : fallback;
+
+  static String teamDescription(String id, String fallback) =>
+      AppLanguageController.current.value == AppLanguage.english
+          ? (_teamDescriptionsEn[id] ?? fallback)
+          : fallback;
+
+  static String scenarioName(String id, String fallback) =>
+      AppLanguageController.current.value == AppLanguage.english
+          ? (_scenarioNamesEn[id] ?? fallback)
+          : fallback;
+
+  static String scenarioDescription(String id, String fallback) =>
+      AppLanguageController.current.value == AppLanguage.english
+          ? (_scenarioDescriptionsEn[id] ?? fallback)
+          : fallback;
+
+    static const _roleNamesEn = <String, String>{
     'role_vali_faghih':'Supreme Leader','role_foreign_minister':'Foreign Minister','role_suppressor':'Suppressor',
     'role_judiciary_chief':'Judiciary Chief','role_doctor':'Doctor','role_hacker':'Hacker','role_revolutionary_fighter':'Revolutionary Fighter',
     'role_lawyer':'Lawyer','role_rapper':'Protest Rapper','role_zhina':'Zhina','role_government_celebrity':'Government Celebrity',
