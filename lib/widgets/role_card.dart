@@ -87,7 +87,7 @@ class _TeamRevealCardState extends State<TeamRevealCard> {
             ),
             SizedBox(height: 8),
             Text(
-              'برای دیدن تیم لمس کن',
+              'برای دیدن تیم لمس کن'.tr,
               style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12),
             ),
             SizedBox(height: 14),
@@ -146,7 +146,7 @@ class _TeamRevealCardState extends State<TeamRevealCard> {
             ),
             SizedBox(height: 16),
             Text(
-              'برای مخفی کردن دوباره لمس کن',
+              'برای مخفی کردن دوباره لمس کن'.tr,
               style: TextStyle(color: AppTheme.uiSubtleText, fontSize: 10),
             ),
           ],
