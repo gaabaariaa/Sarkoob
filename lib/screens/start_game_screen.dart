@@ -97,13 +97,13 @@ class _StartGameScreenState extends State<StartGameScreen> {
             children: [
               Padding(
                 padding: EdgeInsets.all(16),
-                child: Text('افزودن از لیستِ بازیکنان'.tr.tr, style: AppTheme.headingFont(size: 18)),
+                child: Text('افزودن از لیستِ بازیکنان'.tr, style: AppTheme.headingFont(size: 18)),
               ),
               if (available.isEmpty)
                 Padding(
                   padding: EdgeInsets.all(16),
                   child: Text(
-                    'همه‌ی بازیکنانِ لیستِ دائمی از قبل تو این بازی هستن.'.tr.tr,
+                    'همه‌ی بازیکنانِ لیستِ دائمی از قبل تو این بازی هستن.'.tr,
                     style: TextStyle(color: Colors.white38),
                   ),
                 )
@@ -115,7 +115,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                   tristate: true,
                   activeColor: AppTheme.uiPrimary,
                   title: Text(
-                    'انتخابِ همه'.tr.tr.tr,
+                    'انتخابِ همه'.tr,
                     style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.bold),
                   ),
                   onChanged: (_) => setSheetState(() {
@@ -231,7 +231,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
   String? get _validationError {
     final scenario = _selectedScenario;
-    if (scenario == null) return 'سناریوی بازی انتخاب نشده';
+    if (scenario == null) return 'سناریوی بازی انتخاب نشده'.tr;
     final total = _draftPlayers.length;
     if (total < _minPlayers) return 'حداقل $_minPlayers بازیکن لازمه (الان $total نفر)';
     final townTotal = _townTeamTotal(scenario);
@@ -280,16 +280,16 @@ class _StartGameScreenState extends State<StartGameScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: AppTheme.uiSurface,
-        title: Text('قدرت بازی بالانس نیست'.tr.tr.tr, style: TextStyle(color: AppTheme.uiPrimaryLight)),
+        title: Text('قدرت بازی بالانس نیست'.tr, style: TextStyle(color: AppTheme.uiPrimaryLight)),
         content: Text(message, style: TextStyle(color: Colors.white70)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text('بازگشت و تغییر'.tr.tr),
+            child: Text('بازگشت و تغییر'.tr),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text('همینطوری ادامه بده'.tr.tr),
+            child: Text('همینطوری ادامه بده'.tr),
           ),
         ],
       ),
@@ -409,7 +409,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
         title: Text('شروع بازی — ${_selectedScenario!.name}'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded),
-          tooltip: 'تغییر سناریو'.tr.tr,
+          tooltip: 'تغییر سناریو'.tr,
           onPressed: () => setState(() => _selectedScenario = null),
         ),
       ),
@@ -465,10 +465,10 @@ class _StartGameScreenState extends State<StartGameScreen> {
                     SizedBox(height: 16),
                     _buildSetupSection(
                       icon: Icons.groups_rounded,
-                      title: 'بازیکن‌ها',
-                      subtitle: total == 0 ? 'بازیکن‌ها را اضافه کن' : '$total بازیکن آماده است',
+                      title: 'بازیکن‌ها'.tr,
+                      subtitle: total == 0 ? 'بازیکن‌ها را اضافه کن'.tr : '$total بازیکن آماده است',
                       child: Game3DButton(
-                        label: 'مدیریت بازیکن‌ها',
+                        label: 'مدیریت بازیکن‌ها'.tr,
                         icon: Icons.manage_accounts_rounded,
                         onPressed: _showPlayersPage,
                       ),
@@ -476,7 +476,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                     SizedBox(height: 14),
                     _buildSetupSection(
                       icon: Icons.hub_rounded,
-                      title: 'تیم‌ها و نقش‌ها',
+                      title: 'تیم‌ها و نقش‌ها'.tr,
                       subtitle: '$assigned از $total نفر نقش‌بندی شده',
                       child: Column(
                         children: [
@@ -492,7 +492,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                             ),
                           ),
                           _teamNavButton(
-                            label: 'تیمِ مستقل',
+                            label: 'تیمِ مستقل'.tr,
                             color: _isIndependentTeamEnabled(scenario)
                                 ? scenarioTeam(scenario, scenario.independentTeamId).color
                                 : AppTheme.uiSubtleText,
@@ -538,13 +538,13 @@ class _StartGameScreenState extends State<StartGameScreen> {
                     SizedBox(height: 14),
                     _buildSetupSection(
                       icon: Icons.tune_rounded,
-                      title: 'تنظیمات میز بازی',
-                      subtitle: 'زمان صحبت، نجات دکتر و محل بازی',
+                      title: 'تنظیمات میز بازی'.tr,
+                      subtitle: 'زمان صحبت، نجات دکتر و محل بازی'.tr,
                       child: Column(
                         children: [
                           _buildSettingRow(
                             icon: Icons.timer_outlined,
-                            title: 'زمان صحبت',
+                            title: 'زمان صحبت'.tr,
                             value: '$_speakSeconds ثانیه',
                             onMinus: () => setState(() { if (_speakSeconds > 10) _speakSeconds -= 10; }),
                             onPlus: () => setState(() => _speakSeconds += 10),
@@ -560,7 +560,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                           SizedBox(height: 12),
                           _buildSettingRow(
                             icon: Icons.health_and_safety_outlined,
-                            title: 'نجات خودِ دکتر',
+                            title: 'نجات خودِ دکتر'.tr,
                             value: '$_doctorMaxSelfSaves بار',
                             onMinus: () => setState(() { if (_doctorMaxSelfSaves > 0) _doctorMaxSelfSaves--; }),
                             onPlus: () => setState(() => _doctorMaxSelfSaves++),
@@ -570,8 +570,8 @@ class _StartGameScreenState extends State<StartGameScreen> {
                             controller: _locationController,
                             style: TextStyle(color: Colors.white),
                             decoration: InputDecoration(
-                              labelText: 'محل بازی (اختیاری)'.tr.tr,
-                              hintText: 'مثلاً خانه، کافه...'.tr.tr,
+                              labelText: 'محل بازی (اختیاری)'.tr,
+                              hintText: 'مثلاً خانه، کافه...'.tr,
                               prefixIcon: Icon(Icons.location_on_outlined, color: AppTheme.uiPrimary),
                               filled: true,
                               fillColor: AppTheme.uiSurface,
@@ -602,7 +602,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                         ),
                       ),
                     Game3DButton(
-                      label: 'شروع بازی • روز معارفه',
+                      label: 'شروع بازی • روز معارفه'.tr,
                       icon: Icons.play_arrow_rounded,
                       onPressed: error == null ? _onStartPressed : null,
                     ),
@@ -728,7 +728,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
   }
 
   void _showPlayersPage() {
-    _pushSection('بازیکن‌ها', AppTheme.uiPrimary, (context) {
+    _pushSection('بازیکن‌ها'.tr, AppTheme.uiPrimary, (context) {
       return StatefulBuilder(
         builder: (context, setSheetState) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -740,7 +740,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                     controller: _nameController,
                     style: TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      labelText: 'اسم بازیکن'.tr.tr,
+                      labelText: 'اسم بازیکن'.tr,
                       border: OutlineInputBorder(),
                     ),
                     onSubmitted: (_) {
@@ -755,7 +755,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                     _addPlayer();
                     setSheetState(() {});
                   },
-                  child: Text('افزودن'.tr.tr),
+                  child: Text('افزودن'.tr),
                 ),
               ],
             ),
@@ -772,7 +772,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
             ),
             SizedBox(height: 12),
             Text(
-              'با نگه‌داشتن و کشیدن، می‌تونی ترتیبِ بازیکن‌ها رو عوض کنی.'.tr.tr,
+              'با نگه‌داشتن و کشیدن، می‌تونی ترتیبِ بازیکن‌ها رو عوض کنی.'.tr,
               style: TextStyle(color: Colors.white38, fontSize: 11),
             ),
             SizedBox(height: 4),
@@ -845,14 +845,14 @@ class _StartGameScreenState extends State<StartGameScreen> {
     final role = scenarioRoleById(scenario, scenario.independentLeaderRoleId);
     if (team.id.isEmpty || role.id.isEmpty) return;
 
-    _pushSection('تیمِ مستقل', team.color, (context) {
+    _pushSection('تیمِ مستقل'.tr, team.color, (context) {
       return StatefulBuilder(
         builder: (context, setSheetState) {
           final enabled = _isIndependentTeamEnabled(scenario);
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('اختیاریه.'.tr.tr, style: TextStyle(color: Colors.white60, fontSize: 12)),
+              Text('اختیاریه.'.tr, style: TextStyle(color: Colors.white60, fontSize: 12)),
               SizedBox(height: 8),
               RadioListTile<String>(
                 value: 'none',
@@ -862,7 +862,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
                 setSheetState(() {});
               },
               activeColor: AppTheme.uiPrimary,
-              title: Text('بدون تیم مستقل'.tr.tr.tr, style: TextStyle(color: Colors.white)),
+              title: Text('بدون تیم مستقل'.tr, style: TextStyle(color: Colors.white)),
             ),
             RadioListTile<String>(
               value: team.id,
@@ -923,7 +923,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
 
   Widget _buildScenarioPicker() {
     return Scaffold(
-      appBar: AppBar(title: Text('شروع بازی — انتخابِ سناریو'.tr.tr.tr)),
+      appBar: AppBar(title: Text('شروع بازی — انتخابِ سناریو'.tr)),
       body: ListView(
         padding: EdgeInsets.all(16),
         children: [
@@ -1031,7 +1031,7 @@ class _StartGameScreenState extends State<StartGameScreen> {
       dense: true,
       leading: Icon(Icons.check_circle, color: AppTheme.uiPrimary),
       title: Text(role.localizedName, style: TextStyle(color: Colors.white)),
-      trailing: Text('همیشه فعال'.tr.tr, style: TextStyle(color: Colors.white38, fontSize: 12)),
+      trailing: Text('همیشه فعال'.tr, style: TextStyle(color: Colors.white38, fontSize: 12)),
     );
   }
 }
