@@ -275,6 +275,15 @@ class AppStrings {
     "گرداننده، وضعیت و زمان را از این پنل کنترل می‌کند.":"The moderator controls status and timing from this panel.",
     "کنترل میز بازی":"Table Controls",
 
+    "جلوی هر نقش، تعدادش رو مشخص کن؛ خودِ برنامه موقعِ شروعِ بازی کاملاً تصادفی مشخص می‌کنه کدوم بازیکن کدوم نقش رو می‌گیره.":"Set the count for each role; the app randomly assigns the selected roles to players when the game starts.",
+    "همینطور جلوی هر نقشِ این تیم، تعدادش رو مشخص کن؛ عضوِ ساده همون عضوِ بدونِ قابلیتِ خاصه.":"Set the count for each role in this team; the simple member is the role without a special ability.",
+    "اول سناریوی بازی رو انتخاب کن — تیم‌ها و نقش‌های قابل‌انتخاب ":"First select the game scenario — the available teams and roles ",
+    "کاملاً به همین انتخاب بستگی دارن.":"depend entirely on this selection.",
+    "نقش‌ها به‌مرور اضافه می‌شن. روی اسم تیم بزن تا کارت پیش‌نمایش تیم رو ببینی؛ روی هر نقش بزن تا کارت کاملش رو ببینی.":"Roles are added over time. Tap a team name to preview its card, or tap a role to view its full card.",
+    "🏆 علاوه‌بر امتیازدهیِ اختصاصیِ هر نقش (که زیرِ خودش نوشته شده)، همه‌ی بازیکنان از رأی‌گیری (رأیِ خروج)، رأیِ رهبری، بقا، و سیستمِ انضباطی هم امتیاز می‌گیرن — این‌ها مشترکه و زیرِ هر نقش تکرار نشده. امتیازِ رأی/رفراندوم بر اساسِ نقش ضریب می‌خوره: شهروندِ‌خاکستری/simpleCitizen چون هیچ اکشنِ اختصاصی ندارن x۲، سرکوبگر/simpleMafia x۱.۵، رهبرِ موساد/زودیاک (که خودشون اکشنِ اختصاصیِ پرامتیاز دارن) x۰.۵، بقیه x۱. فازِ آشوب (سه‌نفرِ آخر) هم امتیازِ خودشو داره: دو نفری که با هم دست دادن اگه تیمشون برد +۳، اگه به‌اشتباه به سودِ حریف بود -۳؛ نفرِ سومی که بیرون موند و تیمش باخت -۱.":"🏆 In addition to each role's own scoring rules, all players also score from elimination votes, leadership votes, survival, and discipline. These shared rules are not repeated under every role. Vote/referendum scores are role-weighted: Gray Citizen/simpleCitizen x2, Suppressor/simpleMafia x1.5, Mossad Leader/Zodiac x0.5, and other roles x1. The final three-player chaos phase also has its own scoring: the two players who team up get +3 if their team wins, -3 if they accidentally help the opponent; the third player who stays out gets -1 if their team loses.",
+    "بر اساسِ تعدادِ کارهایِ موفقِ اون نقش، رویِ مجموعِ همه‌ی بازی‌هایی که کسی اون نقش رو بازی کرده.":"Based on the number of successful actions for that role across all games in which the role was played.",
+    "میانگینِ امتیازِ هر بازیکن رو کلِ بازی‌هاش (طبقِ سیستمِ امتیازدهیِ رأی/شات/سلاخی/نجات/استعلام/انضباط و بقیه‌ی قابلیت‌ها).":"Each player's average score across all of their games, using the voting, shot, slaughter, rescue, inquiry, discipline, and other ability scoring systems.",
+
   static const _roleNamesEn = <String, String>{
     'role_vali_faghih':'Supreme Leader','role_foreign_minister':'Foreign Minister','role_suppressor':'Suppressor',
     'role_judiciary_chief':'Judiciary Chief','role_doctor':'Doctor','role_hacker':'Hacker','role_revolutionary_fighter':'Revolutionary Fighter',
