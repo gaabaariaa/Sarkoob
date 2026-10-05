@@ -901,7 +901,7 @@ class GameFlowController extends ChangeNotifier {
     _defensePointer = 0;
     defenseAnnouncementShown = false;
     if (_defenseCandidateIds.isEmpty) {
-      lastResolution = const VoteResolution('هیچ‌کس رأی کافی نیاورد؛ امروز کسی وارد دفاعیه نشد.'.tr);
+      lastResolution = VoteResolution('هیچ‌کس رأی کافی نیاورد؛ امروز کسی وارد دفاعیه نشد.'.tr);
     }
     notifyListeners();
   }
@@ -968,7 +968,7 @@ class GameFlowController extends ChangeNotifier {
         for (final p in candidates) {
           p.recordCount++;
         }
-        lastResolution = const VoteResolution('رأی و سابقه‌ی نفرات دفاعیه برابر بود؛ امروز کسی حذف نشد.'.tr);
+        lastResolution = VoteResolution('رأی و سابقه‌ی نفرات دفاعیه برابر بود؛ امروز کسی حذف نشد.'.tr);
       }
     }
 
