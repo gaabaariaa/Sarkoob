@@ -30,7 +30,7 @@ class ModernSpeakingPanel extends StatelessWidget {
     this.onChooseChallenge,
     this.onTimerFinished,
     this.onSecondElapsed,
-    this.nextLabel = 'نفر بعدی'.tr,
+    this.nextLabel = 'نفر بعدی',
     this.eyebrow,
   });
 
@@ -105,7 +105,7 @@ class ModernSpeakingPanel extends StatelessWidget {
                       child: FilledButton.icon(
                         onPressed: onNext,
                         icon: Icon(Icons.arrow_back_rounded),
-                        label: Text(nextLabel),
+                        label: Text(nextLabel == 'نفر بعدی' ? 'نفر بعدی'.tr : nextLabel),
                         style: FilledButton.styleFrom(
                           minimumSize: Size.fromHeight(52),
                           backgroundColor: AppTheme.uiPrimary,
