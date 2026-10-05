@@ -1180,7 +1180,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     required String title,
     required List<SessionPlayer> targets,
     required ValueChanged<SessionPlayer> onSelected,
-    String emptyMessage = 'الان کسی برای انتخاب نیست.'.tr,
+    String emptyMessage = 'الان کسی برای انتخاب نیست.',
     String Function(SessionPlayer)? labelBuilder,
   }) {
     showModalBottomSheet(
@@ -1226,7 +1226,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                       ? Center(child: Padding(padding: EdgeInsets.all(24), child: Column(mainAxisSize: MainAxisSize.min, children: [
                           Icon(Icons.person_off_rounded, color: AppTheme.uiMutedText, size: 38),
                           SizedBox(height: 10),
-                          Text(emptyMessage, textAlign: TextAlign.center, style: TextStyle(color: Colors.white38)),
+                          Text(emptyMessage.tr, textAlign: TextAlign.center, style: TextStyle(color: Colors.white38)),
                         ])))
                       : ListView.separated(
                           controller: scrollController,
