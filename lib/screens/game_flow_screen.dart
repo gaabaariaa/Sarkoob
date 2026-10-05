@@ -1926,7 +1926,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             ),
         ],
       ),
-      actionLabel: 'بازگشت به مرحله قبل',
+      actionLabel: 'بازگشت به مرحله قبل'.tr,
       onAction: null,
     );
   }
@@ -1936,7 +1936,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Widget _buildDiscloserPrompt() {
     final discloser = controller.playerById(controller.pendingDiscloserPlayerId!);
     return ModernNightPanel(
-      eyebrow: 'روز • افشاگری',
+      eyebrow: 'روز • افشاگری'.tr,
       title: 'افشاگر از بازی خارج شد'.tr,
       icon: Icons.campaign_rounded,
       body: Column(
@@ -2118,8 +2118,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final teamId = controller.autoDetectedWinnerTeamId!;
     final team = GameTeams.byId(teamId);
     return ModernNightPanel(
-      eyebrow: 'پایان بازی • نتیجه نهایی',
-      title: 'بازی تموم شد!',
+      eyebrow: 'پایان بازی • نتیجه نهایی'.tr,
+      title: 'بازی تموم شد!'.tr,
       icon: Icons.emoji_events_rounded,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -2173,7 +2173,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           child: _miniPlayerScoreCard(
             icon: Icons.star,
             color: AppTheme.uiPrimary,
-            title: 'بهترین بازیکن',
+            title: 'بهترین بازیکن'.tr,
             player: best,
           ),
         ),
@@ -2182,7 +2182,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           child: _miniPlayerScoreCard(
             icon: Icons.sentiment_very_dissatisfied,
             color: AppColors.bloodRedLight,
-            title: 'بدترین بازیکن',
+            title: 'بدترین بازیکن'.tr,
             player: worst,
           ),
         ),
@@ -2573,7 +2573,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                       ),
                       SizedBox(height: 10),
                       Game3DButton(
-                        label: 'ثبت نتیجه‌ی رأی',
+                        label: 'ثبت نتیجه‌ی رأی'.tr,
                         icon: Icons.check_rounded,
                         onPressed: controller.resolveStatusInquiryVote,
                       ),
@@ -2629,8 +2629,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         );
       case NightStepKind.doctor:
         return _buildRoleNightStep(
-          wakeLabel: 'دکتر بیدار بشه',
-          sleepLabel: 'دکتر چشمش رو ببنده',
+          wakeLabel: 'دکتر بیدار بشه'.tr,
+          sleepLabel: 'دکتر چشمش رو ببنده'.tr,
           playerName: controller.doctorPlayer?.name,
           body: _buildDoctorSection(),
         );
@@ -2923,7 +2923,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
     if (controller.bombOutcomeMessage != null) {
       return ModernNightPanel(
-        eyebrow: 'خواب نیمروزی • نتیجه',
+        eyebrow: 'خواب نیمروزی • نتیجه'.tr,
         title: 'نتیجه‌ی بمب'.tr,
         icon: Icons.local_fire_department_rounded,
         body: Column(
@@ -2996,7 +2996,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       icon: Icons.shield_rounded,
       body: Column(
         children: [
-          _playerBadge('👤 هدفِ بمب و محافظ، هردو', guard.name),
+          _playerBadge('👤 هدفِ بمب و محافظ، هردو'.tr, guard.name),
           SizedBox(height: 14),
           Text('رمز درست را بی‌سروصدا به محافظ نشان بده: ${controller.bombCorrectCode}',
             textAlign: TextAlign.center, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12, height: 1.5)),
@@ -3017,7 +3017,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       icon: Icons.shield_moon_rounded,
       body: Column(
         children: [
-          _playerBadge('👤 این نقش (محافظ)', guard.name),
+          _playerBadge('👤 این نقش (محافظ)'.tr, guard.name),
           SizedBox(height: 14),
           Text('محافظ را بی‌سروصدا بیدار کن و بپرس: می‌خواهی برای نجات هدف فدا شوی؟'.tr,
             textAlign: TextAlign.center, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12, height: 1.5)),
@@ -3078,7 +3078,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       icon: Icons.password_rounded,
       body: Column(
         children: [
-          _playerBadge(isSelf ? '👤 این نقش (هدف)' : '👤 این نقش (محافظ)', guesser.name),
+          _playerBadge(isSelf ? '👤 این نقش (هدف)'.tr : '👤 این نقش (محافظ)'.tr, guesser.name),
           SizedBox(height: 14),
           Text(
             isSelf
@@ -3129,8 +3129,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       if (leader.independentLeaderPlaystyle != null) {
         return Text(
           leader.independentLeaderPlaystyle == IndependentLeaderPlaystyle.assassination
-              ? 'شیوه انتخاب شد: 🕶 عملیاتِ ترور'
-              : 'شیوه انتخاب شد: 🗡 عملیاتِ سری',
+              ? 'شیوه انتخاب شد: 🕶 عملیاتِ ترور'.tr
+              : 'شیوه انتخاب شد: 🗡 عملیاتِ سری'.tr,
           textAlign: TextAlign.center,
           style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.bold),
         );
@@ -3192,7 +3192,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             onPressed: () => isAssassination
                 ? _showIndependentLeaderAssassinationPicker(leader)
                 : _showIndependentLeaderShootPicker(leader),
-            child: Text(isAssassination ? 'ترور (هدف + حدسِ نقش)' : 'شات'),
+            child: Text(isAssassination ? 'ترور (هدف + حدسِ نقش)'.tr : 'شات'.tr),
           )
         else
           Text('امشب دیگه اقدامی ممکن نیست.'.tr, style: TextStyle(color: Colors.white38)),
@@ -3267,7 +3267,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   void _showIndependentLeaderShootPicker(SessionPlayer leader) {
     _showPlayerListPicker(
-      title: 'شات روی کی؟',
+      title: 'شات روی کی؟'.tr,
       targets: controller.alivePlayers.where((p) => p.id != leader.id).toList(),
       onSelected: (p) => controller.independentLeaderShoot(p.id),
     );
@@ -3318,7 +3318,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   void _showPoliticalAnalystPicker() {
     final analyst = controller.politicalAnalystPlayer!;
     _showPlayerListPicker(
-      title: 'استعلام روی کی؟',
+      title: 'استعلام روی کی؟'.tr,
       targets: controller.alivePlayers.where((p) => p.id != analyst.id).toList(),
       onSelected: (p) => controller.politicalAnalystInvestigate(p.id),
     );
@@ -3426,7 +3426,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   void _showNatashaPicker(SessionPlayer natasha) {
     _showPlayerListPicker(
-      title: 'ناتاشا کی رو ساکت کنه؟',
+      title: 'ناتاشا کی رو ساکت کنه؟'.tr,
       targets: controller.alivePlayers.where((p) => p.id != natasha.id).toList(),
       onSelected: (p) => controller.natashaSilence(p.id),
     );
@@ -3461,7 +3461,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   void _showSaboteurPicker(SessionPlayer saboteur) {
     _showPlayerListPicker(
-      title: 'خرابکار رو تفنگِ کی خرابکاری کنه؟',
+      title: 'خرابکار رو تفنگِ کی خرابکاری کنه؟'.tr,
       targets: controller.alivePlayers.where((p) => p.id != saboteur.id).toList(),
       onSelected: (p) => controller.saboteurChooseTarget(p.id),
     );
@@ -4075,7 +4075,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   void _showHackerInvestigatePicker() {
     final hacker = controller.hackerPlayer!;
     _showPlayerListPicker(
-      title: 'استعلام روی کی؟',
+      title: 'استعلام روی کی؟'.tr,
       targets: controller.alivePlayers.where((p) => p.id != hacker.id).toList(),
       onSelected: (p) => controller.hackerInvestigate(p.id),
     );
@@ -4273,7 +4273,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   void _showFallbackShootPicker() {
     _showPlayerListPicker(
-      title: 'شات روی کی؟',
+      title: 'شات روی کی؟'.tr,
       targets: controller.alivePlayers,
       onSelected: (p) => controller.leaderShoot(p.id),
     );
@@ -4281,7 +4281,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   void _showShootPicker(SessionPlayer leader) {
     _showPlayerListPicker(
-      title: 'شات روی کی؟',
+      title: 'شات روی کی؟'.tr,
       targets: controller.alivePlayers.where((p) => p.id != leader.id).toList(),
       onSelected: (p) => controller.leaderShoot(p.id),
     );
