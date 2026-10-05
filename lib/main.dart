@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'theme/app_theme.dart';
+import 'theme/app_language.dart';
+import 'theme/app_strings.dart';
 import 'screens/home_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppThemeController.load();
+  await AppLanguageController.load();
   runApp(const HiddenRoleApp());
 }
 
@@ -13,16 +16,18 @@ class HiddenRoleApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<AppThemeId>(
-      valueListenable: AppThemeController.current,
-      builder: (context, themeId, _) {
+    return ListenableBuilder(
+      listenable: Listenable.merge([AppThemeController.current, AppLanguageController.current]),
+      builder: (context, _) {
+        final themeId = AppThemeController.current.value;
         return MaterialApp(
-          title: 'دست خدا',
+          title: 'دست خدا'.tr,
           debugShowCheckedModeBanner: false,
           theme: AppTheme.forId(themeId),
+          locale: AppLanguageController.locale,
           builder: (context, child) {
             return Directionality(
-              textDirection: TextDirection.rtl,
+              textDirection: AppLanguageController.current.value == AppLanguage.english ? TextDirection.ltr : TextDirection.rtl,
               child: child ?? const SizedBox.shrink(),
             );
           },

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import '../models/team.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 
 /// کارت تعاملی نمایش تیم برای پیش‌نمایش نقش.
 class TeamRevealCard extends StatefulWidget {
   final GameTeam team;
   final String playerName;
 
-  const TeamRevealCard({
+  TeamRevealCard({
     super.key,
     required this.team,
     required this.playerName,
@@ -25,30 +26,30 @@ class _TeamRevealCardState extends State<TeamRevealCard> {
     return GestureDetector(
       onTap: () => setState(() => _revealed = !_revealed),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 280),
+        duration: Duration(milliseconds: 280),
         curve: Curves.easeOutCubic,
         width: 280,
-        constraints: const BoxConstraints(minHeight: 330),
-        padding: const EdgeInsets.all(20),
+        constraints: BoxConstraints(minHeight: 330),
+        padding: EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppColors.surfaceCard,
+          color: AppTheme.uiCard,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: _revealed
                 ? widget.team.color.withAlpha(191)
-                : AppColors.gold.withAlpha(115),
+                : AppTheme.uiPrimary.withAlpha(115),
             width: 1.4,
           ),
           boxShadow: [
             BoxShadow(
-              color: (_revealed ? widget.team.color : AppColors.gold).withAlpha(31),
+              color: (_revealed ? widget.team.color : AppTheme.uiPrimary).withAlpha(31),
               blurRadius: 24,
-              offset: const Offset(0, 10),
+              offset: Offset(0, 10),
             ),
           ],
         ),
         child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 220),
+          duration: Duration(milliseconds: 220),
           child: _revealed
               ? _buildRevealedContent()
               : _buildHiddenContent(),
@@ -59,7 +60,7 @@ class _TeamRevealCardState extends State<TeamRevealCard> {
 
   Widget _buildHiddenContent() {
     return SizedBox(
-      key: const ValueKey('hidden'),
+      key: ValueKey('hidden'),
       height: 290,
       child: Center(
         child: Column(
@@ -70,31 +71,31 @@ class _TeamRevealCardState extends State<TeamRevealCard> {
               height: 76,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.goldDark.withAlpha(46),
-                border: Border.all(color: AppColors.gold.withAlpha(128)),
+                color: AppTheme.uiPrimaryDark.withAlpha(46),
+                border: Border.all(color: AppTheme.uiPrimary.withAlpha(128)),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.lock_rounded,
                 size: 34,
-                color: AppColors.goldLight,
+                color: AppTheme.uiPrimaryLight,
               ),
             ),
-            const SizedBox(height: 18),
+            SizedBox(height: 18),
             Text(
               widget.playerName,
               textAlign: TextAlign.center,
-              style: AppTheme.headingFont(size: 20, color: AppColors.goldLight),
+              style: AppTheme.headingFont(size: 20, color: AppTheme.uiPrimaryLight),
             ),
-            const SizedBox(height: 8),
-            const Text(
-              'برای دیدن تیم لمس کن',
-              style: TextStyle(color: AppColors.mutedText, fontSize: 12),
+            SizedBox(height: 8),
+            Text(
+              'برای دیدن تیم لمس کن'.tr,
+              style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12),
             ),
-            const SizedBox(height: 14),
-            const Icon(
+            SizedBox(height: 14),
+            Icon(
               Icons.touch_app_rounded,
               size: 18,
-              color: AppColors.subtleText,
+              color: AppTheme.uiSubtleText,
             ),
           ],
         ),
@@ -104,7 +105,7 @@ class _TeamRevealCardState extends State<TeamRevealCard> {
 
   Widget _buildRevealedContent() {
     return SizedBox(
-      key: const ValueKey('revealed'),
+      key: ValueKey('revealed'),
       height: 290,
       child: Center(
         child: Column(
@@ -124,7 +125,7 @@ class _TeamRevealCardState extends State<TeamRevealCard> {
                 color: widget.team.color,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text(
               widget.team.name,
               textAlign: TextAlign.center,
@@ -134,20 +135,20 @@ class _TeamRevealCardState extends State<TeamRevealCard> {
                 color: widget.team.color,
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             Text(
               widget.team.description,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white70,
                 height: 1.6,
                 fontSize: 13,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text(
-              'برای مخفی کردن دوباره لمس کن',
-              style: const TextStyle(color: AppColors.subtleText, fontSize: 10),
+              'برای مخفی کردن دوباره لمس کن'.tr,
+              style: TextStyle(color: AppTheme.uiSubtleText, fontSize: 10),
             ),
           ],
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'scenario.dart';
+import '../theme/app_strings.dart';
 
 /// یه تیم توی یه سناریوی مشخص — هر تیم دقیقاً به یه سناریو تعلق داره
 /// (`scenarioId`)، و دو سناریو هیچ تیمی باهم مشترک ندارن.
@@ -9,6 +10,9 @@ class GameTeam {
   final Color color;
   final String description;
   final String scenarioId;
+
+  String get localizedName => AppStrings.teamName(id, name);
+  String get localizedDescription => AppStrings.teamDescription(id, description);
 
   const GameTeam({
     required this.id,

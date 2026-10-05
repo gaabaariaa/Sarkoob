@@ -8,6 +8,7 @@ import '../models/team.dart';
 import '../services/music_service.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 import '../widgets/countdown_timer_widget.dart';
 import '../widgets/game_3d_button.dart';
 import '../widgets/modern_speaking_panel.dart';
@@ -18,7 +19,7 @@ class GameFlowScreen extends StatefulWidget {
   final List<SessionPlayer> players;
   final GameSettings settings;
 
-  const GameFlowScreen({
+  GameFlowScreen({
     super.key,
     required this.players,
     required this.settings,
@@ -40,7 +41,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   // «تیمِ رهبرِ» این جلسه سرکوبه یا مافیا؟ چندجا تو UIی مرحله‌ی تیمِ رهبر
   // لازمه، برای همینم یه getterِ مشترکه به‌جایِ محاسبه‌ی پراکنده.
-  String get _leaderTeamName => controller.scenario.name;
+  String get _leaderTeamName => controller.scenario.localizedName;
   String get _leaderRoleName => controller.roleNameForScenario(controller.scenario.leaderRoleId);
   String get _plainCitizenLabel => _roleName(controller.scenario.townDefaultRoleId);
   String get _plainLeaderTeamLabel => _roleName(controller.scenario.leaderDefaultRoleId);
@@ -131,8 +132,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           controller.stepBackOnePhase();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('برای خروج از گردانندگی، از دکمه‌ی «پایانِ بازی» تو نوارِ پایین استفاده کن.'),
+            SnackBar(
+              content: Text('برای خروج از گردانندگی، از دکمه‌ی «پایانِ بازی» تو نوارِ پایین استفاده کن.'.tr),
             ),
           );
         }
@@ -144,7 +145,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             title: Text(_titleFor(controller)),
           ),
           body: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -155,7 +156,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             ),
           ),
           bottomNavigationBar: BottomAppBar(
-            color: AppColors.background,
+            color: AppTheme.uiBackground,
             elevation: 0,
             child: SafeArea(
               top: false,
@@ -164,49 +165,49 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                   Expanded(
                     child: _bottomBarAction(
                       icon: Icons.groups,
-                      label: 'بازیکنان',
+                      label: 'بازیکنان'.tr,
                       onPressed: _showRosterDialog,
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   Expanded(
                     child: _bottomBarAction(
                       icon: Icons.swap_vert,
-                      label: 'جابه‌جایی',
+                      label: 'جابه‌جایی'.tr,
                       onPressed: _showReorderDialog,
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   Expanded(
                     child: _bottomBarAction(
                       icon: Icons.gavel,
-                      label: 'تنبیه',
+                      label: 'تنبیه'.tr,
                       onPressed: _showDisciplineDialog,
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   Expanded(
                     child: _bottomBarAction(
                       icon: _showTeamCounts ? Icons.pie_chart : Icons.pie_chart_outline,
-                      label: 'تعدادِ زنده',
+                      label: 'تعدادِ زنده'.tr,
                       active: _showTeamCounts,
                       onPressed: () => setState(() => _showTeamCounts = !_showTeamCounts),
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   Expanded(
                     child: _bottomBarAction(
                       icon: _moderatorNotes.trim().isEmpty ? Icons.note_add_outlined : Icons.note_alt,
-                      label: 'یادداشت',
+                      label: 'یادداشت'.tr,
                       active: _moderatorNotes.trim().isNotEmpty,
                       onPressed: _showNotesDialog,
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   Expanded(
                     child: _bottomBarAction(
                       icon: Icons.flag,
-                      label: 'پایانِ بازی',
+                      label: 'پایانِ بازی'.tr,
                       onPressed: _showEndGameDialog,
                     ),
                   ),
@@ -227,35 +228,35 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     return ListenableBuilder(
       listenable: MusicService.instance,
       builder: (context, _) {
-        if (!MusicService.instance.isPlaying) return const SizedBox.shrink();
-        final trackName = MusicService.instance.currentTrackName ?? 'موزیکِ پس‌زمینه';
+        if (!MusicService.instance.isPlaying) return SizedBox.shrink();
+        final trackName = MusicService.instance.currentTrackName ?? 'موزیکِ پس‌زمینه'.tr;
         final isPaused = MusicService.instance.isPaused;
         return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          margin: EdgeInsets.only(bottom: 12),
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.surfaceDark,
+            color: AppTheme.uiSurface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.gold.withAlpha(102)),
+            border: Border.all(color: AppTheme.uiPrimary.withAlpha(102)),
           ),
           child: Row(
             children: [
-              const Icon(Icons.music_note, color: AppColors.goldLight, size: 20),
-              const SizedBox(width: 8),
+              Icon(Icons.music_note, color: AppTheme.uiPrimaryLight, size: 20),
+              SizedBox(width: 8),
               Expanded(
                 child: Text(
                   trackName,
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
-                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                  style: TextStyle(color: Colors.white70, fontSize: 13),
                 ),
               ),
               IconButton(
                 iconSize: 24,
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                icon: Icon(isPaused ? Icons.play_arrow : Icons.pause, color: AppColors.goldLight),
-                tooltip: isPaused ? 'ادامه' : 'مکث',
+                constraints: BoxConstraints(minWidth: 36, minHeight: 36),
+                icon: Icon(isPaused ? Icons.play_arrow : Icons.pause, color: AppTheme.uiPrimaryLight),
+                tooltip: isPaused ? 'ادامه'.tr : 'مکث'.tr,
                 onPressed: () {
                   if (isPaused) {
                     MusicService.instance.resume();
@@ -267,9 +268,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               IconButton(
                 iconSize: 24,
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                icon: const Icon(Icons.skip_next, color: AppColors.goldLight),
-                tooltip: 'آهنگِ بعدی',
+                constraints: BoxConstraints(minWidth: 36, minHeight: 36),
+                icon: Icon(Icons.skip_next, color: AppTheme.uiPrimaryLight),
+                tooltip: 'آهنگِ بعدی'.tr,
                 onPressed: () => MusicService.instance.skipToNext(),
               ),
             ],
@@ -288,13 +289,13 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       context: context,
       builder: (dialogContext) => Dialog(
         backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Container(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: AppColors.surfaceCard,
+            color: AppTheme.uiCard,
             borderRadius: BorderRadius.circular(26),
-            border: Border.all(color: AppColors.gold.withAlpha(56)),
+            border: Border.all(color: AppTheme.uiPrimary.withAlpha(56)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -305,68 +306,68 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: AppColors.goldDark.withAlpha(56),
+                      color: AppTheme.uiPrimaryDark.withAlpha(56),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.note_alt_rounded, color: AppColors.goldLight),
+                    child: Icon(Icons.note_alt_rounded, color: AppTheme.uiPrimaryLight),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('یادداشتِ گرداننده', style: AppTheme.headingFont(size: 20)),
-                        const SizedBox(height: 3),
-                        const Text('نکته‌های مهم میز بازی را ثبت کن.', style: TextStyle(color: AppColors.mutedText, fontSize: 11)),
+                        Text('یادداشتِ گرداننده'.tr, style: AppTheme.headingFont(size: 20)),
+                        SizedBox(height: 3),
+                        Text('نکته‌های مهم میز بازی را ثبت کن.'.tr, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 11)),
                       ],
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               TextField(
                 controller: notesController,
                 autofocus: true,
                 maxLines: 10,
                 minLines: 6,
                 textDirection: TextDirection.rtl,
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'مثلاً: مظنون‌ها، حساب‌وکتابِ رأی، هر نکته‌ای...',
-                  hintStyle: const TextStyle(color: Colors.white38),
+                  hintText: 'مثلاً: مظنون‌ها، حساب‌وکتابِ رأی، هر نکته‌ای...'.tr,
+                  hintStyle: TextStyle(color: Colors.white38),
                   filled: true,
-                  fillColor: AppColors.surfaceDark,
-                  prefixIcon: const Padding(
+                  fillColor: AppTheme.uiSurface,
+                  prefixIcon: Padding(
                     padding: EdgeInsets.only(bottom: 86),
-                    child: Icon(Icons.edit_note_rounded, color: AppColors.goldLight),
+                    child: Icon(Icons.edit_note_rounded, color: AppTheme.uiPrimaryLight),
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: AppColors.gold.withAlpha(41)),
+                    borderSide: BorderSide(color: AppTheme.uiPrimary.withAlpha(41)),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: AppColors.gold.withAlpha(41)),
+                    borderSide: BorderSide(color: AppTheme.uiPrimary.withAlpha(41)),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: AppColors.gold, width: 1.2),
+                    borderSide: BorderSide(color: AppTheme.uiPrimary, width: 1.2),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
                     child: TextButton(
                       onPressed: () => Navigator.of(dialogContext).pop(),
-                      child: const Text('انصراف'),
+                      child: Text('انصراف'.tr),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10),
                   Expanded(
                     child: Game3DButton(
-                      label: 'ذخیره',
+                      label: 'ذخیره'.tr,
                       icon: Icons.save_rounded,
                       onPressed: () {
                         setState(() => _moderatorNotes = notesController.text);
@@ -402,9 +403,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   String _titleFor(GameFlowController c) {
     switch (c.phase) {
       case GamePhaseType.introDay:
-        return 'روز معارفه';
+        return 'روز معارفه'.tr;
       case GamePhaseType.introNight:
-        return 'شب معارفه';
+        return 'شب معارفه'.tr;
       case GamePhaseType.day:
         return 'روز ${c.roundNumber}';
       case GamePhaseType.night:
@@ -420,12 +421,12 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final counts = controller.aliveCountsByTeam;
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+      margin: EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceCard,
+        color: AppTheme.uiCard,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.gold.withAlpha(128)),
+        border: Border.all(color: AppTheme.uiPrimary.withAlpha(128)),
       ),
       child: Wrap(
         alignment: WrapAlignment.center,
@@ -437,10 +438,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 CircleAvatar(radius: 5, backgroundColor: entry.key.color),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Text(
                   '${entry.key.name}: ${entry.value}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
@@ -459,7 +460,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     bool showOnlyAlive = false;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surfaceDark,
+      backgroundColor: AppTheme.uiSurface,
       isScrollControlled: true,
       builder: (_) => DraggableScrollableSheet(
         expand: false,
@@ -471,32 +472,32 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 : controller.players;
             return ListView(
               controller: scrollController,
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16),
               children: [
-                Text('بازیکنان و نقش‌ها', style: AppTheme.headingFont(size: 20)),
+                Text('بازیکنان و نقش‌ها'.tr, style: AppTheme.headingFont(size: 20)),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  activeColor: AppColors.gold,
-                  title: const Text('فقط بازیکنانِ زنده', style: TextStyle(color: Colors.white, fontSize: 14)),
+                  activeColor: AppTheme.uiPrimary,
+                  title: Text('فقط بازیکنانِ زنده'.tr, style: TextStyle(color: Colors.white, fontSize: 14)),
                   value: showOnlyAlive,
                   onChanged: (v) => setSheetState(() => showOnlyAlive = v),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 ...list.map((p) {
                   final role = p.roleId != null ? GameRoles.byId(p.roleId!) : null;
                   final teamName = GameTeams.byId(p.teamId)?.name ?? p.teamId;
                   final status =
-                      !p.isAlive ? (p.isHalfAlive ? 'نیمه‌جان' : 'حذف‌شده') : 'زنده';
+                      !p.isAlive ? (p.isHalfAlive ? 'نیمه‌جان'.tr : 'حذف‌شده'.tr) : 'زنده'.tr;
                   return ListTile(
                     dense: true,
-                    title: Text(p.name, style: const TextStyle(color: Colors.white)),
+                    title: Text(p.name, style: TextStyle(color: Colors.white)),
                     subtitle: Text(
-                      '$teamName${role != null ? ' — ${role.name}' : ''}'
+                      '$teamName${role != null ? ' — ${role.localizedName}' : ''}'
                       '${p.disciplineStage > 0 ? ' — ${disciplineStageLabel(p.disciplineStage)}' : ''}'
-                      '${!controller.hasVotingRightsToday(p) ? ' — 🚫 بدونِ حقِ رأیِ امروز' : ''}',
-                      style: const TextStyle(color: AppColors.goldLight),
+                      '${!controller.hasVotingRightsToday(p) ? ' — 🚫 بدونِ حقِ رأیِ امروز'.tr : ''}',
+                      style: TextStyle(color: AppTheme.uiPrimaryLight),
                     ),
-                    trailing: Text(status, style: const TextStyle(color: Colors.white54)),
+                    trailing: Text(status, style: TextStyle(color: Colors.white54)),
                   );
                 }),
               ],
@@ -520,53 +521,53 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         minChildSize: .45,
         maxChildSize: .92,
         builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surfaceCard,
+          decoration: BoxDecoration(
+            color: AppTheme.uiCard,
             borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
           ),
           child: StatefulBuilder(
             builder: (context, setSheetState) => Column(children: [
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               Container(width: 44, height: 5,
                 decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(8))),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+                padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
                 child: Row(children: [
                   Container(width: 42, height: 42,
-                    decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(56), shape: BoxShape.circle),
-                    child: const Icon(Icons.swap_vert_rounded, color: AppColors.goldLight)),
-                  const SizedBox(width: 12),
+                    decoration: BoxDecoration(color: AppTheme.uiPrimaryDark.withAlpha(56), shape: BoxShape.circle),
+                    child: Icon(Icons.swap_vert_rounded, color: AppTheme.uiPrimaryLight)),
+                  SizedBox(width: 12),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('ترتیب بازیکنان', style: AppTheme.headingFont(size: 19)),
-                    const Text('با نگه‌داشتن و کشیدن جابه‌جا کن.',
-                      style: TextStyle(color: AppColors.mutedText, fontSize: 11)),
+                    Text('ترتیب بازیکنان'.tr, style: AppTheme.headingFont(size: 19)),
+                    Text('با نگه‌داشتن و کشیدن جابه‌جا کن.'.tr,
+                      style: TextStyle(color: AppTheme.uiMutedText, fontSize: 11)),
                   ])),
-                  CircleAvatar(radius: 17, backgroundColor: AppColors.goldDark.withAlpha(56),
+                  CircleAvatar(radius: 17, backgroundColor: AppTheme.uiPrimaryDark.withAlpha(56),
                     child: Text('${controller.players.length}',
-                      style: const TextStyle(color: AppColors.goldLight, fontSize: 12))),
+                      style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 12))),
                 ]),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Expanded(
                 child: ReorderableListView(
                   scrollController: scrollController,
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  padding: EdgeInsets.fromLTRB(16, 8, 16, 24),
                   onReorder: (oldIndex, newIndex) {
                     controller.reorderPlayers(oldIndex, newIndex);
                     setSheetState(() {});
                   },
                   children: controller.players.map((p) => Material(
                     key: ValueKey('reorder-${p.id}'),
-                    color: AppColors.surfaceDark,
+                    color: AppTheme.uiSurface,
                     borderRadius: BorderRadius.circular(16),
                     child: ListTile(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       leading: CircleAvatar(radius: 17,
-                        backgroundColor: AppColors.goldDark.withAlpha(51),
+                        backgroundColor: AppTheme.uiPrimaryDark.withAlpha(51),
                         child: Text('${controller.players.indexOf(p) + 1}',
-                          style: const TextStyle(color: AppColors.goldLight, fontSize: 12))),
-                      title: Text(p.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-                      trailing: const Icon(Icons.drag_handle_rounded, color: Colors.white38),
+                          style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 12))),
+                      title: Text(p.name, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                      trailing: Icon(Icons.drag_handle_rounded, color: Colors.white38),
                     ),
                   )).toList(),
                 ),
@@ -594,13 +595,13 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           final nextStage = selectedTarget == null ? 0 : selectedTarget!.disciplineStage + 1;
           return Dialog(
             backgroundColor: Colors.transparent,
-            insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             child: Container(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.surfaceCard,
+                color: AppTheme.uiCard,
                 borderRadius: BorderRadius.circular(26),
-                border: Border.all(color: AppColors.gold.withAlpha(56)),
+                border: Border.all(color: AppTheme.uiPrimary.withAlpha(56)),
               ),
               child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -614,11 +615,11 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     color: AppColors.bloodRed.withAlpha(82),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.gavel_rounded, color: AppColors.bloodRedLight),
+                  child: Icon(Icons.gavel_rounded, color: AppColors.bloodRedLight),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Expanded(
-                  child: Text('تنبیهِ انضباطی', style: AppTheme.headingFont(size: 20)),
+                  child: Text('تنبیهِ انضباطی'.tr, style: AppTheme.headingFont(size: 20)),
                 ),
               ],
             ),
@@ -629,80 +630,80 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 children: [
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(12),
+                    padding: EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceCard,
+                      color: AppTheme.uiCard,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.gold.withAlpha(31)),
+                      border: Border.all(color: AppTheme.uiPrimary.withAlpha(31)),
                     ),
-                    child: const Text(
-                      'مستقل از قوانینِ عادیِ بازیه؛ برای رفتارِ خارج از نظمِ جلسه.',
+                    child: Text(
+                      'مستقل از قوانینِ عادیِ بازیه؛ برای رفتارِ خارج از نظمِ جلسه.'.tr,
                       style: TextStyle(color: Colors.white54, fontSize: 12, height: 1.45),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   DropdownButtonFormField<SessionPlayer>(
                     isExpanded: true,
-                    decoration: const InputDecoration(
-                      labelText: 'بازیکن',
+                    decoration: InputDecoration(
+                      labelText: 'بازیکن'.tr,
                       prefixIcon: Icon(Icons.person_outline_rounded),
                       border: OutlineInputBorder(),
                     ),
-                    dropdownColor: AppColors.surfaceDark,
+                    dropdownColor: AppTheme.uiSurface,
                     value: selectedTarget,
                     items: controller.alivePlayers
                         .map(
                           (p) => DropdownMenuItem(
                             value: p,
-                            child: Text(p.name, style: const TextStyle(color: Colors.white)),
+                            child: Text(p.name, style: TextStyle(color: Colors.white)),
                           ),
                         )
                         .toList(),
                     onChanged: (v) => setDialogState(() => selectedTarget = v),
                   ),
                   if (selectedTarget != null) ...[
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Text(
                       'سابقه‌ی انضباطیِ فعلی: ${disciplineStageLabel(selectedTarget!.disciplineStage)}',
-                      style: const TextStyle(color: Colors.white38, fontSize: 12),
+                      style: TextStyle(color: Colors.white38, fontSize: 12),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     Row(
                       children: [
                         Expanded(
                           child: OutlinedButton(
                             style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              padding: EdgeInsets.symmetric(horizontal: 4),
                               backgroundColor:
-                                  actionMode == 'discipline' ? AppColors.goldDark.withAlpha(89) : null,
+                                  actionMode == 'discipline' ? AppTheme.uiPrimaryDark.withAlpha(89) : null,
                               side: BorderSide(
-                                color: actionMode == 'discipline' ? AppColors.gold : Colors.white24,
+                                color: actionMode == 'discipline' ? AppTheme.uiPrimary : Colors.white24,
                               ),
                             ),
                             onPressed: () => setDialogState(() => actionMode = 'discipline'),
-                            child: const Text('تنبیه', style: TextStyle(fontSize: 12)),
+                            child: Text('تنبیه'.tr, style: TextStyle(fontSize: 12)),
                           ),
                         ),
-                        const SizedBox(width: 6),
+                        SizedBox(width: 6),
                         Expanded(
                           child: OutlinedButton(
                             style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              padding: EdgeInsets.symmetric(horizontal: 4),
                               backgroundColor:
-                                  actionMode == 'revokeVote' ? AppColors.goldDark.withAlpha(89) : null,
+                                  actionMode == 'revokeVote' ? AppTheme.uiPrimaryDark.withAlpha(89) : null,
                               side: BorderSide(
-                                color: actionMode == 'revokeVote' ? AppColors.gold : Colors.white24,
+                                color: actionMode == 'revokeVote' ? AppTheme.uiPrimary : Colors.white24,
                               ),
                             ),
                             onPressed: () => setDialogState(() => actionMode = 'revokeVote'),
-                            child: const Text('گرفتنِ حقِ رأی', style: TextStyle(fontSize: 12)),
+                            child: Text('گرفتنِ حقِ رأی'.tr, style: TextStyle(fontSize: 12)),
                           ),
                         ),
-                        const SizedBox(width: 6),
+                        SizedBox(width: 6),
                         Expanded(
                           child: OutlinedButton(
                             style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              padding: EdgeInsets.symmetric(horizontal: 4),
                               backgroundColor: actionMode == 'expel'
                                   ? AppColors.bloodRedLight.withAlpha(89)
                                   : null,
@@ -711,34 +712,34 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                               ),
                             ),
                             onPressed: () => setDialogState(() => actionMode = 'expel'),
-                            child: const Text('اخراجِ مستقیم', style: TextStyle(fontSize: 12)),
+                            child: Text('اخراجِ مستقیم'.tr, style: TextStyle(fontSize: 12)),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     if (actionMode == 'discipline')
                       Text(
                         nextStage >= 4
-                            ? 'این چهارمین تخلفشه؛ همین الان از بازی اخراج می‌شه.'
+                            ? 'این چهارمین تخلفشه؛ همین الان از بازی اخراج می‌شه.'.tr
                             : 'نتیجه‌ی این تنبیه: ${disciplineStageLabel(nextStage)}',
-                        style: const TextStyle(color: AppColors.goldLight, fontSize: 13),
+                        style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 13),
                       )
                     else if (actionMode == 'revokeVote')
-                      const Text(
-                        'تا پایانِ امروز نمی‌تونه تو رأی‌گیریِ حذف/دفاعیه رأی بده؛ فردا خودکار برمی‌گرده.',
-                        style: TextStyle(color: AppColors.goldLight, fontSize: 13),
+                      Text(
+                        'تا پایانِ امروز نمی‌تونه تو رأی‌گیریِ حذف/دفاعیه رأی بده؛ فردا خودکار برمی‌گرده.'.tr,
+                        style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 13),
                       )
                     else
-                      const Text(
-                        'اخراجِ فوری و برگشت‌ناپذیر — بدونِ عبور از مراحلِ درجه‌بندی‌شده.',
+                      Text(
+                        'اخراجِ فوری و برگشت‌ناپذیر — بدونِ عبور از مراحلِ درجه‌بندی‌شده.'.tr,
                         style: TextStyle(color: AppColors.bloodRedLight, fontSize: 13),
                       ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     TextField(
                       controller: reasonController,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: const InputDecoration(hintText: 'دلیل (مثلاً حرفِ خارج از نوبت، تقلب)'),
+                      style: TextStyle(color: Colors.white),
+                      decoration: InputDecoration(hintText: 'دلیل (مثلاً حرفِ خارج از نوبت، تقلب)'.tr),
                     ),
                   ],
                 ],
@@ -748,11 +749,11 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                   children: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('انصراف'),
+                child: Text('انصراف'.tr),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: actionMode == 'expel' ? AppColors.bloodRedLight : AppColors.gold,
+                  backgroundColor: actionMode == 'expel' ? AppColors.bloodRedLight : AppTheme.uiPrimary,
                   // باگِ قبلی: چون foregroundColor ست نبود، تمِ سراسری
                   // (colorScheme.primary=طلایی) فونتِ دکمه رو هم طلایی
                   // می‌کرد — یعنی رو حالتِ «تنبیه» (پس‌زمینه‌ی طلایی)
@@ -762,7 +763,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 onPressed: selectedTarget != null
                     ? () {
                         final reason = reasonController.text.trim().isEmpty
-                            ? 'نامشخص'
+                            ? 'نامشخص'.tr
                             : reasonController.text.trim();
                         final String resultMessage;
                         switch (actionMode) {
@@ -784,7 +785,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                         }
                       }
                     : null,
-                child: Text(actionMode == 'expel' ? 'اخراج' : (actionMode == 'revokeVote' ? 'گرفتنِ حقِ رأی' : 'اعمالِ تنبیه')),
+                child: Text(actionMode == 'expel' ? 'اخراج'.tr : (actionMode == 'revokeVote' ? 'گرفتنِ حقِ رأی'.tr : 'اعمالِ تنبیه'.tr)),
               ),
                   ],
                 ),
@@ -844,16 +845,16 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) => Dialog(
           backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           child: Container(
-            constraints: const BoxConstraints(maxWidth: 520),
-            padding: const EdgeInsets.all(20),
+            constraints: BoxConstraints(maxWidth: 520),
+            padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppColors.surfaceCard,
+              color: AppTheme.uiCard,
               borderRadius: BorderRadius.circular(26),
-              border: Border.all(color: AppColors.gold.withAlpha(56)),
+              border: Border.all(color: AppTheme.uiPrimary.withAlpha(56)),
               boxShadow: [
-                BoxShadow(color: Colors.black.withAlpha(89), blurRadius: 28, offset: const Offset(0, 14)),
+                BoxShadow(color: Colors.black.withAlpha(89), blurRadius: 28, offset: Offset(0, 14)),
               ],
             ),
             child: Column(
@@ -862,46 +863,46 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 Container(
                   width: 58, height: 58,
                   decoration: BoxDecoration(
-                    color: AppColors.goldDark.withAlpha(56),
+                    color: AppTheme.uiPrimaryDark.withAlpha(56),
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.gold.withAlpha(64)),
+                    border: Border.all(color: AppTheme.uiPrimary.withAlpha(64)),
                   ),
-                  child: const Icon(Icons.flag_rounded, color: AppColors.goldLight, size: 29),
+                  child: Icon(Icons.flag_rounded, color: AppTheme.uiPrimaryLight, size: 29),
                 ),
-                const SizedBox(height: 14),
-                Text('پایانِ بازی و ثبت', style: AppTheme.headingFont(size: 22)),
-                const SizedBox(height: 7),
-                const Text(
-                  'تیم برنده را مشخص کن. نتیجه در تاریخچه و آمار ثبت می‌شود.',
+                SizedBox(height: 14),
+                Text('پایانِ بازی و ثبت'.tr, style: AppTheme.headingFont(size: 22)),
+                SizedBox(height: 7),
+                Text(
+                  'تیم برنده را مشخص کن. نتیجه در تاریخچه و آمار ثبت می‌شود.'.tr,
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.5),
+                  style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12, height: 1.5),
                 ),
-                const SizedBox(height: 18),
+                SizedBox(height: 18),
                 Align(
                   alignment: Alignment.centerRight,
-                  child: Text('تیمِ برنده', style: AppTheme.headingFont(size: 14)),
+                  child: Text('تیمِ برنده'.tr, style: AppTheme.headingFont(size: 14)),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 DropdownButtonFormField<String>(
                   value: selectedTeamId,
                   isExpanded: true,
-                  dropdownColor: AppColors.surfaceCard,
+                  dropdownColor: AppTheme.uiCard,
                   decoration: InputDecoration(
-                    hintText: 'انتخابِ تیمِ برنده',
-                    prefixIcon: const Icon(Icons.emoji_events_rounded, color: AppColors.goldLight),
+                    hintText: 'انتخابِ تیمِ برنده'.tr,
+                    prefixIcon: Icon(Icons.emoji_events_rounded, color: AppTheme.uiPrimaryLight),
                     filled: true,
-                    fillColor: AppColors.surfaceDark,
+                    fillColor: AppTheme.uiSurface,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: AppColors.gold.withAlpha(41)),
+                      borderSide: BorderSide(color: AppTheme.uiPrimary.withAlpha(41)),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: AppColors.gold.withAlpha(41)),
+                      borderSide: BorderSide(color: AppTheme.uiPrimary.withAlpha(41)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: AppColors.gold, width: 1.2),
+                      borderSide: BorderSide(color: AppTheme.uiPrimary, width: 1.2),
                     ),
                   ),
                   items: [
@@ -911,23 +912,23 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                         child: Text(GameTeams.byId(teamId)?.name ?? teamId),
                       ),
                     ),
-                    const DropdownMenuItem(value: 'unknown', child: Text('نامشخص')),
+                    DropdownMenuItem(value: 'unknown', child: Text('نامشخص'.tr)),
                   ],
                   onChanged: (v) => setDialogState(() => selectedTeamId = v),
                 ),
-                const SizedBox(height: 18),
+                SizedBox(height: 18),
                 Row(
                   children: [
                     Expanded(
                       child: TextButton(
                         onPressed: () => Navigator.of(dialogContext).pop(),
-                        child: const Text('انصراف'),
+                        child: Text('انصراف'.tr),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10),
                     Expanded(
                       child: Game3DButton(
-                        label: 'ثبت نتیجه',
+                        label: 'ثبت نتیجه'.tr,
                         icon: Icons.check_rounded,
                         onPressed: selectedTeamId == null
                             ? null
@@ -946,13 +947,13 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                                   barrierDismissible: false,
                                   builder: (confirmContext) => Dialog(
                                     backgroundColor: Colors.transparent,
-                                    insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                                    insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
                                     child: Container(
-                                      padding: const EdgeInsets.all(22),
+                                      padding: EdgeInsets.all(22),
                                       decoration: BoxDecoration(
-                                        color: AppColors.surfaceCard,
+                                        color: AppTheme.uiCard,
                                         borderRadius: BorderRadius.circular(26),
-                                        border: Border.all(color: AppColors.gold.withAlpha(56)),
+                                        border: Border.all(color: AppTheme.uiPrimary.withAlpha(56)),
                                       ),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
@@ -960,20 +961,20 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                                           Container(
                                             width: 64, height: 64,
                                             decoration: BoxDecoration(
-                                              color: (team?.color ?? AppColors.gold).withAlpha(41),
+                                              color: (team?.color ?? AppTheme.uiPrimary).withAlpha(41),
                                               shape: BoxShape.circle,
                                             ),
                                             child: Icon(
                                               Icons.emoji_events_rounded,
-                                              color: team?.color ?? AppColors.goldLight,
+                                              color: team?.color ?? AppTheme.uiPrimaryLight,
                                               size: 34,
                                             ),
                                           ),
-                                          const SizedBox(height: 14),
-                                          Text('بازی تموم شد', style: AppTheme.headingFont(size: 23)),
-                                          const SizedBox(height: 8),
+                                          SizedBox(height: 14),
+                                          Text('بازی تموم شد'.tr, style: AppTheme.headingFont(size: 23)),
+                                          SizedBox(height: 8),
                                           Text(
-                                            'بردِ تیمِ ${team?.name ?? 'نامشخص'} ثبت شد.',
+                                            'بردِ تیمِ ${team?.name ?? 'نامشخص'.tr} ثبت شد.',
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                               color: team?.color ?? Colors.white70,
@@ -981,21 +982,21 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                                               fontWeight: FontWeight.w700,
                                             ),
                                           ),
-                                          const SizedBox(height: 8),
-                                          const Text(
-                                            'نتیجه در تاریخچه ذخیره شد.',
+                                          SizedBox(height: 8),
+                                          Text(
+                                            'نتیجه در تاریخچه ذخیره شد.'.tr,
                                             textAlign: TextAlign.center,
-                                            style: TextStyle(color: AppColors.mutedText, fontSize: 12),
+                                            style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12),
                                           ),
-                                          const SizedBox(height: 16),
+                                          SizedBox(height: 16),
                                           _bestWorstRow(controller.players),
-                                          const SizedBox(height: 12),
+                                          SizedBox(height: 12),
                                           _scoreDetailButton(confirmContext, controller.players),
-                                          const SizedBox(height: 16),
+                                          SizedBox(height: 16),
                                           SizedBox(
                                             width: double.infinity,
                                             child: Game3DButton(
-                                              label: 'تأیید و بازگشت به منو',
+                                              label: 'تأیید و بازگشت به منو'.tr,
                                               icon: Icons.home_rounded,
                                               onPressed: () => Navigator.of(confirmContext).pop(),
                                             ),
@@ -1066,50 +1067,53 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           if (!isIntro && controller.guaranteedPlayerId != null)
             Container(
               width: double.infinity,
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(10),
+              margin: EdgeInsets.only(bottom: 12),
+              padding: EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.goldDark.withAlpha(77),
+                color: AppTheme.uiPrimaryDark.withAlpha(77),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 '🛡️ «${controller.playerById(controller.guaranteedPlayerId!).name}» تضمینِ ${GameRoles.byId(controller.playerById(controller.guaranteedPlayerId!).roleId!)?.name ?? "قهرمانِ ملی"} رو داره؛ '
                 'امروز نمی‌تونه رأی بیاره و در امانه.',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: AppTheme.uiPrimaryLight,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           if (!isIntro && controller.referendumScheduledToday)
             Container(
               width: double.infinity,
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(10),
+              margin: EdgeInsets.only(bottom: 12),
+              padding: EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.goldDark.withAlpha(77),
+                color: AppTheme.uiPrimaryDark.withAlpha(77),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Text(
-                '🗳️ امروز، درست قبل از شروعِ رأی‌گیریِ حذف، رفراندومِ انتخابِ رهبرِ جامعه برگزار می‌شه.',
+              child: Text(
+                '🗳️ امروز، درست قبل از شروعِ رأی‌گیریِ حذف، رفراندومِ انتخابِ رهبرِ جامعه برگزار می‌شه.'.tr,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+                style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.bold),
               ),
             ),
           if (!isIntro && controller.assassinationResultMessage != null)
             Padding(
-              padding: const EdgeInsets.only(bottom: 12),
+              padding: EdgeInsets.only(bottom: 12),
               child: Text(
                 controller.assassinationResultMessage!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.bloodRedLight, fontWeight: FontWeight.bold),
+                style: TextStyle(color: AppColors.bloodRedLight, fontWeight: FontWeight.bold),
               ),
             ),
           if (!isIntro && controller.gunFireResultMessage != null)
             Padding(
-              padding: const EdgeInsets.only(bottom: 12),
+              padding: EdgeInsets.only(bottom: 12),
               child: Text(
                 controller.gunFireResultMessage!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+                style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.bold),
               ),
             ),
           if (!isIntro && controller.armedPlayers.isNotEmpty) _buildGunBanner(),
@@ -1118,10 +1122,10 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             _buildBombDayBanner(),
           if (!isIntro && controller.activeExecutionWord != null) _buildExecutionWordBanner(),
           if (isIntro)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(bottom: 4),
               child: Text(
-                'هر بازیکن به ترتیب، خودش رو معرفی می‌کنه.',
+                'هر بازیکن به ترتیب، خودش رو معرفی می‌کنه.'.tr,
                 style: TextStyle(color: Colors.white60),
               ),
             ),
@@ -1151,15 +1155,15 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                   }
                 : null,
             onSecondElapsed: () => controller.addSpeakingSecond(speaker.id),
-            nextLabel: isChallenge ? 'پایان چالش' : 'نفر بعدی',
-            eyebrow: isIntro ? 'معارفه' : 'نوبت صحبت',
+            nextLabel: isChallenge ? 'پایان چالش'.tr : 'نفر بعدی'.tr,
+            eyebrow: isIntro ? 'معارفه'.tr : 'نوبت صحبت'.tr,
           ),
           if (controller.todaysChallenges.isNotEmpty) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               'چالش‌های امروز:\n${controller.todaysChallenges.map((c) => '${controller.playerById(c.giverId).name} ← چالش داد به → ${controller.playerById(c.receiverId).name}').join('\n')}',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white38, fontSize: 12),
+              style: TextStyle(color: Colors.white38, fontSize: 12),
             ),
           ],
         ],
@@ -1189,62 +1193,62 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         maxChildSize: 0.88,
         minChildSize: 0.36,
         builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surfaceDark,
+          decoration: BoxDecoration(
+            color: AppTheme.uiSurface,
             borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
           ),
           child: SafeArea(
             child: Column(
               children: [
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
                 Container(width: 42, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(99))),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
+                  padding: EdgeInsets.fromLTRB(20, 18, 20, 12),
                   child: Row(
                     children: [
                       Container(
                         width: 42, height: 42,
-                        decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(64), shape: BoxShape.circle, border: Border.all(color: AppColors.gold.withAlpha(64))),
-                        child: const Icon(Icons.people_alt_rounded, color: AppColors.goldLight),
+                        decoration: BoxDecoration(color: AppTheme.uiPrimaryDark.withAlpha(64), shape: BoxShape.circle, border: Border.all(color: AppTheme.uiPrimary.withAlpha(64))),
+                        child: Icon(Icons.people_alt_rounded, color: AppTheme.uiPrimaryLight),
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10),
                       Expanded(child: Text(title, style: AppTheme.headingFont(size: 19))),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(99)),
-                        child: Text('${targets.length} نفر', style: const TextStyle(color: AppColors.mutedText, fontSize: 11)),
+                        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(color: AppTheme.uiCard, borderRadius: BorderRadius.circular(99)),
+                        child: Text('${targets.length} نفر', style: TextStyle(color: AppTheme.uiMutedText, fontSize: 11)),
                       ),
                     ],
                   ),
                 ),
                 Expanded(
                   child: targets.isEmpty
-                      ? Center(child: Padding(padding: const EdgeInsets.all(24), child: Column(mainAxisSize: MainAxisSize.min, children: [
-                          const Icon(Icons.person_off_rounded, color: AppColors.mutedText, size: 38),
-                          const SizedBox(height: 10),
-                          Text(emptyMessage, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white38)),
+                      ? Center(child: Padding(padding: EdgeInsets.all(24), child: Column(mainAxisSize: MainAxisSize.min, children: [
+                          Icon(Icons.person_off_rounded, color: AppTheme.uiMutedText, size: 38),
+                          SizedBox(height: 10),
+                          Text(emptyMessage.tr, textAlign: TextAlign.center, style: TextStyle(color: Colors.white38)),
                         ])))
                       : ListView.separated(
                           controller: scrollController,
-                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
+                          padding: EdgeInsets.fromLTRB(16, 4, 16, 20),
                           itemCount: targets.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          separatorBuilder: (_, __) => SizedBox(height: 8),
                           itemBuilder: (_, index) {
                             final p = targets[index];
                             final label = labelBuilder != null ? labelBuilder(p) : p.name;
                             return Material(
-                              color: AppColors.surfaceCard,
+                              color: AppTheme.uiCard,
                               borderRadius: BorderRadius.circular(16),
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(16),
                                 onTap: () { Navigator.of(sheetContext).pop(); onSelected(p); },
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                                   child: Row(children: [
-                                    Container(width: 38, height: 38, decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(56), shape: BoxShape.circle), child: Center(child: Text('${index + 1}', style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w800)))),
-                                    const SizedBox(width: 12),
-                                    Expanded(child: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
-                                    const Icon(Icons.chevron_left_rounded, color: Colors.white38),
+                                    Container(width: 38, height: 38, decoration: BoxDecoration(color: AppTheme.uiPrimaryDark.withAlpha(56), shape: BoxShape.circle), child: Center(child: Text('${index + 1}', style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.w800)))),
+                                    SizedBox(width: 12),
+                                    Expanded(child: Text(label, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
+                                    Icon(Icons.chevron_left_rounded, color: Colors.white38),
                                   ]),
                                 ),
                               ),
@@ -1262,7 +1266,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   void _showChallengePicker() {
     _showPlayerListPicker(
-      title: 'کدوم بازیکن چالش می‌گیره؟',
+      title: 'کدوم بازیکن چالش می‌گیره؟'.tr,
       targets: controller.challengeEligiblePlayers,
       onSelected: (p) => controller.useChallenge(p.id),
     );
@@ -1272,7 +1276,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final notices = <Widget>[];
     if (controller.guaranteedPlayerId != null) {
       final player = controller.playerById(controller.guaranteedPlayerId!);
-      final roleName = GameRoles.byId(player.roleId!)?.name ?? 'قهرمانِ ملی';
+      final roleName = GameRoles.byId(player.roleId!)?.name ?? 'قهرمانِ ملی'.tr;
       notices.add(_modernNotice(
         icon: Icons.shield_rounded,
         text: '«' + player.name + '» تضمینِ ' + roleName + ' رو داره؛ امروز نمی‌تونه رأی بیاره و در امانه.',
@@ -1293,61 +1297,61 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
     return ModernNightPanel(
       eyebrow: 'روز ' + controller.roundNumber.toString() + ' • آماده‌سازی',
-      title: 'همه صحبت کردند',
+      title: 'همه صحبت کردند'.tr,
       icon: Icons.how_to_vote_rounded,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'مرحله‌ی صحبت تمام شده. قبل از رأی‌گیری، رویدادهای فعال امروز رو مرور کن.',
+          Text(
+            'مرحله‌ی صحبت تمام شده. قبل از رأی‌گیری، رویدادهای فعال امروز رو مرور کن.'.tr,
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.white70, height: 1.5),
           ),
           if (notices.isNotEmpty) ...[
-            const SizedBox(height: 14),
+            SizedBox(height: 14),
             ...notices.map((w) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: EdgeInsets.only(bottom: 8),
               child: w,
             )),
           ],
           if (controller.armedPlayers.isNotEmpty) ...[
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             _buildGunBanner(),
           ],
           if (controller.canAssassinateNow) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             _buildMercenaryDayBanner(),
           ],
           if (controller.activeExecutionWord != null) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             _buildExecutionWordBanner(),
           ],
         ],
       ),
-      actionLabel: 'شروع رأی‌گیری',
+      actionLabel: 'شروع رأی‌گیری'.tr,
       onAction: controller.startVoting,
     );
   }
 
   Widget _modernNotice({required IconData icon, required String text, bool danger = false}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: (danger ? AppColors.bloodRed : AppColors.goldDark).withAlpha(41),
+        color: (danger ? AppColors.bloodRed : AppTheme.uiPrimaryDark).withAlpha(41),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: (danger ? AppColors.bloodRedLight : AppColors.gold).withAlpha(77),
+          color: (danger ? AppColors.bloodRedLight : AppTheme.uiPrimary).withAlpha(77),
         ),
       ),
       child: Row(
         children: [
-          Icon(icon, color: danger ? AppColors.bloodRedLight : AppColors.goldLight, size: 20),
-          const SizedBox(width: 10),
+          Icon(icon, color: danger ? AppColors.bloodRedLight : AppTheme.uiPrimaryLight, size: 20),
+          SizedBox(width: 10),
           Expanded(
             child: Text(
               text,
               textAlign: TextAlign.right,
-              style: const TextStyle(color: Colors.white, fontSize: 12, height: 1.45),
+              style: TextStyle(color: Colors.white, fontSize: 12, height: 1.45),
             ),
           ),
         ],
@@ -1357,15 +1361,15 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   Widget _buildStartIntroNightButton() {
     return ModernNightPanel(
-      eyebrow: 'معارفه • پایان مرحله',
-      title: 'همه معارفه کردند',
+      eyebrow: 'معارفه • پایان مرحله'.tr,
+      title: 'همه معارفه کردند'.tr,
       icon: Icons.nightlight_round,
-      body: const Text(
-        'معارفه‌ی بازیکنان تمام شد. حالا گرداننده می‌تونه وارد شب معارفه بشه.',
+      body: Text(
+        'معارفه‌ی بازیکنان تمام شد. حالا گرداننده می‌تونه وارد شب معارفه بشه.'.tr,
         textAlign: TextAlign.center,
         style: TextStyle(color: Colors.white70, height: 1.5),
       ),
-      actionLabel: 'ادامه به شب معارفه',
+      actionLabel: 'ادامه به شب معارفه'.tr,
       onAction: controller.moveToIntroNight,
     );
   }
@@ -1374,9 +1378,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final armed = controller.armedPlayers;
     return _buildDayEventBanner(
       icon: Icons.gps_fixed_rounded,
-      title: 'اسلحه آماده‌ی شلیک است',
+      title: 'اسلحه آماده‌ی شلیک است'.tr,
       description: 'دارندگان اسلحه: ${armed.map((p) => p.name).join('، ')}',
-      actionLabel: 'اعلامِ اسلحه و شلیک',
+      actionLabel: 'اعلامِ اسلحه و شلیک'.tr,
       onAction: _showFireGunDialog,
     );
   }
@@ -1390,8 +1394,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   }) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      margin: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.bloodRed.withAlpha(51),
         borderRadius: BorderRadius.circular(18),
@@ -1410,7 +1414,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             ),
             child: Icon(icon, color: AppColors.bloodRedLight, size: 21),
           ),
-          const SizedBox(width: 11),
+          SizedBox(width: 11),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1418,24 +1422,24 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 Text(
                   title,
                   textAlign: TextAlign.right,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
                     fontSize: 13,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   description,
                   textAlign: TextAlign.right,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white60,
                     fontSize: 11,
                     height: 1.45,
                   ),
                 ),
                 if (actionLabel != null && onAction != null) ...[
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   SizedBox(
                     width: double.infinity,
                     child: Game3DButton(
@@ -1457,9 +1461,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final merc = controller.mercenaryPlayer!;
     return _buildDayEventBanner(
       icon: Icons.gavel_rounded,
-      title: 'مزدور لباس‌شخصی آماده‌ی ترور است',
-      description: 'این قابلیت فقط تا قبل از شروع رأی‌گیری در دسترس است.',
-      actionLabel: 'ترور',
+      title: 'مزدور لباس‌شخصی آماده‌ی ترور است'.tr,
+      description: 'این قابلیت فقط تا قبل از شروع رأی‌گیری در دسترس است.'.tr,
+      actionLabel: 'ترور'.tr,
       onAction: () => _showAssassinatePicker(merc),
     );
   }
@@ -1478,13 +1482,13 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               .toList();
           return Dialog(
             backgroundColor: Colors.transparent,
-            insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             child: Container(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.surfaceCard,
+                color: AppTheme.uiCard,
                 borderRadius: BorderRadius.circular(26),
-                border: Border.all(color: AppColors.gold.withAlpha(56)),
+                border: Border.all(color: AppTheme.uiPrimary.withAlpha(56)),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -1496,26 +1500,26 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                       color: AppColors.bloodRed.withAlpha(71),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.gps_fixed_rounded, color: AppColors.goldLight, size: 29),
+                    child: Icon(Icons.gps_fixed_rounded, color: AppTheme.uiPrimaryLight, size: 29),
                   ),
-                  const SizedBox(height: 14),
-                  Text('اعلامِ اسلحه', style: AppTheme.headingFont(size: 22)),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'شلیک‌کننده و هدف را مشخص کن.',
+                  SizedBox(height: 14),
+                  Text('اعلامِ اسلحه'.tr, style: AppTheme.headingFont(size: 22)),
+                  SizedBox(height: 6),
+                  Text(
+                    'شلیک‌کننده و هدف را مشخص کن.'.tr,
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: AppColors.mutedText, fontSize: 12),
+                    style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12),
                   ),
-                  const SizedBox(height: 18),
+                  SizedBox(height: 18),
                   DropdownButtonFormField<SessionPlayer>(
                     value: selectedShooter,
                     isExpanded: true,
-                    dropdownColor: AppColors.surfaceCard,
+                    dropdownColor: AppTheme.uiCard,
                     decoration: InputDecoration(
-                      labelText: 'شلیک‌کننده',
-                      prefixIcon: const Icon(Icons.person_rounded, color: AppColors.goldLight),
+                      labelText: 'شلیک‌کننده'.tr,
+                      prefixIcon: Icon(Icons.person_rounded, color: AppTheme.uiPrimaryLight),
                       filled: true,
-                      fillColor: AppColors.surfaceDark,
+                      fillColor: AppTheme.uiSurface,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                     items: shooters
@@ -1526,16 +1530,16 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                       selectedTarget = null;
                     }),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   DropdownButtonFormField<SessionPlayer>(
                     value: selectedTarget,
                     isExpanded: true,
-                    dropdownColor: AppColors.surfaceCard,
+                    dropdownColor: AppTheme.uiCard,
                     decoration: InputDecoration(
-                      labelText: 'هدف',
-                      prefixIcon: const Icon(Icons.my_location_rounded, color: AppColors.goldLight),
+                      labelText: 'هدف'.tr,
+                      prefixIcon: Icon(Icons.my_location_rounded, color: AppTheme.uiPrimaryLight),
                       filled: true,
-                      fillColor: AppColors.surfaceDark,
+                      fillColor: AppTheme.uiSurface,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                     items: targets
@@ -1543,19 +1547,19 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                         .toList(),
                     onChanged: (v) => setDialogState(() => selectedTarget = v),
                   ),
-                  const SizedBox(height: 18),
+                  SizedBox(height: 18),
                   Row(
                     children: [
                       Expanded(
                         child: TextButton(
                           onPressed: () => Navigator.of(dialogContext).pop(),
-                          child: const Text('انصراف'),
+                          child: Text('انصراف'.tr),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10),
                       Expanded(
                         child: Game3DButton(
-                          label: 'شلیک',
+                          label: 'شلیک'.tr,
                           icon: Icons.local_fire_department_rounded,
                           onPressed: (selectedShooter != null && selectedTarget != null)
                               ? () {
@@ -1579,9 +1583,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Widget _buildExecutionWordBanner() {
     return _buildDayEventBanner(
       icon: Icons.spellcheck_rounded,
-      title: 'حکم اعدام فعال است',
+      title: 'حکم اعدام فعال است'.tr,
       description: '$_forbiddenWordLabel: «${controller.activeExecutionWord}»',
-      actionLabel: 'یکی این کلمه رو گفت!',
+      actionLabel: 'یکی این کلمه رو گفت!'.tr,
       onAction: _showForbiddenWordPicker,
     );
   }
@@ -1590,17 +1594,17 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   /// روز و قبل از رأی‌گیری، تو _buildBombResolutionPhase انجام می‌شه.
   Widget _buildBombDayBanner() {
     final target = controller.bombTargetPlayer;
-    if (target == null) return const SizedBox.shrink();
+    if (target == null) return SizedBox.shrink();
     return _buildDayEventBanner(
       icon: Icons.warning_amber_rounded,
-      title: 'بمب فعال است',
+      title: 'بمب فعال است'.tr,
       description: 'بمب جلوی «${target.name}» گذاشته شده و آخرِ همین روز، قبل از رأی‌گیری، خودکار حل‌وفصل می‌شود.',
     );
   }
 
   void _showForbiddenWordPicker() {
     _showPlayerListPicker(
-      title: 'کی این کلمه رو گفت؟',
+      title: 'کی این کلمه رو گفت؟'.tr,
       targets: controller.alivePlayers,
       onSelected: (p) => controller.executePlayerForForbiddenWord(p.id),
     );
@@ -1615,8 +1619,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         .toList();
 
     return ModernNightPanel(
-      eyebrow: 'شب معارفه',
-      title: 'اعضای ${controller.scenario.name} بیدار شوند',
+      eyebrow: 'شب معارفه'.tr,
+      title: 'اعضای ${controller.scenario.localizedName} بیدار شوند',
       icon: Icons.groups_rounded,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1624,13 +1628,13 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           Text(
             'اعضای ${controller.scenario.leaderLabel} بیدار بشن و همدیگه رو ببینن:',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white60, fontSize: 12),
+            style: TextStyle(color: Colors.white60, fontSize: 12),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           ...wakingMembers.asMap().entries.map(
             (entry) => Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
+              margin: EdgeInsets.only(bottom: 8),
+              padding: EdgeInsets.symmetric(horizontal: 13, vertical: 11),
               decoration: BoxDecoration(
                 color: AppColors.bloodRed.withAlpha(61),
                 borderRadius: BorderRadius.circular(15),
@@ -1648,27 +1652,27 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     ),
                     child: Text(
                       '${entry.key + 1}',
-                      style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w800, fontSize: 12),
+                      style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.w800, fontSize: 12),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(child: Text(entry.value.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
+                  SizedBox(width: 10),
+                  Expanded(child: Text(entry.value.name, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
                   if (entry.value.roleId != null)
                     Text(
                       GameRoles.byId(entry.value.roleId!)?.name ?? '',
-                      style: const TextStyle(color: AppColors.goldLight, fontSize: 11, fontWeight: FontWeight.w700),
+                      style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 11, fontWeight: FontWeight.w700),
                     ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 6),
-          const Center(
-            child: Text('فرصت برای مشورت', style: TextStyle(color: Colors.white38, fontSize: 11)),
+          SizedBox(height: 6),
+          Center(
+            child: Text('فرصت برای مشورت'.tr, style: TextStyle(color: Colors.white38, fontSize: 11)),
           ),
         ],
       ),
-      actionLabel: 'ادامه به روز اول',
+      actionLabel: 'ادامه به روز اول'.tr,
       onAction: () => controller.moveToDay(1),
     );
   }
@@ -1683,16 +1687,16 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     if (subject == null) {
       return Center(child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: AppColors.gold.withAlpha(89))),
+        padding: EdgeInsets.all(24),
+        decoration: BoxDecoration(color: AppTheme.uiCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: AppTheme.uiPrimary.withAlpha(89))),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(width: 64, height: 64, decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(64), shape: BoxShape.circle), child: const Icon(Icons.how_to_vote_rounded, color: AppColors.goldLight, size: 32)),
-          const SizedBox(height: 16),
-          Text('رأی‌گیری تمام شد', style: AppTheme.headingFont(size: 22)),
-          const SizedBox(height: 6),
-          const Text('رأی همه‌ی بازیکنان ثبت شده؛ نتیجه را محاسبه کن.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white60, fontSize: 13)),
-          const SizedBox(height: 20),
-          SizedBox(width: double.infinity, child: Game3DButton(label: 'محاسبه‌ی نتیجه', icon: Icons.checklist_rounded, onPressed: controller.isSecondVoteRound ? controller.resolveSecondVoteRound : controller.resolveFirstVoteRound)),
+          Container(width: 64, height: 64, decoration: BoxDecoration(color: AppTheme.uiPrimaryDark.withAlpha(64), shape: BoxShape.circle), child: Icon(Icons.how_to_vote_rounded, color: AppTheme.uiPrimaryLight, size: 32)),
+          SizedBox(height: 16),
+          Text('رأی‌گیری تمام شد'.tr, style: AppTheme.headingFont(size: 22)),
+          SizedBox(height: 6),
+          Text('رأی همه‌ی بازیکنان ثبت شده؛ نتیجه را محاسبه کن.'.tr, textAlign: TextAlign.center, style: TextStyle(color: Colors.white60, fontSize: 13)),
+          SizedBox(height: 20),
+          SizedBox(width: double.infinity, child: Game3DButton(label: 'محاسبه‌ی نتیجه'.tr, icon: Icons.checklist_rounded, onPressed: controller.isSecondVoteRound ? controller.resolveSecondVoteRound : controller.resolveFirstVoteRound)),
         ]),
       ));
     }
@@ -1702,30 +1706,30 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final progress = totalSubjects == 0 ? 0.0 : currentIndex / totalSubjects;
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       if (controller.gunExplosionSummary != null) Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        margin: EdgeInsets.only(bottom: 12),
+        padding: EdgeInsets.symmetric(horizontal: 14, vertical: 11),
         decoration: BoxDecoration(color: AppColors.bloodRed.withAlpha(89), borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.bloodRedLight.withAlpha(204))),
-        child: Row(children: [const Icon(Icons.warning_amber_rounded, color: AppColors.bloodRedLight, size: 20), const SizedBox(width: 9), Expanded(child: Text(controller.gunExplosionSummary!, textAlign: TextAlign.right, style: const TextStyle(color: Colors.white, fontSize: 12, height: 1.35)))]),
+        child: Row(children: [Icon(Icons.warning_amber_rounded, color: AppColors.bloodRedLight, size: 20), SizedBox(width: 9), Expanded(child: Text(controller.gunExplosionSummary!, textAlign: TextAlign.right, style: TextStyle(color: Colors.white, fontSize: 12, height: 1.35)))]),
       ),
-      Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(22), border: Border.all(color: AppColors.gold.withAlpha(71))), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Row(children: [Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), decoration: BoxDecoration(color: controller.isSecondVoteRound ? AppColors.bloodRed.withAlpha(115) : AppColors.goldDark.withAlpha(71), borderRadius: BorderRadius.circular(20)), child: Text(controller.isSecondVoteRound ? 'دور دوم' : 'رأی‌گیری حذف', style: TextStyle(color: controller.isSecondVoteRound ? AppColors.bloodRedLight : AppColors.goldLight, fontWeight: FontWeight.w800, fontSize: 11))), const Spacer(), Text('$currentIndex / $totalSubjects', style: const TextStyle(color: Colors.white54, fontWeight: FontWeight.w700, fontSize: 12))]),
-        const SizedBox(height: 12), ClipRRect(borderRadius: BorderRadius.circular(20), child: LinearProgressIndicator(value: progress.clamp(0.0, 1.0), minHeight: 6, backgroundColor: Colors.white10, valueColor: const AlwaysStoppedAnimation<Color>(AppColors.gold))),
-        const SizedBox(height: 18), const Text('موضوعِ رأی', style: TextStyle(color: Colors.white54, fontSize: 11)), const SizedBox(height: 4), Text(subject.name, textAlign: TextAlign.right, style: AppTheme.headingFont(size: 25)), const SizedBox(height: 8),
-        Row(children: [const Icon(Icons.how_to_vote_rounded, color: AppColors.goldLight, size: 18), const SizedBox(width: 7), Text('${subject.votes} رأی', style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w800)), const SizedBox(width: 8), const Text('•', style: TextStyle(color: Colors.white24)), const SizedBox(width: 8), const Expanded(child: Text('رأی‌دهنده‌هایی را که علیه این بازیکن رأی داده‌اند انتخاب کن.', style: TextStyle(color: Colors.white54, fontSize: 11)))]),
+      Container(padding: EdgeInsets.all(16), decoration: BoxDecoration(color: AppTheme.uiCard, borderRadius: BorderRadius.circular(22), border: Border.all(color: AppTheme.uiPrimary.withAlpha(71))), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Row(children: [Container(padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6), decoration: BoxDecoration(color: controller.isSecondVoteRound ? AppColors.bloodRed.withAlpha(115) : AppTheme.uiPrimaryDark.withAlpha(71), borderRadius: BorderRadius.circular(20)), child: Text(controller.isSecondVoteRound ? 'دور دوم'.tr : 'رأی‌گیری حذف'.tr, style: TextStyle(color: controller.isSecondVoteRound ? AppColors.bloodRedLight : AppTheme.uiPrimaryLight, fontWeight: FontWeight.w800, fontSize: 11))), Spacer(), Text('$currentIndex / $totalSubjects', style: TextStyle(color: Colors.white54, fontWeight: FontWeight.w700, fontSize: 12))]),
+        SizedBox(height: 12), ClipRRect(borderRadius: BorderRadius.circular(20), child: LinearProgressIndicator(value: progress.clamp(0.0, 1.0), minHeight: 6, backgroundColor: Colors.white10, valueColor: AlwaysStoppedAnimation<Color>(AppTheme.uiPrimary))),
+        SizedBox(height: 18), Text('موضوعِ رأی'.tr, style: TextStyle(color: Colors.white54, fontSize: 11)), SizedBox(height: 4), Text(subject.name, textAlign: TextAlign.right, style: AppTheme.headingFont(size: 25)), SizedBox(height: 8),
+        Row(children: [Icon(Icons.how_to_vote_rounded, color: AppTheme.uiPrimaryLight, size: 18), SizedBox(width: 7), Text('${subject.votes} رأی', style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.w800)), SizedBox(width: 8), Text('•', style: TextStyle(color: Colors.white24)), SizedBox(width: 8), Expanded(child: Text('رأی‌دهنده‌هایی را که علیه این بازیکن رأی داده‌اند انتخاب کن.'.tr, style: TextStyle(color: Colors.white54, fontSize: 11)))]),
       ])),
-      const SizedBox(height: 12),
-      Expanded(child: electors.isEmpty ? const Center(child: Text('رأی‌دهنده‌ای برای ثبت وجود ندارد.', style: TextStyle(color: Colors.white38))) : GridView.builder(padding: const EdgeInsets.only(bottom: 4), gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 190, mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: 1.45), itemCount: electors.length, itemBuilder: (context, index) { final e=electors[index]; final isSelected=controller.votersAgainstCurrentSubject.contains(e.id); final enabled=controller.electorCanActOnCurrentSubject(e); return _voteCandidateButton(e, isSelected: isSelected, enabled: enabled, onTap: () => controller.toggleVoterForCurrentSubject(e.id)); })),
-      const SizedBox(height: 10), SafeArea(top: false, child: SizedBox(width: double.infinity, child: Game3DButton(label: 'نفر بعدی', icon: Icons.arrow_back_rounded, onPressed: controller.advanceVoteSequence))),
+      SizedBox(height: 12),
+      Expanded(child: electors.isEmpty ? Center(child: Text('رأی‌دهنده‌ای برای ثبت وجود ندارد.'.tr, style: TextStyle(color: Colors.white38))) : GridView.builder(padding: EdgeInsets.only(bottom: 4), gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 190, mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: 1.45), itemCount: electors.length, itemBuilder: (context, index) { final e=electors[index]; final isSelected=controller.votersAgainstCurrentSubject.contains(e.id); final enabled=controller.electorCanActOnCurrentSubject(e); return _voteCandidateButton(e, isSelected: isSelected, enabled: enabled, onTap: () => controller.toggleVoterForCurrentSubject(e.id)); })),
+      SizedBox(height: 10), SafeArea(top: false, child: SizedBox(width: double.infinity, child: Game3DButton(label: 'نفر بعدی'.tr, icon: Icons.arrow_back_rounded, onPressed: controller.advanceVoteSequence))),
     ]);
   }
 
   Widget _voteCandidateButton(SessionPlayer c, {required bool isSelected, required bool enabled, required VoidCallback onTap}) {
     final isLocked=!enabled; final palette=isSelected ? Game3DPalette.danger : Game3DPalette.gold; final colors=Game3DColors.of(palette);
-    return Game3DSurface(onPressed: enabled ? onTap : null, palette: palette, depth: enabled ? 5 : 2, borderRadius: BorderRadius.circular(18), padding: const EdgeInsets.all(3), semanticLabel: c.name, child: Container(
+    return Game3DSurface(onPressed: enabled ? onTap : null, palette: palette, depth: enabled ? 5 : 2, borderRadius: BorderRadius.circular(18), padding: EdgeInsets.all(3), semanticLabel: c.name, child: Container(
       decoration: BoxDecoration(color: isSelected ? AppColors.bloodRed.withAlpha(89) : Colors.black.withAlpha(31), borderRadius: BorderRadius.circular(15), border: Border.all(color: isSelected ? AppColors.bloodRedLight : Colors.white.withOpacity(enabled ? 0.08 : 0.04), width: isSelected ? 1.4 : 1)),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9), child: Row(children: [
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 9), child: Row(children: [
         Container(width: 38, height: 38, decoration: BoxDecoration(color: isSelected ? AppColors.bloodRedLight.withAlpha(71) : Colors.white.withAlpha(13), shape: BoxShape.circle), child: Icon(isSelected ? Icons.check_rounded : (isLocked ? Icons.lock_outline_rounded : Icons.person_outline_rounded), color: isSelected ? AppColors.bloodRedLight : (isLocked ? Colors.white24 : colors.text), size: 20)),
-        const SizedBox(width: 9), Expanded(child: Text(c.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: isLocked ? Colors.white30 : Colors.white, fontWeight: FontWeight.w800, fontSize: 13, height: 1.2))),
+        SizedBox(width: 9), Expanded(child: Text(c.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: isLocked ? Colors.white30 : Colors.white, fontWeight: FontWeight.w800, fontSize: 13, height: 1.2))),
       ])));
   }
 
@@ -1744,15 +1748,15 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
     if (voter == null) {
       return ModernNightPanel(
-        eyebrow: 'رفراندوم • پایان رأی‌گیری',
-        title: 'رأی‌گیری رهبر تمام شد',
+        eyebrow: 'رفراندوم • پایان رأی‌گیری'.tr,
+        title: 'رأی‌گیری رهبر تمام شد'.tr,
         icon: Icons.how_to_vote_rounded,
-        body: const Text(
-          'رأی همه‌ی بازیکنان ثبت شده. نتیجه را محاسبه کن تا رهبر جامعه مشخص شود.',
+        body: Text(
+          'رأی همه‌ی بازیکنان ثبت شده. نتیجه را محاسبه کن تا رهبر جامعه مشخص شود.'.tr,
           textAlign: TextAlign.center,
           style: TextStyle(color: Colors.white70, height: 1.5),
         ),
-        actionLabel: 'تعیینِ رهبر',
+        actionLabel: 'تعیینِ رهبر'.tr,
         onAction: controller.resolveReferendumRound,
       );
     }
@@ -1766,58 +1770,58 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.surfaceCard,
+            color: AppTheme.uiCard,
             borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: AppColors.gold.withAlpha(71)),
+            border: Border.all(color: AppTheme.uiPrimary.withAlpha(71)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isRunoff ? AppColors.bloodRed.withAlpha(89) : AppColors.goldDark.withAlpha(71),
+                    color: isRunoff ? AppColors.bloodRed.withAlpha(89) : AppTheme.uiPrimaryDark.withAlpha(71),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Text(isRunoff ? 'رأی‌گیری مجدد' : 'انتخاب رهبر', style: TextStyle(color: isRunoff ? AppColors.bloodRedLight : AppColors.goldLight, fontWeight: FontWeight.w800, fontSize: 11)),
+                  child: Text(isRunoff ? 'رأی‌گیری مجدد'.tr : 'انتخاب رهبر'.tr, style: TextStyle(color: isRunoff ? AppColors.bloodRedLight : AppTheme.uiPrimaryLight, fontWeight: FontWeight.w800, fontSize: 11)),
                 ),
-                const Spacer(),
-                Text('$currentIndex / $totalVoters', style: const TextStyle(color: Colors.white54, fontWeight: FontWeight.w700, fontSize: 12)),
+                Spacer(),
+                Text('$currentIndex / $totalVoters', style: TextStyle(color: Colors.white54, fontWeight: FontWeight.w700, fontSize: 12)),
               ]),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               ClipRRect(
                 borderRadius: BorderRadius.circular(20),
-                child: LinearProgressIndicator(value: progress.clamp(0.0, 1.0), minHeight: 6, backgroundColor: Colors.white10, valueColor: const AlwaysStoppedAnimation<Color>(AppColors.gold)),
+                child: LinearProgressIndicator(value: progress.clamp(0.0, 1.0), minHeight: 6, backgroundColor: Colors.white10, valueColor: AlwaysStoppedAnimation<Color>(AppTheme.uiPrimary)),
               ),
-              const SizedBox(height: 16),
-              Text(isRunoff ? 'رفراندومِ مجدد به‌دلیل تساوی' : 'رفراندوم: انتخابِ رهبرِ جامعه', textAlign: TextAlign.center, style: AppTheme.headingFont(size: 19)),
+              SizedBox(height: 16),
+              Text(isRunoff ? 'رفراندومِ مجدد به‌دلیل تساوی'.tr : 'رفراندوم: انتخابِ رهبرِ جامعه'.tr, textAlign: TextAlign.center, style: AppTheme.headingFont(size: 19)),
               if (isRunoff) ...[
-                const SizedBox(height: 5),
-                const Text('فقط بین نامزدهای مساوی دوباره رأی می‌گیریم.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white54, fontSize: 11)),
+                SizedBox(height: 5),
+                Text('فقط بین نامزدهای مساوی دوباره رأی می‌گیریم.'.tr, textAlign: TextAlign.center, style: TextStyle(color: Colors.white54, fontSize: 11)),
               ],
-              const SizedBox(height: 14),
+              SizedBox(height: 14),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(38), borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.gold.withAlpha(61))),
+                padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(color: AppTheme.uiPrimaryDark.withAlpha(38), borderRadius: BorderRadius.circular(16), border: Border.all(color: AppTheme.uiPrimary.withAlpha(61))),
                 child: Row(children: [
-                  const Icon(Icons.how_to_vote_rounded, color: AppColors.goldLight, size: 22),
-                  const SizedBox(width: 10),
-                  Expanded(child: Text('انتخابِ رهبری برای «${voter.name}»', textAlign: TextAlign.right, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800))),
+                  Icon(Icons.how_to_vote_rounded, color: AppTheme.uiPrimaryLight, size: 22),
+                  SizedBox(width: 10),
+                  Expanded(child: Text('انتخابِ رهبری برای «${voter.name}»', textAlign: TextAlign.right, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800))),
                 ]),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Expanded(
           child: candidates.isEmpty
-              ? const Center(child: Text('نامزدی برای انتخاب وجود ندارد.', style: TextStyle(color: Colors.white38)))
+              ? Center(child: Text('نامزدی برای انتخاب وجود ندارد.'.tr, style: TextStyle(color: Colors.white38)))
               : GridView.builder(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 190, mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: 1.45),
+                  padding: EdgeInsets.only(bottom: 4),
+                  gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 190, mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: 1.45),
                   itemCount: candidates.length,
                   itemBuilder: (context, index) {
                     final candidate = candidates[index];
@@ -1833,54 +1837,54 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final targets = controller.alivePlayers.where((p) => p.id != leader.id).toList();
 
     return ModernNightPanel(
-      eyebrow: 'رفراندوم • تصمیم رهبر',
-      title: 'اخراج از جامعه',
+      eyebrow: 'رفراندوم • تصمیم رهبر'.tr,
+      title: 'اخراج از جامعه'.tr,
       icon: Icons.person_remove_rounded,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.goldDark.withAlpha(41),
+              color: AppTheme.uiPrimaryDark.withAlpha(41),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.gold.withAlpha(66)),
+              border: Border.all(color: AppTheme.uiPrimary.withAlpha(66)),
             ),
             child: Row(
               children: [
-                const Icon(Icons.workspace_premium_rounded, color: AppColors.goldLight, size: 22),
-                const SizedBox(width: 10),
+                Icon(Icons.workspace_premium_rounded, color: AppTheme.uiPrimaryLight, size: 22),
+                SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     'رهبر جامعه: ${leader.name}',
                     textAlign: TextAlign.right,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 12),
-          const Text(
-            'رهبر جامعه یک نفر را برای اخراج انتخاب می‌کند. این حذف قطعی است.',
+          SizedBox(height: 12),
+          Text(
+            'رهبر جامعه یک نفر را برای اخراج انتخاب می‌کند. این حذف قطعی است.'.tr,
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.white70, height: 1.5),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
             decoration: BoxDecoration(
               color: AppColors.bloodRed.withAlpha(41),
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: AppColors.bloodRedLight.withAlpha(71)),
             ),
-            child: const Row(
+            child: Row(
               children: [
                 Icon(Icons.warning_amber_rounded, color: AppColors.bloodRedLight, size: 18),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'بعد از انتخاب، اخراج بدون رأی‌گیری انجام می‌شود.',
+                    'بعد از انتخاب، اخراج بدون رأی‌گیری انجام می‌شود.'.tr,
                     textAlign: TextAlign.right,
                     style: TextStyle(color: Colors.white60, fontSize: 11),
                   ),
@@ -1888,32 +1892,32 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           if (targets.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.all(18),
-              child: Text('بازیکن دیگری برای اخراج باقی نمانده.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38)),
+              child: Text('بازیکن دیگری برای اخراج باقی نمانده.'.tr, textAlign: TextAlign.center, style: TextStyle(color: Colors.white38)),
             )
           else
             ...targets.map(
               (p) => Padding(
-                padding: const EdgeInsets.only(bottom: 9),
+                padding: EdgeInsets.only(bottom: 9),
                 child: Game3DSurface(
                   onPressed: () => controller.communityLeaderExpel(p.id),
                   palette: Game3DPalette.gold,
                   depth: 4,
                   borderRadius: BorderRadius.circular(17),
-                  padding: const EdgeInsets.all(3),
+                  padding: EdgeInsets.all(3),
                   semanticLabel: 'اخراج ${p.name}',
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
+                    padding: EdgeInsets.symmetric(horizontal: 13, vertical: 12),
                     decoration: BoxDecoration(color: Colors.black.withAlpha(31), borderRadius: BorderRadius.circular(14)),
                     child: Row(
                       children: [
-                        const Icon(Icons.person_outline_rounded, color: AppColors.goldLight, size: 21),
-                        const SizedBox(width: 10),
-                        Expanded(child: Text(p.name, textAlign: TextAlign.right, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800))),
-                        const Icon(Icons.arrow_back_rounded, color: AppColors.goldLight, size: 18),
+                        Icon(Icons.person_outline_rounded, color: AppTheme.uiPrimaryLight, size: 21),
+                        SizedBox(width: 10),
+                        Expanded(child: Text(p.name, textAlign: TextAlign.right, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800))),
+                        Icon(Icons.arrow_back_rounded, color: AppTheme.uiPrimaryLight, size: 18),
                       ],
                     ),
                   ),
@@ -1922,7 +1926,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             ),
         ],
       ),
-      actionLabel: 'بازگشت به مرحله قبل',
+      actionLabel: 'بازگشت به مرحله قبل'.tr,
       onAction: null,
     );
   }
@@ -1932,18 +1936,18 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Widget _buildDiscloserPrompt() {
     final discloser = controller.playerById(controller.pendingDiscloserPlayerId!);
     return ModernNightPanel(
-      eyebrow: 'روز • افشاگری',
-      title: 'افشاگر از بازی خارج شد',
+      eyebrow: 'روز • افشاگری'.tr,
+      title: 'افشاگر از بازی خارج شد'.tr,
       icon: Icons.campaign_rounded,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.goldDark.withAlpha(36),
+              color: AppTheme.uiPrimaryDark.withAlpha(36),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.gold.withAlpha(71)),
+              border: Border.all(color: AppTheme.uiPrimary.withAlpha(71)),
             ),
             child: Column(
               children: [
@@ -1952,29 +1956,29 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                   textAlign: TextAlign.center,
                   style: AppTheme.headingFont(size: 20),
                 ),
-                const SizedBox(height: 5),
-                const Text(
-                  'افشاگر از بازی خارج شد.',
-                  style: TextStyle(color: AppColors.goldLight, fontSize: 12, fontWeight: FontWeight.w700),
+                SizedBox(height: 5),
+                Text(
+                  'افشاگر از بازی خارج شد.'.tr,
+                  style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 12, fontWeight: FontWeight.w700),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 14),
-          const Text(
-            'قبل از رفتن، می‌تونه مافیابودن یا نبودنِ یک نفر رو علناً افشا کنه.',
+          SizedBox(height: 14),
+          Text(
+            'قبل از رفتن، می‌تونه مافیابودن یا نبودنِ یک نفر رو علناً افشا کنه.'.tr,
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.white70, height: 1.5),
           ),
         ],
       ),
-      actionLabel: 'بله، افشا کنه',
+      actionLabel: 'بله، افشا کنه'.tr,
       onAction: () => _showDiscloserPicker(discloser),
     );
   }
   void _showDiscloserPicker(SessionPlayer discloser) {
     _showPlayerListPicker(
-      title: 'افشاگر کی رو افشا کنه؟',
+      title: 'افشاگر کی رو افشا کنه؟'.tr,
       targets: controller.alivePlayers,
       onSelected: (p) => controller.discloserReveal(p.id),
     );
@@ -1983,20 +1987,20 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Widget _buildDefenseAnnouncement() {
     final candidates = controller.defenseCandidates;
     return ModernNightPanel(
-      eyebrow: 'رأی‌گیری • دفاعیه',
-      title: 'دفاعیه شروع شد',
+      eyebrow: 'رأی‌گیری • دفاعیه'.tr,
+      title: 'دفاعیه شروع شد'.tr,
       icon: Icons.gavel_rounded,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'این بازیکنان وارد مرحله دفاع می‌شوند. هر نفر به‌ترتیب فرصت صحبت دارد.',
+          Text(
+            'این بازیکنان وارد مرحله دفاع می‌شوند. هر نفر به‌ترتیب فرصت صحبت دارد.'.tr,
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.white70, height: 1.5),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
             decoration: BoxDecoration(
               color: AppColors.bloodRed.withAlpha(36),
               borderRadius: BorderRadius.circular(14),
@@ -2004,23 +2008,23 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.record_voice_over_rounded, color: AppColors.bloodRedLight, size: 19),
-                const SizedBox(width: 8),
+                Icon(Icons.record_voice_over_rounded, color: AppColors.bloodRedLight, size: 19),
+                SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     '${candidates.length} نفر برای دفاعیه انتخاب شده‌اند',
                     textAlign: TextAlign.right,
-                    style: const TextStyle(color: Colors.white60, fontSize: 11, fontWeight: FontWeight.w700),
+                    style: TextStyle(color: Colors.white60, fontSize: 11, fontWeight: FontWeight.w700),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           ...candidates.asMap().entries.map(
             (entry) => Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
+              margin: EdgeInsets.only(bottom: 8),
+              padding: EdgeInsets.symmetric(horizontal: 13, vertical: 11),
               decoration: BoxDecoration(
                 color: Colors.white.withAlpha(10),
                 borderRadius: BorderRadius.circular(15),
@@ -2033,29 +2037,29 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     height: 32,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: AppColors.goldDark.withAlpha(64),
+                      color: AppTheme.uiPrimaryDark.withAlpha(64),
                       shape: BoxShape.circle,
                     ),
                     child: Text(
                       '${entry.key + 1}',
-                      style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w800, fontSize: 12),
+                      style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.w800, fontSize: 12),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       entry.value.name,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
                     ),
                   ),
-                  const Icon(Icons.mic_none_rounded, color: Colors.white30, size: 18),
+                  Icon(Icons.mic_none_rounded, color: Colors.white30, size: 18),
                 ],
               ),
             ),
           ),
         ],
       ),
-      actionLabel: 'شروع دفاعیه',
+      actionLabel: 'شروع دفاعیه'.tr,
       onAction: controller.acknowledgeDefenseAnnouncement,
     );
   }
@@ -2067,16 +2071,16 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       return Center(
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(color: AppColors.surfaceCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: AppColors.gold.withAlpha(71))),
+          padding: EdgeInsets.all(22),
+          decoration: BoxDecoration(color: AppTheme.uiCard, borderRadius: BorderRadius.circular(24), border: Border.all(color: AppTheme.uiPrimary.withAlpha(71))),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Container(width: 62, height: 62, decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(61), shape: BoxShape.circle), child: const Icon(Icons.how_to_vote_rounded, color: AppColors.goldLight, size: 31)),
-            const SizedBox(height: 14),
-            Text('دفاعیه تمام شد', style: AppTheme.headingFont(size: 23)),
-            const SizedBox(height: 7),
-            const Text('دفاع همه‌ی افراد ثبت شد. حالا وارد رأی‌گیری نهایی شو.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white60, fontSize: 12, height: 1.5)),
-            const SizedBox(height: 18),
-            SizedBox(width: double.infinity, child: Game3DButton(label: 'شروع رأی‌گیری نهایی', icon: Icons.arrow_back_rounded, onPressed: controller.startSecondVoteRound)),
+            Container(width: 62, height: 62, decoration: BoxDecoration(color: AppTheme.uiPrimaryDark.withAlpha(61), shape: BoxShape.circle), child: Icon(Icons.how_to_vote_rounded, color: AppTheme.uiPrimaryLight, size: 31)),
+            SizedBox(height: 14),
+            Text('دفاعیه تمام شد'.tr, style: AppTheme.headingFont(size: 23)),
+            SizedBox(height: 7),
+            Text('دفاع همه‌ی افراد ثبت شد. حالا وارد رأی‌گیری نهایی شو.'.tr, textAlign: TextAlign.center, style: TextStyle(color: Colors.white60, fontSize: 12, height: 1.5)),
+            SizedBox(height: 18),
+            SizedBox(width: double.infinity, child: Game3DButton(label: 'شروع رأی‌گیری نهایی'.tr, icon: Icons.arrow_back_rounded, onPressed: controller.startSecondVoteRound)),
           ]),
         ),
       );
@@ -2114,42 +2118,42 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final teamId = controller.autoDetectedWinnerTeamId!;
     final team = GameTeams.byId(teamId);
     return ModernNightPanel(
-      eyebrow: 'پایان بازی • نتیجه نهایی',
-      title: 'بازی تموم شد!',
+      eyebrow: 'پایان بازی • نتیجه نهایی'.tr,
+      title: 'بازی تموم شد!'.tr,
       icon: Icons.emoji_events_rounded,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
-            padding: const EdgeInsets.all(18),
+            padding: EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: (team?.color ?? AppColors.gold).withAlpha(31),
+              color: (team?.color ?? AppTheme.uiPrimary).withAlpha(31),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: (team?.color ?? AppColors.gold).withAlpha(89)),
+              border: Border.all(color: (team?.color ?? AppTheme.uiPrimary).withAlpha(89)),
             ),
             child: Column(
               children: [
-                Icon(Icons.emoji_events_rounded, color: team?.color ?? AppColors.goldLight, size: 42),
-                const SizedBox(height: 10),
+                Icon(Icons.emoji_events_rounded, color: team?.color ?? AppTheme.uiPrimaryLight, size: 42),
+                SizedBox(height: 10),
                 Text(
                   '«' + (team?.name ?? teamId) + '» برنده شد',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: team?.color ?? AppColors.goldLight, fontSize: 20, fontWeight: FontWeight.w800),
+                  style: TextStyle(color: team?.color ?? AppTheme.uiPrimaryLight, fontSize: 20, fontWeight: FontWeight.w800),
                 ),
               ],
             ),
           ),
           if (controller.gameEndMessage != null) ...[
-            const SizedBox(height: 12),
-            Text(controller.gameEndMessage!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white70, height: 1.5)),
+            SizedBox(height: 12),
+            Text(controller.gameEndMessage!, textAlign: TextAlign.center, style: TextStyle(color: Colors.white70, height: 1.5)),
           ],
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           _bestWorstRow(controller.players),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           _scoreDetailButton(context, controller.players),
         ],
       ),
-      actionLabel: 'تأیید و بازگشت به منو',
+      actionLabel: 'تأیید و بازگشت به منو'.tr,
       onAction: () => _confirmAutoGameOver(teamId),
     );
   }
@@ -2158,27 +2162,27 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   /// (سندِ طراحیِ امتیازدهی). اگه کمتر از ۲ نفر باشن یا امتیازشون مساوی
   /// باشه، چیزی نشون نمی‌ده (فرقی برای نشون‌دادن نیست).
   Widget _bestWorstRow(List<SessionPlayer> players) {
-    if (players.length < 2) return const SizedBox.shrink();
+    if (players.length < 2) return SizedBox.shrink();
     final sorted = players.toList()..sort((a, b) => b.scoreTotal.compareTo(a.scoreTotal));
     final best = sorted.first;
     final worst = sorted.last;
-    if (best.id == worst.id || best.scoreTotal == worst.scoreTotal) return const SizedBox.shrink();
+    if (best.id == worst.id || best.scoreTotal == worst.scoreTotal) return SizedBox.shrink();
     return Row(
       children: [
         Expanded(
           child: _miniPlayerScoreCard(
             icon: Icons.star,
-            color: AppColors.gold,
-            title: 'بهترین بازیکن',
+            color: AppTheme.uiPrimary,
+            title: 'بهترین بازیکن'.tr,
             player: best,
           ),
         ),
-        const SizedBox(width: 10),
+        SizedBox(width: 10),
         Expanded(
           child: _miniPlayerScoreCard(
             icon: Icons.sentiment_very_dissatisfied,
             color: AppColors.bloodRedLight,
-            title: 'بدترین بازیکن',
+            title: 'بدترین بازیکن'.tr,
             player: worst,
           ),
         ),
@@ -2193,9 +2197,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     required SessionPlayer player,
   }) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceCard,
+        color: AppTheme.uiCard,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: color.withAlpha(128)),
       ),
@@ -2203,13 +2207,13 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, color: color, size: 22),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(title, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             player.name,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           Text(
             '${player.scoreTotal >= 0 ? '+' : ''}${player.scoreTotal} امتیاز',
@@ -2227,33 +2231,33 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       onPressed: () => Navigator.of(ctx).push(
         MaterialPageRoute(builder: (_) => _PlayerScoreDetailScreen(players: players)),
       ),
-      icon: const Icon(Icons.list_alt),
-      label: const Text('جزئیاتِ امتیازِ همه‌ی بازیکنان'),
-      style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(46)),
+      icon: Icon(Icons.list_alt),
+      label: Text('جزئیاتِ امتیازِ همه‌ی بازیکنان'.tr),
+      style: OutlinedButton.styleFrom(minimumSize: Size.fromHeight(46)),
     );
   }
 
   Widget _buildChaosPhase() {
     final trio = controller.chaosPhasePlayers;
-    if (trio.length != 3) return const SizedBox.shrink();
+    if (trio.length != 3) return SizedBox.shrink();
     final a = trio[0];
     final b = trio[1];
     final c = trio[2];
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: 12),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppColors.surfaceCard,
+          color: AppTheme.uiCard,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.gold.withAlpha(61)),
+          border: Border.all(color: AppTheme.uiPrimary.withAlpha(61)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withAlpha(46),
               blurRadius: 22,
-              offset: const Offset(0, 10),
+              offset: Offset(0, 10),
             ),
           ],
         ),
@@ -2266,46 +2270,46 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                   width: 54,
                   height: 54,
                   decoration: BoxDecoration(
-                    color: AppColors.goldDark.withAlpha(56),
+                    color: AppTheme.uiPrimaryDark.withAlpha(56),
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.gold.withAlpha(71)),
+                    border: Border.all(color: AppTheme.uiPrimary.withAlpha(71)),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.cyclone_rounded,
-                    color: AppColors.goldLight,
+                    color: AppTheme.uiPrimaryLight,
                     size: 28,
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'مرحله ویژه',
+                      Text(
+                        'مرحله ویژه'.tr,
                         style: TextStyle(
-                          color: AppColors.goldLight,
+                          color: AppTheme.uiPrimaryLight,
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      const SizedBox(height: 3),
+                      SizedBox(height: 3),
                       Text(
-                        'فازِ آشوب',
+                        'فازِ آشوب'.tr,
                         style: AppTheme.headingFont(size: 23),
                       ),
                     ],
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: AppColors.bloodRed.withAlpha(51),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: AppColors.bloodRedLight.withAlpha(89)),
                   ),
-                  child: const Text(
-                    '۳ نفر',
+                  child: Text(
+                    '۳ نفر'.tr,
                     style: TextStyle(
                       color: AppColors.bloodRedLight,
                       fontSize: 11,
@@ -2315,35 +2319,35 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 18),
+            SizedBox(height: 18),
             Container(
-              padding: const EdgeInsets.all(14),
+              padding: EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: Colors.black.withAlpha(31),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.white.withAlpha(18)),
               ),
-              child: const Text(
-                'فقط ۳ نفر باقی موندن. دو نفر باید در زمانِ مشخص با هم به توافق برسن و متحد بشن؛ نفرِ سوم طرفِ مقابله‌ست.',
+              child: Text(
+                'فقط ۳ نفر باقی موندن. دو نفر باید در زمانِ مشخص با هم به توافق برسن و متحد بشن؛ نفرِ سوم طرفِ مقابله‌ست.'.tr,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.55),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             CountdownTimerWidget(
               totalSeconds: controller.settings.speakSeconds * 2,
             ),
-            const SizedBox(height: 18),
-            const Text(
-              'بعدِ توافق، مشخص کن کدوم دو نفر با هم دست دادن:',
+            SizedBox(height: 18),
+            Text(
+              'بعدِ توافق، مشخص کن کدوم دو نفر با هم دست دادن:'.tr,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: AppColors.goldLight,
+                color: AppTheme.uiPrimaryLight,
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             _chaosPairButton(a, b),
             _chaosPairButton(a, c),
             _chaosPairButton(b, c),
@@ -2355,9 +2359,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   Widget _chaosPairButton(SessionPlayer p1, SessionPlayer p2) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: EdgeInsets.symmetric(vertical: 4),
       child: OutlinedButton(
-        style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+        style: OutlinedButton.styleFrom(minimumSize: Size.fromHeight(48)),
         onPressed: () => controller.resolveChaosPhase(p1.id, p2.id),
         child: Text('${p1.name}   🤝   ${p2.name}'),
       ),
@@ -2368,58 +2372,58 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Widget _buildDayResolved() {
     return ModernNightPanel(
       eyebrow: 'روز ${controller.roundNumber} • نتیجه',
-      title: 'نتیجه‌ی رأی‌گیری',
+      title: 'نتیجه‌ی رأی‌گیری'.tr,
       icon: Icons.gavel_rounded,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
-            padding: const EdgeInsets.all(18),
+            padding: EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
+              color: AppTheme.uiSurface,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.gold.withAlpha(56)),
+              border: Border.all(color: AppTheme.uiPrimary.withAlpha(56)),
             ),
             child: Text(
               controller.lastResolution?.message ?? '',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white, fontSize: 16, height: 1.55, fontWeight: FontWeight.w700),
+              style: TextStyle(color: Colors.white, fontSize: 16, height: 1.55, fontWeight: FontWeight.w700),
             ),
           ),
           if (controller.discloserAnnouncement != null) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Container(
-              padding: const EdgeInsets.all(14),
+              padding: EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppColors.goldDark.withAlpha(41),
+                color: AppTheme.uiPrimaryDark.withAlpha(41),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.gold.withAlpha(115)),
+                border: Border.all(color: AppTheme.uiPrimary.withAlpha(115)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.campaign_rounded, color: AppColors.goldLight, size: 20),
-                  const SizedBox(width: 9),
+                  Icon(Icons.campaign_rounded, color: AppTheme.uiPrimaryLight, size: 20),
+                  SizedBox(width: 9),
                   Expanded(
                     child: Text(
                       controller.discloserAnnouncement!,
                       textAlign: TextAlign.right,
-                      style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w700, height: 1.5),
+                      style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.w700, height: 1.5),
                     ),
                   ),
                 ],
               ),
             ),
           ],
-          const SizedBox(height: 10),
-          const Text(
-            'نتیجه ثبت شد و منطق بازی آماده‌ی ورود به مرحله‌ی بعد است.',
+          SizedBox(height: 10),
+          Text(
+            'نتیجه ثبت شد و منطق بازی آماده‌ی ورود به مرحله‌ی بعد است.'.tr,
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.white38, fontSize: 11),
           ),
         ],
       ),
-      actionLabel: 'ورود به شب',
+      actionLabel: 'ورود به شب'.tr,
       onAction: () {
         controller.discloserAnnouncement = null;
         controller.moveToNight(controller.roundNumber);
@@ -2433,34 +2437,34 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     if (controller.lastNightSummary != null) {
       return ModernNightPanel(
         eyebrow: 'شب ${controller.roundNumber} • خلاصه',
-        title: 'نتیجه‌ی شب آماده است',
+        title: 'نتیجه‌ی شب آماده است'.tr,
         icon: Icons.wb_twilight_rounded,
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'این متن رو عیناً به جمع اعلام کن:',
+            Text(
+              'این متن رو عیناً به جمع اعلام کن:'.tr,
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.goldLight, fontSize: 12, fontWeight: FontWeight.w800),
+              style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 12, fontWeight: FontWeight.w800),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.black.withAlpha(36),
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: AppColors.gold.withAlpha(89)),
+                border: Border.all(color: AppTheme.uiPrimary.withAlpha(89)),
               ),
               child: Text(
                 controller.lastNightSummary!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontSize: 16, height: 1.55, fontWeight: FontWeight.w600),
+                style: TextStyle(color: Colors.white, fontSize: 16, height: 1.55, fontWeight: FontWeight.w600),
               ),
             ),
             if (controller.nightPrivateNotes != null) ...[
-              const SizedBox(height: 14),
+              SizedBox(height: 14),
               Container(
-                padding: const EdgeInsets.all(13),
+                padding: EdgeInsets.all(13),
                 decoration: BoxDecoration(
                   color: Colors.white.withAlpha(9),
                   borderRadius: BorderRadius.circular(16),
@@ -2469,16 +2473,16 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text(
-                      'یادداشت خصوصی گرداننده',
+                    Text(
+                      'یادداشت خصوصی گرداننده'.tr,
                       textAlign: TextAlign.right,
                       style: TextStyle(color: Colors.white38, fontSize: 11, fontWeight: FontWeight.w700),
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6),
                     Text(
                       controller.nightPrivateNotes!,
                       textAlign: TextAlign.right,
-                      style: const TextStyle(color: Colors.white60, fontSize: 12, height: 1.5),
+                      style: TextStyle(color: Colors.white60, fontSize: 12, height: 1.5),
                     ),
                   ],
                 ),
@@ -2486,70 +2490,70 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             ],
             if (controller.statusInquiryChargesRemaining > 0 ||
                 controller.statusInquiryResultMessage != null) ...[
-              const SizedBox(height: 14),
+              SizedBox(height: 14),
               Container(
-                padding: const EdgeInsets.all(14),
+                padding: EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceDark,
+                  color: AppTheme.uiSurface,
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: AppColors.gold.withAlpha(41)),
+                  border: Border.all(color: AppTheme.uiPrimary.withAlpha(41)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.fact_check_rounded, color: AppColors.goldLight, size: 19),
-                        const SizedBox(width: 7),
-                        const Expanded(
-                          child: Text('استعلام وضعیت', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                        Icon(Icons.fact_check_rounded, color: AppTheme.uiPrimaryLight, size: 19),
+                        SizedBox(width: 7),
+                        Expanded(
+                          child: Text('استعلام وضعیت'.tr, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
                         ),
                         Text(
                           '${controller.statusInquiryChargesRemaining} تا باقی مانده',
-                          style: const TextStyle(color: AppColors.goldLight, fontSize: 10, fontWeight: FontWeight.w700),
+                          style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 10, fontWeight: FontWeight.w700),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10),
                     if (controller.statusInquiryResultMessage != null) ...[
                       if (controller.statusInquiryLastVotePassed == true) ...[
-                        const Text(
-                          'استعلام رأی آورد — این رو عیناً اعلام کن:',
+                        Text(
+                          'استعلام رأی آورد — این رو عیناً اعلام کن:'.tr,
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: AppColors.goldLight, fontSize: 11, fontWeight: FontWeight.w800),
+                          style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 11, fontWeight: FontWeight.w800),
                         ),
-                        const SizedBox(height: 7),
+                        SizedBox(height: 7),
                       ],
                       Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: controller.statusInquiryLastVotePassed == true
-                              ? AppColors.goldDark.withAlpha(41)
+                              ? AppTheme.uiPrimaryDark.withAlpha(41)
                               : Colors.white.withAlpha(6),
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
                             color: controller.statusInquiryLastVotePassed == true
-                                ? AppColors.gold.withAlpha(140)
+                                ? AppTheme.uiPrimary.withAlpha(140)
                                 : Colors.white24,
                           ),
                         ),
                         child: Text(
                           controller.statusInquiryResultMessage!,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.white, fontSize: 13, height: 1.45),
+                          style: TextStyle(color: Colors.white, fontSize: 13, height: 1.45),
                         ),
                       ),
                     ] else if (controller.statusInquiryVoteOpen) ...[
                       Text(
                         'موافق‌های استعلام: ${controller.statusInquiryYesVotes} از ${controller.aliveCount} نفر زنده',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.white60, fontSize: 12),
+                        style: TextStyle(color: Colors.white60, fontSize: 12),
                       ),
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10),
                       GridView.builder(
                         shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                        physics: NeverScrollableScrollPhysics(),
+                        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                           maxCrossAxisExtent: 190,
                           mainAxisSpacing: 9,
                           crossAxisSpacing: 9,
@@ -2567,16 +2571,16 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                           );
                         },
                       ),
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10),
                       Game3DButton(
-                        label: 'ثبت نتیجه‌ی رأی',
+                        label: 'ثبت نتیجه‌ی رأی'.tr,
                         icon: Icons.check_rounded,
                         onPressed: controller.resolveStatusInquiryVote,
                       ),
                     ] else
                       OutlinedButton.icon(
                         onPressed: controller.openStatusInquiryVote,
-                        icon: const Icon(Icons.how_to_vote_rounded),
+                        icon: Icon(Icons.how_to_vote_rounded),
                         label: Text('شروع استعلام وضعیت • ${controller.statusInquiryChargesRemaining} بار'),
                       ),
                   ],
@@ -2605,6 +2609,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         return _buildRoleNightStep(
           wakeLabel: '$_rapperRoleName بیدار بشه',
           sleepLabel: '$_rapperRoleName چشمش رو ببنده',
+          timerSeconds: 60,
           playerName: controller.rapperPlayer?.name,
           body: _buildRapperSection(),
         );
@@ -2624,8 +2629,8 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         );
       case NightStepKind.doctor:
         return _buildRoleNightStep(
-          wakeLabel: 'دکتر بیدار بشه',
-          sleepLabel: 'دکتر چشمش رو ببنده',
+          wakeLabel: 'دکتر بیدار بشه'.tr,
+          sleepLabel: 'دکتر چشمش رو ببنده'.tr,
           playerName: controller.doctorPlayer?.name,
           body: _buildDoctorSection(),
         );
@@ -2669,15 +2674,15 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                'همه‌ی نقش‌ها اقدامِ امشب‌شون رو انجام دادن.',
+              Text(
+                'همه‌ی نقش‌ها اقدامِ امشب‌شون رو انجام دادن.'.tr,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.white70),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               ElevatedButton(
                 onPressed: controller.finishNight,
-                child: const Text('پایان شب'),
+                child: Text('پایان شب'.tr),
               ),
             ],
           ),
@@ -2692,12 +2697,12 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Widget _buildLeaderTeamRoster() {
     final leaderTeamId = controller.leaderTeamId;
     final members = controller.alivePlayers.where((p) => p.teamId == leaderTeamId).toList();
-    if (members.isEmpty) return const SizedBox.shrink();
+    if (members.isEmpty) return SizedBox.shrink();
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(10),
+      padding: EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.surfaceCard,
+        color: AppTheme.uiCard,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -2705,7 +2710,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           final role = p.roleId != null ? GameRoles.byId(p.roleId!) : null;
           return Text(
             '👤 ${p.name} — ${role?.name ?? '$_plainLeaderTeamLabel (بدون نقشِ خاص)'}',
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: Colors.white),
           );
         }).toList(),
       ),
@@ -2722,17 +2727,17 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildLeaderTeamRoster(),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           if (controller.leaderTeamDisabledTonight)
             Container(
-              padding: const EdgeInsets.all(14),
+              padding: EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: Colors.white.withAlpha(9),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.white.withAlpha(20)),
               ),
-              child: const Text(
-                'امشب تیمِ رهبر قابلیتی ندارد؛ فقط به مرحله‌ی بعد برو.',
+              child: Text(
+                'امشب تیمِ رهبر قابلیتی ندارد؛ فقط به مرحله‌ی بعد برو.'.tr,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.white54, height: 1.5),
               ),
@@ -2740,55 +2745,55 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           else ...[
             _buildLeaderDecisionSection(),
             if (controller.canIssueExecutionOrder) ...[
-              const SizedBox(height: 18),
-              const Divider(color: Colors.white12),
-              const SizedBox(height: 10),
+              SizedBox(height: 18),
+              Divider(color: Colors.white12),
+              SizedBox(height: 10),
               _buildJudiciarySection(),
             ],
             if (controller.interrogatorPlayer != null) ...[
-              const SizedBox(height: 18),
-              const Divider(color: Colors.white12),
-              const SizedBox(height: 10),
+              SizedBox(height: 18),
+              Divider(color: Colors.white12),
+              SizedBox(height: 10),
               _buildInterrogatorSection(),
             ],
             if (controller.intelligenceMinisterPlayer != null) ...[
-              const SizedBox(height: 18),
-              const Divider(color: Colors.white12),
-              const SizedBox(height: 10),
+              SizedBox(height: 18),
+              Divider(color: Colors.white12),
+              SizedBox(height: 10),
               _buildIntelQuestionSection(),
             ],
             if (controller.policeCommanderPlayer != null) ...[
-              const SizedBox(height: 18),
-              const Divider(color: Colors.white12),
-              const SizedBox(height: 10),
+              SizedBox(height: 18),
+              Divider(color: Colors.white12),
+              SizedBox(height: 10),
               _buildDetentionSection(),
             ],
             if (controller.mercenaryPlayer != null &&
                 controller.isStillActiveTonight(controller.mercenaryPlayer!)) ...[
-              const SizedBox(height: 18),
-              const Divider(color: Colors.white12),
-              const SizedBox(height: 10),
+              SizedBox(height: 18),
+              Divider(color: Colors.white12),
+              SizedBox(height: 10),
               _buildMercenaryNightSection(),
             ],
             if (controller.natashaPlayer != null &&
                 controller.isStillActiveTonight(controller.natashaPlayer!) &&
                 !controller.natashaPlayer!.natashaSilenceUsed) ...[
-              const SizedBox(height: 18),
-              const Divider(color: Colors.white12),
-              const SizedBox(height: 10),
+              SizedBox(height: 18),
+              Divider(color: Colors.white12),
+              SizedBox(height: 10),
               _buildNatashaSection(),
             ],
             if (controller.saboteurPlayer != null &&
                 controller.isStillActiveTonight(controller.saboteurPlayer!)) ...[
-              const SizedBox(height: 18),
-              const Divider(color: Colors.white12),
-              const SizedBox(height: 10),
+              SizedBox(height: 18),
+              Divider(color: Colors.white12),
+              SizedBox(height: 10),
               _buildSaboteurSection(),
             ],
             if (controller.bomberPlayer != null) ...[
-              const SizedBox(height: 18),
-              const Divider(color: Colors.white12),
-              const SizedBox(height: 10),
+              SizedBox(height: 18),
+              Divider(color: Colors.white12),
+              SizedBox(height: 10),
               _buildBomberSection(),
             ],
           ],
@@ -2796,6 +2801,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       ),
       actionLabel: 'اعضای $teamLabel چشم‌هاشون رو ببندن',
       onAction: controller.canAdvancePastLeaderTeamStep ? controller.advanceNightStep : null,
+      timerSeconds: 60,
+      timerKey: 'night-action-${controller.roundNumber}-leader-team',
+      onTimerFinished: () => controller.recordNightTimeoutForLeaderTeam(),
     );
   }
 
@@ -2805,19 +2813,19 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     if (controller.bomberChargeUsed) {
       return Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.surfaceDark,
+          color: AppTheme.uiSurface,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.bloodRedLight.withAlpha(71)),
         ),
-        child: const Row(
+        child: Row(
           children: [
-            Icon(Icons.lock_rounded, color: AppColors.mutedText),
+            Icon(Icons.lock_rounded, color: AppTheme.uiMutedText),
             SizedBox(width: 12),
             Expanded(child: Text(
-              'بمب‌گذار قبلاً بمبش رو کار گذاشته؛ این قابلیت یک‌بارمصرفه و تا حل‌شدنش پیگیری می‌شه.',
-              style: TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.45),
+              'بمب‌گذار قبلاً بمبش رو کار گذاشته؛ این قابلیت یک‌بارمصرفه و تا حل‌شدنش پیگیری می‌شه.'.tr,
+              style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12, height: 1.45),
             )),
           ],
         ),
@@ -2825,30 +2833,30 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     }
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.surfaceCard,
+        color: AppTheme.uiCard,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.gold.withAlpha(46)),
+        border: Border.all(color: AppTheme.uiPrimary.withAlpha(46)),
       ),
       child: Column(
         children: [
           Container(
             width: 58, height: 58,
             decoration: BoxDecoration(color: AppColors.bloodRed.withAlpha(71), shape: BoxShape.circle),
-            child: const Icon(Icons.local_fire_department_rounded, color: AppColors.goldLight, size: 30),
+            child: Icon(Icons.local_fire_department_rounded, color: AppTheme.uiPrimaryLight, size: 30),
           ),
-          const SizedBox(height: 12),
-          Text('کارگذاری بمب', style: AppTheme.headingFont(size: 19)),
-          const SizedBox(height: 7),
-          const Text(
-            'امشب یک‌بار برای همیشه جلوی یک بازیکن بمب بگذار و رمز خنثی‌سازی ۱ تا ۴ را انتخاب کن.',
+          SizedBox(height: 12),
+          Text('کارگذاری بمب'.tr, style: AppTheme.headingFont(size: 19)),
+          SizedBox(height: 7),
+          Text(
+            'امشب یک‌بار برای همیشه جلوی یک بازیکن بمب بگذار و رمز خنثی‌سازی ۱ تا ۴ را انتخاب کن.'.tr,
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.5),
+            style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12, height: 1.5),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           Game3DButton(
-            label: 'کارگذاریِ بمب',
+            label: 'کارگذاریِ بمب'.tr,
             icon: Icons.local_fire_department_rounded,
             onPressed: controller.canPlantBombTonight ? _showBomberPicker : null,
           ),
@@ -2860,7 +2868,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   void _showBomberPicker() {
     _showPlayerListPicker(
-      title: 'بمب جلوی کی گذاشته بشه؟',
+      title: 'بمب جلوی کی گذاشته بشه؟'.tr,
       targets: controller.alivePlayers,
       onSelected: _showBombCodePicker,
     );
@@ -2872,27 +2880,27 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       barrierDismissible: false,
       builder: (dialogContext) => Dialog(
         backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        insetPadding: EdgeInsets.symmetric(horizontal: 24, vertical: 24),
         child: Container(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: AppColors.surfaceCard,
+            color: AppTheme.uiCard,
             borderRadius: BorderRadius.circular(26),
-            border: Border.all(color: AppColors.gold.withAlpha(56)),
+            border: Border.all(color: AppTheme.uiPrimary.withAlpha(56)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 width: 52, height: 52,
-                decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(64), shape: BoxShape.circle),
-                child: const Icon(Icons.password_rounded, color: AppColors.goldLight, size: 28),
+                decoration: BoxDecoration(color: AppTheme.uiPrimaryDark.withAlpha(64), shape: BoxShape.circle),
+                child: Icon(Icons.password_rounded, color: AppTheme.uiPrimaryLight, size: 28),
               ),
-              const SizedBox(height: 12),
-              Text('رمزِ خنثی‌سازی', style: AppTheme.headingFont(size: 20)),
-              const SizedBox(height: 5),
-              const Text('یکی از چهار رمز را برای این بمب انتخاب کن.', style: TextStyle(color: AppColors.mutedText, fontSize: 12)),
-              const SizedBox(height: 16),
+              SizedBox(height: 12),
+              Text('رمزِ خنثی‌سازی'.tr, style: AppTheme.headingFont(size: 20)),
+              SizedBox(height: 5),
+              Text('یکی از چهار رمز را برای این بمب انتخاب کن.'.tr, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12)),
+              SizedBox(height: 16),
               _buildBombCodeGrid((code) {
                 Navigator.of(dialogContext).pop();
                 controller.plantBomb(target.id, code);
@@ -2911,23 +2919,23 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   /// رأی‌گیری.
   Widget _buildBombResolutionPhase() {
     final target = controller.bombTargetPlayer;
-    if (target == null) return const SizedBox.shrink();
+    if (target == null) return SizedBox.shrink();
 
     if (controller.bombOutcomeMessage != null) {
       return ModernNightPanel(
-        eyebrow: 'خواب نیمروزی • نتیجه',
-        title: 'نتیجه‌ی بمب',
+        eyebrow: 'خواب نیمروزی • نتیجه'.tr,
+        title: 'نتیجه‌ی بمب'.tr,
         icon: Icons.local_fire_department_rounded,
         body: Column(
           children: [
             Text(controller.bombOutcomeMessage!, textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w700, fontSize: 15, height: 1.5)),
-            const SizedBox(height: 10),
-            const Text('حالا بگو همه چشماشون رو باز کنن.',
-              textAlign: TextAlign.center, style: TextStyle(color: AppColors.mutedText, fontSize: 12)),
+              style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.w700, fontSize: 15, height: 1.5)),
+            SizedBox(height: 10),
+            Text('حالا بگو همه چشماشون رو باز کنن.'.tr,
+              textAlign: TextAlign.center, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12)),
           ],
         ),
-        actionLabel: 'ادامه به رأی‌گیری',
+        actionLabel: 'ادامه به رأی‌گیری'.tr,
         actionIcon: Icons.how_to_vote_rounded,
         onAction: controller.acknowledgeBombOutcome,
       );
@@ -2945,20 +2953,20 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: 12),
       child: Column(
         children: [
           ModernNightPanel(
-            eyebrow: 'خواب نیمروزی',
-            title: 'حل معمای بمب',
+            eyebrow: 'خواب نیمروزی'.tr,
+            title: 'حل معمای بمب'.tr,
             icon: Icons.lock_clock_rounded,
-            body: const Text('همه‌ی بازیکن‌ها چشماشون رو ببندن؛ یک تصمیم مخفیانه در جریانه.',
-              textAlign: TextAlign.center, style: TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.5)),
-            actionLabel: 'ادامه‌ی فرایند',
+            body: Text('همه‌ی بازیکن‌ها چشماشون رو ببندن؛ یک تصمیم مخفیانه در جریانه.'.tr,
+              textAlign: TextAlign.center, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12, height: 1.5)),
+            actionLabel: 'ادامه‌ی فرایند'.tr,
             actionIcon: Icons.arrow_downward_rounded,
             onAction: null,
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           branch,
         ],
       ),
@@ -2968,33 +2976,33 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   Widget _playerBadge(String label, String name) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.surfaceCard,
+        color: AppTheme.uiCard,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.gold.withAlpha(102)),
+        border: Border.all(color: AppTheme.uiPrimary.withAlpha(102)),
       ),
       child: Text(
         '$label: $name',
-        style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+        style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.bold),
       ),
     );
   }
 
   Widget _buildBombGuardSelfBranch(SessionPlayer target, SessionPlayer guard) {
     return ModernNightPanel(
-      eyebrow: 'بمب • محافظ',
-      title: 'محافظ خودش هدف است',
+      eyebrow: 'بمب • محافظ'.tr,
+      title: 'محافظ خودش هدف است'.tr,
       icon: Icons.shield_rounded,
       body: Column(
         children: [
-          _playerBadge('👤 هدفِ بمب و محافظ، هردو', guard.name),
-          const SizedBox(height: 14),
+          _playerBadge('👤 هدفِ بمب و محافظ، هردو'.tr, guard.name),
+          SizedBox(height: 14),
           Text('رمز درست را بی‌سروصدا به محافظ نشان بده: ${controller.bombCorrectCode}',
-            textAlign: TextAlign.center, style: const TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.5)),
+            textAlign: TextAlign.center, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12, height: 1.5)),
         ],
       ),
-      actionLabel: 'تأیید — بمب خنثی شد',
+      actionLabel: 'تأیید — بمب خنثی شد'.tr,
       actionIcon: Icons.verified_rounded,
       onAction: () => controller.resolveBombCode(controller.bombCorrectCode!),
     );
@@ -3004,18 +3012,18 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Widget _buildBombAskGuardBranch() {
     final guard = controller.guardPlayer!;
     return ModernNightPanel(
-      eyebrow: 'بمب • تصمیم محافظ',
-      title: 'آیا محافظ فدا می‌شود؟',
+      eyebrow: 'بمب • تصمیم محافظ'.tr,
+      title: 'آیا محافظ فدا می‌شود؟'.tr,
       icon: Icons.shield_moon_rounded,
       body: Column(
         children: [
-          _playerBadge('👤 این نقش (محافظ)', guard.name),
-          const SizedBox(height: 14),
-          const Text('محافظ را بی‌سروصدا بیدار کن و بپرس: می‌خواهی برای نجات هدف فدا شوی؟',
-            textAlign: TextAlign.center, style: TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.5)),
+          _playerBadge('👤 این نقش (محافظ)'.tr, guard.name),
+          SizedBox(height: 14),
+          Text('محافظ را بی‌سروصدا بیدار کن و بپرس: می‌خواهی برای نجات هدف فدا شوی؟'.tr,
+            textAlign: TextAlign.center, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12, height: 1.5)),
         ],
       ),
-      actionLabel: 'بله، فدا می‌شود',
+      actionLabel: 'بله، فدا می‌شود'.tr,
       actionIcon: Icons.shield_rounded,
       onAction: () => controller.recordGuardSacrificeAnswer(true),
     );
@@ -3039,7 +3047,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           child: Center(
             child: Text(
               '$code',
-              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Color(0xFF2A1B02)),
+              style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Color(0xFF2A1B02)),
             ),
           ),
         ),
@@ -3051,12 +3059,12 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [codeButton(1), const SizedBox(width: 16), codeButton(2)],
+          children: [codeButton(1), SizedBox(width: 16), codeButton(2)],
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [codeButton(3), const SizedBox(width: 16), codeButton(4)],
+          children: [codeButton(3), SizedBox(width: 16), codeButton(4)],
         ),
       ],
     );
@@ -3065,25 +3073,25 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   Widget _buildBombCodeGuessBranch({required SessionPlayer guesser, required SessionPlayer forTarget}) {
     final isSelf = guesser.id == forTarget.id;
     return ModernNightPanel(
-      eyebrow: 'بمب • حدس رمز',
-      title: 'انتخاب رمز خنثی‌سازی',
+      eyebrow: 'بمب • حدس رمز'.tr,
+      title: 'انتخاب رمز خنثی‌سازی'.tr,
       icon: Icons.password_rounded,
       body: Column(
         children: [
-          _playerBadge(isSelf ? '👤 این نقش (هدف)' : '👤 این نقش (محافظ)', guesser.name),
-          const SizedBox(height: 14),
+          _playerBadge(isSelf ? '👤 این نقش (هدف)'.tr : '👤 این نقش (محافظ)'.tr, guesser.name),
+          SizedBox(height: 14),
           Text(
             isSelf
                 ? '«${guesser.name}» باید رمز خنثی‌سازی را حدس بزند:'
                 : '«${guesser.name}» به‌جایِ «${forTarget.name}» رمز را حدس می‌زند:',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.5),
+            style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12, height: 1.5),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           _buildBombCodeGrid((code) => controller.resolveBombCode(code)),
         ],
       ),
-      actionLabel: 'رمز را انتخاب کن',
+      actionLabel: 'رمز را انتخاب کن'.tr,
       actionIcon: Icons.password_rounded,
       onAction: null,
     );
@@ -3096,6 +3104,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     required Widget body,
     String? playerName,
     bool canAdvance = true,
+    int timerSeconds = 30,
   }) {
     return ModernNightPanel(
       eyebrow: 'شب ${controller.roundNumber}',
@@ -3105,6 +3114,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       body: body,
       actionLabel: sleepLabel,
       onAction: canAdvance ? controller.advanceNightStep : null,
+      timerSeconds: timerSeconds,
+      timerKey: 'night-action-${controller.roundNumber}-${controller.currentNightStep.index}',
+      onTimerFinished: () => controller.recordNightTimeoutForCurrentRole(),
     );
   }
 
@@ -3117,30 +3129,30 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       if (leader.independentLeaderPlaystyle != null) {
         return Text(
           leader.independentLeaderPlaystyle == IndependentLeaderPlaystyle.assassination
-              ? 'شیوه انتخاب شد: 🕶 عملیاتِ ترور'
-              : 'شیوه انتخاب شد: 🗡 عملیاتِ سری',
+              ? 'شیوه انتخاب شد: 🕶 عملیاتِ ترور'.tr
+              : 'شیوه انتخاب شد: 🗡 عملیاتِ سری'.tr,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+          style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.bold),
         );
       }
       return Column(
         children: [
-          const Text(
-            'رهبرِ موساد باید همین امشب، برای همیشه، شیوه‌ی بازیش رو انتخاب کنه:',
+          Text(
+            'رهبرِ موساد باید همین امشب، برای همیشه، شیوه‌ی بازیش رو انتخاب کنه:'.tr,
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.white70),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+            style: ElevatedButton.styleFrom(minimumSize: Size.fromHeight(50)),
             onPressed: () => controller.chooseIndependentLeaderPlaystyle(IndependentLeaderPlaystyle.assassination),
-            child: const Text('🕶 عملیاتِ ترور'),
+            child: Text('🕶 عملیاتِ ترور'.tr),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+            style: ElevatedButton.styleFrom(minimumSize: Size.fromHeight(50)),
             onPressed: () => controller.chooseIndependentLeaderPlaystyle(IndependentLeaderPlaystyle.secretOperation),
-            child: const Text('🗡 عملیاتِ سری'),
+            child: Text('🗡 عملیاتِ سری'.tr),
           ),
         ],
       );
@@ -3150,7 +3162,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       return Text(
         '$_independentLeaderRoleName دیگه در بازی نیست.',
         textAlign: TextAlign.center,
-        style: const TextStyle(color: Colors.white38),
+        style: TextStyle(color: Colors.white38),
       );
     }
 
@@ -3163,27 +3175,27 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               ? 'شیوه: 🕶 عملیاتِ ترور — هدف + حدسِ نقش (فقط رو اعضای سرکوب اثر داره)'
               : 'شیوه: 🗡 عملیاتِ سری — یه شاتِ ساده رو یه بازیکن (زره جلوشو می‌گیره)',
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: Colors.white70),
         ),
         if (isAssassination && resultText != null) ...[
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             resultText,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+            style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.bold),
           ),
         ],
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         if (controller.canIndependentLeaderActTonight)
           ElevatedButton(
-            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+            style: ElevatedButton.styleFrom(minimumSize: Size.fromHeight(50)),
             onPressed: () => isAssassination
                 ? _showIndependentLeaderAssassinationPicker(leader)
                 : _showIndependentLeaderShootPicker(leader),
-            child: Text(isAssassination ? 'ترور (هدف + حدسِ نقش)' : 'شات'),
+            child: Text(isAssassination ? 'ترور (هدف + حدسِ نقش)'.tr : 'شات'.tr),
           )
         else
-          const Text('امشب دیگه اقدامی ممکن نیست.', style: TextStyle(color: Colors.white38)),
+          Text('امشب دیگه اقدامی ممکن نیست.'.tr, style: TextStyle(color: Colors.white38)),
       ],
     );
   }
@@ -3195,45 +3207,45 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surfaceDark,
+      backgroundColor: AppTheme.uiSurface,
       isScrollControlled: true,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
             return SafeArea(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('ترور: هدف + حدسِ نقش', style: TextStyle(color: AppColors.goldLight)),
-                    const SizedBox(height: 12),
+                    Text('ترور: هدف + حدسِ نقش'.tr, style: TextStyle(color: AppTheme.uiPrimaryLight)),
+                    SizedBox(height: 12),
                     DropdownButton<SessionPlayer>(
-                      hint: const Text('انتخاب هدف', style: TextStyle(color: Colors.white70)),
-                      dropdownColor: AppColors.surfaceDark,
+                      hint: Text('انتخاب هدف'.tr, style: TextStyle(color: Colors.white70)),
+                      dropdownColor: AppTheme.uiSurface,
                       value: selectedTarget,
                       items: targets
                           .map((p) => DropdownMenuItem(
                                 value: p,
-                                child: Text(p.name, style: const TextStyle(color: Colors.white)),
+                                child: Text(p.name, style: TextStyle(color: Colors.white)),
                               ))
                           .toList(),
                       onChanged: (v) => setSheetState(() => selectedTarget = v),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     DropdownButton<String>(
-                      hint: const Text('حدسِ نقش', style: TextStyle(color: Colors.white70)),
-                      dropdownColor: AppColors.surfaceDark,
+                      hint: Text('حدسِ نقش'.tr, style: TextStyle(color: Colors.white70)),
+                      dropdownColor: AppTheme.uiSurface,
                       value: selectedRoleId,
                       items: controller.rolesInPlayForTeam(controller.scenario.leaderTeamId)
                           .map((r) => DropdownMenuItem(
                                 value: r.id,
-                                child: Text(r.name, style: const TextStyle(color: Colors.white)),
+                                child: Text(r.name, style: TextStyle(color: Colors.white)),
                               ))
                           .toList(),
                       onChanged: (v) => setSheetState(() => selectedRoleId = v),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: (selectedTarget != null && selectedRoleId != null)
                           ? () {
@@ -3241,7 +3253,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                               Navigator.of(context).pop();
                             }
                           : null,
-                      child: const Text('تایید ترور'),
+                      child: Text('تایید ترور'.tr),
                     ),
                   ],
                 ),
@@ -3255,7 +3267,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   void _showIndependentLeaderShootPicker(SessionPlayer leader) {
     _showPlayerListPicker(
-      title: 'شات روی کی؟',
+      title: 'شات روی کی؟'.tr,
       targets: controller.alivePlayers.where((p) => p.id != leader.id).toList(),
       onSelected: (p) => controller.independentLeaderShoot(p.id),
     );
@@ -3275,28 +3287,28 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           '$_politicalAnalystRoleName می‌تونه امشب یکی از بازیکن‌ها رو استعلام بگیره: '
           'آیا $membershipQuestion؟',
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: Colors.white70),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         if (result != null && targetName != null) ...[
           Text(
             result == InvestigationResult.like
                 ? '🔍 نتیجه‌ی «$targetName»: 👍 لایک ($membershipYes)'
                 : '🔍 نتیجه‌ی «$targetName»: 👎 دیس‌لایک ($membershipNo)',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+            style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
           Text(
             'این نتیجه رو فقط خصوصی و درِگوشی به خودِ $_politicalAnalystRoleName بگو.',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white38, fontSize: 11),
+            style: TextStyle(color: Colors.white38, fontSize: 11),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
         ],
         OutlinedButton.icon(
-          icon: const Icon(Icons.travel_explore),
-          label: const Text('استعلامِ یه بازیکن'),
+          icon: Icon(Icons.travel_explore),
+          label: Text('استعلامِ یه بازیکن'.tr),
           onPressed: controller.canPoliticalAnalystActTonight ? _showPoliticalAnalystPicker : null,
         ),
       ],
@@ -3306,7 +3318,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   void _showPoliticalAnalystPicker() {
     final analyst = controller.politicalAnalystPlayer!;
     _showPlayerListPicker(
-      title: 'استعلام روی کی؟',
+      title: 'استعلام روی کی؟'.tr,
       targets: controller.alivePlayers.where((p) => p.id != analyst.id).toList(),
       onSelected: (p) => controller.politicalAnalystInvestigate(p.id),
     );
@@ -3320,7 +3332,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       return Text(
         '$_civicActivistRoleName قبلاً درخواستِ رفراندومش رو مصرف کرده.',
         textAlign: TextAlign.center,
-        style: const TextStyle(color: Colors.white38),
+        style: TextStyle(color: Colors.white38),
       );
     }
     return Column(
@@ -3332,11 +3344,11 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           textAlign: TextAlign.center,
           style: TextStyle(color: Colors.white70),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         ElevatedButton.icon(
-          icon: const Icon(Icons.how_to_vote),
-          label: const Text('درخواستِ رفراندوم'),
-          style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+          icon: Icon(Icons.how_to_vote),
+          label: Text('درخواستِ رفراندوم'.tr),
+          style: ElevatedButton.styleFrom(minimumSize: Size.fromHeight(50)),
           onPressed: controller.canRequestReferendumTonight ? controller.requestReferendum : null,
         ),
       ],
@@ -3347,40 +3359,38 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final rapper = controller.rapperPlayer!;
     final result = controller.rapperResultMessage;
     final resistance = controller.activeResistanceMembers;
-    // نکته‌ی مهم: اگه انتخابِ رپر معترض غلط بوده باشه، خودش حذف می‌شه —
-    // ولی این نتیجه رو همین‌جا نشون نمی‌دیم، وگرنه معلوم می‌شه که دقیقاً
-    // همین نوبت باعثِ حذفش شده و نقشش لو می‌ره. اون حذف فقط تو جمع‌بندیِ
-    // آخرِ شب (کنارِ بقیه‌ی کشته‌ها) اعلام می‌شه. isStillActiveTonight
-    // (نه isAlive خام) چون اگه یکیِ دیگه (نه خودِ نتیجه‌ی این نوبت) امشب
-    // سلاخی/ترورش کرده باشه، نتیجه‌ی موفقِ خودِ همین نوبت باید دیده بشه.
-    final showResult = result != null && controller.isStillActiveTonight(rapper);
+    // نتیجه‌ی انتخابِ اوشن باید همان لحظه برای خودش مشخص باشد؛ اگر انتخاب
+    // اشتباه بوده، اوشن حذف شده ولی پیام نباید به اعلامِ صبح موکول شود.
+    // دکمه‌ی پایینِ پنل همان «چشمش رو ببنده» است و بعد از دیدنِ نتیجه
+    // می‌تواند به مرحله‌ی بعد برود.
+    final showResult = result != null;
     return Column(
       children: [
         Text(
           '$_rapperRoleName می‌تونه امشب یه نفر رو برای عضوگیری تو $_resistanceGroupLabel انتخاب کنه:',
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: Colors.white70),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         if (showResult) ...[
           Text(
             result,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+            style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           if (resistance.isNotEmpty)
             Text(
               'حالا بگو: اعضای $_resistanceGroupLabel (${resistance.map((p) => p.name).join('، ')}) بیدار بشن '
               'تا وضعیتِ جدید رو ببینن.',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white54, fontSize: 12),
+              style: TextStyle(color: Colors.white54, fontSize: 12),
             ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
         ],
         OutlinedButton.icon(
-          icon: const Icon(Icons.groups),
-          label: const Text('انتخابِ یه بازیکن'),
+          icon: Icon(Icons.groups),
+          label: Text('انتخابِ یه بازیکن'.tr),
           onPressed: controller.canRapperActTonight ? () => _showRapperPicker(rapper) : null,
         ),
       ],
@@ -3399,15 +3409,15 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final natasha = controller.natashaPlayer!;
     return Column(
       children: [
-        const Text(
-          'ناتاشا می‌تونه (فقط یک‌بار در کلِ بازی) یه نفر رو تا پایانِ روزِ بعد ساکت کنه:',
+        Text(
+          'ناتاشا می‌تونه (فقط یک‌بار در کلِ بازی) یه نفر رو تا پایانِ روزِ بعد ساکت کنه:'.tr,
           textAlign: TextAlign.center,
           style: TextStyle(color: Colors.white70),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         OutlinedButton.icon(
-          icon: const Icon(Icons.voice_over_off_rounded),
-          label: const Text('انتخابِ یه بازیکن'),
+          icon: Icon(Icons.voice_over_off_rounded),
+          label: Text('انتخابِ یه بازیکن'.tr),
           onPressed: controller.canNatashaSilenceTonight ? () => _showNatashaPicker(natasha) : null,
         ),
       ],
@@ -3416,7 +3426,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   void _showNatashaPicker(SessionPlayer natasha) {
     _showPlayerListPicker(
-      title: 'ناتاشا کی رو ساکت کنه؟',
+      title: 'ناتاشا کی رو ساکت کنه؟'.tr,
       targets: controller.alivePlayers.where((p) => p.id != natasha.id).toList(),
       onSelected: (p) => controller.natashaSilence(p.id),
     );
@@ -3429,20 +3439,20 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         : null;
     return Column(
       children: [
-        const Text(
-          'خرابکار می‌تونه امشب رو تفنگِ یه نفر خرابکاری کنه (اگه فردا با اسلحه‌ی جنگی شلیک کنه، تیر به خودش برمی‌گرده):',
+        Text(
+          'خرابکار می‌تونه امشب رو تفنگِ یه نفر خرابکاری کنه (اگه فردا با اسلحه‌ی جنگی شلیک کنه، تیر به خودش برمی‌گرده):'.tr,
           textAlign: TextAlign.center,
           style: TextStyle(color: Colors.white70),
         ),
         if (target != null) ...[
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
           Text('امشب رو تفنگِ «${target.name}» خرابکاری شده.',
-              style: const TextStyle(color: AppColors.goldLight, fontSize: 12)),
+              style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 12)),
         ],
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         OutlinedButton.icon(
-          icon: const Icon(Icons.build_circle_outlined),
-          label: const Text('انتخابِ یه بازیکن'),
+          icon: Icon(Icons.build_circle_outlined),
+          label: Text('انتخابِ یه بازیکن'.tr),
           onPressed: controller.canSaboteurActTonight ? () => _showSaboteurPicker(saboteur) : null,
         ),
       ],
@@ -3451,7 +3461,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   void _showSaboteurPicker(SessionPlayer saboteur) {
     _showPlayerListPicker(
-      title: 'خرابکار رو تفنگِ کی خرابکاری کنه؟',
+      title: 'خرابکار رو تفنگِ کی خرابکاری کنه؟'.tr,
       targets: controller.alivePlayers.where((p) => p.id != saboteur.id).toList(),
       onSelected: (p) => controller.saboteurChooseTarget(p.id),
     );
@@ -3472,9 +3482,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               '🔥 معشوقه دیشب از بازی خارج شد؛ $_leaderRoleName عصبانیه و امشب می‌تونه '
               '۲بار شات/سلاخی بزنه (${controller.leaderActionsUsedTonight} از ۲ استفاده شده).',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.bloodRedLight, fontWeight: FontWeight.bold),
+              style: TextStyle(color: AppColors.bloodRedLight, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
           ],
           Text(
             leaderAlive
@@ -3483,22 +3493,22 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     ? '$_leaderRoleName دیگه در بازی نیست؛ سلاخی از بین رفته، ولی شاتِ معمولیِ تیمی همیشه باقی می‌مونه.'
                     : 'هیچ عضوِ زنده‌ای از $_leaderTeamName باقی نمونده؛ شاتی در کار نیست.',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white60),
+            style: TextStyle(color: Colors.white60),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           if (leaderAlive) ...[
             ElevatedButton.icon(
-              icon: const Icon(Icons.gps_fixed),
-              label: const Text('شات (حذف تیمی)'),
-              style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+              icon: Icon(Icons.gps_fixed),
+              label: Text('شات (حذف تیمی)'.tr),
+              style: ElevatedButton.styleFrom(minimumSize: Size.fromHeight(50)),
               onPressed: () => _showShootPicker(leader),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             ElevatedButton.icon(
-              icon: const Icon(Icons.content_cut),
+              icon: Icon(Icons.content_cut),
               label: Text('سلاخی (${leader.slaughterChargesRemaining ?? 0} باقیمانده)'),
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
+                minimumSize: Size.fromHeight(50),
                 backgroundColor: AppColors.bloodRedLight,
               ),
               onPressed: (leader.slaughterChargesRemaining ?? 0) > 0
@@ -3507,9 +3517,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
             ),
           ] else if (fallback) ...[
             ElevatedButton.icon(
-              icon: const Icon(Icons.gps_fixed),
-              label: const Text('شات (حذف تیمی)'),
-              style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+              icon: Icon(Icons.gps_fixed),
+              label: Text('شات (حذف تیمی)'.tr),
+              style: ElevatedButton.styleFrom(minimumSize: Size.fromHeight(50)),
               onPressed: _showFallbackShootPicker,
             ),
           ],
@@ -3517,13 +3527,13 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           // چون قابلیتِ مذاکره به رهبر ربطی نداره و حتی بعدِ حذفِ رهبر هم
           // باید در دسترس بمونه.
           if (controller.canUseNegotiate) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             ElevatedButton.icon(
-              icon: const Icon(Icons.handshake),
+              icon: Icon(Icons.handshake),
               label: Text('مذاکره (اغفالِ $_plainCitizenLabel)'),
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-                backgroundColor: AppColors.goldDark,
+                minimumSize: Size.fromHeight(50),
+                backgroundColor: AppTheme.uiPrimaryDark,
               ),
               onPressed: () => _showNegotiatePicker(),
             ),
@@ -3538,16 +3548,16 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           Text(
             controller.slaughterResultMessage!,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontSize: 16),
+            style: TextStyle(color: Colors.white, fontSize: 16),
           )
         else if (controller.negotiateResultMessage != null)
           Text(
             controller.negotiateResultMessage!,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontSize: 16),
+            style: TextStyle(color: Colors.white, fontSize: 16),
           )
         else
-          const Text('تصمیمِ امشب ثبت شد.', style: TextStyle(color: Colors.white70)),
+          Text('تصمیمِ امشب ثبت شد.'.tr, style: TextStyle(color: Colors.white70)),
       ],
     );
   }
@@ -3558,12 +3568,12 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         Text(
           '${_roleName(controller.scenario.roleIdFor('judiciary'))} می‌تونه (فقط یک‌بار در کل بازی) حکم اعدام صادر کنه:',
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: Colors.white70),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         OutlinedButton.icon(
-          icon: const Icon(Icons.gavel),
-          label: const Text('صدور حکم اعدام'),
+          icon: Icon(Icons.gavel),
+          label: Text('صدور حکم اعدام'.tr),
           onPressed: _showExecutionWordDialog,
         ),
       ],
@@ -3575,7 +3585,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.surfaceCard,
+        backgroundColor: AppTheme.uiCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Row(
           children: [
@@ -3586,31 +3596,31 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 color: AppColors.bloodRed.withAlpha(56),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.gavel_rounded, color: AppColors.goldLight),
+              child: Icon(Icons.gavel_rounded, color: AppTheme.uiPrimaryLight),
             ),
-            const SizedBox(width: 12),
-            const Expanded(child: Text('کلمه‌ی حکم اعدام')),
+            SizedBox(width: 12),
+            Expanded(child: Text('کلمه‌ی حکم اعدام'.tr)),
           ],
         ),
         content: TextField(
           controller: wordController,
           autofocus: true,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white),
           decoration: InputDecoration(
-            hintText: 'کلمه رو وارد کن',
-            prefixIcon: const Icon(Icons.key_rounded),
+            hintText: 'کلمه رو وارد کن'.tr,
+            prefixIcon: Icon(Icons.key_rounded),
             filled: true,
-            fillColor: AppColors.surfaceDark,
+            fillColor: AppTheme.uiSurface,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: AppColors.gold.withAlpha(46)),
+              borderSide: BorderSide(color: AppTheme.uiPrimary.withAlpha(46)),
             ),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('انصراف'),
+            child: Text('انصراف'.tr),
           ),
           Game3DButton(
             label: 'ثبت حکم',
@@ -3637,23 +3647,23 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               ? 'بازجو خبرنگار قابلیتِ یک‌بارمصرفِ بازجویی رو مصرف کرده.'
               : 'بازجو خبرنگار می‌تونه (فقط یک‌بار در کل بازی) یه نفر رو بازجویی کنه:',
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: Colors.white70),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         if (target != null)
           Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: EdgeInsets.only(bottom: 8),
             child: Text(
               'بازجوییِ انجام‌شده: «$target»'
               '${controller.lastInterrogationQuestion != null ? ' — سوال: ${controller.lastInterrogationQuestion}' : ''}',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.goldLight),
+              style: TextStyle(color: AppTheme.uiPrimaryLight),
             ),
           ),
         if (!interrogator.interrogationUsed)
           OutlinedButton.icon(
-            icon: const Icon(Icons.record_voice_over),
-            label: const Text('بازجوییِ یه بازیکن'),
+            icon: Icon(Icons.record_voice_over),
+            label: Text('بازجوییِ یه بازیکن'.tr),
             onPressed: controller.canInterrogateTonight ? _showInterrogationDialog : null,
           ),
       ],
@@ -3668,33 +3678,33 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) => AlertDialog(
-          backgroundColor: AppColors.surfaceCard,
+          backgroundColor: AppTheme.uiCard,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           title: Row(children: [
             Container(width: 42, height: 42,
-              decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(56), shape: BoxShape.circle),
-              child: const Icon(Icons.record_voice_over_rounded, color: AppColors.goldLight)),
-            const SizedBox(width: 12), const Text('بازجویی'),
+              decoration: BoxDecoration(color: AppTheme.uiPrimaryDark.withAlpha(56), shape: BoxShape.circle),
+              child: Icon(Icons.record_voice_over_rounded, color: AppTheme.uiPrimaryLight)),
+            SizedBox(width: 12), Text('بازجویی'.tr),
           ]),
           content: Column(mainAxisSize: MainAxisSize.min, children: [
-            const Text('هدف و سؤال اختیاری را برای ثبت این بازجویی انتخاب کن.',
-                style: TextStyle(color: AppColors.mutedText, fontSize: 12)),
-            const SizedBox(height: 14),
+            Text('هدف و سؤال اختیاری را برای ثبت این بازجویی انتخاب کن.'.tr,
+                style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12)),
+            SizedBox(height: 14),
             DropdownButtonFormField<SessionPlayer>(
-              isExpanded: true, value: selectedTarget, dropdownColor: AppColors.surfaceCard,
-              decoration: InputDecoration(labelText: 'هدف بازجویی', prefixIcon: const Icon(Icons.person_search_rounded),
+              isExpanded: true, value: selectedTarget, dropdownColor: AppTheme.uiCard,
+              decoration: InputDecoration(labelText: 'هدف بازجویی'.tr, prefixIcon: Icon(Icons.person_search_rounded),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(16))),
               items: targets.map((p) => DropdownMenuItem(value: p, child: Text(p.name))).toList(),
               onChanged: (v) => setDialogState(() => selectedTarget = v),
             ),
-            const SizedBox(height: 10),
-            TextField(controller: questionController, style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(labelText: 'سؤال (اختیاری)', hintText: 'فقط برای یادآوری خودت',
-                prefixIcon: const Icon(Icons.help_outline_rounded),
+            SizedBox(height: 10),
+            TextField(controller: questionController, style: TextStyle(color: Colors.white),
+              decoration: InputDecoration(labelText: 'سؤال (اختیاری)'.tr, hintText: 'فقط برای یادآوری خودت'.tr,
+                prefixIcon: Icon(Icons.help_outline_rounded),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)))),
           ]),
           actions: [
-            TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('انصراف')),
+            TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: Text('انصراف'.tr)),
             Game3DButton(label: 'ثبت بازجویی', icon: Icons.check_rounded,
               onPressed: selectedTarget != null ? () {
                 controller.interrogate(selectedTarget!.id, question: questionController.text);
@@ -3716,21 +3726,21 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           'وزیر اطلاعات: ${minister.intelQuestionsRemaining ?? 0} سؤالِ اطلاعاتیِ باقیمانده در کلِ بازی '
           '(هر شب فقط یکی).',
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: Colors.white70),
         ),
         if (result != null && names != null) ...[
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             '🔍 «${names.join('، ')}» نقش دارن؟ → '
             '${result == InvestigationResult.like ? '👍 لایک (همه‌شون نقش دارن)' : '👎 دیس‌لایک (حداقل یکی‌شون نداره)'}',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+            style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.bold),
           ),
         ],
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         OutlinedButton.icon(
-          icon: const Icon(Icons.help_outline),
-          label: const Text('پرسیدنِ سؤالِ اطلاعاتی'),
+          icon: Icon(Icons.help_outline),
+          label: Text('پرسیدنِ سؤالِ اطلاعاتی'.tr),
           onPressed: controller.canAskIntelQuestionTonight ? _showIntelQuestionDialog : null,
         ),
       ],
@@ -3744,37 +3754,37 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) => AlertDialog(
-          backgroundColor: AppColors.surfaceCard,
+          backgroundColor: AppTheme.uiCard,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           title: Row(children: [
             Container(width: 42, height: 42,
-              decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(56), shape: BoxShape.circle),
-              child: const Icon(Icons.psychology_rounded, color: AppColors.goldLight)),
-            const SizedBox(width: 12), const Expanded(child: Text('سؤال اطلاعاتی')),
+              decoration: BoxDecoration(color: AppTheme.uiPrimaryDark.withAlpha(56), shape: BoxShape.circle),
+              child: Icon(Icons.psychology_rounded, color: AppTheme.uiPrimaryLight)),
+            SizedBox(width: 12), Expanded(child: Text('سؤال اطلاعاتی'.tr)),
           ]),
           content: SizedBox(width: double.maxFinite,
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              const Text('بازیکن‌های مورد سؤال را انتخاب کن.',
-                style: TextStyle(color: AppColors.mutedText, fontSize: 12)),
-              const SizedBox(height: 10),
+              Text('بازیکن‌های مورد سؤال را انتخاب کن.'.tr,
+                style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12)),
+              SizedBox(height: 10),
               ...targets.map((p) => Material(
-                color: selected.contains(p.id) ? AppColors.goldDark.withAlpha(41) : AppColors.surfaceDark,
+                color: selected.contains(p.id) ? AppTheme.uiPrimaryDark.withAlpha(41) : AppTheme.uiSurface,
                 borderRadius: BorderRadius.circular(14),
                 child: CheckboxListTile(
                   dense: true, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  value: selected.contains(p.id), activeColor: AppColors.gold,
+                  value: selected.contains(p.id), activeColor: AppTheme.uiPrimary,
                   onChanged: (v) => setDialogState(() {
                     if (v ?? false) { selected.add(p.id); } else { selected.remove(p.id); }
                   }),
-                  title: Text(p.name, style: const TextStyle(color: Colors.white)),
-                  secondary: CircleAvatar(radius: 16, backgroundColor: AppColors.goldDark.withAlpha(61),
+                  title: Text(p.name, style: TextStyle(color: Colors.white)),
+                  secondary: CircleAvatar(radius: 16, backgroundColor: AppTheme.uiPrimaryDark.withAlpha(61),
                     child: Text('\${targets.indexOf(p) + 1}',
-                      style: const TextStyle(color: AppColors.goldLight, fontSize: 12))),
+                      style: TextStyle(color: AppTheme.uiPrimaryLight, fontSize: 12))),
                 ),
               )),
             ])),
           actions: [
-            TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('انصراف')),
+            TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: Text('انصراف'.tr)),
             Game3DButton(label: 'پرسیدن سؤال', icon: Icons.arrow_back_rounded,
               onPressed: selected.isNotEmpty ? () {
                 controller.askIntelQuestion(selected.toList());
@@ -3796,12 +3806,12 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               ? 'امشب «$detainedName» بازداشت شده و قابلیتِ نقشِ خودش رو نداره.'
               : 'فرمانده نیروی انتظامی می‌تونه امشب یه بازیکن رو بازداشت کنه (بازداشتیِ دیشب دوباره مجاز نیست).',
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: Colors.white70),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         OutlinedButton.icon(
-          icon: const Icon(Icons.local_police),
-          label: const Text('بازداشتِ یه بازیکن'),
+          icon: Icon(Icons.local_police),
+          label: Text('بازداشتِ یه بازیکن'.tr),
           onPressed: controller.canDetainTonight ? _showDetainPicker : null,
         ),
       ],
@@ -3820,15 +3830,15 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
     final merc = controller.mercenaryPlayer!;
     return Column(
       children: [
-        const Text(
-          'مزدور لباس‌شخصی می‌تونه امشب یه نفر رو ترور کنه — ولی خودش هم بلافاصله لو می‌ره و حذف می‌شه.',
+        Text(
+          'مزدور لباس‌شخصی می‌تونه امشب یه نفر رو ترور کنه — ولی خودش هم بلافاصله لو می‌ره و حذف می‌شه.'.tr,
           textAlign: TextAlign.center,
           style: TextStyle(color: Colors.white70),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         OutlinedButton.icon(
-          icon: const Icon(Icons.dangerous),
-          label: const Text('ترور'),
+          icon: Icon(Icons.dangerous),
+          label: Text('ترور'.tr),
           style: OutlinedButton.styleFrom(foregroundColor: AppColors.bloodRedLight),
           onPressed: controller.canAssassinateTonight ? () => _showAssassinatePicker(merc) : null,
         ),
@@ -3852,12 +3862,12 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           '$_nationalHeroRoleName می‌تونه امشب یه بازیکن رو تضمین کنه (${hero.guaranteesRemaining ?? 0} '
           'تضمینِ باقیمانده در کلِ بازی).',
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: Colors.white70),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         OutlinedButton.icon(
-          icon: const Icon(Icons.shield),
-          label: const Text('تضمینِ یه بازیکن'),
+          icon: Icon(Icons.shield),
+          label: Text('تضمینِ یه بازیکن'.tr),
           onPressed: controller.canGuaranteeTonight ? () => _showGuaranteePicker(hero) : null,
         ),
       ],
@@ -3881,9 +3891,9 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           '$_rebelRoleName می‌تونه امشب به هر تعداد بازیکن اسلحه بده. اسلحه‌ی جنگیِ '
           'باقیمانده: ${rebel.warGunsRemaining ?? 0} (مشقی نامحدوده).',
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: Colors.white70),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         if (armed.isNotEmpty)
           Wrap(
             spacing: 8,
@@ -3895,18 +3905,18 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                     label: Text(
                       '${p.name} (${p.heldGunType == GunType.war ? 'جنگی' : 'مشقی'})',
                     ),
-                    backgroundColor: AppColors.surfaceCard,
-                    labelStyle: const TextStyle(color: Colors.white),
+                    backgroundColor: AppTheme.uiCard,
+                    labelStyle: TextStyle(color: Colors.white),
                     deleteIconColor: AppColors.bloodRedLight,
                     onDeleted: () => controller.takeBackGun(p.id),
                   ),
                 )
                 .toList(),
           ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         OutlinedButton.icon(
-          icon: const Icon(Icons.front_hand),
-          label: const Text('دادنِ اسلحه به یه بازیکن'),
+          icon: Icon(Icons.front_hand),
+          label: Text('دادنِ اسلحه به یه بازیکن'.tr),
           onPressed: () => _showGiveGunDialog(rebel),
         ),
       ],
@@ -3921,40 +3931,40 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) => AlertDialog(
-          backgroundColor: AppColors.surfaceCard,
+          backgroundColor: AppTheme.uiCard,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           title: Row(children: [
             Container(width: 42, height: 42,
-              decoration: BoxDecoration(color: AppColors.goldDark.withAlpha(56), shape: BoxShape.circle),
-              child: const Icon(Icons.front_hand_rounded, color: AppColors.goldLight)),
-            const SizedBox(width: 12), const Text('دادنِ اسلحه'),
+              decoration: BoxDecoration(color: AppTheme.uiPrimaryDark.withAlpha(56), shape: BoxShape.circle),
+              child: Icon(Icons.front_hand_rounded, color: AppTheme.uiPrimaryLight)),
+            SizedBox(width: 12), Text('دادنِ اسلحه'.tr),
           ]),
           content: Column(mainAxisSize: MainAxisSize.min, children: [
             DropdownButtonFormField<SessionPlayer>(
-              isExpanded: true, value: selectedTarget, dropdownColor: AppColors.surfaceCard,
-              decoration: InputDecoration(labelText: 'بازیکن دریافت‌کننده', prefixIcon: const Icon(Icons.person_rounded),
+              isExpanded: true, value: selectedTarget, dropdownColor: AppTheme.uiCard,
+              decoration: InputDecoration(labelText: 'بازیکن دریافت‌کننده'.tr, prefixIcon: Icon(Icons.person_rounded),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(16))),
               items: targets.map((p) => DropdownMenuItem(value: p, child: Text(p.name))).toList(),
               onChanged: (v) => setDialogState(() => selectedTarget = v),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             RadioListTile<GunType>(
-              value: GunType.blank, groupValue: selectedType, activeColor: AppColors.gold,
+              value: GunType.blank, groupValue: selectedType, activeColor: AppTheme.uiPrimary,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               onChanged: (v) => setDialogState(() => selectedType = v!),
-              title: const Text('مشقی', style: TextStyle(color: Colors.white)),
-              subtitle: const Text('برای تمرین؛ شلیک واقعی ندارد.', style: TextStyle(color: AppColors.mutedText, fontSize: 11)),
+              title: Text('مشقی'.tr, style: TextStyle(color: Colors.white)),
+              subtitle: Text('برای تمرین؛ شلیک واقعی ندارد.'.tr, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 11)),
             ),
             RadioListTile<GunType>(
               value: GunType.war, groupValue: selectedType, activeColor: AppColors.bloodRedLight,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               onChanged: (rebel.warGunsRemaining ?? 0) > 0 ? (v) => setDialogState(() => selectedType = v!) : null,
-              title: Text('جنگی (${rebel.warGunsRemaining ?? 0} باقیمانده)', style: const TextStyle(color: Colors.white)),
-              subtitle: const Text('گلوله واقعی و قابل شلیک.', style: TextStyle(color: AppColors.mutedText, fontSize: 11)),
+              title: Text('جنگی (${rebel.warGunsRemaining ?? 0} باقیمانده)', style: TextStyle(color: Colors.white)),
+              subtitle: Text('گلوله واقعی و قابل شلیک.'.tr, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 11)),
             ),
           ]),
           actions: [
-            TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('انصراف')),
+            TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: Text('انصراف'.tr)),
             Game3DButton(label: 'تحویل اسلحه', icon: Icons.check_rounded,
               onPressed: selectedTarget != null ? () {
                 controller.giveGun(selectedTarget!.id, selectedType);
@@ -3975,14 +3985,14 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           'دکتر امشب می‌تونه ${controller.doctorNightlyCapacity} نفر رو در برابر '
           'شاتِ شبِ $_leaderTeamName نجات بده (${saved.length} از ${controller.doctorNightlyCapacity} استفاده شده).',
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: Colors.white70),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4),
         Text(
           'نجاتِ خودش: ${doc.selfSavesUsed} از ${widget.settings.doctorMaxSelfSaves} بار در کلِ بازی',
-          style: const TextStyle(color: Colors.white38, fontSize: 12),
+          style: TextStyle(color: Colors.white38, fontSize: 12),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         if (saved.isNotEmpty)
           Wrap(
             spacing: 8,
@@ -3992,18 +4002,18 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                 .map(
                   (p) => Chip(
                     label: Text(p.name),
-                    backgroundColor: AppColors.surfaceCard,
-                    labelStyle: const TextStyle(color: Colors.white),
+                    backgroundColor: AppTheme.uiCard,
+                    labelStyle: TextStyle(color: Colors.white),
                     deleteIconColor: AppColors.bloodRedLight,
                     onDeleted: () => controller.undoDoctorSave(p.id),
                   ),
                 )
                 .toList(),
           ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         OutlinedButton.icon(
-          icon: const Icon(Icons.healing),
-          label: const Text('نجاتِ یه بازیکنِ دیگه'),
+          icon: Icon(Icons.healing),
+          label: Text('نجاتِ یه بازیکنِ دیگه'.tr),
           onPressed: controller.canDoctorSaveTonight ? () => _showDoctorSavePicker(doc) : null,
         ),
       ],
@@ -4034,28 +4044,28 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
         Text(
           '$_hackerRoleName می‌تونه امشب یکی از بازیکن‌ها رو استعلام بگیره:',
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: Colors.white70),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         if (result != null && targetName != null) ...[
           Text(
             result == InvestigationResult.like
                 ? '🔍 نتیجه‌ی «$targetName»: 👍 لایک'
                 : '🔍 نتیجه‌ی «$targetName»: 👎 دیس‌لایک',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+            style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
           Text(
             'این نتیجه رو فقط خصوصی و درِگوشی به خودِ $_hackerRoleName بگو.',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white38, fontSize: 11),
+            style: TextStyle(color: Colors.white38, fontSize: 11),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
         ],
         OutlinedButton.icon(
-          icon: const Icon(Icons.search),
-          label: const Text('استعلامِ یه بازیکن'),
+          icon: Icon(Icons.search),
+          label: Text('استعلامِ یه بازیکن'.tr),
           onPressed: controller.canHackerInvestigateTonight ? _showHackerInvestigatePicker : null,
         ),
       ],
@@ -4065,7 +4075,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
   void _showHackerInvestigatePicker() {
     final hacker = controller.hackerPlayer!;
     _showPlayerListPicker(
-      title: 'استعلام روی کی؟',
+      title: 'استعلام روی کی؟'.tr,
       targets: controller.alivePlayers.where((p) => p.id != hacker.id).toList(),
       onSelected: (p) => controller.hackerInvestigate(p.id),
     );
@@ -4086,31 +4096,31 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
           '$_revolutionaryRoleName: $charges استفاده‌ی باقیمانده از $_revolutionaryActionLabel/سلاخی'
           '${fighter.canStillSlaughter ? '' : ' (سلاخی دیگه در دسترسش نیست)'}',
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: Colors.white70),
         ),
         if (showResult) ...[
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             result,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.bold),
+            style: TextStyle(color: AppTheme.uiPrimaryLight, fontWeight: FontWeight.bold),
           ),
         ],
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             OutlinedButton.icon(
-              icon: const Icon(Icons.gps_fixed_rounded),
-              label: const Text('شلیک'),
+              icon: Icon(Icons.gps_fixed_rounded),
+              label: Text('شلیک'.tr),
               onPressed: (controller.canRevolutionaryActTonight && charges > 0)
                   ? () => _showRevolutionaryExecutePicker(fighter)
                   : null,
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             OutlinedButton.icon(
-              icon: const Icon(Icons.content_cut),
-              label: const Text('سلاخی'),
+              icon: Icon(Icons.content_cut),
+              label: Text('سلاخی'.tr),
               style: OutlinedButton.styleFrom(foregroundColor: AppColors.bloodRedLight),
               onPressed: (controller.canRevolutionaryActTonight &&
                       charges > 0 &&
@@ -4144,66 +4154,66 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setSheetState) => SafeArea(
           child: Container(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            padding: EdgeInsets.fromLTRB(20, 12, 20, 20),
             decoration: BoxDecoration(
-              color: AppColors.surfaceCard,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-              border: Border(top: BorderSide(color: AppColors.gold.withAlpha(56))),
+              color: AppTheme.uiCard,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              border: Border(top: BorderSide(color: AppTheme.uiPrimary.withAlpha(56))),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(width: 44, height: 5, decoration: BoxDecoration(color: AppColors.gold.withAlpha(77), borderRadius: BorderRadius.circular(10))),
-                const SizedBox(height: 16),
+                Container(width: 44, height: 5, decoration: BoxDecoration(color: AppTheme.uiPrimary.withAlpha(77), borderRadius: BorderRadius.circular(10))),
+                SizedBox(height: 16),
                 Row(
                   children: [
                     Container(
                       width: 46, height: 46,
                       decoration: BoxDecoration(color: AppColors.bloodRed.withAlpha(89), shape: BoxShape.circle),
-                      child: const Icon(Icons.warning_amber_rounded, color: AppColors.goldLight),
+                      child: Icon(Icons.warning_amber_rounded, color: AppTheme.uiPrimaryLight),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('سلاخی', style: AppTheme.headingFont(size: 20)),
-                          const SizedBox(height: 3),
-                          const Text('هدف و حدسِ نقش را مشخص کن', style: TextStyle(color: AppColors.mutedText, fontSize: 12)),
+                          Text('سلاخی'.tr, style: AppTheme.headingFont(size: 20)),
+                          SizedBox(height: 3),
+                          Text('هدف و حدسِ نقش را مشخص کن'.tr, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12)),
                         ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 18),
+                SizedBox(height: 18),
                 DropdownButtonFormField<SessionPlayer>(
                   value: selectedTarget,
                   isExpanded: true,
-                  dropdownColor: AppColors.surfaceCard,
+                  dropdownColor: AppTheme.uiCard,
                   decoration: InputDecoration(
-                    labelText: 'هدف',
-                    prefixIcon: const Icon(Icons.person_search_rounded, color: AppColors.goldLight),
-                    filled: true, fillColor: AppColors.surfaceDark,
+                    labelText: 'هدف'.tr,
+                    prefixIcon: Icon(Icons.person_search_rounded, color: AppTheme.uiPrimaryLight),
+                    filled: true, fillColor: AppTheme.uiSurface,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                   items: targets.map((p) => DropdownMenuItem(value: p, child: Text(p.name))).toList(),
                   onChanged: (v) => setSheetState(() => selectedTarget = v),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: selectedRoleId,
                   isExpanded: true,
-                  dropdownColor: AppColors.surfaceCard,
+                  dropdownColor: AppTheme.uiCard,
                   decoration: InputDecoration(
-                    labelText: 'حدسِ نقش',
-                    prefixIcon: const Icon(Icons.badge_rounded, color: AppColors.goldLight),
-                    filled: true, fillColor: AppColors.surfaceDark,
+                    labelText: 'حدسِ نقش'.tr,
+                    prefixIcon: Icon(Icons.badge_rounded, color: AppTheme.uiPrimaryLight),
+                    filled: true, fillColor: AppTheme.uiSurface,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                   items: controller.rolesInPlay.map((r) => DropdownMenuItem(value: r.id, child: Text(r.name))).toList(),
                   onChanged: (v) => setSheetState(() => selectedRoleId = v),
                 ),
-                const SizedBox(height: 18),
+                SizedBox(height: 18),
                 SizedBox(
                   width: double.infinity,
                   child: Game3DButton(
@@ -4235,18 +4245,18 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
               ? '$_lawyerRoleName هنوز قابلیتِ یک‌بارمصرفِ جان‌بخشیش رو مصرف نکرده.'
               : '$_lawyerRoleName («${lawyer.name}») خودش الان نیمه‌جانه یا حذف شده و نمی‌تونه فعلاً از این قابلیت استفاده کنه.',
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: Colors.white70),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         if (halfAlive.isEmpty)
-          const Text(
-            'فعلاً هیچ بازیکنِ نیمه‌جانی برای برگردوندن نیست.',
+          Text(
+            'فعلاً هیچ بازیکنِ نیمه‌جانی برای برگردوندن نیست.'.tr,
             style: TextStyle(color: Colors.white38, fontSize: 12),
           )
         else
           OutlinedButton.icon(
-            icon: const Icon(Icons.favorite),
-            label: const Text('برگردوندنِ یه بازیکنِ نیمه‌جان'),
+            icon: Icon(Icons.favorite),
+            label: Text('برگردوندنِ یه بازیکنِ نیمه‌جان'.tr),
             onPressed: controller.canLawyerReviveTonight ? _showLawyerRevivePicker : null,
           ),
       ],
@@ -4263,7 +4273,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   void _showFallbackShootPicker() {
     _showPlayerListPicker(
-      title: 'شات روی کی؟',
+      title: 'شات روی کی؟'.tr,
       targets: controller.alivePlayers,
       onSelected: (p) => controller.leaderShoot(p.id),
     );
@@ -4271,7 +4281,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
   void _showShootPicker(SessionPlayer leader) {
     _showPlayerListPicker(
-      title: 'شات روی کی؟',
+      title: 'شات روی کی؟'.tr,
       targets: controller.alivePlayers.where((p) => p.id != leader.id).toList(),
       onSelected: (p) => controller.leaderShoot(p.id),
     );
@@ -4293,45 +4303,45 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surfaceDark,
+      backgroundColor: AppTheme.uiSurface,
       isScrollControlled: true,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
             return SafeArea(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('سلاخی: هدف + حدسِ نقش', style: TextStyle(color: AppColors.goldLight)),
-                    const SizedBox(height: 12),
+                    Text('سلاخی: هدف + حدسِ نقش'.tr, style: TextStyle(color: AppTheme.uiPrimaryLight)),
+                    SizedBox(height: 12),
                     DropdownButton<SessionPlayer>(
-                      hint: const Text('انتخاب هدف', style: TextStyle(color: Colors.white70)),
-                      dropdownColor: AppColors.surfaceDark,
+                      hint: Text('انتخاب هدف'.tr, style: TextStyle(color: Colors.white70)),
+                      dropdownColor: AppTheme.uiSurface,
                       value: selectedTarget,
                       items: targets
                           .map((p) => DropdownMenuItem(
                                 value: p,
-                                child: Text(p.name, style: const TextStyle(color: Colors.white)),
+                                child: Text(p.name, style: TextStyle(color: Colors.white)),
                               ))
                           .toList(),
                       onChanged: (v) => setSheetState(() => selectedTarget = v),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     DropdownButton<String>(
-                      hint: const Text('حدسِ نقش', style: TextStyle(color: Colors.white70)),
-                      dropdownColor: AppColors.surfaceDark,
+                      hint: Text('حدسِ نقش'.tr, style: TextStyle(color: Colors.white70)),
+                      dropdownColor: AppTheme.uiSurface,
                       value: selectedRoleId,
                       items: controller.rolesInPlay
                           .map((r) => DropdownMenuItem(
                                 value: r.id,
-                                child: Text(r.name, style: const TextStyle(color: Colors.white)),
+                                child: Text(r.name, style: TextStyle(color: Colors.white)),
                               ))
                           .toList(),
                       onChanged: (v) => setSheetState(() => selectedRoleId = v),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: (selectedTarget != null && selectedRoleId != null)
                           ? () {
@@ -4339,7 +4349,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
                               Navigator.of(context).pop();
                             }
                           : null,
-                      child: const Text('تایید سلاخی'),
+                      child: Text('تایید سلاخی'.tr),
                     ),
                   ],
                 ),
@@ -4357,7 +4367,7 @@ class _GameFlowScreenState extends State<GameFlowScreen> {
 /// نشون می‌ده. مرتب‌شده بر اساسِ امتیازِ کل، از بیشترین به کمترین.
 class _PlayerScoreDetailScreen extends StatelessWidget {
   final List<SessionPlayer> players;
-  const _PlayerScoreDetailScreen({required this.players});
+  _PlayerScoreDetailScreen({required this.players});
 
   @override
   Widget build(BuildContext context) {
@@ -4366,52 +4376,52 @@ class _PlayerScoreDetailScreen extends StatelessWidget {
     final totalNegative = sorted.where((p) => p.scoreTotal < 0).length;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('جزئیاتِ امتیاز'),
+        title: Text('جزئیاتِ امتیاز'.tr),
         actions: [
           Padding(
-            padding: const EdgeInsetsDirectional.only(end: 14),
+            padding: EdgeInsetsDirectional.only(end: 14),
             child: Center(
               child: Text(
                 '\${sorted.length} بازیکن',
-                style: const TextStyle(color: AppColors.mutedText, fontSize: 12),
+                style: TextStyle(color: AppTheme.uiMutedText, fontSize: 12),
               ),
             ),
           ),
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        padding: EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
           Container(
-            padding: const EdgeInsets.all(18),
+            padding: EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: AppColors.surfaceCard,
+              color: AppTheme.uiCard,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.gold.withAlpha(46)),
+              border: Border.all(color: AppTheme.uiPrimary.withAlpha(46)),
             ),
             child: Row(
               children: [
-                _scoreStat(Icons.emoji_events_rounded, 'مثبت', totalPositive, AppColors.gold),
-                const SizedBox(width: 10),
+                _scoreStat(Icons.emoji_events_rounded, 'مثبت', totalPositive, AppTheme.uiPrimary),
+                SizedBox(width: 10),
                 _scoreStat(Icons.remove_circle_outline_rounded, 'منفی', totalNegative, AppColors.bloodRedLight),
-                const SizedBox(width: 10),
-                _scoreStat(Icons.groups_rounded, 'کل', sorted.length, AppColors.goldLight),
+                SizedBox(width: 10),
+                _scoreStat(Icons.groups_rounded, 'کل', sorted.length, AppTheme.uiPrimaryLight),
               ],
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           if (sorted.isEmpty)
             Container(
-              padding: const EdgeInsets.all(28),
+              padding: EdgeInsets.all(28),
               decoration: BoxDecoration(
-                color: AppColors.surfaceCard,
+                color: AppTheme.uiCard,
                 borderRadius: BorderRadius.circular(22),
               ),
-              child: const Column(
+              child: Column(
                 children: [
-                  Icon(Icons.scoreboard_rounded, color: AppColors.goldLight, size: 42),
+                  Icon(Icons.scoreboard_rounded, color: AppTheme.uiPrimaryLight, size: 42),
                   SizedBox(height: 10),
-                  Text('هنوز بازیکنی برای نمایش نیست.', style: TextStyle(color: AppColors.mutedText)),
+                  Text('هنوز بازیکنی برای نمایش نیست.'.tr, style: TextStyle(color: AppTheme.uiMutedText)),
                 ],
               ),
             )
@@ -4423,20 +4433,20 @@ class _PlayerScoreDetailScreen extends StatelessWidget {
               final roleName = p.roleId != null ? GameRoles.byId(p.roleId!)?.name : null;
               final total = p.scoreTotal;
               final scoreColor = total > 0
-                  ? AppColors.gold
+                  ? AppTheme.uiPrimary
                   : (total < 0 ? AppColors.bloodRedLight : Colors.white60);
               return Container(
-                margin: const EdgeInsets.only(bottom: 10),
+                margin: EdgeInsets.only(bottom: 10),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceCard,
+                  color: AppTheme.uiCard,
                   borderRadius: BorderRadius.circular(22),
                   border: Border.all(color: scoreColor.withAlpha(56)),
                 ),
                 child: ExpansionTile(
-                  tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  childrenPadding: const EdgeInsets.only(bottom: 8),
-                  iconColor: AppColors.gold,
-                  collapsedIconColor: AppColors.mutedText,
+                  tilePadding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  childrenPadding: EdgeInsets.only(bottom: 8),
+                  iconColor: AppTheme.uiPrimary,
+                  collapsedIconColor: AppTheme.uiMutedText,
                   leading: CircleAvatar(
                     radius: 19,
                     backgroundColor: scoreColor.withAlpha(36),
@@ -4447,17 +4457,17 @@ class _PlayerScoreDetailScreen extends StatelessWidget {
                   ),
                   title: Text(
                     p.name,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
                   ),
                   subtitle: Padding(
-                    padding: const EdgeInsets.only(top: 3),
+                    padding: EdgeInsets.only(top: 3),
                     child: Text(
                       '${roleName ?? teamName} • $teamName',
-                      style: const TextStyle(color: AppColors.mutedText, fontSize: 11),
+                      style: TextStyle(color: AppTheme.uiMutedText, fontSize: 11),
                     ),
                   ),
                   trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                    padding: EdgeInsets.symmetric(horizontal: 11, vertical: 7),
                     decoration: BoxDecoration(
                       color: scoreColor.withAlpha(31),
                       borderRadius: BorderRadius.circular(12),
@@ -4468,14 +4478,14 @@ class _PlayerScoreDetailScreen extends StatelessWidget {
                     ),
                   ),
                   children: p.scoreEvents.isEmpty
-                      ? const [
+                      ? [
                           Padding(
                             padding: EdgeInsets.fromLTRB(20, 2, 20, 16),
                             child: Align(
                               alignment: AlignmentDirectional.centerStart,
                               child: Text(
-                                'هیچ رویدادِ امتیازی‌ای ثبت نشده.',
-                                style: TextStyle(color: AppColors.subtleText, fontSize: 12),
+                                'هیچ رویدادِ امتیازی‌ای ثبت نشده.'.tr,
+                                style: TextStyle(color: AppTheme.uiSubtleText, fontSize: 12),
                               ),
                             ),
                           ),
@@ -4495,7 +4505,7 @@ class _PlayerScoreDetailScreen extends StatelessWidget {
   Widget _scoreStat(IconData icon, String label, int value, Color color) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 8),
+        padding: EdgeInsets.symmetric(vertical: 11, horizontal: 8),
         decoration: BoxDecoration(
           color: color.withAlpha(20),
           borderRadius: BorderRadius.circular(16),
@@ -4504,10 +4514,10 @@ class _PlayerScoreDetailScreen extends StatelessWidget {
         child: Column(
           children: [
             Icon(icon, color: color, size: 20),
-            const SizedBox(height: 5),
+            SizedBox(height: 5),
             Text('\${value}', style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 17)),
-            const SizedBox(height: 2),
-            Text(label, style: const TextStyle(color: AppColors.mutedText, fontSize: 10)),
+            SizedBox(height: 2),
+            Text(label, style: TextStyle(color: AppTheme.uiMutedText, fontSize: 10)),
           ],
         ),
       ),
@@ -4515,15 +4525,15 @@ class _PlayerScoreDetailScreen extends StatelessWidget {
   }
 
   Widget _scoreEventRow(ScoreEvent e) {
-    final eColor = e.points > 0 ? AppColors.gold : AppColors.bloodRedLight;
+    final eColor = e.points > 0 ? AppTheme.uiPrimary : AppColors.bloodRedLight;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: Row(
         children: [
           Expanded(
             child: Text(
               '${e.mechanism} — ${e.phaseLabel}ِ دورِ ${e.roundNumber}',
-              style: const TextStyle(color: Colors.white70, fontSize: 13),
+              style: TextStyle(color: Colors.white70, fontSize: 13),
             ),
           ),
           Text(

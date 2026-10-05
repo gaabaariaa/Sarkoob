@@ -1,4 +1,5 @@
 import 'team.dart';
+import '../theme/app_strings.dart';
 
 /// چه نوع تصمیم/اقدام شبانه‌ای این نقش داره؛ موتور بازی بر این اساس
 /// می‌فهمه چه UI ای رو براش نشون بده.
@@ -145,6 +146,9 @@ class GameRole {
   // اگه در روز (نه با شاتِ شب) از بازی خارج بشه، همون‌لحظه می‌تونه یه
   // نفر رو انتخاب کنه تا گرداننده مافیابودن/نبودنِ اون رو علناً اعلام کنه.
   final bool canDiscloseTeam;
+
+  String get localizedName => AppStrings.roleName(id, name);
+  String get localizedDescription => AppStrings.roleDescription(id, description);
 
   const GameRole({
     required this.id,

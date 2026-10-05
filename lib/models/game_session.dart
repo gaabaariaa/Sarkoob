@@ -1,5 +1,6 @@
 import 'role.dart';
 import 'score_event.dart';
+import '../theme/app_strings.dart';
 
 /// برچسبِ فارسیِ هر مرحله‌ی تنبیهِ انضباطیِ گرداننده — هم تو خودِ بازی
 /// (دیالوگِ تنبیه) و هم تو آمار/تاریخچه (بعدِ تمومِ بازی) استفاده می‌شه،
@@ -9,15 +10,15 @@ import 'score_event.dart';
 String disciplineStageLabel(int stage) {
   switch (stage) {
     case 0:
-      return 'بدونِ سابقه';
+      return 'بدونِ سابقه'.tr;
     case 1:
-      return 'اخطار گرفته';
+      return 'اخطار گرفته'.tr;
     case 2:
-      return 'یک‌روز از چالش‌گرفتن منع شده';
+      return 'یک‌روز از چالش‌گرفتن منع شده'.tr;
     case 3:
-      return 'برای‌همیشه از چالش‌گرفتن منع شده و سکوتِ انضباطی خورده';
+      return 'برای‌همیشه از چالش‌گرفتن منع شده و سکوتِ انضباطی خورده'.tr;
     default:
-      return 'از بازی اخراج شده';
+      return 'از بازی اخراج شده'.tr;
   }
 }
 

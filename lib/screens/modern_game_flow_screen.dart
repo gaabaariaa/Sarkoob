@@ -10,7 +10,7 @@ class ModernGameFlowScreen extends StatelessWidget {
   final List<SessionPlayer> players;
   final GameSettings settings;
 
-  const ModernGameFlowScreen({
+  ModernGameFlowScreen({
     super.key,
     required this.players,
     required this.settings,
@@ -20,136 +20,136 @@ class ModernGameFlowScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final base = Theme.of(context);
     final themed = base.copyWith(
-      scaffoldBackgroundColor: AppColors.background,
-      canvasColor: AppColors.background,
+      scaffoldBackgroundColor: AppTheme.uiBackground,
+      canvasColor: AppTheme.uiBackground,
       colorScheme: base.colorScheme.copyWith(
-        primary: AppColors.gold,
-        secondary: AppColors.goldLight,
-        surface: AppColors.surfaceCard,
+        primary: AppTheme.uiPrimary,
+        secondary: AppTheme.uiPrimaryLight,
+        surface: AppTheme.uiCard,
         onSurface: Colors.white,
       ),
       appBarTheme: base.appBarTheme.copyWith(
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.goldLight,
+        backgroundColor: AppTheme.uiBackground,
+        foregroundColor: AppTheme.uiPrimaryLight,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: AppTheme.headingFont(size: 21).copyWith(
-          color: AppColors.goldLight,
+          color: AppTheme.uiPrimaryLight,
           fontWeight: FontWeight.w800,
         ),
-        iconTheme: const IconThemeData(color: AppColors.goldLight),
+        iconTheme: IconThemeData(color: AppTheme.uiPrimaryLight),
       ),
       cardTheme: base.cardTheme.copyWith(
-        color: AppColors.surfaceCard,
+        color: AppTheme.uiCard,
         elevation: 0,
-        margin: const EdgeInsets.symmetric(vertical: 6),
+        margin: EdgeInsets.symmetric(vertical: 6),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: BorderSide(color: AppColors.gold.withAlpha(26)),
+          side: BorderSide(color: AppTheme.uiPrimary.withAlpha(26)),
         ),
       ),
       listTileTheme: base.listTileTheme.copyWith(
-        tileColor: AppColors.surfaceCard,
+        tileColor: AppTheme.uiCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        iconColor: AppColors.goldLight,
+        iconColor: AppTheme.uiPrimaryLight,
         textColor: Colors.white,
-        subtitleTextStyle: const TextStyle(color: AppColors.mutedText, fontSize: 12),
+        subtitleTextStyle: TextStyle(color: AppTheme.uiMutedText, fontSize: 12),
       ),
       dividerTheme: base.dividerTheme.copyWith(
-        color: AppColors.gold.withAlpha(26),
+        color: AppTheme.uiPrimary.withAlpha(26),
         thickness: 1,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          minimumSize: const Size.fromHeight(48),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
-          backgroundColor: AppColors.surfaceElevated,
-          foregroundColor: AppColors.goldLight,
-          disabledBackgroundColor: AppColors.surfaceDark,
-          disabledForegroundColor: AppColors.subtleText,
+          minimumSize: Size.fromHeight(48),
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 13),
+          backgroundColor: AppTheme.uiElevated,
+          foregroundColor: AppTheme.uiPrimaryLight,
+          disabledBackgroundColor: AppTheme.uiSurface,
+          disabledForegroundColor: AppTheme.uiSubtleText,
           elevation: 0,
-          textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+          textStyle: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
-            side: BorderSide(color: AppColors.gold.withAlpha(71)),
+            side: BorderSide(color: AppTheme.uiPrimary.withAlpha(71)),
           ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.goldLight,
-          minimumSize: const Size.fromHeight(46),
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-          side: BorderSide(color: AppColors.gold.withAlpha(71)),
-          textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+          foregroundColor: AppTheme.uiPrimaryLight,
+          minimumSize: Size.fromHeight(46),
+          padding: EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+          side: BorderSide(color: AppTheme.uiPrimary.withAlpha(71)),
+          textStyle: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.goldLight,
-          textStyle: const TextStyle(fontWeight: FontWeight.w700),
+          foregroundColor: AppTheme.uiPrimaryLight,
+          textStyle: TextStyle(fontWeight: FontWeight.w700),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(
-          foregroundColor: AppColors.goldLight,
-          backgroundColor: AppColors.surfaceDark.withAlpha(184),
+          foregroundColor: AppTheme.uiPrimaryLight,
+          backgroundColor: AppTheme.uiSurface.withAlpha(184),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
       inputDecorationTheme: base.inputDecorationTheme.copyWith(
         filled: true,
-        fillColor: AppColors.surfaceDark,
-        labelStyle: const TextStyle(color: AppColors.mutedText),
-        hintStyle: const TextStyle(color: AppColors.subtleText),
-        prefixIconColor: AppColors.goldLight,
-        suffixIconColor: AppColors.goldLight,
+        fillColor: AppTheme.uiSurface,
+        labelStyle: TextStyle(color: AppTheme.uiMutedText),
+        hintStyle: TextStyle(color: AppTheme.uiSubtleText),
+        prefixIconColor: AppTheme.uiPrimaryLight,
+        suffixIconColor: AppTheme.uiPrimaryLight,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.gold.withAlpha(31)),
+          borderSide: BorderSide(color: AppTheme.uiPrimary.withAlpha(31)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.gold.withAlpha(31)),
+          borderSide: BorderSide(color: AppTheme.uiPrimary.withAlpha(31)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.gold),
+          borderSide: BorderSide(color: AppTheme.uiPrimary),
         ),
       ),
       dialogTheme: base.dialogTheme.copyWith(
-        backgroundColor: AppColors.surfaceDark,
+        backgroundColor: AppTheme.uiSurface,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(22),
-          side: BorderSide(color: AppColors.gold.withAlpha(36)),
+          side: BorderSide(color: AppTheme.uiPrimary.withAlpha(36)),
         ),
         titleTextStyle: AppTheme.headingFont(size: 19).copyWith(
-          color: AppColors.goldLight,
+          color: AppTheme.uiPrimaryLight,
           fontWeight: FontWeight.w800,
         ),
-        contentTextStyle: const TextStyle(color: Colors.white70, fontSize: 13),
+        contentTextStyle: TextStyle(color: Colors.white70, fontSize: 13),
       ),
       snackBarTheme: base.snackBarTheme.copyWith(
-        backgroundColor: AppColors.surfaceElevated,
-        contentTextStyle: const TextStyle(color: Colors.white),
+        backgroundColor: AppTheme.uiElevated,
+        contentTextStyle: TextStyle(color: Colors.white),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
       progressIndicatorTheme: base.progressIndicatorTheme.copyWith(
-        color: AppColors.gold,
-        circularTrackColor: AppColors.goldDark.withAlpha(51),
+        color: AppTheme.uiPrimary,
+        circularTrackColor: AppTheme.uiPrimaryDark.withAlpha(51),
       ),
       bottomAppBarTheme: base.bottomAppBarTheme.copyWith(
-        color: AppColors.background,
+        color: AppTheme.uiBackground,
         elevation: 0,
       ),
       bottomNavigationBarTheme: base.bottomNavigationBarTheme.copyWith(
-        backgroundColor: AppColors.surfaceDark,
-        selectedItemColor: AppColors.goldLight,
-        unselectedItemColor: AppColors.subtleText,
+        backgroundColor: AppTheme.uiSurface,
+        selectedItemColor: AppTheme.uiPrimaryLight,
+        unselectedItemColor: AppTheme.uiSubtleText,
         type: BottomNavigationBarType.fixed,
         elevation: 0,
       ),
@@ -159,7 +159,7 @@ class ModernGameFlowScreen extends StatelessWidget {
       data: themed,
       child: Stack(
         children: [
-          const _GameAmbient(),
+          _GameAmbient(),
           GameFlowScreen(players: players, settings: settings),
         ],
       ),
@@ -168,11 +168,11 @@ class ModernGameFlowScreen extends StatelessWidget {
 }
 
 class _GameAmbient extends StatelessWidget {
-  const _GameAmbient();
+  _GameAmbient();
 
   @override
   Widget build(BuildContext context) {
-    return const Positioned.fill(
+    return Positioned.fill(
       child: IgnorePointer(
         child: DecoratedBox(
           decoration: BoxDecoration(
