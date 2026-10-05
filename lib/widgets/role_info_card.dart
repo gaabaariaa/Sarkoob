@@ -108,7 +108,7 @@ class RoleInfoCard extends StatelessWidget {
                     children: [
                       Icon(Icons.emoji_events_rounded, color: AppTheme.uiPrimaryLight, size: 20),
                       SizedBox(width: 8),
-                      Text('امتیازدهی', style: AppTheme.headingFont(size: 17)),
+                      Text('امتیازدهی'.tr, style: AppTheme.headingFont(size: 17)),
                     ],
                   ),
                   SizedBox(height: 10),
